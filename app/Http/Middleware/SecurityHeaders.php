@@ -1,0 +1,78 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class SecurityHeaders
+{
+    /**
+     * Security headers to apply
+     */
+    private array $headers = [
+        'X-Content-Type-Options' => 'nosniff',
+        'X-Frame-Options' => 'SAMEORIGIN',
+        'X-XSS-Protection' => '1; mode=block',
+        'Referrer-Policy' => 'strict-origin-when-cross-origin',
+        'Permissions-Policy' => 'geolocation=(), microphone=(), camera=()',
+        'X-Permitted-Cross-Domain-Policies' => 'none',
+    ];
+
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+        $response = $next($request);
+
+        // Apply security headers
+        foreach ($this->headers as $key => $value) {
+            $response->headers->set($key, $value);
+        }
+
+        // Content Security Policy
+        $this->setContentSecurityPolicy($response);
+
+        // Strict Transport Security (only for HTTPS)
+        if ($request->secure()) {
+            $response->headers->set(
+                'Strict-Transport-Security',
+                'max-age=31536000; includeSubDomains; preload'
+            );
+        }
+
+        // Remove sensitive headers
+        $response->headers->remove('X-Powered-By');
+        $response->headers->remove('Server');
+
+        return $response;
+    }
+
+    /**
+     * Set Content Security Policy header
+     */
+    private function setContentSecurityPolicy(Response $response): void
+    {
+        $csp = [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
+            "font-src 'self' https://fonts.gstatic.com data:",
+            "img-src 'self' data: https: blob:",
+            "connect-src 'self' https://api.stripe.com wss://",
+            "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+            "object-src 'none'",
+            "base-uri 'self'",
+            "form-action 'self'",
+            "frame-ancestors 'self'",
+            "block-all-mixed-content",
+            "upgrade-insecure-requests",
+        ];
+
+        $response->headers->set('Content-Security-Policy', implode('; ', $csp));
+    }
+}

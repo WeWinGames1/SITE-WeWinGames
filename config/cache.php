@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => env('CACHE_STORE', 'database'),
+    'default' => env('CACHE_STORE', 'redis'),
 
     /*
     |--------------------------------------------------------------------------
@@ -104,5 +104,31 @@ return [
     */
 
     'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_cache_'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cache Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Additional cache configuration options for the application.
+    |
+    */
+
+    'enabled' => env('CACHE_ENABLED', true),
+
+    'ttl' => [
+        'default' => 3600, // 1 hour
+        'short' => 300,    // 5 minutes
+        'medium' => 1800,  // 30 minutes
+        'long' => 7200,    // 2 hours
+        'day' => 86400,    // 24 hours
+    ],
+
+    'tags' => [
+        'users' => ['users', 'profiles'],
+        'bets' => ['bets', 'games', 'sports'],
+        'content' => ['pages', 'posts', 'landing'],
+        'config' => ['settings', 'permissions'],
+    ],
 
 ];

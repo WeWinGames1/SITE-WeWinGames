@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\CareerApplicationController;
 use App\Http\Controllers\Admin\BetImportController;
+use App\Http\Controllers\Admin\BetImportWizardController;
 use Illuminate\Support\Facades\Notification;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -146,7 +147,20 @@ Route::get('/subscription-checkout', [\App\Http\Controllers\Auth\RegisteredUserC
     ->middleware(['auth', 'verified']);
 
 Route::post('/careers/apply', [CareerApplicationController::class, 'submit'])->name('careers.apply');
+
+// Legacy bet import route
 Route::post('/admin/bets/import-csv', [BetImportController::class, 'importCsv'])->middleware('auth');
+
+// New bet import wizard routes
+Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/bets/import')->name('admin.bets.import.')->group(function () {
+    Route::get('/', [BetImportWizardController::class, 'index'])->name('index');
+    Route::post('/upload', [BetImportWizardController::class, 'upload'])->name('upload');
+    Route::post('/validate', [BetImportWizardController::class, 'validate'])->name('validate');
+    Route::post('/process', [BetImportWizardController::class, 'import'])->name('process');
+    Route::get('/progress', [BetImportWizardController::class, 'progress'])->name('progress');
+    Route::get('/template', [BetImportWizardController::class, 'downloadTemplate'])->name('template');
+    Route::get('/error-report', [BetImportWizardController::class, 'downloadErrorReport'])->name('error-report');
+});
 Route::post('/admin/notify-all', function (Request $request) {
     if (!auth()->check() || !auth()->user()->hasRole('admin')) {
         abort(403, 'Unauthorized');
