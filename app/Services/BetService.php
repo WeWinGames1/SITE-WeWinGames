@@ -311,4 +311,383 @@ class BetService
         $totalProfit = $bets->sum('profit');
         return round(($totalProfit / $totalStake) * 100, 2);
     }
+
+    /**
+     * Get profit by year
+     */
+    public function getProfitByYear(): array
+    {
+        $profits = DB::table('bets')
+            ->whereIn('status', ['won', 'lost'])
+            ->selectRaw("strftime('%Y', betting_date) as year, SUM(profit_amount) as total_profit")
+            ->groupBy('year')
+            ->orderBy('year', 'desc')
+            ->get();
+
+        $result = [];
+        foreach ($profits as $profit) {
+            $result[$profit->year] = round($profit->total_profit, 2);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get ROI by year
+     */
+    public function getROIByYear(): array
+    {
+        $yearlyStats = DB::table('bets')
+            ->whereIn('status', ['won', 'lost'])
+            ->selectRaw("strftime('%Y', betting_date) as year, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit")
+            ->groupBy('year')
+            ->orderBy('year', 'desc')
+            ->get();
+
+        $result = [];
+        foreach ($yearlyStats as $stat) {
+            if ($stat->total_stake > 0) {
+                $result[$stat->year] = round(($stat->total_profit / $stat->total_stake) * 100, 2);
+            } else {
+                $result[$stat->year] = 0.0;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get total ROI by subscription level
+     */
+    public function getTotalROIBySubscriptionLevel(?int $year = null): array
+    {
+        $query = DB::table('bets')->whereIn('status', ['won', 'lost']);
+        
+        if ($year) {
+            $query->whereYear('betting_date', $year);
+        }
+
+        $stats = $query->selectRaw('membership, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit')
+            ->groupBy('membership')
+            ->get();
+
+        $result = [];
+        foreach ($stats as $stat) {
+            $roi = 0.0;
+            if ($stat->total_stake > 0) {
+                $roi = round(($stat->total_profit / $stat->total_stake) * 100, 2);
+            }
+            $result[$stat->membership] = [
+                'total_stake' => round($stat->total_stake, 2),
+                'total_profit' => round($stat->total_profit, 2),
+                'roi' => $roi
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get profit and ROI by level
+     */
+    public function getProfitAndROIByLevel(?int $year = null): array
+    {
+        $query = DB::table('bets')->whereIn('status', ['won', 'lost']);
+        
+        if ($year) {
+            $query->whereYear('betting_date', $year);
+        }
+
+        $stats = $query->selectRaw("membership, COUNT(*) as total_bets, SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) as wins, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit")
+            ->groupBy('membership')
+            ->get();
+
+        $result = [];
+        foreach ($stats as $stat) {
+            $roi = 0.0;
+            $winRate = 0.0;
+            
+            if ($stat->total_stake > 0) {
+                $roi = round(($stat->total_profit / $stat->total_stake) * 100, 2);
+            }
+            
+            if ($stat->total_bets > 0) {
+                $winRate = round(($stat->wins / $stat->total_bets) * 100, 2);
+            }
+            
+            $result[$stat->membership] = [
+                'total_bets' => $stat->total_bets,
+                'wins' => $stat->wins,
+                'win_rate' => $winRate,
+                'total_stake' => round($stat->total_stake, 2),
+                'total_profit' => round($stat->total_profit, 2),
+                'roi' => $roi
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get profit and ROI by sport
+     */
+    public function getProfitAndROIBySport(?int $year = null): array
+    {
+        $query = DB::table('bets')->whereIn('status', ['won', 'lost']);
+        
+        if ($year) {
+            $query->whereYear('betting_date', $year);
+        }
+
+        $stats = $query->selectRaw("sports, COUNT(*) as total_bets, SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) as wins, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit")
+            ->groupBy('sports')
+            ->get();
+
+        $result = [];
+        foreach ($stats as $stat) {
+            $roi = 0.0;
+            $winRate = 0.0;
+            
+            if ($stat->total_stake > 0) {
+                $roi = round(($stat->total_profit / $stat->total_stake) * 100, 2);
+            }
+            
+            if ($stat->total_bets > 0) {
+                $winRate = round(($stat->wins / $stat->total_bets) * 100, 2);
+            }
+            
+            $result[$stat->sports] = [
+                'total_bets' => $stat->total_bets,
+                'wins' => $stat->wins,
+                'win_rate' => $winRate,
+                'total_stake' => round($stat->total_stake, 2),
+                'total_profit' => round($stat->total_profit, 2),
+                'roi' => $roi
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get average monthly profit
+     */
+    public function getAverageMonthlyProfit(): float
+    {
+        $monthlyProfits = DB::table('bets')
+            ->whereIn('status', ['won', 'lost'])
+            ->selectRaw("strftime('%Y', betting_date) as year, strftime('%m', betting_date) as month, SUM(profit_amount) as total_profit")
+            ->groupBy('year', 'month')
+            ->get();
+
+        if ($monthlyProfits->isEmpty()) {
+            return 0.0;
+        }
+
+        $totalProfit = $monthlyProfits->sum('total_profit');
+        $monthCount = $monthlyProfits->count();
+
+        return round($totalProfit / $monthCount, 2);
+    }
+
+    /**
+     * Get today's bets
+     */
+    public function getTodaysBets(): \Illuminate\Database\Eloquent\Collection
+    {
+        return Bet::whereDate('betting_date', today())
+            ->orderBy('betting_date', 'desc')
+            ->get();
+    }
+
+    /**
+     * Get win/loss ratio
+     */
+    public function getWinLossRatio(): array
+    {
+        $stats = DB::table('bets')
+            ->whereIn('status', ['won', 'lost'])
+            ->selectRaw('status, COUNT(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status');
+
+        $wins = $stats->get('won', 0);
+        $losses = $stats->get('lost', 0);
+        $total = $wins + $losses;
+
+        return [
+            'wins' => $wins,
+            'losses' => $losses,
+            'win_rate' => $total > 0 ? round(($wins / $total) * 100, 2) : 0.0
+        ];
+    }
+
+    /**
+     * Get win/loss ratio by year
+     */
+    public function getWinLossRatioByYear(int $year): array
+    {
+        $stats = DB::table('bets')
+            ->whereIn('status', ['won', 'lost'])
+            ->whereYear('betting_date', $year)
+            ->selectRaw('status, COUNT(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status');
+
+        $wins = $stats->get('won', 0);
+        $losses = $stats->get('lost', 0);
+        $total = $wins + $losses;
+
+        return [
+            'wins' => $wins,
+            'losses' => $losses,
+            'win_rate' => $total > 0 ? round(($wins / $total) * 100, 2) : 0.0
+        ];
+    }
+
+    /**
+     * Get profit by month
+     */
+    public function getProfitByMonth(int $year, int $month): float
+    {
+        $profit = DB::table('bets')
+            ->whereIn('status', ['won', 'lost'])
+            ->whereYear('betting_date', $year)
+            ->whereMonth('betting_date', $month)
+            ->sum('profit_amount');
+
+        return round($profit, 2);
+    }
+
+    /**
+     * Get ROI by month
+     */
+    public function getROIByMonth(int $year, int $month): float
+    {
+        $stats = DB::table('bets')
+            ->whereIn('status', ['won', 'lost'])
+            ->whereYear('betting_date', $year)
+            ->whereMonth('betting_date', $month)
+            ->selectRaw('SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit')
+            ->first();
+
+        if (!$stats || $stats->total_stake <= 0) {
+            return 0.0;
+        }
+
+        return round(($stats->total_profit / $stats->total_stake) * 100, 2);
+    }
+
+    /**
+     * Get win/loss ratio by month
+     */
+    public function getWinLossRatioByMonth(int $year, int $month): array
+    {
+        $stats = DB::table('bets')
+            ->whereIn('status', ['won', 'lost'])
+            ->whereYear('betting_date', $year)
+            ->whereMonth('betting_date', $month)
+            ->selectRaw('status, COUNT(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status');
+
+        $wins = $stats->get('won', 0);
+        $losses = $stats->get('lost', 0);
+        $total = $wins + $losses;
+
+        return [
+            'wins' => $wins,
+            'losses' => $losses,
+            'win_rate' => $total > 0 ? round(($wins / $total) * 100, 2) : 0.0
+        ];
+    }
+
+    /**
+     * Get profit and ROI by year
+     */
+    public function getProfitAndROIByYear(): array
+    {
+        $yearlyStats = DB::table('bets')
+            ->whereIn('status', ['won', 'lost'])
+            ->selectRaw("strftime('%Y', betting_date) as year, COUNT(*) as total_bets, SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) as wins, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit")
+            ->groupBy('year')
+            ->orderBy('year', 'desc')
+            ->get();
+
+        $result = [];
+        foreach ($yearlyStats as $stat) {
+            $roi = 0.0;
+            $winRate = 0.0;
+            
+            if ($stat->total_stake > 0) {
+                $roi = round(($stat->total_profit / $stat->total_stake) * 100, 2);
+            }
+            
+            if ($stat->total_bets > 0) {
+                $winRate = round(($stat->wins / $stat->total_bets) * 100, 2);
+            }
+            
+            $result[$stat->year] = [
+                'total_bets' => $stat->total_bets,
+                'wins' => $stat->wins,
+                'win_rate' => $winRate,
+                'total_stake' => round($stat->total_stake, 2),
+                'total_profit' => round($stat->total_profit, 2),
+                'roi' => $roi
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get profit and ROI by month
+     */
+    public function getProfitAndROIByMonth(): array
+    {
+        $monthlyStats = DB::table('bets')
+            ->whereIn('status', ['won', 'lost'])
+            ->selectRaw("strftime('%Y', betting_date) as year, strftime('%m', betting_date) as month, COUNT(*) as total_bets, SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) as wins, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit")
+            ->groupBy('year', 'month')
+            ->orderBy('year', 'desc')
+            ->orderBy('month', 'desc')
+            ->limit(24) // Last 24 months
+            ->get();
+
+        $result = [];
+        foreach ($monthlyStats as $stat) {
+            $roi = 0.0;
+            $winRate = 0.0;
+            
+            if ($stat->total_stake > 0) {
+                $roi = round(($stat->total_profit / $stat->total_stake) * 100, 2);
+            }
+            
+            if ($stat->total_bets > 0) {
+                $winRate = round(($stat->wins / $stat->total_bets) * 100, 2);
+            }
+            
+            $key = sprintf('%d-%02d', $stat->year, $stat->month);
+            $result[$key] = [
+                'year' => $stat->year,
+                'month' => $stat->month,
+                'total_bets' => $stat->total_bets,
+                'wins' => $stat->wins,
+                'win_rate' => $winRate,
+                'total_stake' => round($stat->total_stake, 2),
+                'total_profit' => round($stat->total_profit, 2),
+                'roi' => $roi
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get all bets for export
+     */
+    public function getAllBetsForExport()
+    {
+        return Bet::orderBy('betting_date', 'desc')->get();
+    }
 }

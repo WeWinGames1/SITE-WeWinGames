@@ -37,7 +37,9 @@
         <link rel="manifest" href="/manifest.json">
         <meta name="theme-color" content="#4f46e5">
         <!-- Elfsight Google Reviews | Untitled Google Reviews -->
-        <script defer src="https://go.metabet.io/js/global.js?siteID=wewingames"></script>
+        @production
+            <script defer src="https://go.metabet.io/js/global.js?siteID=wewingames"></script>
+        @endproduction
         @routes
         @vite(['resources/js/app.ts'])
         @inertiaHead

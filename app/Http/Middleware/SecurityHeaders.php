@@ -59,19 +59,38 @@ class SecurityHeaders
     {
         $csp = [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com",
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
-            "font-src 'self' https://fonts.gstatic.com data:",
+        ];
+
+        // Different CSP for development
+        if (app()->environment('local')) {
+            // More permissive in development
+            $csp[] = "script-src * 'unsafe-inline' 'unsafe-eval'";
+            $csp[] = "script-src-elem * 'unsafe-inline'";
+            $csp[] = "style-src * 'unsafe-inline'";
+            $csp[] = "style-src-elem * 'unsafe-inline'";
+            $csp[] = "connect-src *";
+        } else {
+            $csp[] = "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://go.metabet.io";
+            $csp[] = "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.bunny.net https://cdn.jsdelivr.net";
+            $csp[] = "connect-src 'self' https://api.stripe.com wss://";
+        }
+
+        // Common CSP directives
+        $csp = array_merge($csp, [
+            "font-src 'self' https://fonts.gstatic.com https://fonts.bunny.net data:",
             "img-src 'self' data: https: blob:",
-            "connect-src 'self' https://api.stripe.com wss://",
             "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
             "object-src 'none'",
             "base-uri 'self'",
             "form-action 'self'",
             "frame-ancestors 'self'",
-            "block-all-mixed-content",
-            "upgrade-insecure-requests",
-        ];
+        ]);
+
+        // Only add these in production
+        if (!app()->environment('local')) {
+            $csp[] = "block-all-mixed-content";
+            $csp[] = "upgrade-insecure-requests";
+        }
 
         $response->headers->set('Content-Security-Policy', implode('; ', $csp));
     }

@@ -33,11 +33,13 @@ class SanitizeInput
         $sanitized = $this->sanitizeArray($input);
         $request->merge($sanitized);
 
-        // Sanitize route parameters
-        $routeParams = $request->route()->parameters();
-        $sanitizedParams = $this->sanitizeArray($routeParams);
-        foreach ($sanitizedParams as $key => $value) {
-            $request->route()->setParameter($key, $value);
+        // Sanitize route parameters only if route exists
+        if ($request->route()) {
+            $routeParams = $request->route()->parameters();
+            $sanitizedParams = $this->sanitizeArray($routeParams);
+            foreach ($sanitizedParams as $key => $value) {
+                $request->route()->setParameter($key, $value);
+            }
         }
 
         return $next($request);
