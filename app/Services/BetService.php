@@ -690,4 +690,13 @@ class BetService
     {
         return Bet::orderBy('betting_date', 'desc')->get();
     }
+
+    /**
+     * Get all bets
+     */
+    public function getAllBets()
+    {
+        return Bet::orderBy('betting_date', 'desc')
+            ->get();
+    }
 }
