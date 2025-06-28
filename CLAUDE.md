@@ -7,10 +7,10 @@ WeWinGames is a full-stack sports betting information and picks service built wi
 
 ### Backend
 - **Framework**: Laravel 12 (PHP 8.2+)
-- **Database**: MySQL 8.0
-- **Cache**: Redis
+- **Database**: MySQL 8.0 / SQLite (for local development)
+- **Cache**: File/Redis
 - **Queue**: Laravel Queue with database driver
-- **Authentication**: Laravel Sanctum
+- **Authentication**: Laravel Breeze with Inertia.js
 - **Billing**: Laravel Cashier (Stripe integration)
 - **SSR**: Inertia.js
 
@@ -292,6 +292,55 @@ Enable debug mode in `.env`:
 ```
 APP_DEBUG=true
 APP_ENV=local
+```
+
+## Recent Updates and Best Practices
+
+### Code Organization (December 2024)
+1. **Route Organization**: 
+   - All routes now use controller methods instead of closures
+   - Route files are properly registered in `bootstrap/app.php` using Laravel 12's routing configuration
+   - Admin routes are consistently grouped with proper middleware
+
+2. **Database-Driven Content**:
+   - Betting education content migrated from Vue components to database pages
+   - All blog posts are now stored in the database
+   - Dynamic content management through admin panel
+
+3. **Environment Configuration**:
+   - All third-party service keys properly configured in `.env.example`
+   - Stripe, Slack, Postmark, and Resend integrations documented
+   - Local development optimized for SQLite
+
+### Laravel Best Practices Implemented
+1. **Controllers**: All route logic moved to dedicated controllers
+2. **Service Layer**: Business logic separated into service classes
+3. **Consistent Middleware**: Admin routes use consistent middleware stack
+4. **Clean Imports**: Removed unused imports and dependencies
+5. **Proper Configuration**: All config values use env() with defaults
+
+### Testing
+```bash
+# Run all tests
+php artisan test
+
+# Run with coverage
+php artisan test --coverage
+
+# Run specific test suite
+php artisan test --testsuite=Feature
+```
+
+### Database Seeders
+```bash
+# Seed test users (admin and subscriber)
+php artisan db:seed --class=UserSeeder
+
+# Seed betting education pages
+php artisan db:seed --class=BettingEducationSeeder
+
+# Seed all blog posts
+php artisan db:seed --class=BlogPostsSeeder
 ```
 
 ## Contact and Support
