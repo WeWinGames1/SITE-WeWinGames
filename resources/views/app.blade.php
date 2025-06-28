@@ -40,6 +40,25 @@
         @production
             <script defer src="https://go.metabet.io/js/global.js?siteID=wewingames"></script>
         @endproduction
+        
+        {{-- Cloudflare Turnstile --}}
+        @if(config('services.turnstile.enabled'))
+            <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+            <script>
+                window.turnstileConfig = {
+                    enabled: true,
+                    siteKey: '{{ config('services.turnstile.site_key') }}'
+                };
+            </script>
+        @else
+            <script>
+                window.turnstileConfig = {
+                    enabled: false,
+                    siteKey: ''
+                };
+            </script>
+        @endif
+        
         @routes
         @vite(['resources/js/app.ts'])
         @inertiaHead

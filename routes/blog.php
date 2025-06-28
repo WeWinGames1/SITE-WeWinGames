@@ -1,27 +1,32 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\BlogController;
+use App\Http\Controllers\PostController;
 
-Route::get('types-of-bets', [BlogController::class, 'typesOfBets'])->name('types-of-bets');
-Route::get('betting-predictions-explained', [BlogController::class, 'bettingPredictionsExplained'])->name('betting-predictions-explained');
-Route::get('money-management', [BlogController::class, 'moneyManagement'])->name('money-management');
-Route::get('where-is-online-sports-betting-biggest-and-growing-the-most-in-the-usa/', [BlogController::class, 'whereIsOnlineSportsBettingBiggest'])->name('where-is-online-sports-betting-biggest-and-growing-the-most-in-the-usa');
-Route::get('why-was-america-late', [BlogController::class, 'whyWasAmericaLate'])->name('why-was-america-late');
-Route::get('can-betting-be-profitable', [BlogController::class, 'canBettingBeProfitable'])->name('can-betting-be-profitable');
-Route::get('is-betting-riskier-than-stock-market', [BlogController::class, 'isBettingRiskierThanStockMarket'])->name('is-betting-riskier-than-stock-market');
-Route::get('sportbooks-earn-profits-through-online-sports-betting/', [BlogController::class, 'sportbooksEarnProfits'])->name('sportbooks-earn-profits-through-online-sports-betting');
-Route::get('how-to-become-a-more-profitable-sports-bettor', [BlogController::class, 'howToBecomeMoreProfitable'])->name('how-to-become-a-more-profitable-sports-bettor');
-Route::get('best-betting-sites', [BlogController::class, 'bestBettingSites'])->name('best-betting-sites');
-Route::get('best-betting-picks-tricks-on-online-sports-betting', [BlogController::class, 'bestBettingPicksTricks'])->name('best-betting-picks-tricks-on-online-sports-betting');
-Route::get('are-parlays-a-good-bet', [BlogController::class, 'areParlaysAGoodBet'])->name('are-parlays-a-good-bet');
-Route::get('statistics-versus-emotion-in-betting', [BlogController::class, 'statisticsVersusEmotionInBetting'])->name('statistics-versus-emotion-in-betting');
-Route::get('in-play-fastest-maturing-areas-in-us-sports-betting', [BlogController::class, 'inPlayFastestMaturingAreas'])->name('in-play-fastest-maturing-areas-in-us-sports-betting');
-Route::get('best-sports-betting-picks-measures', [BlogController::class, 'bestSportsBettingPicksMeasures'])->name('best-sports-betting-picks-measures');
-Route::get('bet-predictions', [BlogController::class, 'betPredictions'])->name('bet-predictions');
-Route::get('importance-of-line-shopping', [BlogController::class, 'importanceOfLineShopping'])->name('importance-of-line-shopping');
-Route::get('how-to-bet-on-baseball-best-mlb-tips-and-picks', [BlogController::class, 'howToBetOnBaseball'])->name('how-to-bet-on-baseball-best-mlb-tips-and-picks');
-Route::get('best-nhl-betting-tips-and-picks', [BlogController::class, 'bestNHLBettingTips'])->name('best-nhl-betting-tips-and-picks');
-Route::get('how-to-bet-on-football-best-nfl-tips-and-picks', [BlogController::class, 'howToBetOnFootball'])->name('how-to-bet-on-football-best-nfl-tips-and-picks');
-Route::get('how-to-bet-on-soccer-best-soccer-tips-and-picks', [BlogController::class, 'howToBetOnSoccer'])->name('how-to-bet-on-soccer-best-soccer-tips-and-picks');
-Route::get('golf-betting-tips', [BlogController::class, 'golfBettingTips'])->name('golf-betting-tips');
+// Dynamic blog routes - using database-driven content
+Route::get('/', [PostController::class, 'index'])->name('index');
+Route::get('/{slug}', [PostController::class, 'show'])->name('show');
+
+// Legacy redirects - redirect old URLs to new database-driven posts
+Route::redirect('types-of-bets', '/blog/types-of-bets', 301);
+Route::redirect('betting-predictions-explained', '/blog/betting-predictions-explained', 301);
+Route::redirect('money-management', '/blog/money-management', 301);
+Route::redirect('where-is-online-sports-betting-biggest-and-growing-the-most-in-the-usa/', '/blog/where-is-online-sports-betting-biggest-and-growing-the-most-in-the-usa', 301);
+Route::redirect('why-was-america-late', '/blog/why-was-america-late', 301);
+Route::redirect('can-betting-be-profitable', '/blog/can-betting-be-profitable', 301);
+Route::redirect('is-betting-riskier-than-stock-market', '/blog/is-betting-riskier-than-stock-market', 301);
+Route::redirect('sportbooks-earn-profits-through-online-sports-betting/', '/blog/sportbooks-earn-profits-through-online-sports-betting', 301);
+Route::redirect('how-to-become-a-more-profitable-sports-bettor', '/blog/how-to-become-a-more-profitable-sports-bettor', 301);
+Route::redirect('best-betting-sites', '/blog/best-betting-sites', 301);
+Route::redirect('best-betting-picks-tricks-on-online-sports-betting', '/blog/best-betting-picks-tricks-on-online-sports-betting', 301);
+Route::redirect('are-parlays-a-good-bet', '/blog/are-parlays-a-good-bet', 301);
+Route::redirect('statistics-versus-emotion-in-betting', '/blog/statistics-versus-emotion-in-betting', 301);
+Route::redirect('in-play-fastest-maturing-areas-in-us-sports-betting', '/blog/in-play-fastest-maturing-areas-in-us-sports-betting', 301);
+Route::redirect('best-sports-betting-picks-measures', '/blog/best-sports-betting-picks-measures', 301);
+Route::redirect('bet-predictions', '/blog/bet-predictions', 301);
+Route::redirect('importance-of-line-shopping', '/blog/importance-of-line-shopping', 301);
+Route::redirect('how-to-bet-on-baseball-best-mlb-tips-and-picks', '/blog/how-to-bet-on-baseball-best-mlb-tips-and-picks', 301);
+Route::redirect('best-nhl-betting-tips-and-picks', '/blog/best-nhl-betting-tips-and-picks', 301);
+Route::redirect('how-to-bet-on-football-best-nfl-tips-and-picks', '/blog/how-to-bet-on-football-best-nfl-tips-and-picks', 301);
+Route::redirect('how-to-bet-on-soccer-best-soccer-tips-and-picks', '/blog/how-to-bet-on-soccer-best-soccer-tips-and-picks', 301);
+Route::redirect('golf-betting-tips', '/blog/golf-betting-tips', 301);

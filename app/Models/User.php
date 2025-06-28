@@ -24,7 +24,11 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
-        'notification_preferences', // Added this line to allow mass assignment
+        'notification_preferences',
+        'registration_ip',
+        'registration_user_agent',
+        'last_login_at',
+        'last_login_ip',
     ];
 
     /**
@@ -48,6 +52,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'notification_preferences' => 'array',
+            'last_login_at' => 'datetime',
         ];
     }
 

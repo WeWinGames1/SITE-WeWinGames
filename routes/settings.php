@@ -3,8 +3,8 @@
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\BillingController;
+use App\Http\Controllers\Settings\AppearanceController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::middleware('auth')->group(function () {
     Route::redirect('settings', '/settings/profile');
@@ -19,7 +19,5 @@ Route::middleware('auth')->group(function () {
     Route::get('settings/billing', [BillingController::class, 'edit'])->name('billing.edit');
     Route::put('settings/billing', [BillingController::class, 'update'])->name('billing.update');
     Route::get('settings/billing-portal', [BillingController::class, 'billing_portal'])->name('billing.portal');
-    Route::get('settings/appearance', function () {
-        return Inertia::render('settings/Appearance');
-    })->name('appearance');
+    Route::get('settings/appearance', [AppearanceController::class, 'show'])->name('appearance');
 });

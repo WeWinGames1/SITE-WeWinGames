@@ -44,4 +44,17 @@ return [
         ],
     ],
 
+    'turnstile' => [
+        'enabled' => env('TURNSTILE_ENABLED', false),
+        'site_key' => env('TURNSTILE_SITE_KEY'),
+        'secret' => env('TURNSTILE_SECRET_KEY'),
+    ],
+
+    'cloudflare' => [
+        'enabled' => env('CLOUDFLARE_ENABLED', false),
+        'trusted_proxies' => env('CLOUDFLARE_TRUSTED_PROXIES', false),
+        'blocked_countries' => explode(',', env('CLOUDFLARE_BLOCKED_COUNTRIES', '')),
+        'security_enabled' => env('CLOUDFLARE_SECURITY_ENABLED', false),
+    ],
+
 ];

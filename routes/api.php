@@ -1,9 +1,12 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BetController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\PushNotificationController;
 use App\Http\Controllers\Api\V1\BetApiController;
+use App\Http\Controllers\Api\V1\UserApiController;
+use App\Http\Controllers\Api\V1\PushNotificationController as V1PushNotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,13 +20,7 @@ use App\Http\Controllers\Api\V1\BetApiController;
 // API Version 1 - RESTful endpoints with better structure
 Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     // User endpoints
-    Route::get('/user', function (Request $request) {
-        return response()->json([
-            'success' => true,
-            'data' => $request->user(),
-            'meta' => ['version' => 'v1']
-        ]);
-    });
+    Route::get('/user', [UserApiController::class, 'show']);
 
     // Bet endpoints
     Route::apiResource('bets', BetApiController::class);
@@ -31,43 +28,9 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:api'])->group(functio
 
     // Push notification endpoints
     Route::prefix('push')->group(function () {
-        Route::post('/subscribe', function (Request $request) {
-            $request->validate([
-                'endpoint' => 'required|string',
-                'keys.p256dh' => 'required|string',
-                'keys.auth' => 'required|string'
-            ]);
-            
-            $request->user()->updatePushSubscription(
-                $request->endpoint,
-                $request->keys['p256dh'],
-                $request->keys['auth']
-            );
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'Push subscription updated successfully',
-                'meta' => ['version' => 'v1']
-            ]);
-        });
-
-        Route::post('/unsubscribe', function (Request $request) {
-            $request->user()->removePushSubscription();
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'Push subscription removed successfully',
-                'meta' => ['version' => 'v1']
-            ]);
-        });
-
-        Route::get('/subscription', function (Request $request) {
-            return response()->json([
-                'success' => true,
-                'data' => $request->user()->getPushSubscription(),
-                'meta' => ['version' => 'v1']
-            ]);
-        });
+        Route::post('/subscribe', [V1PushNotificationController::class, 'subscribe']);
+        Route::post('/unsubscribe', [V1PushNotificationController::class, 'unsubscribe']);
+        Route::get('/subscription', [V1PushNotificationController::class, 'show']);
     });
 });
 
@@ -85,36 +48,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/bets/{bet}', [BetController::class, 'destroy']);
     
     // Legacy user endpoint
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
+    Route::get('/user', [UserController::class, 'show']);
     
     // Legacy push notification endpoints
-    Route::post('/push/subscribe', function (Request $request) {
-        $request->validate([
-            'endpoint' => 'required|string',
-            'keys.p256dh' => 'required|string',
-            'keys.auth' => 'required|string'
-        ]);
-        
-        $request->user()->updatePushSubscription(
-            $request->endpoint,
-            $request->keys['p256dh'],
-            $request->keys['auth']
-        );
-        
-        return response()->json(['success' => true]);
-    });
-    
-    Route::post('/push/unsubscribe', function (Request $request) {
-        $request->user()->removePushSubscription();
-        return response()->json(['success' => true]);
-    });
-    
-    Route::get('/push/subscription', function (Request $request) {
-        return response()->json($request->user()->getPushSubscription());
-    });
+    Route::post('/push/subscribe', [PushNotificationController::class, 'subscribe']);
+    Route::post('/push/unsubscribe', [PushNotificationController::class, 'unsubscribe']);
+    Route::get('/push/subscription', [PushNotificationController::class, 'show']);
 });
-
-
-
