@@ -129,4 +129,82 @@ class BetController extends Controller
             'bets' => $bets,
         ]);
     }
+
+    /**
+     * Show a single bet pick.
+     */
+    public function showPick($id)
+    {
+        $bet = Bet::findOrFail($id);
+        return Inertia::render('BetPickShow', [
+            'bet' => $bet,
+        ]);
+    }
+
+    /**
+     * Show today's bets.
+     */
+    public function todaysBets()
+    {
+        return Inertia::render('TodaysBets', [
+            'roiData' => $this->betService->getTotalROIBySubscriptionLevel(),
+            'freeBets' => $this->betService->getTodaysBets()
+        ]);
+    }
+
+    /**
+     * Show betting results.
+     */
+    public function bettingResults()
+    {
+        $thisYear = now()->year;
+        $lastYear = now()->subYear()->year;
+        $thisMonth = now()->month;
+        $lastMonth = now()->copy()->subMonthNoOverflow();
+        $lastMonthYear = $lastMonth->year;
+        $lastMonthNum = $lastMonth->month;
+        $profitByYear = $this->betService->getProfitByYear();
+        $roiByYear = $this->betService->getROIByYear();
+        $thisMonthROI = $this->betService->getROIByMonth($thisYear, $thisMonth);
+        $lastMonthROI = $this->betService->getROIByMonth($lastMonthYear, $lastMonthNum);
+        
+        return Inertia::render('BettingResults', [
+            'roiData' => $this->betService->getTotalROIBySubscriptionLevel(),
+            'sportProfitRoiData' => $this->betService->getProfitAndROIBySport(),
+            'levelProfitRoiData' => $this->betService->getProfitAndROIByLevel(),
+            'thisYear' => $thisYear,
+            'lastYear' => $lastYear,
+            'thisYearProfit' => $profitByYear[$thisYear] ?? 0,
+            'lastYearProfit' => $profitByYear[$lastYear] ?? 0,
+            'thisYearROI' => $roiByYear[$thisYear] ?? 0,
+            'lastYearROI' => $roiByYear[$lastYear] ?? 0,
+            'thisYearWinLoss' => $this->betService->getWinLossRatioByYear($thisYear),
+            'lastYearWinLoss' => $this->betService->getWinLossRatioByYear($lastYear),
+            'thisMonthProfit' => $this->betService->getProfitByMonth($thisYear, $thisMonth),
+            'thisMonthROI' => $thisMonthROI,
+            'thisMonthWinLoss' => $this->betService->getWinLossRatioByMonth($thisYear, $thisMonth),
+            'lastMonthProfit' => $this->betService->getProfitByMonth($lastMonthYear, $lastMonthNum),
+            'lastMonthROI' => $lastMonthROI,
+            'lastMonthWinLoss' => $this->betService->getWinLossRatioByMonth($lastMonthYear, $lastMonthNum),
+            'monthlyProfit' => $this->betService->getAverageMonthlyProfit(),
+            'profitByYearData' => $this->betService->getProfitAndROIByYear(),
+            'profitByMonthData' => $this->betService->getProfitAndROIByMonth(),
+            'levelProfitRoiDataLastYear' => $this->betService->getProfitAndROIByLevel($lastYear),
+            'roiDataLastYear' => $this->betService->getTotalROIBySubscriptionLevel($lastYear),
+            'sportProfitRoiDataLastYear' => $this->betService->getProfitAndROIBySport($lastYear),
+        ]);
+    }
+
+    /**
+     * Show authenticated bet.
+     */
+    public function authenticatedShow(Request $request, Bet $bet)
+    {
+        if($request->user()->can('view', $bet) === false) {
+            abort(403, 'Unauthorized');
+        }
+        return Inertia::render('BetPickShow', [
+            'bet' => $bet
+        ]);
+    }
 }
