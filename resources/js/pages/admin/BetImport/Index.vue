@@ -1,5 +1,5 @@
 <template>
-  <AuthenticatedLayout title="Import Bets">
+  <AdminLayout title="Import Bets">
     <div class="container mx-auto px-4 py-8">
       <div class="max-w-6xl mx-auto">
         <h1 class="text-3xl font-bold mb-8">CSV Bet Import Wizard</h1>
@@ -48,13 +48,13 @@
         </div>
       </div>
     </div>
-  </AuthenticatedLayout>
+  </AdminLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { router } from '@inertiajs/vue3'
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
+import AdminLayout from '@/layouts/AdminLayout.vue'
 import ImportProgress from './components/ImportProgress.vue'
 import UploadStep from './components/UploadStep.vue'
 import MappingStep from './components/MappingStep.vue'
@@ -123,7 +123,7 @@ const handleMappingsConfirmed = async (mappings: Record<string, string>) => {
     }
   } catch (error) {
     showToast('error', 'Failed to validate import')
-    console.error(error)
+    // console.error(error)
   }
 }
 
@@ -170,7 +170,7 @@ const handleImportConfirmed = async (skipErrors: boolean) => {
     }
   } catch (error) {
     showToast('error', 'Failed to start import')
-    console.error(error)
+    // console.error(error)
   }
 }
 

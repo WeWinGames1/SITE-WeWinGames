@@ -8,9 +8,17 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\LandingPageController;
 use App\Http\Controllers\Admin\AdminToolsController;
+use App\Http\Controllers\Admin\StripeProductController;
+use App\Http\Controllers\Admin\SubscriptionDashboardController;
+use App\Http\Controllers\Admin\DiscountCodeController;
+use App\Http\Controllers\Admin\BlogPostController;
+use App\Http\Controllers\Admin\AdminAuthController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\BetManagementController;
 use App\Http\Controllers\BettingEducationController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\BetController;
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\StaticPageController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PageShowController;
@@ -36,6 +44,46 @@ Route::get('/subscription-checkout', [RegisteredUserController::class, 'newSubsc
     ->middleware(['auth', 'verified']);
 
 Route::post('/careers/apply', [CareerApplicationController::class, 'submit'])->name('careers.apply');
+
+// Admin Authentication Routes
+Route::prefix('admin')->group(function () {
+    Route::get('/login', [AdminAuthController::class, 'create'])->name('admin.login');
+    Route::post('/login', [AdminAuthController::class, 'store']);
+    Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('admin.logout');
+});
+
+// Admin Dashboard
+Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+    
+    // Bet Management
+    Route::resource('bets', BetManagementController::class);
+    Route::post('bets/bulk-update-status', [BetManagementController::class, 'bulkUpdateStatus'])->name('bets.bulk-update-status');
+    Route::get('bets/statistics', [BetManagementController::class, 'statistics'])->name('bets.statistics');
+    
+    // Game Management (TODO)
+    // Route::resource('games', Admin\GameManagementController::class);
+    
+    // Team Management (TODO)
+    // Route::resource('teams', Admin\TeamManagementController::class);
+    
+    // Sport Management (TODO)
+    // Route::resource('sports', Admin\SportManagementController::class);
+    
+    // Operator Management (TODO)
+    // Route::resource('operators', Admin\OperatorManagementController::class);
+    
+    // Notification Management (TODO)
+    // Route::get('notifications/create', [Admin\NotificationController::class, 'create'])->name('notifications.create');
+    // Route::post('notifications/send', [Admin\NotificationController::class, 'send'])->name('notifications.send');
+    
+    // Email Template Management (TODO)
+    // Route::resource('email-templates', Admin\EmailTemplateController::class);
+    
+    // System Settings (TODO)
+    // Route::get('settings', [Admin\SettingsController::class, 'index'])->name('settings.index');
+    // Route::post('settings', [Admin\SettingsController::class, 'update'])->name('settings.update');
+});
 
 
 // New bet import wizard routes
@@ -83,6 +131,56 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/landing-pages
     Route::delete('/{page}', [LandingPageController::class, 'destroy'])->name('destroy');
 });
 Route::get('/landing/{slug}', [PageShowController::class, 'showLandingPage'])->name('landing.show');
+
+// Public Blog Routes
+Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/{post:slug}', [BlogController::class, 'show'])->name('blog.show');
+
+// Stripe Product Management Routes
+Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/stripe-products')->name('admin.stripe-products.')->group(function () {
+    Route::get('/', [StripeProductController::class, 'index'])->name('index');
+    Route::post('/', [StripeProductController::class, 'store'])->name('store');
+    Route::put('/{stripeProduct}', [StripeProductController::class, 'update'])->name('update');
+    Route::delete('/{stripeProduct}', [StripeProductController::class, 'destroy'])->name('destroy');
+    
+    // Stripe API routes
+    Route::get('/fetch-stripe-products', [StripeProductController::class, 'fetchFromStripe'])->name('fetch-stripe');
+    Route::post('/fetch-prices', [StripeProductController::class, 'fetchPrices'])->name('fetch-prices');
+    Route::post('/{stripeProduct}/connect', [StripeProductController::class, 'connectToStripe'])->name('connect');
+    Route::post('/{stripeProduct}/create-in-stripe', [StripeProductController::class, 'createInStripe'])->name('create-in-stripe');
+    Route::post('/{stripeProduct}/disconnect', [StripeProductController::class, 'disconnectFromStripe'])->name('disconnect');
+});
+
+// Subscription Dashboard Routes
+Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/subscriptions')->name('admin.subscriptions.')->group(function () {
+    Route::get('/', [SubscriptionDashboardController::class, 'index'])->name('index');
+    Route::post('/export', [SubscriptionDashboardController::class, 'export'])->name('export');
+    Route::post('/grant', [SubscriptionDashboardController::class, 'grantSubscription'])->name('grant');
+    Route::post('/{user}/cancel', [SubscriptionDashboardController::class, 'cancelSubscription'])->name('cancel');
+});
+
+// Discount Code Management Routes
+Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/discounts')->name('admin.discounts.')->group(function () {
+    Route::get('/', [DiscountCodeController::class, 'index'])->name('index');
+    Route::post('/', [DiscountCodeController::class, 'store'])->name('store');
+    Route::get('/{discountCode}', [DiscountCodeController::class, 'show'])->name('show');
+    Route::put('/{discountCode}', [DiscountCodeController::class, 'update'])->name('update');
+    Route::post('/{discountCode}/deactivate', [DiscountCodeController::class, 'deactivate'])->name('deactivate');
+    Route::post('/validate', [DiscountCodeController::class, 'validate'])->name('validate');
+});
+
+// Blog Post Management Routes
+Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/blog-posts')->name('admin.blog-posts.')->group(function () {
+    Route::get('/', [BlogPostController::class, 'index'])->name('index');
+    Route::get('/create', [BlogPostController::class, 'create'])->name('create');
+    Route::post('/', [BlogPostController::class, 'store'])->name('store');
+    Route::get('/{post}/edit', [BlogPostController::class, 'edit'])->name('edit');
+    Route::put('/{post}', [BlogPostController::class, 'update'])->name('update');
+    Route::delete('/{post}', [BlogPostController::class, 'destroy'])->name('destroy');
+    Route::post('/{post}/duplicate', [BlogPostController::class, 'duplicate'])->name('duplicate');
+    Route::post('/upload-image', [BlogPostController::class, 'uploadImage'])->name('upload-image');
+    Route::get('/statistics', [BlogPostController::class, 'statistics'])->name('statistics');
+});
 
 
 

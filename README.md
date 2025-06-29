@@ -61,12 +61,18 @@ WeWinGames is a comprehensive sports betting information and picks service built
 6. **Configure services** (optional)
    Add your API keys to `.env`:
    ```
+   # Stripe Configuration
    STRIPE_KEY=your_stripe_publishable_key
    STRIPE_SECRET=your_stripe_secret_key
    STRIPE_WEBHOOK_SECRET=your_webhook_secret
    
+   # Notification Services
    SLACK_BOT_USER_OAUTH_TOKEN=your_slack_token
    SLACK_BOT_USER_DEFAULT_CHANNEL=your_channel
+   
+   # Production Settings (CRITICAL)
+   APP_DEBUG=false  # Must be false in production
+   APP_ENV=production
    ```
 
 7. **Start the development servers**
@@ -81,6 +87,26 @@ WeWinGames is a comprehensive sports betting information and picks service built
 8. **Access the application**
    - Application: http://localhost:8000 (or http://site-wewingames.test if using Laravel Herd)
    - Admin area: http://localhost:8000/admin
+   - Stripe Products: http://localhost:8000/admin/stripe-products
+
+## Admin Features
+
+### Stripe Product Management
+Access at `/admin/stripe-products` to:
+- Create and manage subscription products
+- Connect to existing Stripe products or create new ones
+- Set prices for each tier and billing period
+- Manage product features and descriptions
+
+### Enhanced User Management
+- Grant ambassador or gifted user privileges
+- Set override tiers and expiration dates
+- Manage subscription overrides
+
+### Notification System
+- Send targeted notifications by tier (Silver, Gold, Platinum)
+- Send to all users or specific user groups
+- Track notification delivery status
 
 ## Default Users
 
@@ -112,11 +138,14 @@ composer dev:ssr
 ## Key Features
 
 - **Betting System**: Create and track sports betting picks with ROI calculations
-- **Subscription Management**: Stripe integration for premium content
+- **Subscription Management**: Dynamic Stripe integration with product management
 - **Content Management**: Dynamic pages and blog system
 - **Admin Dashboard**: Comprehensive admin panel for managing users, bets, and content
 - **Real-time Odds**: Integration with betting operators
 - **Betting Education**: Comprehensive guides and educational content
+- **Enhanced Security**: Production-ready security headers and configurations
+- **Tier-Based Features**: Silver, Gold, and Platinum subscription tiers
+- **Ambassador Program**: Support for gifted and ambassador users
 
 ## Project Structure
 

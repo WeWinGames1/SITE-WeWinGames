@@ -28,7 +28,7 @@
 const props = defineProps<{
     data: Array<{ level: string, profit: number, roi: number }>
 }>();
-console.log('ProfitsByLevelTable props:', props.data);
+// console.log('ProfitsByLevelTable props:', props.data);
 function formatMoney(val: number | undefined) {
     return (Math.round(val ?? 0)).toLocaleString();
 }

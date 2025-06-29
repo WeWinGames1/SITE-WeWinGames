@@ -65,11 +65,14 @@ WeWinGames is a full-stack sports betting information and picks service built wi
 
 ### 3. Subscription System
 - **Billing**: Stripe integration via Laravel Cashier
-- **Plans**: Multiple subscription tiers
+- **Plans**: Multiple subscription tiers (Bronze, Silver, Gold, Platinum)
 - **Features**: 
   - Subscription management
   - Payment method updates
   - Invoice history
+  - Coupon/discount code support
+  - Dynamic Stripe product management
+  - Ambassador/gifted user privileges
 
 ### 4. Content Management
 - **Pages**: Dynamic page creation and management
@@ -79,11 +82,13 @@ WeWinGames is a full-stack sports betting information and picks service built wi
 
 ### 5. Admin Dashboard
 Located at `/admin`, provides:
-- User management
-- Bet and game management
-- Content editing
+- User management with ambassador/gifted privileges
+- Bet and game management with CSV import/export
+- Content editing (pages, blog posts, landing pages)
 - Analytics and reporting
 - System settings
+- Stripe product management
+- Tier-based notification system
 
 ## Development Commands
 
@@ -135,15 +140,19 @@ php artisan test --coverage
 ## Database Schema
 
 ### Core Tables
-- `users` - User accounts
+- `users` - User accounts (with ambassador/gifted/override fields)
 - `bets` - Betting picks and predictions
 - `games` - Sporting events
 - `teams` - Sports teams
 - `sports` - Sport categories
 - `operators` - Betting operators/bookmakers
-- `subscriptions` - User subscriptions
+- `subscriptions` - User subscriptions (Laravel Cashier)
+- `stripe_products` - Stripe product configurations
+- `coupon_usage` - Tracks coupon/discount usage
+- `team_logos` - Team logo management
 - `pages` - CMS pages
 - `posts` - Blog posts
+- `notifications` - Enhanced with tier targeting
 
 ## API Routes
 
@@ -312,6 +321,17 @@ APP_ENV=local
    - Stripe, Slack, Postmark, and Resend integrations documented
    - Local development optimized for SQLite
 
+### Critical Updates (December 2024)
+1. **Security**: Debug mode disabled for production (`APP_DEBUG=false`)
+2. **Ambassador/Gifted Users**: Fixed daily privilege resets with database fields
+3. **Stripe Integration**: 
+   - Dynamic product management system
+   - Correct product/price mapping
+   - Coupon support at checkout
+4. **Notifications**: Tier-based targeting for Silver/Gold/Platinum users
+5. **CSV Import/Export**: Consistent 16-column format
+6. **Security Headers**: Comprehensive middleware implemented
+
 ### Laravel Best Practices Implemented
 1. **Controllers**: All route logic moved to dedicated controllers
 2. **Service Layer**: Business logic separated into service classes
@@ -341,7 +361,136 @@ php artisan db:seed --class=BettingEducationSeeder
 
 # Seed all blog posts
 php artisan db:seed --class=BlogPostsSeeder
+
+# Seed sample blog posts with rich content
+php artisan db:seed --class=SampleBlogPostsSeeder
+
+# Seed Stripe products (all tiers and billing periods)
+php artisan db:seed --class=StripeProductSeeder
 ```
+
+### Stripe Product Management
+
+The platform now includes a comprehensive Stripe product management system:
+
+1. **Access**: Navigate to `/admin/stripe-products`
+2. **Features**:
+   - Create local product configurations
+   - Connect to existing Stripe products
+   - Create new products in Stripe
+   - Manage prices and features
+   - Enable/disable products
+
+3. **Workflow**:
+   - Products are stored locally for fast access
+   - Can be connected to Stripe products/prices
+   - Automatically used for subscription checkout
+   - Supports all tiers: Silver, Gold, Platinum
+   - Supports all billing periods: Daily, Weekly, Monthly
+
+### Blog System
+
+A full-featured blog system with rich text editing and SEO optimization:
+
+1. **Admin Features** (`/admin/blog-posts`):
+   - Rich text editor (TinyMCE) with image upload
+   - SEO fields (meta title, description, keywords)
+   - Categories and tags
+   - Draft/Published/Scheduled posts
+   - Featured images
+   - View statistics
+   - Duplicate posts feature
+
+2. **Public Blog** (`/blog`):
+   - Responsive design
+   - Category and tag filtering
+   - Search functionality
+   - Related posts
+   - Social sharing
+   - View count tracking
+   - Reading time estimation
+
+3. **Key Features**:
+   - Automatic slug generation
+   - SEO-friendly URLs
+   - Rich content support
+   - Media management
+   - Performance optimized
+
+### Subscription Dashboard
+
+Comprehensive subscription management system:
+
+1. **Access**: `/admin/subscriptions`
+2. **Features**:
+   - View all active subscriptions
+   - Filter by status, tier, renewal period
+   - Export customer data
+   - Grant manual subscriptions
+   - Cancel subscriptions
+   - MRR calculations
+   - Renewal forecasting
+
+### Discount Code System
+
+Full discount code management:
+
+1. **Access**: `/admin/discounts`
+2. **Features**:
+   - Create discount codes (percentage or fixed amount)
+   - Set usage limits (total and per customer)
+   - Validity periods
+   - Apply to first payment, forever, or specific months
+   - Product-specific discounts
+   - Stripe coupon integration
+   - Redemption tracking
+
+### Enhanced Admin Portal (December 2024)
+
+The admin portal has been completely redesigned with improved UX and comprehensive features:
+
+1. **Custom Admin Login** (`/admin/login`):
+   - Professional admin-specific login page
+   - Animated background with floating icons
+   - Security-focused design
+   - Quick stats preview
+
+2. **Admin Dashboard** (`/admin`):
+   - Comprehensive statistics overview
+   - Real-time activity monitoring
+   - System health indicators
+   - Interactive charts (user growth, revenue, betting activity)
+   - Subscription tier breakdown
+   - Recent activity feed
+
+3. **Dedicated Admin Layout**:
+   - Dark sidebar navigation
+   - Hierarchical menu structure
+   - Quick search functionality
+   - User profile dropdown
+   - Responsive design
+
+4. **Betting Management System**:
+   - Full CRUD operations for bets
+   - Advanced filtering (status, sport, date range)
+   - Bulk status updates
+   - Statistics and analytics
+   - Import/Export functionality
+
+5. **Admin Features Organization**:
+   - **Betting**: Bets, Games, Teams, Sports, Operators
+   - **Users**: Customers, Subscriptions, Admin Users
+   - **Content**: Blog Posts, Pages, Landing Pages
+   - **E-commerce**: Stripe Products, Discount Codes
+   - **Communications**: Notifications, Email Templates
+   - **Settings**: System configuration
+
+6. **System Monitoring**:
+   - Database size tracking
+   - Storage usage monitoring
+   - Queue status
+   - Error log tracking
+   - Performance metrics
 
 ## Contact and Support
 

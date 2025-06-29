@@ -44,8 +44,11 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'auth' => [
                 'user' => $request->user() ? new UserResource($request->user()) : null,
-                'isSubscribed' => $request->user() ? $request->user()->subscribed() : false,
+                'isSubscribed' => $request->user() ? $request->user()->hasActiveSubscription() : false,
                 'isAdmin' => $request->user() ? $request->user()->hasRole('admin') : false,
+                'isAmbassador' => $request->user() ? $request->user()->is_ambassador : false,
+                'isGifted' => $request->user() ? $request->user()->is_gifted : false,
+                'currentTier' => $request->user() ? $request->user()->getCurrentTier() : null,
             ],
         ];
 
@@ -56,17 +59,36 @@ class HandleInertiaRequests extends Middleware
             $sharedData['adminPages'] = \App\Models\Page::orderBy('title')->get(['id', 'title', 'slug']);
         }
 
+        // Get active Stripe products
+        $stripeProducts = \App\Models\StripeProduct::active()
+            ->whereNotNull('stripe_price_id')
+            ->get()
+            ->groupBy('billing_period')
+            ->map(function ($products) {
+                return $products->keyBy(function ($product) {
+                    return strtolower($product->tier);
+                })->map(function ($product) {
+                    return [
+                        'price_id' => $product->stripe_price_id,
+                        'amount' => $product->price,
+                        'features' => $product->features,
+                    ];
+                });
+            });
+
         return array_merge($sharedData, [
+            'stripeProducts' => $stripeProducts,
             'stripePrices' => [
-                'gold_monthly' => env('GOLD_MONTHLY'),
-                'silver_monthly' => env('SILVER_MONTHLY'),
-                'platinum_monthly' => env('PLATINUM_MONTHLY'),
-                'gold_weekly' => env('GOLD_WEEKLY'),
-                'silver_weekly' => env('SILVER_WEEKLY'),
-                'platinum_weekly' => env('PLATINUM_WEEKLY'),
-                'gold_daily' => env('GOLD_DAILY'),
-                'silver_daily' => env('SILVER_DAILY'),
-                'platinum_daily' => env('PLATINUM_DAILY'),
+                // Legacy support - to be removed
+                'gold_monthly' => $stripeProducts['monthly']['gold']['price_id'] ?? env('GOLD_MONTHLY'),
+                'silver_monthly' => $stripeProducts['monthly']['silver']['price_id'] ?? env('SILVER_MONTHLY'),
+                'platinum_monthly' => $stripeProducts['monthly']['platinum']['price_id'] ?? env('PLATINUM_MONTHLY'),
+                'gold_weekly' => $stripeProducts['weekly']['gold']['price_id'] ?? env('GOLD_WEEKLY'),
+                'silver_weekly' => $stripeProducts['weekly']['silver']['price_id'] ?? env('SILVER_WEEKLY'),
+                'platinum_weekly' => $stripeProducts['weekly']['platinum']['price_id'] ?? env('PLATINUM_WEEKLY'),
+                'gold_daily' => $stripeProducts['daily']['gold']['price_id'] ?? env('GOLD_DAILY'),
+                'silver_daily' => $stripeProducts['daily']['silver']['price_id'] ?? env('SILVER_DAILY'),
+                'platinum_daily' => $stripeProducts['daily']['platinum']['price_id'] ?? env('PLATINUM_DAILY'),
             ],
         ]);
     }

@@ -32,7 +32,7 @@ const socialLinks = [
 
 const page = usePage();
 const auth = computed(() => page.props.auth || null);
-console.log(auth)
+// console.log(auth)
 </script>
 
 <template>

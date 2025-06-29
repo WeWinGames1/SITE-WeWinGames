@@ -66,9 +66,9 @@ const allGroupedBets = computed(() => {
     return acc;
   }, {});
 });
-console.log('All Grouped Bets:', allGroupedBets.value);
-console.log('Viewable Bets:', viewableBets);
-console.log('Covered Bets:', coveredBets);
+// console.log('All Grouped Bets:', allGroupedBets.value);
+// console.log('Viewable Bets:', viewableBets);
+// console.log('Covered Bets:', coveredBets);
 </script>
 
 <template>

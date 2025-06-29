@@ -174,7 +174,7 @@ const { props: pageProps } = usePage();
 const isAdmin = pageProps.auth?.isAdmin || false;
 
 const updatedStatus = ref(props.bet.status);
-console.log('Updated Status:', updatedStatus.value);
+// console.log('Updated Status:', updatedStatus.value);
 const updatedDate = ref(props.bet.betting_date || '');
 const updatedReferrer = ref(props.bet.referrer || '');
 const updatedPlaceFraction = ref(props.bet.place_fraction || '');
@@ -182,7 +182,7 @@ const teamOneLogo = ref(null);
 const teamTwoLogo = ref(null);
 
 watch(updatedDate, (newValue) => {
-    console.log('Updated Date:', newValue);
+    // console.log('Updated Date:', newValue);
 });
 
 const handleFileUpload = (field, event) => {
@@ -217,7 +217,7 @@ const updateBet = async () => {
         emit('bet-updated', response.data);
        // location.reload(); // Reload the page to reflect changes
     } catch (error) {
-        console.error('Error updating bet:', error);
+        // console.error('Error updating bet:', error);
         alert('Failed to update bet. Please try again.');
     }
 };
@@ -229,7 +229,7 @@ const deleteBet = async () => {
             alert('Bet deleted successfully!');
             //location.reload(); // Reload the page to reflect changes
         } catch (error) {
-            console.error('Error deleting bet:', error);
+            // console.error('Error deleting bet:', error);
             alert('Failed to delete bet. Please try again.');
         }
     }

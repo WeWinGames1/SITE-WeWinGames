@@ -38,10 +38,10 @@ const form = useForm({
     },
 });
 const subscribe = async () => {
-    console.log('Subscribing to push notifications...');
+    // console.log('Subscribing to push notifications...');
   if ('serviceWorker' in navigator ) {
     const registration = await navigator.serviceWorker.ready;
-    console.log('Service Worker ready:', registration);
+    // console.log('Service Worker ready:', registration);
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
       const subscription = await registration.pushManager.subscribe({

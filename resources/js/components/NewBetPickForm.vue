@@ -180,7 +180,7 @@ const submitForm = () => {
             alert('Bet uploaded successfully!');
         },
         onError: (errors) => {
-            console.error('Error uploading bet:', errors);
+            // console.error('Error uploading bet:', errors);
             alert('Failed to upload bet. Please try again.');
         },
     });

@@ -29,6 +29,7 @@ const mainNavItems: NavItem[] = [
 ];
 
 const footerNavItems: NavItem[] = [
+    { title: 'Blog', href: '/blog', icon: BookOpen },
     { title: 'Betting Education', href: '/betting-education', icon: BookOpen },
     { title: 'Careers', href: '/careers-jobs', icon: DollarSign },
     { title: 'About Us', href: '/about-us', icon: UsersRound }
@@ -75,6 +76,30 @@ const footerNavItems: NavItem[] = [
                     <SidebarMenuItem>
                         <SidebarMenuButton as-child>
                             <Link href="/admin/landing-pages">Manage Landing Pages</Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <!-- Blog Posts -->
+                    <SidebarMenuItem>
+                        <SidebarMenuButton as-child>
+                            <Link href="/admin/blog-posts">Manage Blog Posts</Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <!-- Stripe Products -->
+                    <SidebarMenuItem>
+                        <SidebarMenuButton as-child>
+                            <Link href="/admin/stripe-products">Stripe Products</Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <!-- Subscriptions -->
+                    <SidebarMenuItem>
+                        <SidebarMenuButton as-child>
+                            <Link href="/admin/subscriptions">Subscription Dashboard</Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <!-- Discount Codes -->
+                    <SidebarMenuItem>
+                        <SidebarMenuButton as-child>
+                            <Link href="/admin/discounts">Discount Codes</Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>

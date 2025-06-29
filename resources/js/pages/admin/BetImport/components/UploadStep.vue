@@ -219,7 +219,7 @@ const uploadFile = async () => {
     }
   } catch (err) {
     error.value = 'Failed to upload file. Please try again.'
-    console.error(err)
+    // console.error(err)
   } finally {
     uploading.value = false
   }

@@ -90,11 +90,24 @@ class RegisteredUserController extends Controller
     }
 
     public function newSubscription(Request $request) {
-        return $request->user()
-            ->newSubscription($request->subscription_name, $request->subscription_price_id)
-            ->checkout([
-                'success_url' => route('dashboard'),
-                'cancel_url' => route('dashboard'),
-            ]);
+        $request->validate([
+            'subscription_name' => 'required|string',
+            'subscription_price_id' => 'required|string',
+            'coupon' => 'nullable|string',
+        ]);
+
+        $checkout = $request->user()
+            ->newSubscription($request->subscription_name, $request->subscription_price_id);
+        
+        // Apply coupon if provided
+        if ($request->filled('coupon')) {
+            $checkout->withCoupon($request->coupon);
+        }
+        
+        return $checkout->checkout([
+            'success_url' => route('dashboard')->with('success', 'Subscription activated successfully!'),
+            'cancel_url' => route('dashboard'),
+            'allow_promotion_codes' => true, // Allow promotion codes at checkout
+        ]);
     }
 }

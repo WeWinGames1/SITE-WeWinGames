@@ -11,7 +11,9 @@ class CustomerController extends Controller
 {
     public function index()
     {
-        $customers = User::with('subscriptions')->get();
+        $customers = User::with('subscriptions')
+            ->orderBy('created_at', 'desc')
+            ->paginate(50);
         return Inertia::render('admin/CustomersIndex', [
             'customers' => $customers,
         ]);

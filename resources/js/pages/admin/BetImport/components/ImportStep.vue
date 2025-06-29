@@ -144,7 +144,7 @@ const fetchProgress = async () => {
       }
     }
   } catch (error) {
-    console.error('Failed to fetch progress:', error)
+    // console.error('Failed to fetch progress:', error)
   }
 }
 

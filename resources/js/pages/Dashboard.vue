@@ -79,7 +79,7 @@ const updateBet = async (betId, formData) => {
         alert('Bet updated successfully!');
         fetchBets(); // Call this to refresh the bets array
     } catch (error) {
-        console.error('Error updating bet:', error);
+        // console.error('Error updating bet:', error);
         alert('Failed to update bet.');
     }
 };

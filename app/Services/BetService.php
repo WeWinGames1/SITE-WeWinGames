@@ -688,7 +688,8 @@ class BetService
      */
     public function getAllBetsForExport()
     {
-        return Bet::orderBy('betting_date', 'desc')->get();
+        return Bet::orderBy('betting_date', 'desc')
+            ->cursor();
     }
 
     /**
@@ -697,6 +698,6 @@ class BetService
     public function getAllBets()
     {
         return Bet::orderBy('betting_date', 'desc')
-            ->get();
+            ->paginate(50);
     }
 }

@@ -28,7 +28,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         $cacheKey = $this->getCacheKey('getAdmins');
         
         return $this->remember($cacheKey, function () {
-            return $this->model->role('admin')->get();
+            return $this->model->with('roles')->role('admin')->get();
         });
     }
 
@@ -37,9 +37,10 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         $cacheKey = $this->getCacheKey('getNonAdminUsers');
         
         return $this->remember($cacheKey, function () {
-            return $this->model->whereDoesntHave('roles', function($q) {
-                $q->where('name', 'admin');
-            })->get();
+            return $this->model->with('roles')
+                ->whereDoesntHave('roles', function($q) {
+                    $q->where('name', 'admin');
+                })->get();
         });
     }
 
@@ -73,7 +74,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         $cacheKey = $this->getCacheKey('getUsersByRole', $role);
         
         return $this->remember($cacheKey, function () use ($role) {
-            return $this->model->role($role)->get();
+            return $this->model->with('roles')->role($role)->get();
         });
     }
 }
