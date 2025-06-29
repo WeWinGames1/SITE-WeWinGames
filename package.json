@@ -18,15 +18,13 @@
         "eslint-plugin-vue": "^9.32.0",
         "prettier": "^3.4.2",
         "prettier-plugin-organize-imports": "^4.1.0",
-        "prettier-plugin-tailwindcss": "^0.6.11",
-        "tw-animate-css": "^1.2.5",
         "typescript-eslint": "^8.23.0",
         "vue-tsc": "^2.2.4"
     },
     "dependencies": {
         "@heroicons/vue": "^2.2.0",
         "@inertiajs/vue3": "^2.0.0-beta.3",
-        "@tailwindcss/vite": "^4.1.1",
+        "@popperjs/core": "^2.11.8",
         "@tinymce/tinymce-vue": "^6.2.0",
         "@tiptap/extension-image": "^2.23.0",
         "@tiptap/extension-link": "^2.23.0",
@@ -37,19 +35,15 @@
         "@types/papaparse": "^5.3.16",
         "@vitejs/plugin-vue": "^5.2.1",
         "@vueuse/core": "^12.8.2",
+        "bootstrap": "^5.3.7",
+        "bootstrap-icons": "^1.13.1",
+        "bootstrap-table": "^1.24.1",
         "chart.js": "^4.5.0",
-        "class-variance-authority": "^0.7.1",
-        "clsx": "^2.1.1",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^1.0",
-        "lucide": "^0.468.0",
-        "lucide-vue-next": "^0.468.0",
+        "lucide-vue-next": "^0.525.0",
         "papaparse": "^5.5.3",
         "qrcode.vue": "^3.6.0",
-        "reka-ui": "^2.2.0",
-        "tailwind-merge": "^2.5.5",
-        "tailwindcss": "^4.1.1",
-        "tailwindcss-animate": "^1.0.7",
         "three": "^0.176.0",
         "typescript": "^5.2.2",
         "vite": "^6.2.0",
@@ -59,7 +53,6 @@
     },
     "optionalDependencies": {
         "@rollup/rollup-linux-x64-gnu": "4.9.5",
-        "@tailwindcss/oxide-linux-x64-gnu": "^4.0.1",
         "lightningcss-linux-x64-gnu": "^1.29.1"
     }
 }

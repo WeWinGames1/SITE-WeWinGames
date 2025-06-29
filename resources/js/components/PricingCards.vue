@@ -16,48 +16,70 @@ defineProps<{
 </script>
 
 <template>
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 justify-center mb-16">
+  <div class="row g-4 justify-content-center mb-5">
     <div
       v-for="plan in plans"
       :key="plan.name"
-      :class="[
-        'bg-gray-800 rounded-xl shadow-lg p-8 flex flex-col items-center transition-transform hover:-translate-y-2',
-        plan.highlight ? 'border-4 border-indigo-500 scale-105 z-10' : 'border border-gray-700'
-      ]"
+      class="col-lg-4"
     >
-      <h2 class="text-2xl font-bold mb-2 text-white">{{ plan.name }}</h2>
-      <div class="text-4xl font-extrabold text-indigo-400 mb-2">{{ plan.price }}</div>
-      <div class="text-sm text-gray-400 mb-4">for {{ plan.duration }}</div>
-      <ul class="mb-6 space-y-2 text-gray-200 text-left w-full max-w-xs mx-auto">
-        <li v-for="feature in plan.features" :key="feature" class="flex items-center">
-          <svg class="w-5 h-5 text-indigo-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-          </svg>
-          <span>{{ feature }}</span>
-        </li>
-      </ul>
-      <a
-        :href="plan.monthlyLink"
-        target="_blank"
-        class="w-full text-center py-2 px-4 rounded font-bold transition-colors"
-        :class="plan.highlight ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-gray-700 hover:bg-gray-600 text-indigo-200'"
+      <div 
+        :class="[
+          'card h-100 position-relative',
+          plan.highlight ? 'pricing-card-highlight' : ''
+        ]"
+        style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);"
       >
-        Sign Up
-      </a>
-      <a
-        v-if="plan.weeklyLink"
-        :href="plan.weeklyLink"
-        target="_blank"
-        class="mt-4 w-full text-center py-2 px-4 rounded font-bold transition-colors bg-gray-700 hover:bg-gray-600 text-indigo-200">
-        Sign Up Weekly ${{ plan.weeklyPrice }}
-      </a>
-      <a
-        v-if="plan.dailyLink"
-        :href="plan.dailyLink"
-        target="_blank"
-        class="mt-4 w-full text-center py-2 px-4 rounded font-bold transition-colors bg-gray-700 hover:bg-gray-600 text-indigo-200">
-        Sign Up Daily ${{ plan.dailyPrice }}
-      </a>
+        <div class="card-body d-flex flex-column p-5">
+          <!-- Plan Header -->
+          <div class="mb-4">
+            <h3 class="fw-bold text-white mb-2">{{ plan.name }}</h3>
+            <p class="text-gray-light mb-0">
+              {{ plan.highlight ? 'Most popular choice' : plan.name === 'Platinum' ? 'Maximum value' : 'Great for beginners' }}
+            </p>
+          </div>
+          
+          <!-- Pricing -->
+          <div class="mb-5">
+            <div class="d-flex align-items-baseline mb-3">
+              <span class="display-3 fw-bold text-white">{{ plan.price }}</span>
+              <span class="text-gray-light ms-2">/ month</span>
+            </div>
+            <div class="d-flex flex-wrap gap-3 text-gray-light small">
+              <span><i class="bi bi-check text-success"></i> Weekly: ${{ plan.weeklyPrice }}</span>
+              <span><i class="bi bi-check text-success"></i> Daily: ${{ plan.dailyPrice }}</span>
+            </div>
+          </div>
+          
+          <!-- Features -->
+          <ul class="list-unstyled mb-5 flex-grow-1">
+            <li v-for="feature in plan.features" :key="feature" class="mb-3 d-flex align-items-start">
+              <i class="bi bi-check-circle-fill text-purple me-3 flex-shrink-0" style="margin-top: 2px;"></i>
+              <span class="text-gray-light">{{ feature }}</span>
+            </li>
+          </ul>
+          
+          <!-- CTA Buttons -->
+          <div class="mt-auto">
+            <a
+              :href="plan.monthlyLink"
+              class="btn btn-lg w-100 py-3 mb-3"
+              :class="plan.highlight ? 'btn-primary' : 'btn-outline-primary'"
+            >
+              <span class="fw-semibold">{{ plan.highlight ? 'Start Free Trial' : 'Get Started' }}</span>
+              <i class="bi bi-arrow-right ms-2"></i>
+            </a>
+            
+            <!-- Additional Billing Options -->
+            <div class="text-center">
+              <small class="text-gray-light">
+                Also available: 
+                <a :href="plan.weeklyLink" class="text-purple text-decoration-none">Weekly</a> • 
+                <a :href="plan.dailyLink" class="text-purple text-decoration-none">Daily</a>
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>

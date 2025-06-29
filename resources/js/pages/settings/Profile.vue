@@ -1,17 +1,10 @@
 <script setup lang="ts">
 import { Head, Link, usePage, useForm } from '@inertiajs/vue3';
-import { onMounted, Transition, watch } from 'vue';
-
-import DeleteUser from '@/components/DeleteUser.vue';
-import HeadingSmall from '@/components/HeadingSmall.vue';
+import { onMounted, watch } from 'vue';
+import CustomerSettingsLayout from '@/layouts/CustomerSettingsLayout.vue';
 import InputError from '@/components/InputError.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import AppLayout from '@/layouts/AppLayout.vue';
-import SettingsLayout from '@/layouts/settings/Layout.vue';
-import { type BreadcrumbItem, type SharedData, type User } from '@/types';
 import axios from 'axios';
+
 interface Props {
     mustVerifyEmail: boolean;
     status?: string;
@@ -19,16 +12,10 @@ interface Props {
 
 defineProps<Props>();
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Profile settings',
-        href: '/settings/profile',
-    },
-];
+const page = usePage();
+const user = page.props.auth.user.data;
+const vapid_key = page.props.env?.VAPID_PUBLIC_KEY;
 
-const page = usePage<SharedData>();
-const user = page.props.auth.user.data as User;
-const vapid_key = page.props.env.VAPID_PUBLIC_KEY;
 const form = useForm({
     name: user.name,
     email: user.email,
@@ -37,32 +24,30 @@ const form = useForm({
         push: user.notification_preferences?.push || false,
     },
 });
+
 const subscribe = async () => {
-    // console.log('Subscribing to push notifications...');
-  if ('serviceWorker' in navigator ) {
-    const registration = await navigator.serviceWorker.ready;
-    // console.log('Service Worker ready:', registration);
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapid_key)
-      });
-      // Send subscription to your backend
-      await axios.post('/api/push/subscribe', subscription);
+    if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(vapid_key)
+            });
+            await axios.post('/api/push/subscribe', subscription);
+        }
     }
-  }
 };
 
-// Helper function
 function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding)
-    .replace(/\-/g, '+')
-    .replace(/_/g, '/');
-  const rawData = window.atob(base64);
-  return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+        .replace(/\-/g, '+')
+        .replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
 }
+
 const submit = () => {
     form.patch(route('profile.update'), {
         preserveScroll: true,
@@ -70,113 +55,194 @@ const submit = () => {
 };
 
 onMounted(() => {
-  if (form.notification_preferences.push) {
-    subscribe();
-  }
+    if (form.notification_preferences.push) {
+        subscribe();
+    }
 });
 
 watch(
-  () => form.notification_preferences.push,
-  (newVal, oldVal) => {
-    if (newVal && !oldVal) {
-      subscribe();
+    () => form.notification_preferences.push,
+    (newVal, oldVal) => {
+        if (newVal && !oldVal) {
+            subscribe();
+        }
     }
-  }
 );
 </script>
 
 <template>
-    <AppLayout :breadcrumbs="breadcrumbs">
-        <Head title="Profile settings" />
+    <CustomerSettingsLayout>
+        <Head title="Profile Settings" />
 
-        <SettingsLayout>
-            <div class="flex flex-col space-y-6">
-                <HeadingSmall title="Profile information" description="Update your name, email address, and notification preferences" />
-
-                <form @submit.prevent="submit" class="space-y-6">
-                    <!-- Name -->
-                    <div class="grid gap-2">
-                        <Label for="name">Name</Label>
-                        <Input id="name" class="mt-1 block w-full" v-model="form.name" required autocomplete="name" placeholder="Full name" />
-                        <InputError class="mt-2" :message="form.errors.name" />
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Profile Information</h5>
+                        <p class="text-muted mb-0 small">Update your name, email address, and notification preferences</p>
                     </div>
-
-                    <!-- Email -->
-                    <div class="grid gap-2">
-                        <Label for="email">Email address</Label>
-                        <Input
-                            id="email"
-                            type="email"
-                            class="mt-1 block w-full"
-                            v-model="form.email"
-                            required
-                            autocomplete="username"
-                            placeholder="Email address"
-                        />
-                        <InputError class="mt-2" :message="form.errors.email" />
-                    </div>
-
-                    <!-- Notification Preferences -->
-                    <div class="grid gap-2">
-                        <Label>Notification Preferences</Label>
-                        <div class="flex items-center gap-4">
-                            <label class="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    v-model="form.notification_preferences.email"
-                                    
-                                    class="mr-2 rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                    <div class="card-body">
+                        <form @submit.prevent="submit">
+                            <!-- Name -->
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Name</label>
+                                <input 
+                                    id="name" 
+                                    type="text"
+                                    class="form-control" 
+                                    v-model="form.name" 
+                                    required 
+                                    autocomplete="name" 
+                                    placeholder="Full name" 
                                 />
-                                Email
-                            </label>
-                            <label class="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    v-model="form.notification_preferences.push"
-                                    class="mr-2 rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-                                />
-                                Push Notification
-                            </label>
-                        </div>
-                        <InputError class="mt-2" :message="form.errors.notification_preferences" />
-                    </div>
+                                <InputError class="mt-2" :message="form.errors.name" />
+                            </div>
 
-                    <!-- Email Verification -->
-                    <div v-if="mustVerifyEmail && !user.email_verified_at">
-                        <p class="-mt-4 text-sm text-muted-foreground">
-                            Your email address is unverified.
-                            <Link
-                                :href="route('verification.send')"
-                                method="post"
-                                as="button"
-                                class="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
-                            >
-                                Click here to resend the verification email.
-                            </Link>
+                            <!-- Email -->
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email address</label>
+                                <input
+                                    id="email"
+                                    type="email"
+                                    class="form-control"
+                                    v-model="form.email"
+                                    required
+                                    autocomplete="username"
+                                    placeholder="Email address"
+                                />
+                                <InputError class="mt-2" :message="form.errors.email" />
+                            </div>
+
+                            <!-- Notification Preferences -->
+                            <div class="mb-4">
+                                <label class="form-label">Notification Preferences</label>
+                                <div class="d-flex gap-4">
+                                    <div class="form-check">
+                                        <input
+                                            type="checkbox"
+                                            v-model="form.notification_preferences.email"
+                                            class="form-check-input"
+                                            id="emailNotifications"
+                                        />
+                                        <label class="form-check-label" for="emailNotifications">
+                                            Email Notifications
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input
+                                            type="checkbox"
+                                            v-model="form.notification_preferences.push"
+                                            class="form-check-input"
+                                            id="pushNotifications"
+                                        />
+                                        <label class="form-check-label" for="pushNotifications">
+                                            Push Notifications
+                                        </label>
+                                    </div>
+                                </div>
+                                <InputError class="mt-2" :message="form.errors.notification_preferences" />
+                            </div>
+
+                            <!-- Email Verification -->
+                            <div v-if="mustVerifyEmail && !user.email_verified_at" class="alert alert-warning">
+                                <p class="mb-0">
+                                    Your email address is unverified.
+                                    <Link
+                                        :href="route('verification.send')"
+                                        method="post"
+                                        as="button"
+                                        class="btn btn-link p-0 text-decoration-underline"
+                                    >
+                                        Click here to resend the verification email.
+                                    </Link>
+                                </p>
+                            </div>
+
+                            <div v-if="status === 'verification-link-sent'" class="alert alert-success">
+                                A new verification link has been sent to your email address.
+                            </div>
+
+                            <!-- Save Button -->
+                            <div class="d-flex align-items-center gap-3">
+                                <button type="submit" class="btn btn-primary" :disabled="form.processing">
+                                    <span v-if="form.processing">
+                                        <span class="spinner-border spinner-border-sm me-2"></span>
+                                        Saving...
+                                    </span>
+                                    <span v-else>Save Changes</span>
+                                </button>
+
+                                <Transition
+                                    enter-active-class="transition ease-in-out"
+                                    enter-from-class="opacity-0"
+                                    leave-active-class="transition ease-in-out"
+                                    leave-to-class="opacity-0"
+                                >
+                                    <span v-show="form.recentlySuccessful" class="text-success">
+                                        <i class="bi bi-check-circle me-1"></i>Saved successfully
+                                    </span>
+                                </Transition>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Delete Account Section -->
+                <div class="card mt-4 border-danger">
+                    <div class="card-header bg-danger bg-opacity-10">
+                        <h5 class="mb-0 text-danger">Delete Account</h5>
+                        <p class="text-muted mb-0 small">Permanently delete your account and all of your data</p>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">
+                            Once your account is deleted, all of its resources and data will be permanently deleted. 
+                            Before deleting your account, please download any data or information that you wish to retain.
                         </p>
-
-                        <div v-if="status === 'verification-link-sent'" class="mt-2 text-sm font-medium text-green-600">
-                            A new verification link has been sent to your email address.
-                        </div>
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                            Delete Account
+                        </button>
                     </div>
-
-                    <!-- Save Button -->
-                    <div class="flex items-center gap-4">
-                        <Button :disabled="form.processing">Save</Button>
-
-                        <Transition
-                            enter-active-class="transition ease-in-out"
-                            enter-from-class="opacity-0"
-                            leave-active-class="transition ease-in-out"
-                            leave-to-class="opacity-0"
-                        >
-                            <p v-show="form.recentlySuccessful" class="text-sm text-neutral-600">Saved.</p>
-                        </Transition>
-                    </div>
-                </form>
+                </div>
             </div>
+        </div>
 
-            <DeleteUser />
-        </SettingsLayout>
-    </AppLayout>
+        <!-- Delete Account Modal -->
+        <div class="modal fade" id="deleteAccountModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Delete Account</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <Link
+                            href="/profile"
+                            method="delete"
+                            as="button"
+                            class="btn btn-danger"
+                            preserve-scroll
+                        >
+                            Delete Account
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </CustomerSettingsLayout>
 </template>
+
+<style scoped>
+.transition {
+    transition-property: opacity;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+.opacity-0 {
+    opacity: 0;
+}
+</style>

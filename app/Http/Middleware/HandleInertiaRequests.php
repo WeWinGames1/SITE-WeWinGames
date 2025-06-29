@@ -50,6 +50,10 @@ class HandleInertiaRequests extends Middleware
                 'isGifted' => $request->user() ? $request->user()->is_gifted : false,
                 'currentTier' => $request->user() ? $request->user()->getCurrentTier() : null,
             ],
+            'impersonation' => [
+                'isImpersonating' => session()->has('impersonator_id'),
+                'impersonatorId' => session()->get('impersonator_id'),
+            ],
         ];
 
         // Include bets only if the user is an admin
@@ -89,6 +93,10 @@ class HandleInertiaRequests extends Middleware
                 'gold_daily' => $stripeProducts['daily']['gold']['price_id'] ?? env('GOLD_DAILY'),
                 'silver_daily' => $stripeProducts['daily']['silver']['price_id'] ?? env('SILVER_DAILY'),
                 'platinum_daily' => $stripeProducts['daily']['platinum']['price_id'] ?? env('PLATINUM_DAILY'),
+            ],
+            'env' => [
+                'APP_ENV' => config('app.env'),
+                'APP_DEBUG' => config('app.debug'),
             ],
         ]);
     }

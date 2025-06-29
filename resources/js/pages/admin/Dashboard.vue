@@ -2,21 +2,6 @@
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
-import { 
-    UsersIcon,
-    CurrencyDollarIcon,
-    ChartBarIcon,
-    DocumentTextIcon,
-    TicketIcon,
-    ArrowTrendingUpIcon,
-    ArrowTrendingDownIcon,
-    ServerIcon,
-    CircleStackIcon,
-    ExclamationTriangleIcon,
-    CheckCircleIcon,
-    UserPlusIcon,
-    ClockIcon
-} from '@heroicons/vue/24/outline';
 import { Line, Doughnut } from 'vue-chartjs';
 import {
     Chart as ChartJS,
@@ -200,28 +185,28 @@ const doughnutChartOptions = {
 };
 
 // Helper functions
-function getStatusColor(status: string): string {
+function getStatusBadgeClass(status: string): string {
     switch (status) {
         case 'healthy':
-            return 'text-green-600 bg-green-100';
+            return 'badge bg-success';
         case 'warning':
-            return 'text-yellow-600 bg-yellow-100';
+            return 'badge bg-warning';
         case 'error':
-            return 'text-red-600 bg-red-100';
+            return 'badge bg-danger';
         default:
-            return 'text-gray-600 bg-gray-100';
+            return 'badge bg-secondary';
     }
 }
 
-function getStatusIcon(status: string) {
+function getStatusIcon(status: string): string {
     switch (status) {
         case 'healthy':
-            return CheckCircleIcon;
+            return 'bi-check-circle';
         case 'warning':
         case 'error':
-            return ExclamationTriangleIcon;
+            return 'bi-exclamation-triangle';
         default:
-            return CheckCircleIcon;
+            return 'bi-check-circle';
     }
 }
 
@@ -251,211 +236,251 @@ function formatTime(time: string): string {
     if (hours < 24) return `${hours}h ago`;
     return `${days}d ago`;
 }
+
+function getActivityIconColor(color: string): string {
+    const colorMap: Record<string, string> = {
+        'blue': 'text-primary',
+        'green': 'text-success',
+        'yellow': 'text-warning',
+        'red': 'text-danger',
+        'purple': 'text-purple',
+        'orange': 'text-orange'
+    };
+    return colorMap[color] || 'text-secondary';
+}
 </script>
 
 <template>
     <AdminLayout>
         <Head title="Admin Dashboard" />
         
-        <div class="p-6">
+        <div class="p-4">
             <!-- Header -->
-            <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
-                <p class="text-gray-600 mt-2">Welcome back! Here's what's happening with your platform today.</p>
+            <div class="mb-4">
+                <h1 class="h2 mb-1">Dashboard Overview</h1>
+                <p class="text-muted">Welcome back! Here's what's happening with your platform today.</p>
             </div>
 
             <!-- Stats Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="row g-4 mb-4">
                 <!-- Users Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="p-3 bg-blue-100 rounded-lg">
-                            <UsersIcon class="h-6 w-6 text-blue-600" />
+                <div class="col-lg-3 col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="p-3 bg-primary bg-opacity-10 rounded">
+                                    <i class="bi bi-people fs-4 text-primary"></i>
+                                </div>
+                                <div class="d-flex align-items-center small">
+                                    <i :class="[stats.users.growth_rate >= 0 ? 'bi-arrow-up-right text-success' : 'bi-arrow-down-right text-danger', 'me-1']"></i>
+                                    <span :class="stats.users.growth_rate >= 0 ? 'text-success' : 'text-danger'">
+                                        {{ Math.abs(stats.users.growth_rate) }}%
+                                    </span>
+                                </div>
+                            </div>
+                            <h3 class="h4 mb-1">{{ formatNumber(stats.users.total) }}</h3>
+                            <p class="text-muted small mb-2">Total Users</p>
+                            <div class="text-muted" style="font-size: 0.75rem;">
+                                <span class="fw-medium text-dark">{{ stats.users.active_subscribers }}</span> active subscribers
+                            </div>
                         </div>
-                        <div class="flex items-center text-sm">
-                            <component 
-                                :is="stats.users.growth_rate >= 0 ? ArrowTrendingUpIcon : ArrowTrendingDownIcon"
-                                :class="stats.users.growth_rate >= 0 ? 'text-green-600' : 'text-red-600'"
-                                class="h-4 w-4 mr-1"
-                            />
-                            <span :class="stats.users.growth_rate >= 0 ? 'text-green-600' : 'text-red-600'">
-                                {{ Math.abs(stats.users.growth_rate) }}%
-                            </span>
-                        </div>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900">{{ formatNumber(stats.users.total) }}</h3>
-                    <p class="text-sm text-gray-600">Total Users</p>
-                    <div class="mt-3 text-xs text-gray-500">
-                        <span class="font-medium text-gray-700">{{ stats.users.active_subscribers }}</span> active subscribers
                     </div>
                 </div>
 
                 <!-- Revenue Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="p-3 bg-green-100 rounded-lg">
-                            <CurrencyDollarIcon class="h-6 w-6 text-green-600" />
+                <div class="col-lg-3 col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="p-3 bg-success bg-opacity-10 rounded">
+                                    <i class="bi bi-cash-stack fs-4 text-success"></i>
+                                </div>
+                                <div class="d-flex align-items-center small">
+                                    <i :class="[stats.revenue.growth_rate >= 0 ? 'bi-arrow-up-right text-success' : 'bi-arrow-down-right text-danger', 'me-1']"></i>
+                                    <span :class="stats.revenue.growth_rate >= 0 ? 'text-success' : 'text-danger'">
+                                        {{ Math.abs(stats.revenue.growth_rate) }}%
+                                    </span>
+                                </div>
+                            </div>
+                            <h3 class="h4 mb-1">{{ formatCurrency(stats.revenue.mrr) }}</h3>
+                            <p class="text-muted small mb-2">Monthly Recurring Revenue</p>
+                            <div class="text-muted" style="font-size: 0.75rem;">
+                                <span class="fw-medium text-dark">{{ formatCurrency(stats.revenue.this_month) }}</span> this month
+                            </div>
                         </div>
-                        <div class="flex items-center text-sm">
-                            <component 
-                                :is="stats.revenue.growth_rate >= 0 ? ArrowTrendingUpIcon : ArrowTrendingDownIcon"
-                                :class="stats.revenue.growth_rate >= 0 ? 'text-green-600' : 'text-red-600'"
-                                class="h-4 w-4 mr-1"
-                            />
-                            <span :class="stats.revenue.growth_rate >= 0 ? 'text-green-600' : 'text-red-600'">
-                                {{ Math.abs(stats.revenue.growth_rate) }}%
-                            </span>
-                        </div>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900">{{ formatCurrency(stats.revenue.mrr) }}</h3>
-                    <p class="text-sm text-gray-600">Monthly Recurring Revenue</p>
-                    <div class="mt-3 text-xs text-gray-500">
-                        <span class="font-medium text-gray-700">{{ formatCurrency(stats.revenue.this_month) }}</span> this month
                     </div>
                 </div>
 
                 <!-- Bets Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="p-3 bg-purple-100 rounded-lg">
-                            <ChartBarIcon class="h-6 w-6 text-purple-600" />
+                <div class="col-lg-3 col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="p-3 bg-purple bg-opacity-10 rounded" style="background-color: rgba(168, 85, 247, 0.1);">
+                                    <i class="bi bi-bar-chart fs-4" style="color: rgb(168, 85, 247);"></i>
+                                </div>
+                                <div class="small fw-medium" style="color: rgb(168, 85, 247);">
+                                    {{ stats.bets.win_rate }}% Win
+                                </div>
+                            </div>
+                            <h3 class="h4 mb-1">{{ formatNumber(stats.bets.total) }}</h3>
+                            <p class="text-muted small mb-2">Total Bets</p>
+                            <div class="text-muted" style="font-size: 0.75rem;">
+                                <span class="fw-medium text-dark">{{ stats.bets.today }}</span> today • 
+                                <span class="fw-medium text-dark">{{ stats.bets.active }}</span> active
+                            </div>
                         </div>
-                        <div class="text-sm font-medium text-purple-600">
-                            {{ stats.bets.win_rate }}% Win
-                        </div>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900">{{ formatNumber(stats.bets.total) }}</h3>
-                    <p class="text-sm text-gray-600">Total Bets</p>
-                    <div class="mt-3 text-xs text-gray-500">
-                        <span class="font-medium text-gray-700">{{ stats.bets.today }}</span> today • 
-                        <span class="font-medium text-gray-700">{{ stats.bets.active }}</span> active
                     </div>
                 </div>
 
                 <!-- Content Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="p-3 bg-orange-100 rounded-lg">
-                            <DocumentTextIcon class="h-6 w-6 text-orange-600" />
+                <div class="col-lg-3 col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="p-3 bg-orange bg-opacity-10 rounded" style="background-color: rgba(251, 146, 60, 0.1);">
+                                    <i class="bi bi-file-text fs-4" style="color: rgb(251, 146, 60);"></i>
+                                </div>
+                                <div class="small fw-medium" style="color: rgb(251, 146, 60);">
+                                    {{ formatNumber(stats.content.page_views) }} views
+                                </div>
+                            </div>
+                            <h3 class="h4 mb-1">{{ stats.content.published }}</h3>
+                            <p class="text-muted small mb-2">Published Posts</p>
+                            <div class="text-muted" style="font-size: 0.75rem;">
+                                <span class="fw-medium text-dark">{{ stats.content.this_month }}</span> this month
+                            </div>
                         </div>
-                        <div class="text-sm font-medium text-orange-600">
-                            {{ formatNumber(stats.content.page_views) }} views
-                        </div>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900">{{ stats.content.published }}</h3>
-                    <p class="text-sm text-gray-600">Published Posts</p>
-                    <div class="mt-3 text-xs text-gray-500">
-                        <span class="font-medium text-gray-700">{{ stats.content.this_month }}</span> this month
                     </div>
                 </div>
             </div>
 
             <!-- Charts Row -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="row g-4 mb-4">
                 <!-- Activity Chart -->
-                <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Platform Activity</h2>
-                    <div class="h-64">
-                        <Line :data="lineChartData" :options="lineChartOptions" />
+                <div class="col-lg-8">
+                    <div class="card h-100">
+                        <div class="card-header bg-white">
+                            <h5 class="card-title mb-0">Platform Activity</h5>
+                        </div>
+                        <div class="card-body">
+                            <div style="height: 300px;">
+                                <Line :data="lineChartData" :options="lineChartOptions" />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Tier Breakdown -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Subscription Tiers</h2>
-                    <div class="h-64">
-                        <Doughnut :data="doughnutChartData" :options="doughnutChartOptions" />
+                <div class="col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-white">
+                            <h5 class="card-title mb-0">Subscription Tiers</h5>
+                        </div>
+                        <div class="card-body">
+                            <div style="height: 300px;">
+                                <Doughnut :data="doughnutChartData" :options="doughnutChartOptions" />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Bottom Row -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="row g-4">
                 <!-- Recent Activity -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
-                    <div class="space-y-3 max-h-96 overflow-y-auto">
-                        <div v-for="(activity, index) in recentActivity" :key="index" class="flex items-start space-x-3">
-                            <div :class="`p-2 rounded-lg bg-${activity.color}-100`">
-                                <component :is="activity.icon" :class="`h-4 w-4 text-${activity.color}-600`" />
-                            </div>
-                            <div class="flex-1">
-                                <p class="text-sm text-gray-900">{{ activity.message }}</p>
-                                <p class="text-xs text-gray-500 flex items-center mt-1">
-                                    <ClockIcon class="h-3 w-3 mr-1" />
-                                    {{ formatTime(activity.time) }}
-                                </p>
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-white">
+                            <h5 class="card-title mb-0">Recent Activity</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="overflow-auto" style="max-height: 400px;">
+                                <div v-for="(activity, index) in recentActivity" :key="index" class="d-flex align-items-start mb-3">
+                                    <div :class="`p-2 rounded bg-${activity.color} bg-opacity-10 me-3`">
+                                        <i :class="[`bi bi-${activity.icon}`, getActivityIconColor(activity.color), 'fs-6']"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <p class="mb-1 small">{{ activity.message }}</p>
+                                        <div class="d-flex align-items-center text-muted" style="font-size: 0.75rem;">
+                                            <i class="bi bi-clock me-1"></i>
+                                            {{ formatTime(activity.time) }}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- System Health -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">System Health</h2>
-                    <div class="space-y-4">
-                        <!-- Database -->
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <CircleStackIcon class="h-5 w-5 text-gray-400 mr-3" />
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">Database</p>
-                                    <p class="text-xs text-gray-500">{{ systemHealth.database.size }}</p>
-                                </div>
-                            </div>
-                            <span :class="`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(systemHealth.database.status)}`">
-                                <component :is="getStatusIcon(systemHealth.database.status)" class="h-3 w-3 mr-1" />
-                                {{ systemHealth.database.status }}
-                            </span>
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-white">
+                            <h5 class="card-title mb-0">System Health</h5>
                         </div>
+                        <div class="card-body">
+                            <div class="list-group list-group-flush">
+                                <!-- Database -->
+                                <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-database me-3 text-muted fs-5"></i>
+                                        <div>
+                                            <p class="mb-0 fw-medium">Database</p>
+                                            <small class="text-muted">{{ systemHealth.database.size }}</small>
+                                        </div>
+                                    </div>
+                                    <span :class="getStatusBadgeClass(systemHealth.database.status)">
+                                        <i :class="[getStatusIcon(systemHealth.database.status), 'me-1']"></i>
+                                        {{ systemHealth.database.status }}
+                                    </span>
+                                </div>
 
-                        <!-- Storage -->
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <ServerIcon class="h-5 w-5 text-gray-400 mr-3" />
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">Storage</p>
-                                    <p class="text-xs text-gray-500">{{ systemHealth.storage.used }} / {{ systemHealth.storage.total }}</p>
+                                <!-- Storage -->
+                                <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-hdd me-3 text-muted fs-5"></i>
+                                        <div>
+                                            <p class="mb-0 fw-medium">Storage</p>
+                                            <small class="text-muted">{{ systemHealth.storage.used }} / {{ systemHealth.storage.total }}</small>
+                                        </div>
+                                    </div>
+                                    <span :class="getStatusBadgeClass(systemHealth.storage.status)">
+                                        <i :class="[getStatusIcon(systemHealth.storage.status), 'me-1']"></i>
+                                        {{ systemHealth.storage.percentage }}%
+                                    </span>
+                                </div>
+
+                                <!-- Queue -->
+                                <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-list-task me-3 text-muted fs-5"></i>
+                                        <div>
+                                            <p class="mb-0 fw-medium">Queue</p>
+                                            <small class="text-muted">{{ systemHealth.queue.pending }} pending, {{ systemHealth.queue.failed }} failed</small>
+                                        </div>
+                                    </div>
+                                    <span :class="getStatusBadgeClass(systemHealth.queue.status)">
+                                        <i :class="[getStatusIcon(systemHealth.queue.status), 'me-1']"></i>
+                                        {{ systemHealth.queue.status }}
+                                    </span>
+                                </div>
+
+                                <!-- Errors -->
+                                <div class="list-group-item px-0 d-flex justify-content-between align-items-center border-0">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-exclamation-triangle me-3 text-muted fs-5"></i>
+                                        <div>
+                                            <p class="mb-0 fw-medium">Error Logs</p>
+                                            <small class="text-muted">{{ systemHealth.errors.today }} errors today</small>
+                                        </div>
+                                    </div>
+                                    <span :class="getStatusBadgeClass(systemHealth.errors.status)">
+                                        <i :class="[getStatusIcon(systemHealth.errors.status), 'me-1']"></i>
+                                        {{ systemHealth.errors.status }}
+                                    </span>
                                 </div>
                             </div>
-                            <span :class="`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(systemHealth.storage.status)}`">
-                                <component :is="getStatusIcon(systemHealth.storage.status)" class="h-3 w-3 mr-1" />
-                                {{ systemHealth.storage.percentage }}%
-                            </span>
-                        </div>
-
-                        <!-- Queue -->
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="h-5 w-5 text-gray-400 mr-3">
-                                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">Queue</p>
-                                    <p class="text-xs text-gray-500">{{ systemHealth.queue.pending }} pending, {{ systemHealth.queue.failed }} failed</p>
-                                </div>
-                            </div>
-                            <span :class="`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(systemHealth.queue.status)}`">
-                                <component :is="getStatusIcon(systemHealth.queue.status)" class="h-3 w-3 mr-1" />
-                                {{ systemHealth.queue.status }}
-                            </span>
-                        </div>
-
-                        <!-- Errors -->
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <ExclamationTriangleIcon class="h-5 w-5 text-gray-400 mr-3" />
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">Error Logs</p>
-                                    <p class="text-xs text-gray-500">{{ systemHealth.errors.today }} errors today</p>
-                                </div>
-                            </div>
-                            <span :class="`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(systemHealth.errors.status)}`">
-                                <component :is="getStatusIcon(systemHealth.errors.status)" class="h-3 w-3 mr-1" />
-                                {{ systemHealth.errors.status }}
-                            </span>
                         </div>
                     </div>
                 </div>
@@ -463,3 +488,21 @@ function formatTime(time: string): string {
         </div>
     </AdminLayout>
 </template>
+
+<style scoped>
+.text-purple {
+    color: rgb(168, 85, 247);
+}
+
+.text-orange {
+    color: rgb(251, 146, 60);
+}
+
+.bg-purple {
+    background-color: rgb(168, 85, 247);
+}
+
+.bg-orange {
+    background-color: rgb(251, 146, 60);
+}
+</style>

@@ -1,12 +1,6 @@
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue';
-import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import AuthBase from '@/layouts/AuthLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { LoaderCircle } from 'lucide-vue-next';
+import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import { onMounted, ref } from 'vue';
 
 const page = usePage();
@@ -62,78 +56,161 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthBase title="Create an account" description="Enter your details below to create your account">
+    <WelcomeLayout>
         <Head title="Register" />
 
-        <form @submit.prevent="submit" class="flex flex-col gap-6">
-            <div class="grid gap-6">
-                <div class="grid gap-2">
-                    <Label for="name">Name</Label>
-                    <Input id="name" type="text" required autofocus :tabindex="1" autocomplete="name" v-model="form.name" placeholder="Full name" />
-                    <InputError :message="form.errors.name" />
+        <div class="min-vh-100 d-flex align-items-center" style="background: linear-gradient(135deg, #7C3AED 0%, #111827 100%);">
+            <div class="container py-5">
+                <div class="row justify-content-center">
+                    <div class="col-md-6 col-lg-5">
+                        <div class="text-center mb-4">
+                            <h1 class="display-4 fw-bold text-white mb-2">Get Started</h1>
+                            <p class="fs-5 text-gray-light">Join thousands of winning bettors today</p>
+                        </div>
+                        
+                        <div class="card" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
+                            <div class="card-body p-5">
+                                <h2 class="h4 fw-bold text-white mb-2">Create your account</h2>
+                                <p class="text-gray-light mb-4">Start with a 7-day free trial</p>
+
+                            <form @submit.prevent="submit">
+                                <div class="mb-4">
+                                    <label for="name" class="form-label text-white fw-medium">Full Name</label>
+                                    <input
+                                        id="name"
+                                        type="text"
+                                        class="form-control form-control-lg"
+                                        :class="{ 'is-invalid': form.errors.name }"
+                                        required
+                                        autofocus
+                                        autocomplete="name"
+                                        v-model="form.name"
+                                        placeholder="John Doe"
+                                    />
+                                    <div v-if="form.errors.name" class="invalid-feedback">
+                                        {{ form.errors.name }}
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="email" class="form-label text-white fw-medium">Email Address</label>
+                                    <input
+                                        id="email"
+                                        type="email"
+                                        class="form-control form-control-lg"
+                                        :class="{ 'is-invalid': form.errors.email }"
+                                        required
+                                        autocomplete="email"
+                                        v-model="form.email"
+                                        placeholder="you@example.com"
+                                    />
+                                    <div v-if="form.errors.email" class="invalid-feedback">
+                                        {{ form.errors.email }}
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="password" class="form-label text-white fw-medium">Password</label>
+                                    <input
+                                        id="password"
+                                        type="password"
+                                        class="form-control form-control-lg"
+                                        :class="{ 'is-invalid': form.errors.password }"
+                                        required
+                                        autocomplete="new-password"
+                                        v-model="form.password"
+                                        placeholder="Create a strong password"
+                                    />
+                                    <div v-if="form.errors.password" class="invalid-feedback">
+                                        {{ form.errors.password }}
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="password_confirmation" class="form-label text-white fw-medium">Confirm Password</label>
+                                    <input
+                                        id="password_confirmation"
+                                        type="password"
+                                        class="form-control form-control-lg"
+                                        :class="{ 'is-invalid': form.errors.password_confirmation }"
+                                        required
+                                        autocomplete="new-password"
+                                        v-model="form.password_confirmation"
+                                        placeholder="Confirm your password"
+                                    />
+                                    <div v-if="form.errors.password_confirmation" class="invalid-feedback">
+                                        {{ form.errors.password_confirmation }}
+                                    </div>
+                                </div>
+
+                                <!-- Honeypot field (hidden) -->
+                                <input
+                                    type="text"
+                                    name="website"
+                                    v-model="form.website"
+                                    style="position: absolute; left: -9999px;"
+                                    autocomplete="off"
+                                    tabindex="-1"
+                                />
+
+                                <!-- Cloudflare Turnstile -->
+                                <div v-if="turnstileEnabled" class="mb-3">
+                                    <div id="cf-turnstile"></div>
+                                    <div v-if="form.errors['cf-turnstile-response']" class="text-danger small mt-1">
+                                        {{ form.errors['cf-turnstile-response'] }}
+                                    </div>
+                                </div>
+
+                                <div class="d-grid mb-4">
+                                    <button type="submit" class="btn btn-primary btn-lg py-3" :disabled="form.processing">
+                                        <span v-if="form.processing" class="spinner-border spinner-border-sm me-2" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </span>
+                                        <span class="fw-semibold">Create Account</span>
+                                        <i class="bi bi-arrow-right ms-2"></i>
+                                    </button>
+                                </div>
+
+                                <div class="text-center text-gray-light small mb-4">
+                                    By creating an account, you agree to our
+                                    <a href="/terms" class="text-purple text-decoration-none">Terms of Service</a>
+                                    and
+                                    <a href="/privacy" class="text-purple text-decoration-none">Privacy Policy</a>
+                                </div>
+                                
+                                <div class="position-relative">
+                                    <hr class="text-gray-medium">
+                                    <span class="position-absolute top-50 start-50 translate-middle bg-card px-3 text-gray-light small" style="background-color: var(--bs-card-bg);">OR</span>
+                                </div>
+                            </form>
+
+                            <div class="text-center mt-4">
+                                <p class="text-gray-light mb-2">Already have an account?</p>
+                                <a :href="route('login')" class="btn btn-outline-primary btn-lg w-100">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                                    Sign In
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Benefits -->
+                    <div class="row mt-5 text-center">
+                        <div class="col-4">
+                            <i class="bi bi-shield-check text-purple fs-2 mb-2"></i>
+                            <p class="text-gray-light small mb-0">Secure & Safe</p>
+                        </div>
+                        <div class="col-4">
+                            <i class="bi bi-clock-history text-purple fs-2 mb-2"></i>
+                            <p class="text-gray-light small mb-0">7-Day Free Trial</p>
+                        </div>
+                        <div class="col-4">
+                            <i class="bi bi-trophy text-purple fs-2 mb-2"></i>
+                            <p class="text-gray-light small mb-0">Proven Results</p>
+                        </div>
+                    </div>
                 </div>
-
-                <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
-                    <Input id="email" type="email" required :tabindex="2" autocomplete="email" v-model="form.email" placeholder="email@example.com" />
-                    <InputError :message="form.errors.email" />
-                </div>
-
-                <div class="grid gap-2">
-                    <Label for="password">Password</Label>
-                    <Input
-                        id="password"
-                        type="password"
-                        required
-                        :tabindex="3"
-                        autocomplete="new-password"
-                        v-model="form.password"
-                        placeholder="Password"
-                    />
-                    <InputError :message="form.errors.password" />
-                </div>
-
-                <div class="grid gap-2">
-                    <Label for="password_confirmation">Confirm password</Label>
-                    <Input
-                        id="password_confirmation"
-                        type="password"
-                        required
-                        :tabindex="4"
-                        autocomplete="new-password"
-                        v-model="form.password_confirmation"
-                        placeholder="Confirm password"
-                    />
-                    <InputError :message="form.errors.password_confirmation" />
-                </div>
-
-                <!-- Honeypot field - hidden from users -->
-                <input 
-                    type="text" 
-                    name="website" 
-                    v-model="form.website" 
-                    tabindex="-1"
-                    autocomplete="off"
-                    style="position: absolute; left: -9999px; width: 1px; height: 1px;"
-                    aria-hidden="true"
-                />
-
-                <!-- Cloudflare Turnstile -->
-                <div v-if="turnstileEnabled" class="flex justify-center">
-                    <div id="cf-turnstile"></div>
-                </div>
-                <InputError :message="form.errors['cf-turnstile-response']" />
-
-                <Button type="submit" class="mt-2 w-full" tabindex="5" :disabled="form.processing || (turnstileEnabled && !form['cf-turnstile-response'])">
-                    <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
-                    Create account
-                </Button>
             </div>
-
-            <div class="text-center text-sm text-muted-foreground">
-                Already have an account?
-                <TextLink :href="route('login')" class="underline underline-offset-4" :tabindex="6">Log in</TextLink>
-            </div>
-        </form>
-    </AuthBase>
+        </div>
+    </WelcomeLayout>
 </template>

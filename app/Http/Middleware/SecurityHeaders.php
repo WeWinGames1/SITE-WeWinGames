@@ -68,6 +68,7 @@ class SecurityHeaders
             $csp[] = "script-src-elem * 'unsafe-inline'";
             $csp[] = "style-src * 'unsafe-inline'";
             $csp[] = "style-src-elem * 'unsafe-inline'";
+            $csp[] = "font-src * data:";
             $csp[] = "connect-src *";
         } else {
             $csp[] = "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://go.metabet.io";
@@ -75,16 +76,19 @@ class SecurityHeaders
             $csp[] = "connect-src 'self' https://api.stripe.com wss://";
         }
 
-        // Common CSP directives
-        $csp = array_merge($csp, [
-            "font-src 'self' https://fonts.gstatic.com https://fonts.bunny.net data:",
+        // Common CSP directives - skip font-src if already set in local
+        $commonCsp = [
+            !app()->environment('local') ? "font-src 'self' https://fonts.gstatic.com https://fonts.bunny.net data:" : null,
             "img-src 'self' data: https: blob:",
             "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
             "object-src 'none'",
             "base-uri 'self'",
             "form-action 'self'",
             "frame-ancestors 'self'",
-        ]);
+        ];
+        
+        // Filter out null values and merge
+        $csp = array_merge($csp, array_filter($commonCsp));
 
         // Only add these in production
         if (!app()->environment('local')) {

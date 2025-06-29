@@ -1,60 +1,65 @@
 <template>
-    <div
-        class="relative w-full max-w-full p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col items-center group border-4"
-        style="border-color: gold;"
-    >
-        <!-- Date -->
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">
-            <strong>Date:</strong> {{ bet.betting_date }}
-        </p>
-
-        <!-- League -->
-        <p class="text-sm text-indigo-600 dark:text-indigo-300 font-semibold mb-1">
-            <strong>League:</strong> {{ bet.league || 'N/A' }}
-        </p>
-
-        <!-- Teams -->
-        <div class="flex items-center justify-center mb-4">
-            <div class="flex flex-col items-center">
-                <img
-                    :src="bet.team_one_logo || '/placeholder-team-logo.png'"
-                    alt="Team One Logo"
-                    class="h-12 w-12 object-contain mb-2"
-                />
-                <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ bet.team_one }}</p>
+    <div class="card h-100 position-relative overflow-hidden" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
+        <!-- Blur Overlay -->
+        <div class="position-absolute top-0 start-0 w-100 h-100" style="backdrop-filter: blur(8px); background: rgba(0, 0, 0, 0.7); z-index: 1;"></div>
+        
+        <div class="card-body p-4 position-relative" style="z-index: 2;">
+            <!-- Header with Date and League -->
+            <div class="d-flex justify-content-between align-items-start mb-3 opacity-50">
+                <div>
+                    <span class="badge" :class="getMembershipBadgeClass()">
+                        {{ bet.membership.toUpperCase() }}
+                    </span>
+                    <p class="text-gray-light small mb-0 mt-2">{{ formatDate(bet.betting_date) }}</p>
+                </div>
+                <div class="text-end">
+                    <p class="text-purple fw-semibold mb-0">{{ bet.league || 'N/A' }}</p>
+                </div>
             </div>
-            <p class="mx-4 text-lg font-bold text-gray-800 dark:text-gray-200">VS</p>
-            <div class="flex flex-col items-center">
-                <img
-                    :src="bet.team_two_logo || '/placeholder-team-logo.png'"
-                    alt="Team Two Logo"
-                    class="h-12 w-12 object-contain mb-2"
-                />
-                <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ bet.team_two }}</p>
+
+            <!-- Teams Section -->
+            <div class="text-center mb-4 opacity-50">
+                <div class="d-flex align-items-center justify-content-center gap-3">
+                    <div class="text-center">
+                        <img
+                            :src="bet.team_one_logo || '/images/placeholder-team-logo.png'"
+                            :alt="bet.team_one"
+                            class="rounded-circle mb-2"
+                            style="width: 48px; height: 48px; object-fit: cover; background: white; filter: blur(2px);"
+                        />
+                        <p class="fw-semibold text-white small mb-0">{{ bet.team_one }}</p>
+                    </div>
+                    <div class="text-gray-light fs-5 fw-bold">VS</div>
+                    <div class="text-center">
+                        <img
+                            :src="bet.team_two_logo || '/images/placeholder-team-logo.png'"
+                            :alt="bet.team_two"
+                            class="rounded-circle mb-2"
+                            style="width: 48px; height: 48px; object-fit: cover; background: white; filter: blur(2px);"
+                        />
+                        <p class="fw-semibold text-white small mb-0">{{ bet.team_two }}</p>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <!-- Membership Level -->
-        <p
-            class="px-4 py-1 text-sm font-semibold rounded-full mb-2"
-            :class="{
-                'bg-red-500 text-white': bet.membership.toUpperCase() === 'BRONZE',
-                'bg-yellow-500 text-white': bet.membership.toUpperCase() === 'GOLD',
-                'bg-gray-500 text-white': bet.membership.toUpperCase() === 'SILVER',
-                'bg-indigo-600 text-white': bet.membership.toUpperCase() === 'PLATINUM',
-            }"
-        >
-            GAME LEVEL: {{ bet.membership.toUpperCase() }}
-        </p>
-
-        <!-- Covered Tip -->
-        <div class="w-full flex flex-col items-center mb-2">
-            <Link
-                class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded transition"
-                :href="route('buy-our-picks')"
-            >
-                Unlock Picks
-            </Link>
+            <!-- Locked Content Overlay -->
+            <div class="text-center py-4">
+                <i class="bi bi-lock-fill text-white display-4 mb-3"></i>
+                <h5 class="text-white fw-bold mb-3">Premium Pick</h5>
+                <p class="text-gray-light mb-4">Unlock this {{ bet.membership }} pick and get access to:</p>
+                <ul class="list-unstyled text-gray-light mb-4">
+                    <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Expert Analysis</li>
+                    <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Betting Recommendations</li>
+                    <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Live Updates</li>
+                </ul>
+                <Link
+                    :href="route('buy-our-picks')"
+                    class="btn btn-primary btn-lg px-5"
+                >
+                    <i class="bi bi-unlock me-2"></i>
+                    Unlock All Picks
+                </Link>
+            </div>
         </div>
     </div>
 </template>
@@ -68,4 +73,35 @@ const props = defineProps({
         required: true,
     },
 });
+
+const formatDate = (date: string) => {
+    if (!date) return 'N/A';
+    return new Date(date).toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric' 
+    });
+};
+
+const getMembershipBadgeClass = () => {
+    const membership = props.bet.membership.toUpperCase();
+    switch (membership) {
+        case 'BRONZE': return 'bg-danger';
+        case 'SILVER': return 'bg-secondary';
+        case 'GOLD': return 'bg-warning text-dark';
+        case 'PLATINUM': return 'bg-purple';
+        default: return 'bg-dark';
+    }
+};
 </script>
+
+<style scoped>
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3) !important;
+}
+</style>

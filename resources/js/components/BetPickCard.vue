@@ -1,164 +1,118 @@
 <template>
-    <div
-        class="relative w-full max-w-full p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col items-center group border-4"
-        style="border-color: gold;"
-    >
-        <!-- Date -->
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">
-            <strong>Date:</strong> {{ bet.betting_date }}
-        </p>
-
-        <!-- League -->
-        <p class="text-sm text-indigo-600 dark:text-indigo-300 font-semibold mb-1">
-            <strong>League:</strong> {{ bet.league || 'N/A' }}
-        </p>
-
-        <!-- Teams -->
-        <div class="flex items-center justify-center mb-4">
-            <div class="flex flex-col items-center">
-                <img
-                    :src="bet.team_one_logo || '/placeholder-team-logo.png'"
-                    alt="Team One Logo"
-                    class="h-12 w-12 object-contain mb-2"
-                />
-                <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ bet.team_one }}</p>
-            </div>
-            <p class="mx-4 text-lg font-bold text-gray-800 dark:text-gray-200">VS</p>
-            <div class="flex flex-col items-center">
-                <img
-                    :src="bet.team_two_logo || '/placeholder-team-logo.png'"
-                    alt="Team Two Logo"
-                    class="h-12 w-12 object-contain mb-2"
-                />
-                <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ bet.team_two }}</p>
-            </div>
-        </div>
-
-        <!-- Membership Level -->
-        <p
-            class="px-4 py-1 text-sm font-semibold rounded-full mb-2"
-            :class="{
-                'bg-red-500 text-white': bet.membership.toUpperCase() === 'BRONZE',
-                'bg-yellow-500 text-white': bet.membership.toUpperCase() === 'GOLD',
-                'bg-gray-500 text-white': bet.membership.toUpperCase() === 'SILVER',
-                'bg-indigo-600 text-white': bet.membership.toUpperCase() === 'PLATINUM',
-            }"
-        >
-            GAME LEVEL: {{ bet.membership.toUpperCase() }}
-        </p>
-
-       
-
-        <!-- Tips and Wager Odds -->
-        <div class="w-full flex flex-col items-center mb-2">
-            <p class="text-sm text-green-600 dark:text-green-400 font-semibold">
-                <strong>Tips:</strong> {{ bet.markets || 'N/A' }} {{ bet.tips }} {{ bet.wager_odds }}
-            </p>
-        </div>
-
-        <!-- Place Fraction -->
-        <p v-if="bet.place_fraction" class="text-sm text-blue-600 dark:text-blue-400 font-semibold">
-            <strong>Place Fraction:</strong> {{ bet.place_fraction }}
-        </p>
-
-        <!-- Admin Actions -->
-        <div v-if="isAdmin" class="mt-4 flex flex-col space-y-2 w-full">
-            <!-- Edit Form -->
-            <div>
-                <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-                <select
-                    id="status"
-                    v-model="updatedStatus"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                >
-                    <option value="Pending">Pending</option>
-                    <option value="Won">Win</option>
-                    <option value="Lost">Loss</option>
-                    <option value="Push">Push</option>
-                </select>
+    <div class="card h-100" :class="getBetCardClass()" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
+        <div class="card-body p-4">
+            <!-- Header with Date and League -->
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <span class="badge" :class="getMembershipBadgeClass()">
+                        {{ bet.membership.toUpperCase() }}
+                    </span>
+                    <p class="text-gray-light small mb-0 mt-2">{{ formatDate(bet.betting_date) }}</p>
+                </div>
+                <div class="text-end">
+                    <p class="text-purple fw-semibold mb-0">{{ bet.league || 'N/A' }}</p>
+                </div>
             </div>
 
-            <!-- Edit Date -->
-            <div>
-                <label for="betting_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
-                <input
-                    type="date"
-                    id="betting_date"
-                    v-model="updatedDate"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
+            <!-- Teams Section -->
+            <div class="text-center mb-4">
+                <div class="d-flex align-items-center justify-content-center gap-3">
+                    <div class="text-center">
+                        <img
+                            :src="bet.team_one_logo || '/images/placeholder-team-logo.png'"
+                            :alt="bet.team_one"
+                            class="rounded-circle mb-2"
+                            style="width: 48px; height: 48px; object-fit: cover; background: white;"
+                        />
+                        <p class="fw-semibold text-white small mb-0">{{ bet.team_one }}</p>
+                    </div>
+                    <div class="text-gray-light fs-5 fw-bold">VS</div>
+                    <div class="text-center">
+                        <img
+                            :src="bet.team_two_logo || '/images/placeholder-team-logo.png'"
+                            :alt="bet.team_two"
+                            class="rounded-circle mb-2"
+                            style="width: 48px; height: 48px; object-fit: cover; background: white;"
+                        />
+                        <p class="fw-semibold text-white small mb-0">{{ bet.team_two }}</p>
+                    </div>
+                </div>
             </div>
 
-            <!-- Edit Team One Logo -->
-            <div>
-                <label for="team_one_logo" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Team One Logo</label>
-                <input
-                    type="file"
-                    id="team_one_logo"
-                    @change="handleFileUpload('team_one_logo', $event)"
-                    class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-                />
+            <!-- Betting Info -->
+            <div class="bg-dark rounded-3 p-3 mb-3" style="background-color: rgba(0,0,0,0.3) !important;">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-gray-light">Pick:</span>
+                    <span class="text-white fw-semibold">{{ bet.tips || 'N/A' }}</span>
+                </div>
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-gray-light">Market:</span>
+                    <span class="text-white">{{ bet.markets || 'N/A' }}</span>
+                </div>
+                <div class="d-flex align-items-center justify-content-between">
+                    <span class="text-gray-light">Odds:</span>
+                    <span class="text-success fw-bold">{{ bet.wager_odds || 'N/A' }}</span>
+                </div>
+                <div v-if="bet.place_fraction" class="d-flex align-items-center justify-content-between mt-2">
+                    <span class="text-gray-light">Place Fraction:</span>
+                    <span class="text-info">{{ bet.place_fraction }}</span>
+                </div>
             </div>
 
-            <!-- Edit Team Two Logo -->
-            <div>
-                <label for="team_two_logo" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Team Two Logo</label>
-                <input
-                    type="file"
-                    id="team_two_logo"
-                    @change="handleFileUpload('team_two_logo', $event)"
-                    class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-                />
+            <!-- Result Badge (if applicable) -->
+            <div v-if="bet.status && bet.status !== 'Pending'" class="text-center">
+                <span class="badge" :class="getStatusBadgeClass()">
+                    <i :class="getStatusIcon()" class="me-1"></i>
+                    {{ bet.status }}
+                </span>
             </div>
 
-            <!-- Edit Referrer -->
-            <div>
-                <label for="referrer" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Referrer (optional)</label>
-                <input
-                    type="text"
-                    id="referrer"
-                    v-model="updatedReferrer"
-                    placeholder="Enter referrer name or code"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
+            <!-- Admin Actions -->
+            <div v-if="isAdmin" class="mt-4 pt-3 border-top" style="border-color: var(--bs-gray-medium) !important;">
+                <h6 class="text-white mb-3">Admin Controls</h6>
+                
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="form-label text-gray-light small">Status</label>
+                        <select v-model="updatedStatus" class="form-select form-select-sm">
+                            <option value="Pending">Pending</option>
+                            <option value="Won">Win</option>
+                            <option value="Lost">Loss</option>
+                            <option value="Push">Push</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-6">
+                        <label class="form-label text-gray-light small">Date</label>
+                        <input type="date" v-model="updatedDate" class="form-control form-control-sm" />
+                    </div>
+                    
+                    <div class="col-12">
+                        <label class="form-label text-gray-light small">Referrer</label>
+                        <input type="text" v-model="updatedReferrer" class="form-control form-control-sm" placeholder="Optional" />
+                    </div>
+                    
+                    <div class="col-12">
+                        <label class="form-label text-gray-light small">Place Fraction</label>
+                        <input type="number" v-model="updatedPlaceFraction" class="form-control form-control-sm" step="0.01" min="0" max="1" />
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-2 mt-3">
+                    <button @click="updateBet" class="btn btn-primary btn-sm flex-fill">
+                        <i class="bi bi-check-circle me-1"></i> Update
+                    </button>
+                    <button @click="deleteBet" class="btn btn-danger btn-sm">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
             </div>
-
-            <!-- Edit Place Fraction -->
-            <div>
-                <label for="place_fraction" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Place Fraction</label>
-                <input
-                    type="number"
-                    id="place_fraction"
-                    v-model="updatedPlaceFraction"
-                    step="0.01"
-                    min="0"
-                    max="1"
-                    placeholder="e.g., 0.25"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
-            </div>
-
-            <!-- Update Button -->
-            <button
-                @click="updateBet"
-                class="mt-2 px-4 py-2 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-            >
-                Update Bet
-            </button>
-
-            <!-- Delete Button -->
-            <button
-                @click="deleteBet"
-                class="px-4 py-2 bg-red-600 text-white rounded-md shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-            >
-                Delete Bet
-            </button>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, defineEmits } from 'vue';
+import { ref, defineEmits } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 
@@ -174,24 +128,54 @@ const { props: pageProps } = usePage();
 const isAdmin = pageProps.auth?.isAdmin || false;
 
 const updatedStatus = ref(props.bet.status);
-// console.log('Updated Status:', updatedStatus.value);
 const updatedDate = ref(props.bet.betting_date || '');
 const updatedReferrer = ref(props.bet.referrer || '');
 const updatedPlaceFraction = ref(props.bet.place_fraction || '');
-const teamOneLogo = ref(null);
-const teamTwoLogo = ref(null);
 
-watch(updatedDate, (newValue) => {
-    // console.log('Updated Date:', newValue);
-});
+const formatDate = (date: string) => {
+    if (!date) return 'N/A';
+    return new Date(date).toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric' 
+    });
+};
 
-const handleFileUpload = (field, event) => {
-    if (field === 'team_one_logo') {
-        teamOneLogo.value = event.target.files[0];
-    } else if (field === 'team_two_logo') {
-        teamTwoLogo.value = event.target.files[0];
+const getMembershipBadgeClass = () => {
+    const membership = props.bet.membership.toUpperCase();
+    switch (membership) {
+        case 'BRONZE': return 'bg-danger';
+        case 'SILVER': return 'bg-secondary';
+        case 'GOLD': return 'bg-warning text-dark';
+        case 'PLATINUM': return 'bg-purple';
+        default: return 'bg-dark';
     }
-}; 
+};
+
+const getStatusBadgeClass = () => {
+    switch (props.bet.status) {
+        case 'Won': return 'bg-success';
+        case 'Lost': return 'bg-danger';
+        case 'Push': return 'bg-warning text-dark';
+        default: return 'bg-secondary';
+    }
+};
+
+const getStatusIcon = () => {
+    switch (props.bet.status) {
+        case 'Won': return 'bi bi-check-circle-fill';
+        case 'Lost': return 'bi bi-x-circle-fill';
+        case 'Push': return 'bi bi-dash-circle-fill';
+        default: return '';
+    }
+};
+
+const getBetCardClass = () => {
+    const membership = props.bet.membership.toUpperCase();
+    if (membership === 'PLATINUM') return 'border-purple';
+    if (membership === 'GOLD') return 'border-warning';
+    return '';
+};
 
 const updateBet = async () => {
     const formData = new FormData();
@@ -200,12 +184,6 @@ const updateBet = async () => {
     formData.append('betting_date', updatedDate.value);
     formData.append('referrer', updatedReferrer.value);
     formData.append('place_fraction', updatedPlaceFraction.value);
-    if (teamOneLogo.value) {
-        formData.append('team_one_logo', teamOneLogo.value);
-    }
-    if (teamTwoLogo.value) {
-        formData.append('team_two_logo', teamTwoLogo.value);
-    }
     
     try {
         const response = await axios.post(`/api/bets/${props.bet.id}`, formData, {
@@ -215,9 +193,7 @@ const updateBet = async () => {
         });
         alert('Bet updated successfully!');
         emit('bet-updated', response.data);
-       // location.reload(); // Reload the page to reflect changes
     } catch (error) {
-        // console.error('Error updating bet:', error);
         alert('Failed to update bet. Please try again.');
     }
 };
@@ -227,9 +203,8 @@ const deleteBet = async () => {
         try {
             await axios.delete(`/api/bets/${props.bet.id}`);
             alert('Bet deleted successfully!');
-            //location.reload(); // Reload the page to reflect changes
+            emit('bet-deleted', props.bet.id);
         } catch (error) {
-            // console.error('Error deleting bet:', error);
             alert('Failed to delete bet. Please try again.');
         }
     }
@@ -237,8 +212,20 @@ const deleteBet = async () => {
 </script>
 
 <style scoped>
-/* Optional: Enhance gold border appearance */
-.group {
-    box-shadow: 0 0 0 1px gold, 0 1px 2px rgba(0,0,0,0.08);
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3) !important;
+}
+
+.border-purple {
+    border: 2px solid var(--bs-purple) !important;
+}
+
+.border-warning {
+    border: 2px solid var(--bs-warning) !important;
 }
 </style>

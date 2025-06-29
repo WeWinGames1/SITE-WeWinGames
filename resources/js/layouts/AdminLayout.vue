@@ -1,27 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
-import { 
-    HomeIcon,
-    UsersIcon,
-    ChartBarIcon,
-    DocumentTextIcon,
-    CurrencyDollarIcon,
-    TicketIcon,
-    CogIcon,
-    ArrowLeftOnRectangleIcon,
-    Bars3Icon,
-    XMarkIcon,
-    BellIcon,
-    MagnifyingGlassIcon,
-    TagIcon,
-    GlobeAltIcon,
-    ShieldCheckIcon,
-    ClipboardDocumentListIcon,
-    EnvelopeIcon,
-    TrophyIcon,
-    PuzzlePieceIcon
-} from '@heroicons/vue/24/outline';
 import ApplicationLogo from '@/components/AppLogo.vue';
 
 const page = usePage();
@@ -31,73 +10,84 @@ const userMenuOpen = ref(false);
 interface NavItem {
     name: string;
     href: string;
-    icon: any;
-    badge?: number;
+    icon: string;
+    badge?: number | string;
     children?: NavItem[];
+    disabled?: boolean;
 }
 
 const navigation: NavItem[] = [
     {
         name: 'Dashboard',
         href: route('admin.dashboard'),
-        icon: HomeIcon,
+        icon: 'bi-speedometer2',
     },
     {
-        name: 'Betting',
+        name: 'Betting Management',
         href: '#',
-        icon: TrophyIcon,
+        icon: 'bi-trophy',
         children: [
-            { name: 'All Bets', href: route('admin.bets.index'), icon: ChartBarIcon },
-            { name: 'Import Bets', href: route('admin.bets.import.index'), icon: ArrowLeftOnRectangleIcon },
-            // { name: 'Games', href: route('admin.games.index'), icon: PuzzlePieceIcon },
-            // { name: 'Teams', href: route('admin.teams.index'), icon: UsersIcon },
-            // { name: 'Sports', href: route('admin.sports.index'), icon: GlobeAltIcon },
-            // { name: 'Operators', href: route('admin.operators.index'), icon: TicketIcon },
+            { name: 'Bets', href: route('admin.bets.index'), icon: 'bi-bar-chart' },
+            { name: 'Import Bets', href: route('admin.bets.import.index'), icon: 'bi-upload' },
+            { name: 'Export Bets', href: route('admin.bets.export'), icon: 'bi-download' },
+            // { name: 'Games', href: '#', icon: 'bi-calendar-event' }, // TODO: Implement
+            // { name: 'Teams', href: '#', icon: 'bi-people-fill' }, // TODO: Implement
+            // { name: 'Sports', href: '#', icon: 'bi-dribbble' }, // TODO: Implement
+            // { name: 'Operators', href: '#', icon: 'bi-building' }, // TODO: Implement
         ],
     },
     {
-        name: 'Users',
+        name: 'User Management',
         href: '#',
-        icon: UsersIcon,
+        icon: 'bi-people',
         children: [
-            { name: 'All Customers', href: route('admin.customers.index'), icon: UsersIcon },
-            { name: 'Subscriptions', href: route('admin.subscriptions.index'), icon: CurrencyDollarIcon },
-            { name: 'Admin Users', href: route('admin.admins.index'), icon: ShieldCheckIcon },
+            { name: 'Customers', href: route('admin.customers.index'), icon: 'bi-person' },
+            { name: 'Subscriptions', href: route('admin.subscriptions.index'), icon: 'bi-credit-card' },
+            { name: 'Admin Users', href: route('admin.admins.index'), icon: 'bi-shield-check' },
         ],
     },
     {
-        name: 'Content',
+        name: 'Content Management',
         href: '#',
-        icon: DocumentTextIcon,
+        icon: 'bi-file-text',
         children: [
-            { name: 'Blog Posts', href: route('admin.blog-posts.index'), icon: DocumentTextIcon },
-            { name: 'Pages', href: route('admin.pages.index'), icon: ClipboardDocumentListIcon },
-            { name: 'Landing Pages', href: route('admin.landing-pages.index'), icon: GlobeAltIcon },
+            { name: 'Blog Posts', href: route('admin.blog-posts.index'), icon: 'bi-newspaper' },
+            { name: 'Pages', href: route('admin.pages.index'), icon: 'bi-file-earmark-text' },
+            { name: 'Landing Pages', href: route('admin.landing-pages.index'), icon: 'bi-window-stack' },
         ],
     },
     {
         name: 'E-commerce',
         href: '#',
-        icon: CurrencyDollarIcon,
+        icon: 'bi-cart',
         children: [
-            { name: 'Stripe Products', href: route('admin.stripe-products.index'), icon: CurrencyDollarIcon },
-            { name: 'Discount Codes', href: route('admin.discounts.index'), icon: TagIcon },
+            { name: 'Stripe Products', href: route('admin.stripe-products.index'), icon: 'bi-credit-card-2-back' },
+            { name: 'Discount Codes', href: route('admin.discounts.index'), icon: 'bi-percent' },
         ],
     },
     {
-        name: 'Communications',
+        name: 'Support System',
         href: '#',
-        icon: EnvelopeIcon,
+        icon: 'bi-headset',
         children: [
-            { name: 'Send Notification', href: route('admin.notifications.create'), icon: BellIcon },
-            { name: 'Email Templates', href: route('admin.email-templates.index'), icon: EnvelopeIcon },
+            { name: 'Support Tickets', href: route('admin.support-tickets.index'), icon: 'bi-ticket-detailed' },
+            // { name: 'Ticket Categories', href: '#', icon: 'bi-tags' }, // TODO: Implement
         ],
     },
-    {
-        name: 'Settings',
-        href: route('admin.settings.index'),
-        icon: CogIcon,
-    },
+    // {
+    //     name: 'Communications',
+    //     href: '#',
+    //     icon: 'bi-envelope',
+    //     children: [
+    //         { name: 'Send Notification', href: '#', icon: 'bi-bell' }, // TODO: Implement notification page
+    //         { name: 'Email Templates', href: '#', icon: 'bi-envelope' }, // TODO: Implement
+    //     ],
+    // },
+    // {
+    //     name: 'Settings',
+    //     href: '#',
+    //     icon: 'bi-gear',
+    // }, // TODO: Implement
 ];
 
 const currentRoute = computed(() => route().current());
@@ -118,219 +108,180 @@ function logout() {
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-50">
-        <!-- Mobile sidebar -->
-        <div v-show="sidebarOpen" class="relative z-50 lg:hidden" role="dialog" aria-modal="true">
-            <div class="fixed inset-0 bg-gray-900/80" @click="sidebarOpen = false"></div>
-            <div class="fixed inset-0 flex">
-                <div class="relative mr-16 flex w-full max-w-xs flex-1">
-                    <div class="absolute left-full top-0 flex w-16 justify-center pt-5">
-                        <button type="button" @click="sidebarOpen = false" class="-m-2.5 p-2.5">
-                            <XMarkIcon class="h-6 w-6 text-white" />
-                        </button>
-                    </div>
-                    <!-- Sidebar content -->
-                    <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-4">
-                        <div class="flex h-16 shrink-0 items-center">
-                            <ApplicationLogo class="h-8 w-auto text-white" />
-                        </div>
-                        <nav class="flex flex-1 flex-col">
-                            <ul role="list" class="flex flex-1 flex-col gap-y-7">
-                                <li>
-                                    <ul role="list" class="-mx-2 space-y-1">
-                                        <li v-for="item in navigation" :key="item.name">
-                                            <template v-if="!item.children">
-                                                <Link
-                                                    :href="item.href"
-                                                    :class="[
-                                                        isActiveRoute(item.href)
-                                                            ? 'bg-gray-800 text-white'
-                                                            : 'text-gray-400 hover:text-white hover:bg-gray-800',
-                                                        'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
-                                                    ]"
-                                                >
-                                                    <component :is="item.icon" class="h-6 w-6 shrink-0" />
-                                                    {{ item.name }}
-                                                    <span v-if="item.badge" class="ml-auto w-9 min-w-max whitespace-nowrap rounded-full bg-gray-800 px-2.5 py-0.5 text-center text-xs font-medium leading-5 text-white ring-1 ring-inset ring-gray-700">
-                                                        {{ item.badge }}
-                                                    </span>
-                                                </Link>
-                                            </template>
-                                            <template v-else>
-                                                <div>
-                                                    <div class="text-xs font-semibold leading-6 text-gray-400 mt-4 first:mt-0">
-                                                        {{ item.name }}
-                                                    </div>
-                                                    <ul role="list" class="-mx-2 mt-2 space-y-1">
-                                                        <li v-for="child in item.children" :key="child.name">
-                                                            <Link
-                                                                :href="child.href"
-                                                                :class="[
-                                                                    isActiveRoute(child.href)
-                                                                        ? 'bg-gray-800 text-white'
-                                                                        : 'text-gray-400 hover:text-white hover:bg-gray-800',
-                                                                    'group flex gap-x-3 rounded-md p-2 pl-9 text-sm leading-6'
-                                                                ]"
-                                                            >
-                                                                {{ child.name }}
-                                                            </Link>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </template>
+    <div class="d-flex min-vh-100">
+        <!-- Mobile Sidebar Overlay -->
+        <div 
+            v-show="sidebarOpen" 
+            class="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-lg-none" 
+            style="z-index: 1040;"
+            @click="sidebarOpen = false"
+        ></div>
+
+        <!-- Sidebar -->
+        <nav 
+            class="admin-sidebar position-fixed h-100 overflow-auto" 
+            :class="{ 'show': sidebarOpen }"
+            style="width: 280px; z-index: 1050;"
+        >
+            <div class="p-3 border-bottom border-secondary">
+                <div class="d-flex align-items-center">
+                    <ApplicationLogo style="height: 40px; width: 40px;" class="text-white" />
+                    <span class="ms-3 fs-5 fw-bold text-white">Admin Portal</span>
+                </div>
+            </div>
+
+            <div class="p-3">
+                <ul class="nav flex-column">
+                    <li v-for="item in navigation" :key="item.name" class="nav-item">
+                        <template v-if="!item.children">
+                            <Link
+                                :href="item.href"
+                                :class="[
+                                    'nav-link d-flex align-items-center',
+                                    isActiveRoute(item.href) ? 'active' : ''
+                                ]"
+                                @click="sidebarOpen = false"
+                            >
+                                <i :class="[item.icon, 'me-3']"></i>
+                                {{ item.name }}
+                                <span v-if="item.badge" class="badge bg-secondary ms-auto">
+                                    {{ item.badge }}
+                                </span>
+                            </Link>
+                        </template>
+                        <template v-else>
+                            <div class="nav-item">
+                                <a
+                                    href="#"
+                                    :class="[
+                                        'nav-link d-flex align-items-center',
+                                        isActiveParent(item) ? 'text-white' : ''
+                                    ]"
+                                    data-bs-toggle="collapse"
+                                    :data-bs-target="`#collapse-${item.name.replace(/\s+/g, '-')}`"
+                                    :aria-expanded="isActiveParent(item)"
+                                >
+                                    <i :class="[item.icon, 'me-3']"></i>
+                                    {{ item.name }}
+                                    <i class="bi bi-chevron-down ms-auto"></i>
+                                </a>
+                                <div
+                                    :id="`collapse-${item.name.replace(/\s+/g, '-')}`"
+                                    :class="['collapse', isActiveParent(item) ? 'show' : '']"
+                                >
+                                    <ul class="nav flex-column ms-4">
+                                        <li v-for="child in item.children" :key="child.name" class="nav-item">
+                                            <Link
+                                                :href="child.href"
+                                                :class="[
+                                                    'nav-link py-2',
+                                                    isActiveRoute(child.href) ? 'active' : ''
+                                                ]"
+                                                @click="sidebarOpen = false"
+                                            >
+                                                {{ child.name }}
+                                            </Link>
                                         </li>
                                     </ul>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
-                </div>
+                                </div>
+                            </div>
+                        </template>
+                    </li>
+                </ul>
+
+                <hr class="my-3 border-secondary">
+
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <button
+                            @click="logout"
+                            class="nav-link d-flex align-items-center text-danger w-100 border-0 bg-transparent"
+                        >
+                            <i class="bi bi-box-arrow-right me-3"></i>
+                            Sign out
+                        </button>
+                    </li>
+                </ul>
             </div>
-        </div>
+        </nav>
 
-        <!-- Desktop sidebar -->
-        <div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
-            <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-4">
-                <div class="flex h-16 shrink-0 items-center">
-                    <ApplicationLogo class="h-8 w-auto text-white" />
-                    <span class="ml-3 text-xl font-bold text-white">Admin Portal</span>
-                </div>
-                <nav class="flex flex-1 flex-col">
-                    <ul role="list" class="flex flex-1 flex-col gap-y-7">
-                        <li>
-                            <ul role="list" class="-mx-2 space-y-1">
-                                <li v-for="item in navigation" :key="item.name">
-                                    <template v-if="!item.children">
-                                        <Link
-                                            :href="item.href"
-                                            :class="[
-                                                isActiveRoute(item.href)
-                                                    ? 'bg-gray-800 text-white'
-                                                    : 'text-gray-400 hover:text-white hover:bg-gray-800',
-                                                'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
-                                            ]"
-                                        >
-                                            <component :is="item.icon" class="h-6 w-6 shrink-0" />
-                                            {{ item.name }}
-                                            <span v-if="item.badge" class="ml-auto w-9 min-w-max whitespace-nowrap rounded-full bg-gray-800 px-2.5 py-0.5 text-center text-xs font-medium leading-5 text-white ring-1 ring-inset ring-gray-700">
-                                                {{ item.badge }}
-                                            </span>
-                                        </Link>
-                                    </template>
-                                    <template v-else>
-                                        <div v-if="item.children">
-                                            <div
-                                                :class="[
-                                                    isActiveParent(item) ? 'text-white' : 'text-gray-400',
-                                                    'flex items-center gap-x-3 p-2 text-sm leading-6 font-semibold'
-                                                ]"
-                                            >
-                                                <component :is="item.icon" class="h-6 w-6 shrink-0" />
-                                                {{ item.name }}
-                                            </div>
-                                            <ul role="list" class="mt-1 space-y-1">
-                                                <li v-for="child in item.children" :key="child.name">
-                                                    <Link
-                                                        :href="child.href"
-                                                        :class="[
-                                                            isActiveRoute(child.href)
-                                                                ? 'bg-gray-800 text-white'
-                                                                : 'text-gray-400 hover:text-white hover:bg-gray-800',
-                                                            'group flex gap-x-3 rounded-md py-2 pl-11 pr-2 text-sm leading-6'
-                                                        ]"
-                                                    >
-                                                        {{ child.name }}
-                                                    </Link>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </template>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="mt-auto">
-                            <button
-                                @click="logout"
-                                class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-400 hover:bg-gray-800 hover:text-white w-full"
-                            >
-                                <ArrowLeftOnRectangleIcon class="h-6 w-6 shrink-0" />
-                                Sign out
-                            </button>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-        </div>
+        <!-- Main Content -->
+        <div class="flex-grow-1" style="margin-left: 280px;">
+            <!-- Top Bar -->
+            <nav class="navbar navbar-expand navbar-light bg-white border-bottom sticky-top">
+                <div class="container-fluid">
+                    <!-- Mobile menu toggle -->
+                    <button 
+                        class="btn btn-link text-dark d-lg-none p-0 me-3"
+                        @click="sidebarOpen = true"
+                    >
+                        <i class="bi bi-list fs-4"></i>
+                    </button>
 
-        <!-- Main content -->
-        <div class="lg:pl-72">
-            <!-- Top bar -->
-            <div class="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
-                <button type="button" @click="sidebarOpen = true" class="-m-2.5 p-2.5 text-gray-700 lg:hidden">
-                    <Bars3Icon class="h-6 w-6" />
-                </button>
+                    <!-- Logo -->
+                    <Link href="/" class="navbar-brand d-flex align-items-center me-3">
+                        <ApplicationLogo style="height: 32px; width: 32px;" class="me-2" />
+                        <span class="fw-bold">WeWinGames</span>
+                    </Link>
 
-                <!-- Separator -->
-                <div class="h-6 w-px bg-gray-200 lg:hidden" aria-hidden="true"></div>
-
-                <div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
                     <!-- Search -->
-                    <form class="relative flex flex-1" action="#" method="GET">
-                        <label for="search-field" class="sr-only">Search</label>
-                        <MagnifyingGlassIcon class="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-400" />
-                        <input
-                            id="search-field"
-                            class="block h-full w-full border-0 py-0 pl-8 pr-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
-                            placeholder="Search..."
-                            type="search"
-                            name="search"
-                        />
+                    <form class="d-flex flex-grow-1 me-3" style="max-width: 400px;">
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input
+                                type="search"
+                                class="form-control border-start-0"
+                                placeholder="Search..."
+                                aria-label="Search"
+                            />
+                        </div>
                     </form>
 
-                    <div class="flex items-center gap-x-4 lg:gap-x-6">
+                    <!-- Right side items -->
+                    <ul class="navbar-nav ms-auto align-items-center">
                         <!-- Notifications -->
-                        <button type="button" class="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500">
-                            <BellIcon class="h-6 w-6" />
-                        </button>
+                        <li class="nav-item me-3">
+                            <button class="btn btn-link text-dark position-relative p-0">
+                                <i class="bi bi-bell fs-5"></i>
+                            </button>
+                        </li>
 
-                        <!-- Separator -->
-                        <div class="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200" aria-hidden="true"></div>
-
-                        <!-- Profile dropdown -->
-                        <div class="relative">
-                            <button
-                                type="button"
-                                @click="userMenuOpen = !userMenuOpen"
-                                class="-m-1.5 flex items-center p-1.5"
+                        <!-- User dropdown -->
+                        <li class="nav-item dropdown">
+                            <a
+                                class="nav-link dropdown-toggle d-flex align-items-center"
+                                href="#"
+                                role="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
                             >
                                 <img
-                                    class="h-8 w-8 rounded-full bg-gray-50"
-                                    src="https://ui-avatars.com/api/?name=Admin&color=7F9CF5&background=EBF4FF"
-                                    alt=""
+                                    class="rounded-circle me-2"
+                                    :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(page.props.auth.user.name)}&color=7F9CF5&background=EBF4FF`"
+                                    alt="User avatar"
+                                    style="width: 32px; height: 32px;"
                                 />
-                                <span class="hidden lg:flex lg:items-center">
-                                    <span class="ml-4 text-sm font-semibold leading-6 text-gray-900">
-                                        {{ page.props.auth.user.name }}
-                                    </span>
-                                </span>
-                            </button>
-
-                            <div
-                                v-show="userMenuOpen"
-                                @click.away="userMenuOpen = false"
-                                class="absolute right-0 z-10 mt-2.5 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none"
-                            >
-                                <Link href="/settings/profile" class="block px-3 py-1 text-sm leading-6 text-gray-900">
-                                    Your profile
-                                </Link>
-                                <button @click="logout" class="block px-3 py-1 text-sm leading-6 text-gray-900 w-full text-left">
-                                    Sign out
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                                <span class="d-none d-md-inline">{{ page.props.auth.user.name }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <Link href="/settings/profile" class="dropdown-item">
+                                        <i class="bi bi-person me-2"></i>Your profile
+                                    </Link>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <button @click="logout" class="dropdown-item text-danger">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Sign out
+                                    </button>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
                 </div>
-            </div>
+            </nav>
 
             <!-- Page content -->
             <main>
@@ -339,3 +290,146 @@ function logout() {
         </div>
     </div>
 </template>
+
+<style scoped>
+/* Admin Sidebar Styles */
+.admin-sidebar {
+    background: linear-gradient(180deg, #1a1f2e 0%, #0f1218 100%);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.admin-sidebar .nav-link {
+    color: #94a3b8;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.25rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.admin-sidebar .nav-link:hover {
+    color: #e2e8f0;
+    background-color: rgba(148, 163, 184, 0.1);
+    padding-left: 1.25rem;
+}
+
+.admin-sidebar .nav-link.active {
+    color: #fff;
+    background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+    font-weight: 500;
+}
+
+.admin-sidebar .nav-link.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 24px;
+    background-color: #fff;
+    border-radius: 0 2px 2px 0;
+}
+
+/* Nested navigation */
+.admin-sidebar .collapse .nav-link {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+}
+
+.admin-sidebar .collapse .nav-link.active {
+    background: rgba(59, 130, 246, 0.2);
+}
+
+/* Mobile sidebar styles */
+@media (max-width: 991px) {
+    .admin-sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+    }
+    
+    .admin-sidebar.show {
+        transform: translateX(0);
+    }
+    
+    .flex-grow-1 {
+        margin-left: 0 !important;
+    }
+}
+
+/* Top navbar styling */
+.navbar {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Enhance dropdown appearance */
+.navbar .dropdown-menu {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border: none;
+    margin-top: 0.5rem;
+}
+
+/* Search input styling */
+.input-group-text {
+    background-color: transparent;
+    border-right: none;
+}
+
+.form-control {
+    border-left: none;
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: #3b82f6;
+}
+
+.form-control:focus + .input-group-text {
+    border-color: #3b82f6;
+}
+
+/* Collapse animation */
+.collapse {
+    transition: height 0.3s ease;
+}
+
+/* Active parent link */
+.nav-link[data-bs-toggle="collapse"][aria-expanded="true"] {
+    color: #fff;
+}
+
+.nav-link[data-bs-toggle="collapse"][aria-expanded="true"] .bi-chevron-down {
+    transform: rotate(180deg);
+}
+
+.bi-chevron-down {
+    transition: transform 0.3s ease;
+    font-size: 0.75rem;
+}
+
+/* Disabled links */
+.admin-sidebar .nav-link.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Badge styling */
+.badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Main content area */
+main {
+    background-color: #f8fafc;
+    min-height: calc(100vh - 56px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .admin-sidebar {
+        width: 100% !important;
+        max-width: 280px;
+    }
+}
+</style>

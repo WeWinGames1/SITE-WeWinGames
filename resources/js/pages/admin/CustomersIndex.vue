@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, useForm, usePage } from '@inertiajs/vue3';
+import AdminLayout from '@/layouts/AdminLayout.vue';
+import { Head, useForm, usePage, router } from '@inertiajs/vue3';
 import { reactive } from 'vue';
 
 const props = defineProps<{ customers: Array<any> }>();
@@ -36,76 +36,111 @@ function updateSubscription(user) {
     }
   });
 }
+
+function impersonateUser(user) {
+  router.post(route('admin.customers.impersonate', user.id));
+}
 </script>
 
 <template>
-    <AppLayout :breadcrumbs="{ title: 'Customers', href: route('admin.customers.index') }">
-  <Head title="Customers" />
-  <div class="max-w-5xl mx-auto p-6">
-    <h1 class="text-2xl font-bold mb-4">Customers & Subscriptions</h1>
-    <table class="w-full mt-4 border">
-      <thead>
-        <tr>
-          <th class="text-left p-2">Name</th>
-          <th class="text-left p-2">Email</th>
-          <th class="text-left p-2">Current Status</th>
-          <th class="text-left p-2">Assign Plan</th>
-          <th class="text-left p-2">Status</th>
-          <th class="text-left p-2">Trial</th>
-          <th class="text-left p-2">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="customer in props.customers" :key="customer.id">
-          <td class="p-2">{{ customer.name }}</td>
-          <td class="p-2">{{ customer.email }}</td>
-          <td class="p-2">
-            <div v-if="customer.subscriptions.length">
-              {{ customer.subscriptions[0].stripe_status }}<br>
-              <span v-if="customer.subscriptions[0].trial_ends_at" class="text-xs text-yellow-400">
-                Trial ends: {{ customer.subscriptions[0].trial_ends_at }}
-              </span>
-            </div>
-            <div v-else>
-              <span class="text-gray-400">No subscription</span>
-            </div>
-          </td>
-          <td class="p-2">
-            <select v-model="editableSubs[customer.id].subscription_price" class="border rounded px-2 py-1">
-              <option value="">-- Select Plan --</option>
-              <option v-for="(price, key) in stripePrices" :key="key" :value="price">
-                {{ key.replace('_', ' ').toUpperCase() }}
-              </option>
-            </select>
-          </td>
-          <td class="p-2">
-            <select v-model="editableSubs[customer.id].subscription_status" class="border rounded px-2 py-1">
-              <option value="active">Active</option>
-              <option value="canceled">Canceled</option>
-              <option value="past_due">Past Due</option>
-              <option value="unpaid">Unpaid</option>
-            </select>
-          </td>
-          <td class="p-2">
-            <input
-              v-model="editableSubs[customer.id].trial_days"
-              type="number"
-              min="0"
-              placeholder="Days"
-              class="border rounded px-2 py-1 w-20"
-            />
-          </td>
-          <td class="p-2">
-            <button
-              class="bg-indigo-600 text-white px-3 py-1 rounded"
-              @click="updateSubscription(customer)"
-            >
-              Save
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  </AppLayout>
+  <AdminLayout>
+    <Head title="Customers" />
+    <div class="container-fluid p-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2 mb-0">Customers & Subscriptions</h1>
+      </div>
+      
+      <div class="card">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Current Status</th>
+                  <th>Assign Plan</th>
+                  <th>Status</th>
+                  <th>Trial</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="customer in props.customers" :key="customer.id">
+                  <td>
+                    <div class="fw-medium">{{ customer.name }}</div>
+                    <small class="text-muted">ID: {{ customer.id }}</small>
+                  </td>
+                  <td>{{ customer.email }}</td>
+                  <td>
+                    <div v-if="customer.subscriptions.length">
+                      <span :class="[
+                        'badge',
+                        customer.subscriptions[0].stripe_status === 'active' ? 'bg-success' :
+                        customer.subscriptions[0].stripe_status === 'canceled' ? 'bg-secondary' :
+                        customer.subscriptions[0].stripe_status === 'past_due' ? 'bg-warning' :
+                        'bg-danger'
+                      ]">
+                        {{ customer.subscriptions[0].stripe_status }}
+                      </span>
+                      <div v-if="customer.subscriptions[0].trial_ends_at" class="small text-warning mt-1">
+                        <i class="bi bi-clock me-1"></i>Trial ends: {{ customer.subscriptions[0].trial_ends_at }}
+                      </div>
+                    </div>
+                    <div v-else>
+                      <span class="text-muted">No subscription</span>
+                    </div>
+                  </td>
+                  <td>
+                    <select v-model="editableSubs[customer.id].subscription_price" class="form-select form-select-sm">
+                      <option value="">-- Select Plan --</option>
+                      <option v-for="(price, key) in stripePrices" :key="key" :value="price">
+                        {{ key.replace('_', ' ').toUpperCase() }}
+                      </option>
+                    </select>
+                  </td>
+                  <td>
+                    <select v-model="editableSubs[customer.id].subscription_status" class="form-select form-select-sm">
+                      <option value="active">Active</option>
+                      <option value="canceled">Canceled</option>
+                      <option value="past_due">Past Due</option>
+                      <option value="unpaid">Unpaid</option>
+                    </select>
+                  </td>
+                  <td>
+                    <input
+                      v-model="editableSubs[customer.id].trial_days"
+                      type="number"
+                      min="0"
+                      placeholder="Days"
+                      class="form-control form-control-sm"
+                      style="width: 80px;"
+                    />
+                  </td>
+                  <td>
+                    <div class="btn-group" role="group">
+                      <button
+                        class="btn btn-sm btn-primary"
+                        @click="updateSubscription(customer)"
+                        title="Save changes"
+                      >
+                        <i class="bi bi-save"></i> Save
+                      </button>
+                      <button
+                        class="btn btn-sm btn-warning"
+                        @click="impersonateUser(customer)"
+                        title="Impersonate this user"
+                      >
+                        <i class="bi bi-person-badge"></i> Impersonate
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </AdminLayout>
 </template>

@@ -1,18 +1,16 @@
 import vue from '@vitejs/plugin-vue';
 import laravel from 'laravel-vite-plugin';
 import path from 'path';
-import tailwindcss from "@tailwindcss/vite";
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/js/app.ts'],
+            input: ['resources/js/app.ts', 'resources/css/app.css'],
             ssr: 'resources/js/ssr.ts',
             refresh: true,
         }),
-        tailwindcss(),
         vue({
             template: {
                 transformAssetUrls: {
@@ -27,5 +25,13 @@ export default defineConfig({
             '@': path.resolve(__dirname, './resources/js'),
             'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
         },
+    },
+    server: {
+        host: 'localhost',
+        port: 5173,
+        strictPort: false,
+        hmr: {
+            host: 'localhost'
+        }
     },
 });

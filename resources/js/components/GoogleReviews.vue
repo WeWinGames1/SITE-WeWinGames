@@ -1,57 +1,55 @@
 <template>
-  <section class="py-16 bg-transparent">
-    <div class="container mx-auto px-4">
-      <h2 class="text-3xl font-bold text-white text-center mb-8">What Our Customers Say</h2>
-      <div class="flex flex-col md:flex-row gap-6 max-w-4xl mx-auto">
+  <section class="py-5 bg-transparent google-reviews-section">
+    <div class="container">
+      <h2 class="display-4 fw-bold text-white text-center mb-2">What Our Users Say</h2>
+      <p class="text-center fs-5 text-gray-light mb-5">Join thousands of satisfied bettors</p>
+      <div class="row g-4 justify-content-center">
         <div
           v-for="review in reviews"
           :key="review.author"
-          class="bg-gray-800 rounded-lg shadow p-6 flex-1 flex flex-col"
+          class="col-lg-4"
         >
-          <div class="flex items-center mb-2">
-            <img
-              :src="review.avatar"
-              alt="avatar"
-              class="w-10 h-10 rounded-full mr-3 border-2 border-indigo-500"
-            />
-            <div>
-              <div class="font-bold text-white">{{ review.author }}</div>
-              <div class="flex items-center">
-                <span v-for="n in 5" :key="n">
-                  <svg
-                    v-if="n <= review.rating"
-                    class="w-4 h-4 text-yellow-400 inline"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.178c.969 0 1.371 1.24.588 1.81l-3.385 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.385-2.46a1 1 0 00-1.175 0l-3.385 2.46c-.784.57-1.838-.196-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118l-3.385-2.46c-.783-.57-.38-1.81.588-1.81h4.178a1 1 0 00.95-.69l1.286-3.967z"
-                    />
-                  </svg>
-                  <svg
-                    v-else
-                    class="w-4 h-4 text-gray-500 inline"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.178c.969 0 1.371 1.24.588 1.81l-3.385 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.385-2.46a1 1 0 00-1.175 0l-3.385 2.46c-.784.57-1.838-.196-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118l-3.385-2.46c-.783-.57-.38-1.81.588-1.81h4.178a1 1 0 00.95-.69l1.286-3.967z"
-                    />
-                  </svg>
-                </span>
+          <div class="card h-100" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
+            <div class="card-body d-flex flex-column p-4">
+              <div class="d-flex align-items-center mb-4">
+                <div class="position-relative">
+                  <img
+                    :src="review.avatar"
+                    alt="avatar"
+                    class="rounded-circle"
+                    style="width: 48px; height: 48px; object-fit: cover; border: 2px solid var(--bs-purple);"
+                  />
+                  <div class="position-absolute bottom-0 end-0 bg-success rounded-circle d-flex align-items-center justify-content-center" 
+                       style="width: 18px; height: 18px; border: 2px solid var(--bs-card-bg);">
+                    <i class="bi bi-check text-white" style="font-size: 10px;"></i>
+                  </div>
+                </div>
+                <div class="ms-3">
+                  <h6 class="mb-0 text-white fw-semibold">{{ review.author }}</h6>
+                  <div class="d-flex">
+                    <i v-for="n in 5" :key="n" 
+                       :class="n <= review.rating ? 'bi-star-fill text-warning' : 'bi-star text-gray-light'" 
+                       class="bi" 
+                       style="font-size: 14px;"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="text-gray-light mb-3 flex-grow-1">"{{ review.text }}"</p>
+              <div class="text-gray-light opacity-75 small">
+                <i class="bi bi-patch-check-fill text-purple me-1"></i>
+                Verified Review • {{ review.date }}
               </div>
             </div>
           </div>
-          <p class="text-gray-200 mt-2 flex-1">"{{ review.text }}"</p>
-          <div class="mt-4 text-xs text-gray-400">{{ review.date }}</div>
         </div>
       </div>
-      <div class="text-center mt-8">
+      <div class="text-center mt-5">
         <a
           href="https://www.google.com/maps/search/?api=1&query=Google&query_place_id=ChIJfaO5JVD--asRNADs2U6y_jc"
           target="_blank"
-          class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded transition"
+          class="btn btn-outline-primary btn-lg px-5 py-3"
         >
+          <i class="bi bi-google me-2"></i>
           See All Google Reviews
         </a>
       </div>
@@ -72,7 +70,7 @@ const reviews = [
     author: "Mike McGeough",
     avatar: "https://lh3.googleusercontent.com/a/ACg8ocK1uKRnMKnRqtN01ABe_wewAGCN-dJ2QcFY_elLk29UFeBELA=s120-c-rp-mo-br100",
     rating: 4,
-    text: "A great place to get the best tips for your bets. A little disappointed because the site has been down due to a redesign. Can’t wait to see the new look!",
+    text: "A great place to get the best tips for your bets. A little disappointed because the site has been down due to a redesign. Can't wait to see the new look!",
     date: "May 2024",
   },
   {

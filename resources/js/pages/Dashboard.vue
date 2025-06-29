@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
+import CustomerLayout from '@/layouts/CustomerLayout.vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import BetPickCard from '../components/BetPickCard.vue';
 import NewBetPickForm from '../components/NewBetPickForm.vue';
@@ -17,12 +16,6 @@ const bets = page.props.bets || [];
 const flash = page.props.flash || {};
 const roiData = page.props.roiData || {};
 const sportProfitRoiData = page.props.sportProfitRoiData || {};
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-    },
-];
 
 // Pagination logic
 const pageSize = 15;
@@ -95,101 +88,119 @@ const updateBetInArray = (updatedBet) => {
 <template>
     <Head title="Dashboard" />
 
-    <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+    <CustomerLayout>
+        <div class="container-fluid py-4">
             <!-- Flash Messages -->
-            <div v-if="flash.success" class="mb-4 rounded-lg bg-green-100 p-4 text-green-800">
+            <div v-if="flash.success" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
                 {{ flash.success }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-            <div v-if="flash.error" class="mb-4 rounded-lg bg-red-100 p-4 text-red-800">
+            <div v-if="flash.error" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
                 {{ flash.error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
 
          
               <!-- Admin Notification Form -->
-            <div v-if="user.roles[0] && user.roles[0].name == 'admin'" class="mb-8">
-                <div class="flex justify-center mb-6">
+            <div v-if="user.roles[0] && user.roles[0].name == 'admin'" class="mb-5">
+                <div class="d-flex justify-content-center mb-4">
                     <BetsExport />
                 </div>
-                <div class="max-w-3xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-                    <h2 class="text-xl font-bold text-white mb-4">Send Notification to All Users</h2>
-                    <form @submit.prevent="sendNotification" class="space-y-4">
-                        <div>
-                            <label class="block text-gray-200 mb-1">Title</label>
-                            <input v-model="notifyTitle" type="text" class="w-full rounded border-gray-600 bg-gray-900 text-white px-3 py-2" required />
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="card bg-dark text-white">
+                            <div class="card-header">
+                                <h5 class="mb-0">Send Notification to All Users</h5>
+                            </div>
+                            <div class="card-body">
+                                <form @submit.prevent="sendNotification">
+                                    <div class="mb-3">
+                                        <label class="form-label">Title</label>
+                                        <input v-model="notifyTitle" type="text" class="form-control bg-secondary text-white border-secondary" required />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Body</label>
+                                        <textarea v-model="notifyBody" class="form-control bg-secondary text-white border-secondary" rows="3" required></textarea>
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        class="btn btn-primary"
+                                        :disabled="notifyLoading"
+                                    >
+                                        <span v-if="notifyLoading">
+                                            <span class="spinner-border spinner-border-sm me-2"></span>
+                                            Sending...
+                                        </span>
+                                        <span v-else>Send Notification</span>
+                                    </button>
+                                    <div v-if="notifySuccess" class="alert alert-success mt-3">{{ notifySuccess }}</div>
+                                    <div v-if="notifyError" class="alert alert-danger mt-3">{{ notifyError }}</div>
+                                </form>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-gray-200 mb-1">Body</label>
-                            <textarea v-model="notifyBody" class="w-full rounded border-gray-600 bg-gray-900 text-white px-3 py-2" rows="3" required></textarea>
-                        </div>
-                        <button
-                            type="submit"
-                            class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded font-semibold transition"
-                            :disabled="notifyLoading"
-                        >
-                            <span v-if="notifyLoading">Sending...</span>
-                            <span v-else>Send Notification</span>
-                        </button>
-                        <div v-if="notifySuccess" class="text-green-400 mt-2">{{ notifySuccess }}</div>
-                        <div v-if="notifyError" class="text-red-400 mt-2">{{ notifyError }}</div>
-                    </form>
+                    </div>
                 </div>
             </div>
             <!-- New Bet Pick Form (Admin Only) -->
-            <div v-if="user.roles[0] && user.roles[0].name == 'admin'" class="mt-6">
+            <div v-if="user.roles[0] && user.roles[0].name == 'admin'" class="mb-4">
                 <BetsUpload />
             </div>
-            <div v-if="user.roles[0] && user.roles[0].name == 'admin'" class="mt-6">
+            <div v-if="user.roles[0] && user.roles[0].name == 'admin'" class="mb-4">
                 <NewBetPickForm />
             </div>
              
-            <SubscriptionROIChart :roi-data="roiData" v-if="user.roles[0] && user.roles[0].name == 'admin'"/>
-            <section class="py-16 bg-gray-900">
-                <div class="container mx-auto px-4 text-center">
-                    <h2 class="text-3xl font-bold text-white">Profit & ROI by Sport</h2>
-                    <p class="mt-4 text-gray-400">See profit and ROI for each sport.</p>
-                    <div class="mt-8">
-                        <SportProfitAndROIChart :data="sportProfitRoiData" />
-                    </div>
+            <SubscriptionROIChart :roi-data="roiData" v-if="user.roles[0] && user.roles[0].name == 'admin'" class="mb-5" />
+            <section class="bg-dark text-white rounded p-5 mb-5">
+                <div class="text-center">
+                    <h2 class="h3 mb-3">Profit & ROI by Sport</h2>
+                    <p class="text-muted mb-4">See profit and ROI for each sport.</p>
+                    <SportProfitAndROIChart :data="sportProfitRoiData" />
                 </div>
             </section>
             <!-- Bet Pick Cards with Pagination -->
             <div v-if="user.roles[0] && user.roles[0].name == 'admin'">
-                <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-                    <BetPickCard
-                        v-for="bet in paginatedBets"
-                        :key="bet.id"
-                        :bet="bet"
-                        @bet-updated="updateBetInArray"
-                    />
+                <div class="row g-4">
+                    <div class="col-md-6 col-lg-4" v-for="bet in paginatedBets" :key="bet.id">
+                        <BetPickCard
+                            :bet="bet"
+                            @bet-updated="updateBetInArray"
+                        />
+                    </div>
                 </div>
                 <!-- Pagination Controls -->
-                <div class="flex justify-center items-center mt-6 gap-2" v-if="totalPages > 1">
-                    <button
-                        class="px-3 py-1 rounded bg-gray-700 text-white hover:bg-indigo-600"
-                        :disabled="currentPage === 1"
-                        @click="goToPage(currentPage - 1)"
-                    >
-                        Prev
-                    </button>
-                    <span class="text-gray-200 mx-2">Page {{ currentPage }} of {{ totalPages }}</span>
-                    <button
-                        class="px-3 py-1 rounded bg-gray-700 text-white hover:bg-indigo-600"
-                        :disabled="currentPage === totalPages"
-                        @click="goToPage(currentPage + 1)"
-                    >
-                        Next
-                    </button>
-                </div>
+                <nav v-if="totalPages > 1" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" :class="{disabled: currentPage === 1}">
+                            <button class="page-link" @click="goToPage(currentPage - 1)" :disabled="currentPage === 1">
+                                Previous
+                            </button>
+                        </li>
+                        <li class="page-item active">
+                            <span class="page-link">Page {{ currentPage }} of {{ totalPages }}</span>
+                        </li>
+                        <li class="page-item" :class="{disabled: currentPage === totalPages}">
+                            <button class="page-link" @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages">
+                                Next
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
             </div>
 
             <!-- Subscription Section -->
-            <div v-if="user.subscriptions.length > 0" class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border md:min-h-min">
-                <!-- Additional content can go here -->
+            <div v-if="user.subscriptions.length > 0" class="card bg-light" style="min-height: 50vh;">
+                <div class="card-body">
+                    <!-- Additional content can go here -->
+                </div>
             </div>
-            <div v-else-if="user.roles[0] && user.roles[0].name !== 'admin'" class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border md:min-h-min">
-                You aren't subscribed to any subscriptions
+            <div v-else-if="user.roles[0] && user.roles[0].name !== 'admin'" class="card bg-light" style="min-height: 50vh;">
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    <div class="text-center">
+                        <h5 class="text-muted">You aren't subscribed to any subscriptions</h5>
+                        <a href="/pricing" class="btn btn-primary mt-3">View Plans</a>
+                    </div>
+                </div>
             </div>
         </div>
-    </AppLayout>
+    </CustomerLayout>
 </template>

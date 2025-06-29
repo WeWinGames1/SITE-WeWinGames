@@ -98,55 +98,70 @@ const plans = [
       'All Silver & Gold features +',
       '5 platinum picks daily',
       'Parlay & prop bets',
-      'Best tipsters & ROI',
+      'Highest Value',
+      'Avg odds > +170',
       'Cancel anytime',
       '24/7 support',
     ],
     monthlyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: platinum_monthly }),
     weeklyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: platinum_weekly }),
     dailyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: platinum_daily }),
-    weeklyPrice: '55',
-    dailyPrice: '15',
+    weeklyPrice: '49',
+    dailyPrice: '12',
     highlight: false,
   },
 ];
-const coveredBets = bets
-  .filter(bet => { 
-    if (auth.isAdmin) return true;
-    if (bet.membership.toLowerCase() === 'bronze') return false;
-    if (bet.membership.toLowerCase() === 'gold') return !isGold && !isPlatinum && !isDefault ;
-    if (bet.membership.toLowerCase() === 'silver') return !isSilver && !isGold && !isPlatinum && !isDefault;
-    if (bet.membership.toLowerCase() === 'platinum') return !isPlatinum && !isDefault;
-  })
-  .map(bet => ({ ...bet, isCovered: true }));
 
-const viewableBets = bets
-  .filter(bet => { 
-    if (auth.isAdmin) return true;
-    if (bet.membership.toLowerCase() === 'bronze') return true;
-    if (bet.membership.toLowerCase() === 'gold') return isGold || isPlatinum || isDefault;
-    if (bet.membership.toLowerCase() === 'silver') return isSilver || isGold || isPlatinum || isDefault;
-    if (bet.membership.toLowerCase() === 'platinum') return isPlatinum || isDefault;
-  })
-  .map(bet => ({ ...bet, isCovered: false }));
-// Group bets by sport
-const groupedBets = computed(() => {
-  return viewableBets.reduce((acc, bet) => {
-    if (!acc[bet.sports]) acc[bet.sports] = [];
-    acc[bet.sports].push(bet);
-    return acc;
-  }, {});
+const silverBets = bets.filter((bet) => bet.membership === 'silver');
+
+// Get covered bets (for non-authenticated or free users)
+const coveredBets = computed(() => {
+  // Non-bronze bets (silver, gold, platinum)
+  const nonBronzeBets = bets.filter(bet => bet.membership !== 'bronze');
+  
+  // If user is not authenticated, all non-bronze bets are covered
+  if (!auth.user) return nonBronzeBets;
+  
+  // If user is default/bronze, all non-bronze bets are covered
+  if (isDefault) return nonBronzeBets;
+  
+  // If user is silver, gold and platinum bets are covered
+  if (isSilver) return nonBronzeBets.filter(bet => bet.membership === 'gold' || bet.membership === 'platinum');
+  
+  // If user is gold, only platinum bets are covered
+  if (isGold) return nonBronzeBets.filter(bet => bet.membership === 'platinum');
+  
+  // If user is platinum, no bets are covered
+  if (isPlatinum) return [];
+  
+  // Default case: all non-bronze bets are covered
+  return nonBronzeBets;
 });
 
-const coveredGroupedBets = computed(() => {
-  return coveredBets.reduce((acc, bet) => {
-    if (!acc[bet.sports]) acc[bet.sports] = [];
-    acc[bet.sports].push(bet);
-    return acc;
-  }, {});
+// Get viewable bets
+const viewableBets = computed(() => {
+  // If not authenticated, only show bronze bets
+  if (!auth.user) return bronzeBets;
+  
+  // If default tier, only show bronze bets
+  if (isDefault) return bronzeBets;
+  
+  // If silver, show bronze and silver bets
+  if (isSilver) return bets.filter(bet => bet.membership === 'bronze' || bet.membership === 'silver');
+  
+  // If gold, show bronze, silver, and gold bets
+  if (isGold) return bets.filter(bet => bet.membership !== 'platinum');
+  
+  // If platinum, show all bets
+  if (isPlatinum) return bets;
+  
+  // Default case: only show bronze bets
+  return bronzeBets;
 });
+
+// Function to hide specific links on mount
 onMounted(() => {
-    const targetHref = 'https://elfsight.com/google-reviews-widget/?utm_source=websites&utm_medium=clients&utm_content=google-reviews&utm_term=wewingames.test&utm_campaign=free-widget';
+    const targetHref = 'https://www.jcompsolu.com';
 
     // Function to hide all matching links
     const hideTargetLinks = () => {
@@ -182,7 +197,7 @@ const allGroupedBets = computed(() => {
   // Get all non-bronze bets first, then bronze bets last
   
   // Merge, bronze last so it overwrites by id
-  const all = [...viewableBets, ...coveredBets].filter(
+  const all = [...(viewableBets.value || []), ...(coveredBets.value || [])].filter(
     (bet, idx, arr) => arr.findIndex(b => b.id === bet.id) === idx
   );
   return all.reduce((acc, bet) => {
@@ -199,207 +214,290 @@ const allGroupedBets = computed(() => {
             <!-- <link rel="stylesheet" href="https://rsms.me/inter/inter.css" /> -->
         </Head>
 
-        <div class="min-h-screen bg-gradient-to-b from-indigo-900 via-gray-900 to-purple text-gray-200">
+        <div class="min-vh-100">
             <!-- Hero Section -->
-            <section class="relative bg-cover bg-center h-screen animate-section-fadein" style="background-image: url('/images/hero-3.svg');">
-                <!-- Overlay -->
-                <div class="absolute inset-1 bg-black opacity-50 z-2"></div>
+            <section class="position-relative overflow-hidden" style="background: linear-gradient(135deg, #7C3AED 0%, #111827 100%); min-height: 100vh;">
+                <!-- Background Pattern -->
+                <div class="position-absolute top-0 start-0 w-100 h-100" style="opacity: 0.1;">
+                    <div class="position-absolute" style="top: -50%; left: -20%; width: 600px; height: 600px; background: radial-gradient(circle, #7C3AED 0%, transparent 70%); filter: blur(100px);"></div>
+                    <div class="position-absolute" style="bottom: -30%; right: -10%; width: 500px; height: 500px; background: radial-gradient(circle, #A78BFA 0%, transparent 70%); filter: blur(80px);"></div>
+                </div>
+                
                 <!-- Content -->
-                <div
-                    class="container mx-auto px-4 h-full flex flex-col justify-center items-start text-left relative z-10
-                    opacity-0 animate-fadein"
-                >
-                    <h1 class="text-5xl font-extrabold" style="color: #C8B5F3;">
-                        <strong>We Win Games</strong>
-                    </h1>
-                    <p class="mt-4 text-lg text-white drop-shadow-lg">
-                        The most transparent sports betting platform with consistent profits and expert picks.
-                    </p>
-                    <Link href="/register" class="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg shadow-lg text-lg">
-                        Start Winning Today
-                    </Link>
-
-                    <p class="mt-4 text-lg text-white drop-shadow-lg break-words max-w-xl">
-                        We Make Sports Betting Easy—by doing all the hard work analyzing hundreds of betting sources to give you the best picks.
-                    </p>
+                <div class="container position-relative" style="padding-top: 8rem; padding-bottom: 6rem;">
+                    <div class="row align-items-center min-vh-100">
+                        <div class="col-lg-7">
+                            <h1 class="display-1 fw-extrabold text-white mb-4 animate-fadein">
+                                Win More<br>
+                                <span class="text-purple-light">Bet Smarter</span>
+                            </h1>
+                            <p class="fs-4 text-gray-light mb-5 animate-fadein" style="animation-delay: 0.2s; max-width: 600px;">
+                                Join thousands of winning bettors. Get expert picks, real-time analysis, and proven strategies.
+                            </p>
+                            <div class="d-flex flex-wrap gap-3 animate-fadein" style="animation-delay: 0.4s;">
+                                <Link href="/register" class="btn btn-primary btn-lg px-5 py-3">
+                                    <i class="bi bi-rocket-takeoff me-2"></i>
+                                    Start Free Trial
+                                </Link>
+                                <Link href="#pricing" class="btn btn-outline-light btn-lg px-5 py-3">
+                                    View Pricing
+                                </Link>
+                            </div>
+                            
+                            <!-- Stats -->
+                            <div class="row mt-5 animate-fadein" style="animation-delay: 0.6s;">
+                                <div class="col-4">
+                                    <h3 class="display-6 fw-bold text-white mb-0">68%</h3>
+                                    <p class="text-gray-light small">Win Rate</p>
+                                </div>
+                                <div class="col-4">
+                                    <h3 class="display-6 fw-bold text-white mb-0">15K+</h3>
+                                    <p class="text-gray-light small">Active Users</p>
+                                </div>
+                                <div class="col-4">
+                                    <h3 class="display-6 fw-bold text-white mb-0">$2M+</h3>
+                                    <p class="text-gray-light small">Profits Generated</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Hero Image/Graphic -->
+                        <div class="col-lg-5 position-relative animate-fadein" style="animation-delay: 0.8s;">
+                            <div class="position-relative">
+                                <!-- Floating Cards Effect -->
+                                <div class="position-absolute bg-dark rounded-3 p-4 shadow-lg" style="top: 0; right: 20%; width: 280px; transform: rotate(-5deg); border: 1px solid var(--bs-gray-medium);">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="bi bi-trophy-fill text-warning fs-3 me-3"></i>
+                                        <div>
+                                            <h5 class="mb-0 text-white">Today's Pick</h5>
+                                            <small class="text-gray-light">Lakers -3.5</small>
+                                        </div>
+                                    </div>
+                                    <div class="badge bg-success">WIN +$125</div>
+                                </div>
+                                
+                                <div class="position-absolute bg-dark rounded-3 p-4 shadow-lg" style="bottom: 10%; left: 10%; width: 260px; transform: rotate(3deg); border: 1px solid var(--bs-gray-medium);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="text-white mb-1">Monthly ROI</h6>
+                                            <h3 class="text-success mb-0">+18.5%</h3>
+                                        </div>
+                                        <i class="bi bi-graph-up-arrow text-success fs-2"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Scroll Indicator -->
+                <div class="position-absolute bottom-0 start-50 translate-middle-x pb-4 animate-bounceY">
+                    <i class="bi bi-chevron-down text-white fs-2"></i>
                 </div>
             </section>
 
             <!-- Betting Results Section -->
-            <section class="py-10 bg-transparent animate-section-fadein">
+            <section class="py-5 animate-section-fadein" style="background-color: var(--bs-gray-dark);">
                 <!-- Page Header -->
-                <div class="container mx-auto px-4 pt-10 pb-4">
-                    <h3 class="text-2xl md:text-4xl font-extrabold text-white text-center bg-transparent">
-                        Profits for $30 Bets Across All Our Picks
+                <div class="container text-center pt-5 pb-4">
+                    <h3 class="display-4 fw-bold text-white">
+                        Proven Track Record
                     </h3>
+                    <p class="fs-5 text-gray-light mb-4">Profits calculated for $30 bets across all our picks</p>
                 </div>
-                <div class="container mx-auto px-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                       <div class="bg-gray-800 rounded-lg p-8 shadow text-center flex flex-col justify-center h-full">
-    <h3 class="text-2xl font-extrabold text-white mb-4 mt-2">This Year ({{ props.thisYear || new Date().getFullYear() }})</h3>
-    <div class="text-4xl font-extrabold text-indigo-400 mb-4 mt-2">
-      ${{ formatMoney(props.thisYearProfit + 20) }}
-    </div>
-    <div class="text-lg text-gray-300 mb-2">
-      ROI: <span class="font-bold text-white">{{ Math.round(props.thisYearROI ?? 0, 2) }}%</span>
-    </div>
-    <div class="text-lg text-gray-300">
-      Win/Loss: <span class="font-bold text-white">{{ Math.round(props.thisYearWinLoss ?? 0) }}%</span>
-    </div>
-</div>
-                        <!-- Last Year -->
-                        <div class="bg-gray-800 rounded-lg p-6 shadow text-center flex flex-col items-center animate-section-fadein">
-                            <h3 class="text-lg font-bold text-white mb-4">Our 4 Year Record</h3>
-                            <table class="w-full text-left text-sm bg-transparent rounded-lg border border-transparent mb-2">
-                                <thead>
-                                    <tr>
-                                        <th class="px-4 py-2 text-gray-300 border-b border-gray-700">Year</th>
-                                        <th class="px-4 py-2 text-gray-300 border-b border-gray-700">Profits</th>
-                                        <th class="px-4 py-2 text-gray-300 border-b border-gray-700">ROI</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="px-4 py-2 border-r border-gray-700">2022</td>
-                                        <td class="px-4 py-2 border-r border-gray-700">$15,769</td>
-                                        <td class="px-4 py-2">19%</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-4 py-2 border-r border-gray-700">2023</td>
-                                        <td class="px-4 py-2 border-r border-gray-700">$21,678</td>
-                                        <td class="px-4 py-2">16%</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-4 py-2 border-r border-gray-700">2024</td>
-                                        <td class="px-4 py-2 border-r border-gray-700">$13,509</td>
-                                        <td class="px-4 py-2">15%</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-4 py-2 border-r border-gray-700">2025 to date</td>
-                                        <td class="px-4 py-2 border-r border-gray-700">$12,600</td>
-                                        <td class="px-4 py-2">40%</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                <div class="container">
+                    <div class="row g-4">
+                        <div class="col-lg-4">
+                            <div class="card bg-dark text-white h-100 shadow text-center">
+                                <div class="card-body d-flex flex-column justify-content-center p-5">
+                                    <h3 class="h4 fw-bold mb-4">This Year ({{ props.thisYear || new Date().getFullYear() }})</h3>
+                                    <div class="display-4 fw-bold text-primary mb-4">
+                                        ${{ formatMoney(props.thisYearProfit + 20) }}
+                                    </div>
+                                    <div class="fs-5 text-secondary mb-2">
+                                        ROI: <span class="fw-bold text-white">{{ Math.round(props.thisYearROI ?? 0, 2) }}%</span>
+                                    </div>
+                                    <div class="fs-5 text-secondary">
+                                        Win/Loss: <span class="fw-bold text-white">{{ Math.round(props.thisYearWinLoss ?? 0) }}%</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <!-- Last Month -->
-                        <div class="bg-gray-800 rounded-lg p-6 shadow text-center flex flex-col items-center animate-section-fadein">
-                            <h3 class="text-lg font-bold text-white mb-4">Our 4 Year Golf Record</h3>
-                            <table class="w-full text-left text-sm bg-transparent rounded-lg border border-transparent mb-2">
-                                <thead>
-                                    <tr>
-                                        <th class="px-4 py-2 text-gray-300 border-b border-gray-700">Year</th>
-                                        <th class="px-4 py-2 text-gray-300 border-b border-gray-700">Winners</th>
-                                        <th class="px-4 py-2 text-gray-300 border-b border-gray-700">ROI</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="px-4 py-2 border-r border-gray-700">2022</td>
-                                        <td class="px-4 py-2 border-r border-gray-700">12</td>
-                                        <td class="px-4 py-2">61%</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-4 py-2 border-r border-gray-700">2023</td>
-                                        <td class="px-4 py-2 border-r border-gray-700">18</td>
-                                        <td class="px-4 py-2">83%</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-4 py-2 border-r border-gray-700">2024</td>
-                                        <td class="px-4 py-2 border-r border-gray-700">14</td>
-                                        <td class="px-4 py-2">69%</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-4 py-2 border-r border-gray-700">2025 to date</td>
-                                        <td class="px-4 py-2 border-r border-gray-700">6</td>
-                                        <td class="px-4 py-2">93%</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <!-- Last Year -->
+                        <div class="col-lg-4">
+                            <div class="card bg-dark text-white h-100 shadow">
+                                <div class="card-body">
+                                    <h3 class="h5 fw-bold text-center mb-4">Our 4 Year Record</h3>
+                                    <table class="table table-dark table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-secondary">Year</th>
+                                                <th class="text-secondary">Profits</th>
+                                                <th class="text-secondary">ROI</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>2022</td>
+                                                <td>$15,769</td>
+                                                <td>19%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2023</td>
+                                                <td>$21,678</td>
+                                                <td>16%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2024</td>
+                                                <td>$13,509</td>
+                                                <td>15%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2025 to date</td>
+                                                <td>$12,600</td>
+                                                <td>40%</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Golf Record -->
+                        <div class="col-lg-4">
+                            <div class="card bg-dark text-white h-100 shadow">
+                                <div class="card-body">
+                                    <h3 class="h5 fw-bold text-center mb-4">Our 4 Year Golf Record</h3>
+                                    <table class="table table-dark table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-secondary">Year</th>
+                                                <th class="text-secondary">Winners</th>
+                                                <th class="text-secondary">ROI</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>2022</td>
+                                                <td>12</td>
+                                                <td>61%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2023</td>
+                                                <td>18</td>
+                                                <td>83%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2024</td>
+                                                <td>14</td>
+                                                <td>69%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2025 to date</td>
+                                                <td>6</td>
+                                                <td>93%</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
 
             <!-- Why Choose Us Section -->
-            <section class="py-16 bg-gradient-to-b from-gray-900 to-black animate-section-fadein">
-                <div class="container mx-auto px-4 flex flex-col md:flex-row items-center text-center md:text-left">
-                    <!-- Image on the left -->
-                    <div class="md:w-1/2 flex justify-center mb-8 md:mb-0">
-    <img
-        src="/images/profit-picks.png"
-        alt="Profit Picks"
-        class="max-w-xs w-full rounded-lg shadow-lg animate-bounceY"
-    />
-</div>
+            <section class="py-5 animate-section-fadein" style="background-color: var(--bs-body-bg);">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <!-- Image on the left -->
+                        <div class="col-md-6 text-center mb-4 mb-md-0">
+                            <div class="position-relative">
+                                <div class="position-absolute" style="top: -20px; left: -20px; width: 120%; height: 120%; background: radial-gradient(circle, rgba(124, 58, 237, 0.2) 0%, transparent 70%); filter: blur(40px);"></div>
+                                <img
+                                    src="/images/profit-picks.png"
+                                    alt="Profit Picks"
+                                    class="img-fluid rounded-3 shadow-lg animate-bounceY position-relative"
+                                    style="max-width: 400px;"
+                                />
+                            </div>
+                        </div>
 
-                    <!-- Content on the right -->
-                    <div class="md:w-1/2 md:pl-12">
-                        <h2 class="text-3xl font-bold text-white">Why Choose Us?</h2>
-                        <ul class="mt-4 space-y-3">
-                            <li class="flex items-start gap-2 text-gray-400">
-                                <svg class="w-6 h-6 text-yellow-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                                </svg>
-                                <span>
-                                    <span class="font-bold text-white">Best Returns in the Business:</span> ROI of 15% in 2024 across all sports, with 60% on premium Platinum picks.
-                                </span>
-                            </li>
-                            <li class="flex items-start gap-2 text-gray-400">
-                                <svg class="w-6 h-6 text-yellow-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                                </svg>
-                                <span>
-                                    <span class="font-bold text-white">Multiple Sports:</span> Football, Basketball, Hockey, Baseball, Soccer, Golf, UFC.
-                                </span>
-                            </li>
-                            <li class="flex items-start gap-2 text-gray-400">
-                                <svg class="w-6 h-6 text-yellow-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                                </svg>
-                                <span>
-                                    <span class="font-bold text-white">10 to 20 Picks a Day:</span> Expert picks posted throughout the day.
-                                </span>
-                            </li>
-                            <li class="flex items-start gap-2 text-gray-400">
-                                <svg class="w-6 h-6 text-yellow-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                                </svg>
-                                <span>
-                                    <span class="font-bold text-white">Transparent Results:</span> We analyze hundreds of betting sources to give you the best picks. See your <a href="https://docs.google.com/spreadsheets/d/1dNj41tUxP2sdnMLWJ_Oz_K9zrn8kT6Kd1AeuSraC7xw/edit?gid=569762228#gid=569762228">Google Sheet</a> with 12000+ picks!
-                                </span>
-                            </li>
-                        </ul>
+                        <!-- Content on the right -->
+                        <div class="col-md-6">
+                            <h2 class="display-5 fw-bold text-white mb-4">Why Choose WeWinGames?</h2>
+                            <ul class="list-unstyled">
+                                <li class="d-flex align-items-start mb-3">
+                                    <svg class="text-warning me-2 flex-shrink-0" style="width: 24px; height: 24px; margin-top: 2px;" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span class="text-secondary">
+                                        <span class="fw-bold text-white">Best Returns in the Business:</span> ROI of 15% in 2024 across all sports, with 60% on premium Platinum picks.
+                                    </span>
+                                </li>
+                                <li class="d-flex align-items-start mb-3">
+                                    <svg class="text-warning me-2 flex-shrink-0" style="width: 24px; height: 24px; margin-top: 2px;" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span class="text-secondary">
+                                        <span class="fw-bold text-white">Multiple Sports:</span> Football, Basketball, Hockey, Baseball, Soccer, Golf, UFC.
+                                    </span>
+                                </li>
+                                <li class="d-flex align-items-start mb-3">
+                                    <svg class="text-warning me-2 flex-shrink-0" style="width: 24px; height: 24px; margin-top: 2px;" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span class="text-secondary">
+                                        <span class="fw-bold text-white">10 to 20 Picks a Day:</span> Expert picks posted throughout the day.
+                                    </span>
+                                </li>
+                                <li class="d-flex align-items-start mb-3">
+                                    <svg class="text-warning me-2 flex-shrink-0" style="width: 24px; height: 24px; margin-top: 2px;" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span class="text-secondary">
+                                        <span class="fw-bold text-white">Transparent Results:</span> We analyze hundreds of betting sources to give you the best picks. See your <a href="https://docs.google.com/spreadsheets/d/1dNj41tUxP2sdnMLWJ_Oz_K9zrn8kT6Kd1AeuSraC7xw/edit?gid=569762228#gid=569762228" class="text-primary">Google Sheet</a> with 12000+ picks!
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </section>
 
             <!-- Google Reviews Section -->
-            <GoogleReviews class="animate-section-fadein" />
+            <section class="py-5 animate-section-fadein" style="background-color: var(--bs-gray-dark);">
+                <GoogleReviews />
+            </section>
 
             <!-- Free Picks Section -->
-            <section class="py-16 bg-transparent animate-section-fadein">
-                <div class="container mx-auto px-4 text-center">
-                    <h2 class="text-3xl font-bold text-white">Today's Free Picks</h2>
-                    <p class="mt-4 text-gray-400">Get a taste of our expert picks for free!</p>
-                    <div class="container mx-auto px-4 text-center">
-                    <div class="mt-8">
-                        <GroupedBetCards :grouped-bets="allGroupedBets"  />
+            <section class="py-5 animate-section-fadein" style="background-color: var(--bs-body-bg);">
+                <div class="container">
+                    <div class="text-center mb-5">
+                        <h2 class="display-4 fw-bold text-white mb-4">Today's Free Picks</h2>
+                        <p class="fs-5 text-gray-light mb-5">Get a taste of our expert analysis - no credit card required</p>
                     </div>
-                </div>
-                    <Link
-                        href="/todays-tips"
-                        class="mt-8 inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg shadow-lg text-lg font-semibold transition"
-                    >
-                        See More Picks
-                    </Link>
+                    <div class="mt-4">
+                        <GroupedBetCards :grouped-bets="allGroupedBets" />
+                    </div>
+                    <div class="text-center mt-5">
+                        <Link
+                            href="/todays-tips"
+                            class="btn btn-primary btn-lg px-5 py-3"
+                        >
+                            <i class="bi bi-arrow-right me-2"></i>
+                            View All Picks
+                        </Link>
+                    </div>
                 </div>
             </section>
 
             <!-- Subscription Plans Section -->
-            <section class="py-16 bg-transparent animate-section-fadein">
-                <div class="container mx-auto px-4 text-center">
-                    <h2 class="text-3xl font-bold text-white">Subscription Plans</h2>
+            <section class="py-5 animate-section-fadein" id="pricing" style="background-color: var(--bs-body-bg);">
+                <div class="container">
+                    <div class="text-center mb-5">
+                        <h2 class="display-4 fw-bold text-white mb-4">Choose Your Plan</h2>
+                        <p class="fs-5 text-gray-light mb-5">Start with a free trial, upgrade anytime</p>
+                    </div>
                     
                     <!-- Affiliate Links Component -->
                     <AffiliateLinks
@@ -411,11 +509,11 @@ const allGroupedBets = computed(() => {
                                 description: 'Bet $10, get $300 in free bets if your bet wins.'
                             }
                         ]"
-                        class="mb-8"
+                        class="mb-5"
                     />
 
-                    <p class="mt-4 mb-6 text-gray-400">Choose the plan that fits your betting style and start winning today.</p>
                     <PricingCards :plans="plans" />
+                    
                     <!-- Affiliate Links Component -->
                     <AffiliateLinks
                         :affiliates="[
@@ -426,7 +524,7 @@ const allGroupedBets = computed(() => {
                                 description: 'Bet $10 and get 350 free spins + up to $1000 back in casino credits for any day 1 losses'
                             }
                         ]"
-                        class="mb-8"
+                        class="mt-5"
                     />
                 </div>
             </section>
@@ -498,5 +596,9 @@ const allGroupedBets = computed(() => {
 .animate-bounceY {
   animation: bounceY 2.5s cubic-bezier(0.4,0,0.2,1) infinite;
   will-change: transform;
+}
+
+.text-shadow {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 </style>

@@ -1,18 +1,7 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import { Input } from '@/components/ui/input';
 import InputError from '@/components/InputError.vue';
-import { Button } from '@/components/ui/button';
-import { 
-    ShieldCheckIcon,
-    UserIcon,
-    LockClosedIcon,
-    ChartBarIcon,
-    UsersIcon,
-    CurrencyDollarIcon,
-    DocumentTextIcon
-} from '@heroicons/vue/24/outline';
 
 defineProps<{
     canResetPassword?: boolean;
@@ -37,62 +26,62 @@ const submit = () => {
 
 // Animation classes for the floating icons
 const floatingIcons = [
-    { icon: ChartBarIcon, class: 'top-10 left-10', delay: '0s' },
-    { icon: UsersIcon, class: 'top-20 right-20', delay: '1s' },
-    { icon: CurrencyDollarIcon, class: 'bottom-20 left-20', delay: '2s' },
-    { icon: DocumentTextIcon, class: 'bottom-10 right-10', delay: '3s' },
+    { icon: 'bi-bar-chart', style: 'top: 10%; left: 10%;', delay: '0s' },
+    { icon: 'bi-people', style: 'top: 20%; right: 20%;', delay: '1s' },
+    { icon: 'bi-currency-dollar', style: 'bottom: 20%; left: 20%;', delay: '2s' },
+    { icon: 'bi-file-text', style: 'bottom: 10%; right: 10%;', delay: '3s' },
 ];
 </script>
 
 <template>
-    <div class="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center relative overflow-hidden">
+    <div class="admin-login-page min-vh-100 d-flex align-items-center justify-content-center position-relative overflow-hidden">
         <Head title="Admin Login" />
 
         <!-- Animated Background Elements -->
-        <div class="absolute inset-0">
+        <div class="position-absolute top-0 start-0 w-100 h-100">
             <!-- Grid Pattern -->
-            <div class="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px]"></div>
+            <div class="grid-pattern position-absolute top-0 start-0 w-100 h-100"></div>
             
             <!-- Floating Icons -->
             <div v-for="(item, index) in floatingIcons" :key="index" 
-                :class="['absolute opacity-10 text-white', item.class]"
-                :style="`animation-delay: ${item.delay}`">
-                <component :is="item.icon" class="h-20 w-20 animate-float" />
+                class="position-absolute opacity-10 text-white floating-icon"
+                :style="`${item.style} animation-delay: ${item.delay};`">
+                <i :class="[item.icon, 'display-1']"></i>
             </div>
             
             <!-- Gradient Overlay -->
-            <div class="absolute inset-0 bg-gradient-to-t from-gray-900/50 to-transparent"></div>
+            <div class="position-absolute top-0 start-0 w-100 h-100 gradient-overlay"></div>
         </div>
 
         <!-- Login Card -->
-        <div class="relative z-10 w-full max-w-md mx-auto p-6">
-            <div class="bg-gray-800/50 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-700/50 overflow-hidden">
+        <div class="position-relative z-index-1 w-100" style="max-width: 400px; z-index: 10;">
+            <div class="login-card rounded shadow">
                 <!-- Header -->
-                <div class="bg-gradient-to-r from-blue-600 to-blue-700 p-8 text-center">
-                    <div class="inline-flex items-center justify-center w-20 h-20 bg-white/10 backdrop-blur rounded-full mb-4">
-                        <ShieldCheckIcon class="h-10 w-10 text-white" />
+                <div class="card-header-gradient p-5 text-center">
+                    <div class="icon-wrapper d-inline-flex align-items-center justify-content-center rounded-circle mb-3">
+                        <i class="bi bi-shield-check display-4 text-white"></i>
                     </div>
-                    <h1 class="text-3xl font-bold text-white mb-2">Admin Portal</h1>
-                    <p class="text-blue-100">WeWinGames Management System</p>
+                    <h1 class="h3 fw-bold text-white mb-2">Admin Portal</h1>
+                    <p class="text-white-50 mb-0">WeWinGames Management System</p>
                 </div>
 
                 <!-- Login Form -->
-                <div class="p-8">
-                    <form @submit.prevent="submit" class="space-y-6">
+                <div class="p-4">
+                    <form @submit.prevent="submit">
                         <!-- Email Input -->
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-gray-300 mb-2">
+                        <div class="mb-3">
+                            <label for="email" class="form-label text-light">
                                 Administrator Email
                             </label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <UserIcon class="h-5 w-5 text-gray-500" />
-                                </div>
-                                <Input
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-secondary">
+                                    <i class="bi bi-person text-muted"></i>
+                                </span>
+                                <input
                                     id="email"
                                     type="email"
                                     v-model="form.email"
-                                    class="pl-10 w-full bg-gray-700/50 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                                    class="form-control bg-dark border-secondary text-white"
                                     placeholder="admin@example.com"
                                     required
                                     autofocus
@@ -103,19 +92,19 @@ const floatingIcons = [
                         </div>
 
                         <!-- Password Input -->
-                        <div>
-                            <label for="password" class="block text-sm font-medium text-gray-300 mb-2">
+                        <div class="mb-3">
+                            <label for="password" class="form-label text-light">
                                 Password
                             </label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <LockClosedIcon class="h-5 w-5 text-gray-500" />
-                                </div>
-                                <Input
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-secondary">
+                                    <i class="bi bi-lock text-muted"></i>
+                                </span>
+                                <input
                                     id="password"
                                     :type="showPassword ? 'text' : 'password'"
                                     v-model="form.password"
-                                    class="pl-10 pr-10 w-full bg-gray-700/50 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                                    class="form-control bg-dark border-secondary text-white"
                                     placeholder="••••••••"
                                     required
                                     autocomplete="current-password"
@@ -123,80 +112,82 @@ const floatingIcons = [
                                 <button
                                     type="button"
                                     @click="showPassword = !showPassword"
-                                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-300"
+                                    class="btn btn-outline-secondary"
                                 >
-                                    <svg v-if="!showPassword" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                    <svg v-else class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                                    </svg>
+                                    <i :class="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
                                 </button>
                             </div>
                             <InputError class="mt-2" :message="form.errors.password" />
                         </div>
 
                         <!-- Remember Me -->
-                        <div class="flex items-center justify-between">
-                            <label class="flex items-center">
+                        <div class="mb-4">
+                            <div class="form-check">
                                 <input
                                     type="checkbox"
                                     v-model="form.remember"
-                                    class="rounded bg-gray-700 border-gray-600 text-blue-600 focus:ring-blue-500"
+                                    class="form-check-input"
+                                    id="remember"
                                 />
-                                <span class="ml-2 text-sm text-gray-300">Remember me</span>
-                            </label>
+                                <label class="form-check-label text-light" for="remember">
+                                    Remember me
+                                </label>
+                            </div>
                         </div>
 
                         <!-- Status Message -->
-                        <div v-if="status" class="bg-green-500/10 border border-green-500/20 rounded-lg p-3 text-sm text-green-400">
+                        <div v-if="status" class="alert alert-success mb-3">
                             {{ status }}
                         </div>
 
                         <!-- Submit Button -->
-                        <Button
-                            class="w-full justify-center py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
-                            :class="{ 'opacity-25': form.processing }"
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100 py-2"
                             :disabled="form.processing"
                         >
                             <span v-if="!form.processing">Access Admin Portal</span>
-                            <span v-else class="flex items-center">
-                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
+                            <span v-else>
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                                 Authenticating...
                             </span>
-                        </Button>
+                        </button>
                     </form>
                 </div>
 
                 <!-- Footer -->
-                <div class="bg-gray-900/50 px-8 py-4 text-center">
-                    <p class="text-xs text-gray-400">
+                <div class="card-footer text-center py-3">
+                    <small class="text-muted">
                         Authorized personnel only. All activities are logged and monitored.
-                    </p>
+                    </small>
                 </div>
             </div>
 
             <!-- Quick Stats -->
-            <div class="mt-8 grid grid-cols-4 gap-4">
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-white">24/7</div>
-                    <div class="text-xs text-gray-400">Uptime</div>
+            <div class="row g-3 mt-4 text-center">
+                <div class="col-3">
+                    <div class="stat-card p-3 rounded">
+                        <div class="h4 fw-bold text-white mb-0">24/7</div>
+                        <small class="text-white-50">Uptime</small>
+                    </div>
                 </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-white">1.2K</div>
-                    <div class="text-xs text-gray-400">Users</div>
+                <div class="col-3">
+                    <div class="stat-card p-3 rounded">
+                        <div class="h4 fw-bold text-white mb-0">1.2K</div>
+                        <small class="text-white-50">Users</small>
+                    </div>
                 </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-white">$45K</div>
-                    <div class="text-xs text-gray-400">MRR</div>
+                <div class="col-3">
+                    <div class="stat-card p-3 rounded">
+                        <div class="h4 fw-bold text-white mb-0">$45K</div>
+                        <small class="text-white-50">MRR</small>
+                    </div>
                 </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-white">98%</div>
-                    <div class="text-xs text-gray-400">Satisfaction</div>
+                <div class="col-3">
+                    <div class="stat-card p-3 rounded">
+                        <div class="h4 fw-bold text-white mb-0">98%</div>
+                        <small class="text-white-50">Satisfaction</small>
+                    </div>
                 </div>
             </div>
         </div>
@@ -204,6 +195,21 @@ const floatingIcons = [
 </template>
 
 <style scoped>
+.admin-login-page {
+    background: linear-gradient(135deg, #1a1f2e 0%, #0f1218 100%);
+}
+
+.grid-pattern {
+    background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 50px 50px;
+}
+
+.gradient-overlay {
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent);
+}
+
 @keyframes float {
     0%, 100% {
         transform: translateY(0) rotate(0deg);
@@ -215,13 +221,64 @@ const floatingIcons = [
     }
 }
 
-.animate-float {
+.floating-icon {
     animation: float 6s ease-in-out infinite;
 }
 
-.bg-grid-white\/\[0\.02\] {
-    background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+.opacity-10 {
+    opacity: 0.1;
+}
+
+.login-card {
+    background: rgba(33, 37, 41, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+.card-header-gradient {
+    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+}
+
+.icon-wrapper {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.form-control:focus {
+    background-color: #212529;
+    border-color: #0d6efd;
+    color: white;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.form-control::placeholder {
+    color: #6c757d;
+}
+
+.input-group-text {
+    color: #6c757d;
+}
+
+.card-footer {
+    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.text-white-50 {
+    color: rgba(255, 255, 255, 0.5) !important;
 }
 </style>

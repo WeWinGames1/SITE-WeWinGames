@@ -23,6 +23,7 @@ use App\Http\Controllers\StaticPageController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PageShowController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\SupportTicketController;
 use App\Http\Middleware\AdminMiddleware;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -45,6 +46,17 @@ Route::get('/subscription-checkout', [RegisteredUserController::class, 'newSubsc
 
 Route::post('/careers/apply', [CareerApplicationController::class, 'submit'])->name('careers.apply');
 
+// Support Ticket Routes
+Route::middleware(['auth', 'verified'])->prefix('support')->name('support.')->group(function () {
+    Route::get('/', [SupportTicketController::class, 'index'])->name('tickets.index');
+    Route::get('/tickets/create', [SupportTicketController::class, 'create'])->name('tickets.create');
+    Route::post('/tickets', [SupportTicketController::class, 'store'])->name('tickets.store');
+    Route::get('/tickets/{ticket}', [SupportTicketController::class, 'show'])->name('tickets.show');
+    Route::post('/tickets/{ticket}/replies', [SupportTicketController::class, 'reply'])->name('tickets.reply');
+    Route::put('/tickets/{ticket}/close', [SupportTicketController::class, 'close'])->name('tickets.close');
+    Route::put('/tickets/{ticket}/reopen', [SupportTicketController::class, 'reopen'])->name('tickets.reopen');
+});
+
 // Admin Authentication Routes
 Route::prefix('admin')->group(function () {
     Route::get('/login', [AdminAuthController::class, 'create'])->name('admin.login');
@@ -55,6 +67,18 @@ Route::prefix('admin')->group(function () {
 // Admin Dashboard
 Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+    
+    // Support Ticket Management
+    Route::prefix('support-tickets')->name('support-tickets.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SupportTicketController::class, 'index'])->name('index');
+        Route::get('/{ticket}', [\App\Http\Controllers\Admin\SupportTicketController::class, 'show'])->name('show');
+        Route::post('/{ticket}/reply', [\App\Http\Controllers\Admin\SupportTicketController::class, 'reply'])->name('reply');
+        Route::put('/{ticket}/status', [\App\Http\Controllers\Admin\SupportTicketController::class, 'updateStatus'])->name('update-status');
+        Route::put('/{ticket}/priority', [\App\Http\Controllers\Admin\SupportTicketController::class, 'updatePriority'])->name('update-priority');
+        Route::put('/{ticket}/assign', [\App\Http\Controllers\Admin\SupportTicketController::class, 'assign'])->name('assign');
+        Route::post('/bulk-update', [\App\Http\Controllers\Admin\SupportTicketController::class, 'bulkUpdate'])->name('bulk-update');
+        Route::get('/api/statistics', [\App\Http\Controllers\Admin\SupportTicketController::class, 'statistics'])->name('statistics');
+    });
     
     // Bet Management
     Route::resource('bets', BetManagementController::class);
@@ -114,7 +138,13 @@ Route::get('/pages/{slug}', [PageShowController::class, 'showPage'])->name('page
 Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/customers')->name('admin.customers.')->group(function () {
     Route::get('/', [CustomerController::class, 'index'])->name('index');
     Route::put('/{user}', [CustomerController::class, 'update'])->name('update');
+    Route::post('/{user}/impersonate', [\App\Http\Controllers\Admin\ImpersonationController::class, 'start'])->name('impersonate');
 });
+
+// Impersonation stop route (accessible when impersonating)
+Route::get('/admin/impersonate/stop', [\App\Http\Controllers\Admin\ImpersonationController::class, 'stop'])
+    ->name('admin.impersonate.stop')
+    ->middleware('auth');
 
 Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/admins')->name('admin.admins.')->group(function () {
     Route::get('/', [AdminUserController::class, 'index'])->name('index');

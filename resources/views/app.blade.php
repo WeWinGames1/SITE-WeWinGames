@@ -60,10 +60,28 @@
         @endif
         
         @routes
-        @vite(['resources/js/app.ts'])
+        @vite(['resources/js/app.ts', 'resources/css/app.css'])
         @inertiaHead
     </head>
     <body class="font-sans antialiased">
+        @if(session()->has('impersonator_id'))
+            <div class="bg-warning text-dark">
+                <div class="container-fluid py-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <span class="fw-medium">
+                                You are currently impersonating {{ Auth::user()->name }}
+                            </span>
+                        </div>
+                        <a href="{{ route('admin.impersonate.stop') }}" class="btn btn-sm btn-dark">
+                            <i class="bi bi-box-arrow-right me-1"></i>
+                            Stop Impersonating
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @endif
         @inertia
     </body>
 </html>
