@@ -698,6 +698,7 @@ class BetService
     public function getAllBets()
     {
         return Bet::orderBy('betting_date', 'desc')
-            ->paginate(50);
+            ->get()
+            ->toArray();
     }
 }
