@@ -5,7 +5,7 @@ const props = defineProps<{ pages: Array<any> }>();
 
 function deletePage(id: number) {
     if (confirm('Delete this page?')) {
-        router.delete(route('admin.pages.destroy', id));
+        router.delete(route('admin.pages.destroy', { page: id }));
     }
 }
 </script>
@@ -31,7 +31,7 @@ function deletePage(id: number) {
               <td class="p-3">{{ page.published ? 'Yes' : 'No' }}</td>
               <td class="p-3">
                 <div class="flex flex-wrap gap-3">
-                  <Link :href="route('admin.pages.edit', page.id)" class="text-blue-500 hover:underline">Edit</Link>
+                  <Link :href="route('admin.pages.edit', { page: page.id })" class="text-blue-500 hover:underline">Edit</Link>
                   <button @click="deletePage(page.id)" class="text-red-500 hover:underline">Delete</button>
                   <a
                     :href="`/pages/${page.slug}`"

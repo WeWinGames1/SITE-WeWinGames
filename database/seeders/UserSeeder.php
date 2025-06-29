@@ -47,6 +47,8 @@ class UserSeeder extends Seeder
             'quantity' => 1,
             'trial_ends_at' => null,
             'ends_at' => null,
+            'current_period_start' => now(),
+            'current_period_end' => now()->addMonth(),
         ]);
 
         $this->command->info('Users created successfully:');

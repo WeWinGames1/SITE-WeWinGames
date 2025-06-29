@@ -9,7 +9,7 @@ class BettingEducationController extends Controller
 {
     public function __invoke(PageService $pages)
     {
-        $allPages = $pages->all();
+        $allPages = $pages->getAllUnpaginated();
         return Inertia::render('BettingEducation', [
             'pages' => $allPages->map->only(['id', 'title', 'slug', 'featured_image', 'published']),
         ]);

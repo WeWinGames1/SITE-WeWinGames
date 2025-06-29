@@ -13,9 +13,17 @@ use Carbon\Carbon;
 
 class DiscountCodeController extends Controller
 {
-    public function __construct(
-        private StripeService $stripeService
-    ) {}
+    private ?StripeService $stripeService = null;
+    
+    public function __construct()
+    {
+        try {
+            $this->stripeService = new StripeService();
+        } catch (\Exception $e) {
+            // Stripe is not configured, but we can still show the page
+            $this->stripeService = null;
+        }
+    }
 
     /**
      * Display discount codes management page
@@ -75,7 +83,7 @@ class DiscountCodeController extends Controller
         
         $products = StripeProduct::active()->ordered()->get(['id', 'name', 'tier', 'billing_period', 'stripe_product_id']);
         
-        return Inertia::render('Admin/Discounts/Index', [
+        return Inertia::render('admin/Discounts/Index', [
             'discountCodes' => $discountCodes,
             'filters' => $request->only(['status', 'search']),
             'products' => $products,
@@ -123,6 +131,10 @@ class DiscountCodeController extends Controller
         
         // Create in Stripe if requested
         if ($request->input('create_in_stripe', false)) {
+            if (!$this->stripeService) {
+                return back()->withErrors(['stripe' => 'Stripe is not configured. Please set STRIPE_SECRET in your .env file.']);
+            }
+            
             try {
                 $stripeCoupon = $this->createStripeDiscount($validated);
                 $validated['stripe_coupon_id'] = $stripeCoupon['id'];

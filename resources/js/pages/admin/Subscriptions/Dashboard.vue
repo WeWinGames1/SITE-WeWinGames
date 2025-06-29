@@ -395,9 +395,15 @@ watch(() => filterForm.search, (value) => {
                             </td>
                             <td class="px-6 py-4">
                                 <div class="text-sm">
-                                    <div>{{ new Date(customer.current_period_end).toLocaleDateString() }}</div>
+                                    <div v-if="customer.current_period_end">
+                                        {{ new Date(customer.current_period_end).toLocaleDateString() }}
+                                    </div>
+                                    <div v-else class="text-gray-400">No end date</div>
                                     <div class="text-xs text-gray-500">
-                                        {{ customer.days_until_renewal }} days
+                                        <span v-if="customer.days_until_renewal === null">No renewal date</span>
+                                        <span v-else-if="customer.days_until_renewal < 0">Expired</span>
+                                        <span v-else-if="customer.days_until_renewal === 0">Today</span>
+                                        <span v-else>{{ Math.round(customer.days_until_renewal) }} days</span>
                                     </div>
                                 </div>
                             </td>

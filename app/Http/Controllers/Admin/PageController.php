@@ -20,7 +20,7 @@ class PageController extends Controller
     public function index()
     {
         $pages = $this->pages->all();
-        return Inertia::render('admin/PagesIndex', ['pages' => $pages]);
+        return Inertia::render('admin/PagesIndex', ['pages' => $pages->items()]);
     }
 
     public function create()

@@ -58,7 +58,7 @@ class BetManagementController extends Controller
             ->paginate(50)
             ->withQueryString();
         
-        return Inertia::render('Admin/Bets/Index', [
+        return Inertia::render('admin/Bets/Index', [
             'bets' => $bets,
             'filters' => $request->only(['status', 'sport_id', 'user_id', 'date_from', 'date_to', 'search']),
             'sports' => Sport::orderBy('name')->get(['id', 'name']),
@@ -71,7 +71,7 @@ class BetManagementController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Admin/Bets/Create', [
+        return Inertia::render('admin/Bets/Create', [
             'users' => User::orderBy('name')->get(['id', 'name', 'email']),
             'sports' => Sport::orderBy('name')->get(['id', 'name']),
             'games' => Game::with(['sport', 'homeTeam', 'awayTeam'])
@@ -140,7 +140,7 @@ class BetManagementController extends Controller
     {
         $bet->load(['user:id,name,email', 'sport:id,name', 'game', 'operator:id,name']);
         
-        return Inertia::render('Admin/Bets/Edit', [
+        return Inertia::render('admin/Bets/Edit', [
             'bet' => $bet,
             'users' => User::orderBy('name')->get(['id', 'name', 'email']),
             'sports' => Sport::orderBy('name')->get(['id', 'name']),

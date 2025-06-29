@@ -38,7 +38,7 @@ class BlogController extends Controller
         
         $posts = $query->paginate(12)->withQueryString();
         
-        return Inertia::render('Blog/Index', [
+        return Inertia::render('blog/Index', [
             'posts' => $posts,
             'categories' => Post::getCategories(),
             'popularTags' => Post::getPopularTags(),
@@ -75,7 +75,7 @@ class BlogController extends Controller
             ->orderBy('published_at', 'desc')
             ->get();
         
-        return Inertia::render('Blog/Show', [
+        return Inertia::render('blog/Show', [
             'post' => $post->load('author:id,name'),
             'relatedPosts' => $relatedPosts,
         ]);

@@ -24,7 +24,25 @@ class BillingController extends Controller
     }
 
     public function billing_portal(Request $request): RedirectResponse {
-        return $request->user()->redirectToBillingPortal(route('billing.edit'));
+        $user = $request->user();
+        
+        // Check if Stripe is configured
+        if (empty(config('cashier.secret'))) {
+            return redirect()->route('billing.edit')
+                ->with('error', 'Stripe is not configured. Please contact support.');
+        }
+        
+        try {
+            // Create as Stripe customer if not already
+            if (!$user->hasStripeId()) {
+                $user->createAsStripeCustomer();
+            }
+            
+            return $user->redirectToBillingPortal(route('billing.edit'));
+        } catch (\Exception $e) {
+            return redirect()->route('billing.edit')
+                ->with('error', 'Unable to access billing portal. Please contact support.');
+        }
     }
     /**
      * Update the user's password.

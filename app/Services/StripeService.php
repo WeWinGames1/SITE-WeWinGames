@@ -13,7 +13,11 @@ class StripeService
 
     public function __construct()
     {
-        $this->stripe = new StripeClient(config('cashier.secret'));
+        $apiKey = config('cashier.secret');
+        if (empty($apiKey)) {
+            throw new \Exception('Stripe API key is not configured. Please set STRIPE_SECRET in your .env file.');
+        }
+        $this->stripe = new StripeClient($apiKey);
     }
 
     /**

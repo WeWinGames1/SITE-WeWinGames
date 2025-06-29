@@ -16,6 +16,7 @@ class DashboardController extends Controller
     {
         return Inertia::render('Dashboard', [
             'subscriptions' => Auth::user()->subscriptions,
+            'bets' => $this->betService->getAllBets(),
             'roiData' => $this->betService->getTotalROIBySubscriptionLevel(),
             'sportProfitRoiData' => $this->betService->getProfitAndROIBySport(),
         ]);

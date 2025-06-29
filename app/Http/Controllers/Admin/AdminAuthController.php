@@ -18,7 +18,7 @@ class AdminAuthController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Admin/Login', [
+        return Inertia::render('admin/Login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),
         ]);

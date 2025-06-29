@@ -84,14 +84,16 @@ class SubscriptionDashboardController extends Controller
                 'is_ambassador' => $user->is_ambassador,
                 'is_gifted' => $user->is_gifted,
                 'has_override' => $user->admin_override,
-                'days_until_renewal' => Carbon::parse($subscription->current_period_end)->diffInDays(Carbon::now()),
+                'days_until_renewal' => $subscription->current_period_end 
+                    ? max(0, Carbon::now()->diffInDays(Carbon::parse($subscription->current_period_end), false))
+                    : null,
             ];
         });
         
         // Get statistics
         $stats = $this->getSubscriptionStats();
         
-        return Inertia::render('Admin/Subscriptions/Dashboard', [
+        return Inertia::render('admin/Subscriptions/Dashboard', [
             'customers' => $customers,
             'filters' => $filters,
             'stats' => $stats,
@@ -143,7 +145,9 @@ class SubscriptionDashboardController extends Controller
                     $subscription->stripe_status,
                     $subscription->created_at->format('Y-m-d'),
                     Carbon::parse($subscription->current_period_end)->format('Y-m-d'),
-                    Carbon::parse($subscription->current_period_end)->diffInDays(Carbon::now()),
+                    $subscription->current_period_end 
+                        ? max(0, Carbon::now()->diffInDays(Carbon::parse($subscription->current_period_end), false))
+                        : 'N/A',
                     $user->is_ambassador ? 'Yes' : 'No',
                     $user->is_gifted ? 'Yes' : 'No',
                 ]);

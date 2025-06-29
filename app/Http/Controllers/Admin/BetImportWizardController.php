@@ -21,7 +21,7 @@ class BetImportWizardController extends Controller
      */
     public function index()
     {
-        return Inertia::render('Admin/BetImport/Index', [
+        return Inertia::render('admin/BetImport/Index', [
             'columnRequirements' => $this->csvImportService->getColumnRequirements(),
             'validationRules' => $this->csvImportService->getValidationRules(),
         ]);

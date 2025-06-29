@@ -11,9 +11,17 @@ use Illuminate\Support\Facades\DB;
 
 class StripeProductController extends Controller
 {
-    public function __construct(
-        private StripeService $stripeService
-    ) {}
+    private ?StripeService $stripeService = null;
+    
+    public function __construct()
+    {
+        try {
+            $this->stripeService = new StripeService();
+        } catch (\Exception $e) {
+            // Stripe is not configured, but we can still show the page
+            $this->stripeService = null;
+        }
+    }
 
     /**
      * Display the Stripe products management page
@@ -22,7 +30,7 @@ class StripeProductController extends Controller
     {
         $products = StripeProduct::ordered()->get();
         
-        return Inertia::render('Admin/StripeProducts/Index', [
+        return Inertia::render('admin/StripeProducts/Index', [
             'products' => $products->map(function ($product) {
                 return [
                     'id' => $product->id,
@@ -111,6 +119,13 @@ class StripeProductController extends Controller
     public function fetchFromStripe()
     {
         try {
+            if (!$this->stripeService) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Stripe API is not configured. Please set STRIPE_SECRET in your .env file.',
+                ], 422);
+            }
+            
             $products = $this->stripeService->fetchProducts();
             
             return response()->json([
@@ -135,6 +150,13 @@ class StripeProductController extends Controller
         ]);
 
         try {
+            if (!$this->stripeService) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Stripe API is not configured. Please set STRIPE_SECRET in your .env file.',
+                ], 422);
+            }
+            
             $prices = $this->stripeService->fetchPricesForProduct($request->product_id);
             
             return response()->json([
@@ -143,7 +165,7 @@ class StripeProductController extends Controller
                     return [
                         'id' => $price['id'],
                         'unit_amount' => $price['unit_amount'],
-                        'unit_amount_dollars' => $this->stripeService->centsToDollars($price['unit_amount']),
+                        'unit_amount_dollars' => $this->stripeService ? $this->stripeService->centsToDollars($price['unit_amount']) : ($price['unit_amount'] / 100),
                         'currency' => $price['currency'],
                         'recurring' => $price['recurring'],
                         'active' => $price['active'],
@@ -169,6 +191,10 @@ class StripeProductController extends Controller
         ]);
 
         try {
+            if (!$this->stripeService) {
+                return back()->withErrors(['error' => 'Stripe API is not configured. Please set STRIPE_SECRET in your .env file.']);
+            }
+            
             // Verify the product and price exist in Stripe
             $stripeProductData = $this->stripeService->fetchProduct($validated['stripe_product_id']);
             $stripePriceData = $this->stripeService->fetchPrice($validated['stripe_price_id']);
@@ -211,6 +237,10 @@ class StripeProductController extends Controller
     public function createInStripe(Request $request, StripeProduct $stripeProduct)
     {
         try {
+            if (!$this->stripeService) {
+                return back()->withErrors(['error' => 'Stripe API is not configured. Please set STRIPE_SECRET in your .env file.']);
+            }
+            
             DB::beginTransaction();
 
             // Create product in Stripe

@@ -324,126 +324,179 @@ function getStatusColor(code: DiscountCode): string {
         </div>
         
         <!-- Create Discount Modal -->
-        <Modal :show="showCreateModal" @close="showCreateModal = false" max-width="2xl">
+        <Modal :show="showCreateModal" @close="showCreateModal = false" max-width="3xl">
             <div class="p-6">
-                <h2 class="text-lg font-semibold mb-4">Create Discount Code</h2>
+                <h2 class="text-xl font-semibold mb-6">Create New Discount Code</h2>
                 
-                <form @submit.prevent="createDiscount" class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <InputLabel for="code" value="Discount Code" />
-                            <TextInput 
-                                v-model="createForm.code" 
-                                id="code" 
-                                class="w-full" 
-                                placeholder="Leave blank to auto-generate"
-                                :class="{ 'font-mono': createForm.code }"
-                            />
-                            <InputError :message="createForm.errors.code" />
-                        </div>
-                        
-                        <div>
-                            <InputLabel for="description" value="Description (optional)" />
-                            <TextInput v-model="createForm.description" id="description" class="w-full" />
-                            <InputError :message="createForm.errors.description" />
+                <form @submit.prevent="createDiscount" class="space-y-6">
+                    <!-- Basic Information Section -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="font-medium text-gray-900 mb-4">Basic Information</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <InputLabel for="code" value="Discount Code" class="mb-1" />
+                                <p class="text-xs text-gray-500 mb-2">Enter a unique code or leave blank to auto-generate</p>
+                                <TextInput 
+                                    v-model="createForm.code" 
+                                    id="code" 
+                                    class="w-full uppercase" 
+                                    placeholder="e.g., SAVE20"
+                                    :class="{ 'font-mono': createForm.code }"
+                                    @input="e => createForm.code = e.target.value.toUpperCase()"
+                                />
+                                <InputError :message="createForm.errors.code" />
+                            </div>
+                            
+                            <div>
+                                <InputLabel for="description" value="Internal Description" class="mb-1" />
+                                <p class="text-xs text-gray-500 mb-2">For admin reference only (not shown to customers)</p>
+                                <TextInput 
+                                    v-model="createForm.description" 
+                                    id="description" 
+                                    class="w-full" 
+                                    placeholder="e.g., Black Friday 2024 promotion"
+                                />
+                                <InputError :message="createForm.errors.description" />
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-3 gap-4">
-                        <div>
-                            <InputLabel for="discount_type" value="Discount Type" />
-                            <select v-model="createForm.discount_type" id="discount_type" class="w-full">
-                                <option value="percentage">Percentage</option>
-                                <option value="fixed">Fixed Amount</option>
-                            </select>
-                            <InputError :message="createForm.errors.discount_type" />
+                    <!-- Discount Configuration Section -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="font-medium text-gray-900 mb-4">Discount Configuration</h3>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <InputLabel for="discount_type" value="Discount Type" class="mb-1" />
+                                <select v-model="createForm.discount_type" id="discount_type" class="w-full rounded-md border-gray-300">
+                                    <option value="percentage">Percentage Off</option>
+                                    <option value="fixed">Fixed Amount Off</option>
+                                </select>
+                                <InputError :message="createForm.errors.discount_type" />
+                            </div>
+                            
+                            <div>
+                                <InputLabel for="discount_amount" value="Discount Amount" class="mb-1" />
+                                <div class="relative">
+                                    <span v-if="createForm.discount_type === 'fixed'" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                                    <TextInput 
+                                        v-model.number="createForm.discount_amount" 
+                                        id="discount_amount" 
+                                        type="number" 
+                                        step="0.01" 
+                                        min="0"
+                                        :max="createForm.discount_type === 'percentage' ? 100 : null"
+                                        :class="createForm.discount_type === 'fixed' ? 'pl-8' : ''"
+                                        class="w-full" 
+                                        required 
+                                    />
+                                    <span v-if="createForm.discount_type === 'percentage'" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <span v-if="createForm.discount_type === 'percentage'">Enter 0-100</span>
+                                    <span v-else>Amount in dollars</span>
+                                </p>
+                                <InputError :message="createForm.errors.discount_amount" />
+                            </div>
+                            
+                            <div>
+                                <InputLabel for="apply_to" value="Duration" class="mb-1" />
+                                <select v-model="createForm.apply_to" id="apply_to" class="w-full rounded-md border-gray-300">
+                                    <option value="first_payment">First Payment Only</option>
+                                    <option value="forever">All Payments (Forever)</option>
+                                    <option value="specific_months">Specific Number of Months</option>
+                                </select>
+                                <InputError :message="createForm.errors.apply_to" />
+                            </div>
                         </div>
                         
-                        <div>
-                            <InputLabel for="discount_amount" value="Amount" />
-                            <div class="relative">
-                                <span v-if="createForm.discount_type === 'fixed'" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                        <div v-if="createForm.apply_to === 'specific_months'" class="mt-4">
+                            <InputLabel for="months_count" value="Number of Months" class="mb-1" />
+                            <p class="text-xs text-gray-500 mb-2">Discount will apply for this many billing cycles</p>
+                            <TextInput v-model.number="createForm.months_count" id="months_count" type="number" min="1" class="w-full max-w-xs" required />
+                            <InputError :message="createForm.errors.months_count" />
+                        </div>
+                    </div>
+                    
+                    <!-- Usage Limits Section -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="font-medium text-gray-900 mb-4">Usage Limits</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <InputLabel for="max_uses" value="Total Usage Limit" class="mb-1" />
+                                <p class="text-xs text-gray-500 mb-2">Maximum total redemptions (leave empty for unlimited)</p>
                                 <TextInput 
-                                    v-model.number="createForm.discount_amount" 
-                                    id="discount_amount" 
+                                    v-model.number="createForm.max_uses" 
+                                    id="max_uses" 
                                     type="number" 
-                                    step="0.01" 
-                                    min="0"
-                                    :class="createForm.discount_type === 'fixed' ? 'pl-8' : ''"
+                                    min="1" 
+                                    class="w-full" 
+                                    placeholder="Unlimited"
+                                />
+                                <InputError :message="createForm.errors.max_uses" />
+                            </div>
+                            
+                            <div>
+                                <InputLabel for="max_uses_per_customer" value="Per Customer Limit" class="mb-1" />
+                                <p class="text-xs text-gray-500 mb-2">How many times each customer can use this code</p>
+                                <TextInput 
+                                    v-model.number="createForm.max_uses_per_customer" 
+                                    id="max_uses_per_customer" 
+                                    type="number" 
+                                    min="1" 
                                     class="w-full" 
                                     required 
                                 />
-                                <span v-if="createForm.discount_type === 'percentage'" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
+                                <InputError :message="createForm.errors.max_uses_per_customer" />
                             </div>
-                            <InputError :message="createForm.errors.discount_amount" />
-                        </div>
-                        
-                        <div>
-                            <InputLabel for="apply_to" value="Apply To" />
-                            <select v-model="createForm.apply_to" id="apply_to" class="w-full">
-                                <option value="first_payment">First Payment Only</option>
-                                <option value="forever">All Payments (Forever)</option>
-                                <option value="specific_months">Specific Number of Months</option>
-                            </select>
-                            <InputError :message="createForm.errors.apply_to" />
                         </div>
                     </div>
                     
-                    <div v-if="createForm.apply_to === 'specific_months'">
-                        <InputLabel for="months_count" value="Number of Months" />
-                        <TextInput v-model.number="createForm.months_count" id="months_count" type="number" min="1" class="w-full" required />
-                        <InputError :message="createForm.errors.months_count" />
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <InputLabel for="max_uses" value="Total Usage Limit (optional)" />
-                            <TextInput v-model.number="createForm.max_uses" id="max_uses" type="number" min="1" class="w-full" placeholder="Unlimited" />
-                            <InputError :message="createForm.errors.max_uses" />
-                        </div>
-                        
-                        <div>
-                            <InputLabel for="max_uses_per_customer" value="Max Uses Per Customer" />
-                            <TextInput v-model.number="createForm.max_uses_per_customer" id="max_uses_per_customer" type="number" min="1" class="w-full" required />
-                            <InputError :message="createForm.errors.max_uses_per_customer" />
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <InputLabel for="valid_from" value="Valid From (optional)" />
-                            <TextInput v-model="createForm.valid_from" id="valid_from" type="datetime-local" class="w-full" />
-                            <InputError :message="createForm.errors.valid_from" />
-                        </div>
-                        
-                        <div>
-                            <InputLabel for="valid_until" value="Valid Until (optional)" />
-                            <TextInput v-model="createForm.valid_until" id="valid_until" type="datetime-local" class="w-full" />
-                            <InputError :message="createForm.errors.valid_until" />
+                    <!-- Validity Period Section -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="font-medium text-gray-900 mb-4">Validity Period</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <InputLabel for="valid_from" value="Start Date" class="mb-1" />
+                                <p class="text-xs text-gray-500 mb-2">When this code becomes active (optional)</p>
+                                <TextInput v-model="createForm.valid_from" id="valid_from" type="datetime-local" class="w-full" />
+                                <InputError :message="createForm.errors.valid_from" />
+                            </div>
+                            
+                            <div>
+                                <InputLabel for="valid_until" value="Expiration Date" class="mb-1" />
+                                <p class="text-xs text-gray-500 mb-2">When this code expires (optional)</p>
+                                <TextInput v-model="createForm.valid_until" id="valid_until" type="datetime-local" class="w-full" />
+                                <InputError :message="createForm.errors.valid_until" />
+                            </div>
                         </div>
                     </div>
                     
-                    <div>
-                        <InputLabel value="Applicable Products (optional)" />
-                        <p class="text-sm text-gray-500 mb-2">Leave empty to apply to all products</p>
-                        <div class="space-y-2 max-h-48 overflow-y-auto border rounded-md p-2">
-                            <label v-for="product in products" :key="product.id" class="flex items-center">
+                    <!-- Product Restrictions Section -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="font-medium text-gray-900 mb-4">Product Restrictions</h3>
+                        <p class="text-sm text-gray-600 mb-3">Select which products this discount applies to. Leave empty to apply to all products.</p>
+                        <div class="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3 bg-white">
+                            <label v-for="product in products" :key="product.id" class="flex items-center hover:bg-gray-50 p-2 rounded">
                                 <input 
                                     type="checkbox" 
                                     :value="product.id"
                                     v-model="createForm.applicable_products"
-                                    class="rounded mr-2"
+                                    class="rounded mr-3 text-indigo-600"
                                 />
-                                <span class="text-sm">{{ product.name }}</span>
+                                <span class="text-sm">{{ product.name }} - {{ product.tier }} ({{ product.billing_period }})</span>
                             </label>
                         </div>
                         <InputError :message="createForm.errors.applicable_products" />
                     </div>
                     
-                    <div>
+                    <!-- Stripe Integration -->
+                    <div class="bg-blue-50 rounded-lg p-4">
                         <label class="flex items-center">
-                            <input type="checkbox" v-model="createForm.create_in_stripe" class="rounded mr-2" />
-                            <span>Create this discount in Stripe as well</span>
+                            <input type="checkbox" v-model="createForm.create_in_stripe" class="rounded mr-3 text-indigo-600" />
+                            <div>
+                                <span class="font-medium">Create in Stripe</span>
+                                <p class="text-xs text-gray-600">Also create this discount code in your Stripe account for automatic application</p>
+                            </div>
                         </label>
                     </div>
                     

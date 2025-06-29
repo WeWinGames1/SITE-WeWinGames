@@ -7,7 +7,11 @@ import { Button as SecondaryButton } from "@/components/ui/button";
 import { Input as TextInput } from "@/components/ui/input";
 import { Label as InputLabel } from "@/components/ui/label";
 import InputError from '@/components/InputError.vue';
-import Editor from '@tinymce/tinymce-vue';
+import { useEditor, EditorContent } from '@tiptap/vue-3';
+import StarterKit from '@tiptap/starter-kit';
+import Link from '@tiptap/extension-link';
+import Image from '@tiptap/extension-image';
+import Placeholder from '@tiptap/extension-placeholder';
 
 interface Props {
     categories: Record<string, string>;
@@ -38,46 +42,96 @@ const featuredImagePreview = ref<string | null>(null);
 const newTag = ref('');
 const showSeoFields = ref(false);
 
-// TinyMCE configuration
-const tinymceApiKey = 'your-tinymce-api-key'; // Replace with your actual key
-const tinymceConfig = {
-    height: 500,
-    menubar: false,
-    plugins: [
-        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-        'insertdatetime', 'media', 'table', 'help', 'wordcount'
+// Tiptap editor setup
+const editor = useEditor({
+    content: '',
+    extensions: [
+        StarterKit.configure({
+            heading: {
+                levels: [2, 3, 4]
+            }
+        }),
+        Link.configure({
+            openOnClick: false,
+            HTMLAttributes: {
+                class: 'text-blue-600 hover:text-blue-800 underline'
+            }
+        }),
+        Image.configure({
+            HTMLAttributes: {
+                class: 'max-w-full h-auto rounded-lg'
+            }
+        }),
+        Placeholder.configure({
+            placeholder: 'Write your blog post content here...'
+        })
     ],
-    toolbar: 'undo redo | blocks | ' +
-        'bold italic backcolor | alignleft aligncenter ' +
-        'alignright alignjustify | bullist numlist outdent indent | ' +
-        'removeformat | image media link | code | help',
-    content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:16px }',
-    images_upload_url: route('admin.blog-posts.upload-image'),
-    automatic_uploads: true,
-    images_upload_handler: async (blobInfo: any, progress: any) => {
-        const formData = new FormData();
-        formData.append('image', blobInfo.blob(), blobInfo.filename());
-        formData.append('_token', document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '');
-        
-        try {
-            const response = await fetch(route('admin.blog-posts.upload-image'), {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            });
-            
-            if (!response.ok) throw new Error('Upload failed');
-            
-            const json = await response.json();
-            return json.location;
-        } catch (error) {
-            throw new Error('Image upload failed');
-        }
+    onUpdate: ({ editor }) => {
+        form.content = editor.getHTML();
+    }
+});
+
+// Add link function
+const addLink = () => {
+    const url = prompt('Enter URL:');
+    if (url) {
+        editor.value?.chain().focus().setLink({ href: url }).run();
     }
 };
+
+// Remove link function
+const removeLink = () => {
+    editor.value?.chain().focus().unsetLink().run();
+};
+
+// Add image function
+const addImage = () => {
+    const url = prompt('Enter image URL:');
+    if (url) {
+        editor.value?.chain().focus().setImage({ src: url }).run();
+    }
+};
+
+// Commented out old TinyMCE config
+// const tinymceApiKey = 'your-tinymce-api-key'; // Replace with your actual key
+// const tinymceConfig = {
+//     height: 500,
+//     menubar: false,
+//     plugins: [
+//         'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+//         'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+//         'insertdatetime', 'media', 'table', 'help', 'wordcount'
+//     ],
+//     toolbar: 'undo redo | blocks | ' +
+//         'bold italic backcolor | alignleft aligncenter ' +
+//         'alignright alignjustify | bullist numlist outdent indent | ' +
+//         'removeformat | image media link | code | help',
+//     content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:16px }',
+//     images_upload_url: route('admin.blog-posts.upload-image'),
+//     automatic_uploads: true,
+//     images_upload_handler: async (blobInfo: any, progress: any) => {
+//         const formData = new FormData();
+//         formData.append('image', blobInfo.blob(), blobInfo.filename());
+//         formData.append('_token', document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '');
+//         
+//         try {
+//             const response = await fetch(route('admin.blog-posts.upload-image'), {
+//                 method: 'POST',
+//                 body: formData,
+//                 headers: {
+//                     'X-Requested-With': 'XMLHttpRequest',
+//                 },
+//             });
+//             
+//             if (!response.ok) throw new Error('Upload failed');
+//             
+//             const json = await response.json();
+//             return json.location;
+//         } catch (error) {
+//             throw new Error('Image upload failed');
+//         }
+//     }
+// };
 
 // Computed
 const generatedSlug = computed(() => {
@@ -173,21 +227,22 @@ function updateSeoDescription() {
         <Head title="Create Blog Post" />
         
         <div class="max-w-4xl mx-auto p-6">
-            <h1 class="text-2xl font-bold mb-6">Create New Blog Post</h1>
+            <h1 class="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">Create New Blog Post</h1>
             
             <form @submit.prevent="submit" class="space-y-6">
                 <!-- Title -->
                 <div>
-                    <InputLabel for="title" value="Title" />
+                    <InputLabel for="title" value="Post Title" class="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300" />
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">The main headline for your blog post</p>
                     <TextInput 
                         v-model="form.title" 
                         id="title" 
-                        class="w-full" 
+                        class="w-full dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600" 
                         placeholder="Enter post title"
                         @blur="updateSeoTitle"
                         required 
                     />
-                    <div class="text-xs text-gray-500 mt-1">{{ characterCounts.title }} characters</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ characterCounts.title }} characters</div>
                     <InputError :message="form.errors.title" />
                 </div>
                 
@@ -225,22 +280,171 @@ function updateSeoDescription() {
                     <textarea 
                         v-model="form.excerpt" 
                         id="excerpt" 
-                        class="w-full rounded-md border-gray-300 shadow-sm"
+                        class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 shadow-sm"
                         rows="3"
                         placeholder="Brief description of the post"
                         @blur="updateSeoDescription"
                     />
-                    <div class="text-xs text-gray-500 mt-1">{{ characterCounts.excerpt }}/500 characters</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ characterCounts.excerpt }}/500 characters</div>
                     <InputError :message="form.errors.excerpt" />
                 </div>
                 
                 <!-- Content -->
                 <div>
-                    <InputLabel for="content" value="Content" />
-                    <Editor
-                        :api-key="tinymceApiKey"
-                        v-model="form.content"
-                        :init="tinymceConfig"
+                    <InputLabel for="content" value="Content" class="mb-2" />
+                    
+                    <!-- Tiptap Editor Toolbar -->
+                    <div v-if="editor" class="border border-gray-300 dark:border-gray-600 rounded-t-md bg-gray-50 dark:bg-gray-800 p-2 flex flex-wrap items-center gap-1">
+                        <button
+                            type="button"
+                            @click="editor.chain().focus().toggleBold().run()"
+                            :class="{ 'bg-gray-200 dark:bg-gray-700': editor.isActive('bold') }"
+                            class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-700 font-bold dark:text-gray-100"
+                            title="Bold"
+                        >
+                            B
+                        </button>
+                        <button
+                            type="button"
+                            @click="editor.chain().focus().toggleItalic().run()"
+                            :class="{ 'bg-gray-200 dark:bg-gray-700': editor.isActive('italic') }"
+                            class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-700 italic dark:text-gray-100"
+                            title="Italic"
+                        >
+                            I
+                        </button>
+                        <button
+                            type="button"
+                            @click="editor.chain().focus().toggleStrike().run()"
+                            :class="{ 'bg-gray-200 dark:bg-gray-700': editor.isActive('strike') }"
+                            class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-700 line-through dark:text-gray-100"
+                            title="Strikethrough"
+                        >
+                            S
+                        </button>
+                        
+                        <div class="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+                        
+                        <button
+                            type="button"
+                            @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
+                            :class="{ 'bg-gray-200 dark:bg-gray-700': editor.isActive('heading', { level: 2 }) }"
+                            class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-100 text-sm"
+                            title="Heading 2"
+                        >
+                            H2
+                        </button>
+                        <button
+                            type="button"
+                            @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
+                            :class="{ 'bg-gray-200 dark:bg-gray-700': editor.isActive('heading', { level: 3 }) }"
+                            class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-100 text-sm"
+                            title="Heading 3"
+                        >
+                            H3
+                        </button>
+                        <button
+                            type="button"
+                            @click="editor.chain().focus().toggleHeading({ level: 4 }).run()"
+                            :class="{ 'bg-gray-200 dark:bg-gray-700': editor.isActive('heading', { level: 4 }) }"
+                            class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-100 text-sm"
+                            title="Heading 4"
+                        >
+                            H4
+                        </button>
+                        <button
+                            type="button"
+                            @click="editor.chain().focus().setParagraph().run()"
+                            :class="{ 'bg-gray-200 dark:bg-gray-700': editor.isActive('paragraph') }"
+                            class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-100 text-sm"
+                            title="Paragraph"
+                        >
+                            P
+                        </button>
+                        
+                        <div class="w-px h-6 bg-gray-300 mx-1"></div>
+                        
+                        <button
+                            type="button"
+                            @click="editor.chain().focus().toggleBulletList().run()"
+                            :class="{ 'bg-gray-200 dark:bg-gray-700': editor.isActive('bulletList') }"
+                            class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-100"
+                            title="Bullet List"
+                        >
+                            •
+                        </button>
+                        <button
+                            type="button"
+                            @click="editor.chain().focus().toggleOrderedList().run()"
+                            :class="{ 'bg-gray-200 dark:bg-gray-700': editor.isActive('orderedList') }"
+                            class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-100"
+                            title="Numbered List"
+                        >
+                            1.
+                        </button>
+                        <button
+                            type="button"
+                            @click="editor.chain().focus().toggleBlockquote().run()"
+                            :class="{ 'bg-gray-200 dark:bg-gray-700': editor.isActive('blockquote') }"
+                            class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-100"
+                            title="Blockquote"
+                        >
+                            "
+                        </button>
+                        
+                        <div class="w-px h-6 bg-gray-300 mx-1"></div>
+                        
+                        <button
+                            type="button"
+                            @click="addLink"
+                            :class="{ 'bg-gray-200 dark:bg-gray-700': editor.isActive('link') }"
+                            class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-100 text-sm"
+                            title="Add Link"
+                        >
+                            🔗
+                        </button>
+                        <button
+                            v-if="editor.isActive('link')"
+                            type="button"
+                            @click="removeLink"
+                            class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-100 text-sm text-red-600"
+                            title="Remove Link"
+                        >
+                            ✕
+                        </button>
+                        <button
+                            type="button"
+                            @click="addImage"
+                            class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-100 text-sm"
+                            title="Add Image"
+                        >
+                            🖼️
+                        </button>
+                        
+                        <div class="w-px h-6 bg-gray-300 mx-1"></div>
+                        
+                        <button
+                            type="button"
+                            @click="editor.chain().focus().undo().run()"
+                            class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-100 text-sm"
+                            title="Undo"
+                        >
+                            ↶
+                        </button>
+                        <button
+                            type="button"
+                            @click="editor.chain().focus().redo().run()"
+                            class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-100 text-sm"
+                            title="Redo"
+                        >
+                            ↷
+                        </button>
+                    </div>
+                    
+                    <!-- Tiptap Editor Content -->
+                    <EditorContent 
+                        :editor="editor" 
+                        class="prose prose-lg dark:prose-invert max-w-none border border-gray-300 dark:border-gray-600 rounded-b-md p-4 min-h-[500px] focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 dark:bg-gray-800 dark:text-gray-100"
                     />
                     <InputError :message="form.errors.content" />
                 </div>

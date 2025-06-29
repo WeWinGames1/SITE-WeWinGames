@@ -15,7 +15,7 @@ class CustomerController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(50);
         return Inertia::render('admin/CustomersIndex', [
-            'customers' => $customers,
+            'customers' => $customers->items(),
         ]);
     }
 
