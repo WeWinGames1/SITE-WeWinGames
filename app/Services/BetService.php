@@ -501,6 +501,17 @@ class BetService
     }
 
     /**
+     * Get recent winning bets
+     */
+    public function getRecentWinningBets(int $limit = 5): \Illuminate\Database\Eloquent\Collection
+    {
+        return Bet::where('status', 'Won')
+            ->orderBy('betting_date', 'desc')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
      * Get win/loss ratio
      */
     public function getWinLossRatio(): array

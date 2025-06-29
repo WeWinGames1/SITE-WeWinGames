@@ -21,6 +21,7 @@ use App\Http\Controllers\BetController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\StaticPageController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\CustomerDashboardController;
 use App\Http\Controllers\PageShowController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\SupportTicketController;
@@ -38,7 +39,12 @@ Route::get('/partners-offers', [StaticPageController::class, 'partnerOffers'])->
 Route::get('/careers-jobs', [StaticPageController::class, 'careersJobs'])->name('careers-jobs');
 Route::get('/about-us', [StaticPageController::class, 'aboutUs'])->name('about-us');
 
-Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+// Customer dashboard route
+Route::get('dashboard', [CustomerDashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
+
+// Admin dashboard uses a different route (admin.dashboard)
 Route::get('/bet/{bet}', [BetController::class, 'authenticatedShow'])->middleware(['auth', 'verified'])->name('bet.show');
 Route::get('/subscription-checkout', [RegisteredUserController::class, 'newSubscription'])
     ->name('subscription.checkout')

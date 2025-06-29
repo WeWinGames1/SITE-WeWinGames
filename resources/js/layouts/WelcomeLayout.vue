@@ -11,9 +11,9 @@ const toggleMobileMenu = () => {
 
 const navLinks = [
     { title: 'Home', href: '/', },
-    { title: "Today's Picks", href: '/todays-tips' },
-    { title: 'Results', href: '/betting-results' },
-    { title: 'Pricing', href: '/#pricing' }
+    { title: "Betting Picks", href: '/todays-bets' },
+    { title: 'Betting Results', href: '/betting-results' },
+    { title: 'Buy Our Picks', href: '/buy-our-picks' }
    
 ];
 
@@ -41,13 +41,49 @@ const auth = computed(() => page.props.auth || null);
         <!-- Impersonation Banner -->
         <ImpersonationBanner />
         
+        <!-- Top Bar -->
+        <div class="bg-dark py-2">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-3">
+                        <a href="#" class="text-warning text-decoration-none small">
+                            <i class="bi bi-headset"></i> Support
+                        </a>
+                        <div class="text-secondary small">|</div>
+                        <div class="social-links d-flex gap-2">
+                            <a href="#" class="text-secondary"><i class="bi bi-facebook"></i></a>
+                            <a href="#" class="text-secondary"><i class="bi bi-instagram"></i></a>
+                            <a href="#" class="text-secondary"><i class="bi bi-twitter"></i></a>
+                            <a href="#" class="text-secondary"><i class="bi bi-github"></i></a>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <select class="form-select form-select-sm bg-dark text-white border-secondary" style="width: auto;">
+                            <option>English</option>
+                            <option>Spanish</option>
+                        </select>
+                        <select class="form-select form-select-sm bg-dark text-white border-secondary" style="width: auto;">
+                            <option>Colorado</option>
+                            <option>Nevada</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Header -->
-        <header class="navbar navbar-expand-lg navbar-dark" style="background-color: rgba(17, 24, 39, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(55, 65, 81, 0.5);">
+        <header class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 100%);">
             <div class="container">
                 <!-- Logo and Brand -->
                 <Link href="/" class="navbar-brand d-flex align-items-center">
-                    <AppLogo style="height: 40px; width: 40px;" class="me-2" />
-                    <span class="fw-bold fs-4 text-white">WeWinGames</span>
+                    <div class="d-flex align-items-center">
+                        <span class="text-warning fw-bold fs-3 me-1">W</span>
+                        <span class="text-white fw-bold fs-3">G</span>
+                    </div>
+                    <div class="ms-2">
+                        <div class="text-warning fw-bold" style="font-size: 0.9rem; line-height: 1;">WeWinGames</div>
+                        <div class="text-white" style="font-size: 0.6rem; line-height: 1;">THE BEST SPORT BETTING TIPS</div>
+                    </div>
                 </Link>
                 
                 <!-- Mobile Menu Button -->
@@ -102,10 +138,10 @@ const auth = computed(() => page.props.auth || null);
                         
                         <!-- Auth Buttons -->
                         <li class="nav-item ms-lg-3" v-if="!auth.user">
-                            <Link href="/login" class="nav-link text-light fw-medium">Login</Link>
+                            <Link href="/login" class="btn btn-outline-warning text-warning fw-medium px-4">Login</Link>
                         </li>
                         <li class="nav-item ms-lg-2" v-if="!auth.user">
-                            <Link href="/register" class="btn btn-primary fw-semibold px-4 py-2">Get Started</Link>
+                            <Link href="/register" class="btn btn-warning text-dark fw-bold px-4">Sign Up</Link>
                         </li>
                         <!-- Account Dropdown for Authenticated Users -->
                         <li class="nav-item dropdown ms-lg-3" v-else>
@@ -117,8 +153,8 @@ const auth = computed(() => page.props.auth || null);
                                 aria-expanded="false"
                             >
                                 <div class="d-flex align-items-center">
-                                    <div class="rounded-circle bg-purple d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
-                                        <i class="bi bi-person-fill text-white"></i>
+                                    <div class="rounded-circle bg-warning d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                        <i class="bi bi-person-fill text-dark"></i>
                                     </div>
                                     <span class="fw-medium">Account</span>
                                 </div>
@@ -128,15 +164,16 @@ const auth = computed(() => page.props.auth || null);
                                     <div class="text-white fw-semibold">{{ auth.user.data.name }}</div>
                                     <div class="text-gray-light small">{{ auth.user.data.email }}</div>
                                 </li>
-                                <li><Link href="/todays-tips" class="dropdown-item text-light"><i class="bi bi-lightbulb me-2 text-purple"></i>Today's Tips</Link></li>
-                                <li><Link href="/settings/profile" class="dropdown-item text-light"><i class="bi bi-gear me-2 text-purple"></i>Settings</Link></li>
-                                <li><Link href="/settings/billing" class="dropdown-item text-light"><i class="bi bi-credit-card me-2 text-purple"></i>Billing</Link></li>
-                                <li><Link href="/support" class="dropdown-item text-light"><i class="bi bi-headset me-2 text-purple"></i>Support</Link></li>
+                                <li><Link href="/dashboard" class="dropdown-item text-light"><i class="bi bi-speedometer2 me-2 text-warning"></i>Dashboard</Link></li>
+                                <li><Link href="/todays-bets" class="dropdown-item text-light"><i class="bi bi-lightbulb me-2 text-warning"></i>Today's Tips</Link></li>
+                                <li><Link href="/settings/profile" class="dropdown-item text-light"><i class="bi bi-gear me-2 text-warning"></i>Settings</Link></li>
+                                <li><Link href="/settings/billing" class="dropdown-item text-light"><i class="bi bi-credit-card me-2 text-warning"></i>Billing</Link></li>
+                                <li><Link href="/support" class="dropdown-item text-light"><i class="bi bi-headset me-2 text-warning"></i>Support</Link></li>
                                 <li v-if="auth.user.data.is_admin">
                                     <hr class="dropdown-divider" style="border-color: var(--bs-gray-medium) !important;">
                                 </li>
                                 <li v-if="auth.user.data.is_admin">
-                                    <Link href="/admin" class="dropdown-item text-light"><i class="bi bi-speedometer2 me-2 text-purple"></i>Admin Dashboard</Link>
+                                    <Link href="/admin" class="dropdown-item text-light"><i class="bi bi-speedometer2 me-2 text-warning"></i>Admin Dashboard</Link>
                                 </li>
                                 <li><hr class="dropdown-divider" style="border-color: var(--bs-gray-medium) !important;"></li>
                                 <li>
@@ -174,115 +211,137 @@ const auth = computed(() => page.props.auth || null);
         </div>
 
         <!-- Footer -->
-        <footer class="py-5" style="background-color: var(--bs-gray-dark); border-top: 1px solid var(--bs-gray-medium);">
-            <div class="container">
-                <div class="row mb-5">
-                    <!-- Company Info -->
-                    <div class="col-lg-4 mb-4 mb-lg-0">
-                        <div class="d-flex align-items-center mb-3">
-                            <AppLogo style="height: 40px; width: 40px;" class="me-2" />
-                            <h5 class="mb-0 text-white fw-bold">WeWinGames</h5>
+        <footer style="background-color: #0a0e1a;">
+            <!-- FAQ Section -->
+            <section class="py-5">
+                <div class="container">
+                    <div class="row align-items-center mb-5">
+                        <div class="col-lg-3">
+                            <img src="/images/trophy-sports.png" alt="Trophy" class="img-fluid" style="max-height: 250px;" />
                         </div>
-                        <p class="text-gray-light mb-4">The most transparent sports betting platform with consistent profits and expert picks.</p>
-                        <div class="d-flex gap-3">
-                            <a
-                                v-for="social in socialLinks"
-                                :key="social.icon"
-                                :href="social.url"
-                                target="_blank"
-                                rel="noopener"
-                                class="btn btn-sm btn-outline-secondary rounded-circle p-2"
-                                style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;"
-                            >
-                                <i v-if="social.icon === 'mdi:twitter'" class="bi bi-twitter"></i>
-                                <i v-else-if="social.icon === 'mdi:instagram'" class="bi bi-instagram"></i>
-                                <i v-else-if="social.icon === 'mdi:facebook'" class="bi bi-facebook"></i>
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <!-- Quick Links -->
-                    <div class="col-lg-2 col-md-4 mb-4 mb-lg-0">
-                        <h6 class="text-white fw-semibold mb-3">Product</h6>
-                        <ul class="list-unstyled">
-                            <li class="mb-2">
-                                <Link href="/todays-tips" class="text-gray-light text-decoration-none footer-link">Today's Picks</Link>
-                            </li>
-                            <li class="mb-2">
-                                <Link href="/betting-results" class="text-gray-light text-decoration-none footer-link">Results</Link>
-                            </li>
-                            <li class="mb-2">
-                                <Link href="/#pricing" class="text-gray-light text-decoration-none footer-link">Pricing</Link>
-                            </li>
-                            <li class="mb-2">
-                                <Link href="/blog" class="text-gray-light text-decoration-none footer-link">Blog</Link>
-                            </li>
-                        </ul>
-                    </div>
-                    
-                    <!-- Resources -->
-                    <div class="col-lg-2 col-md-4 mb-4 mb-lg-0">
-                        <h6 class="text-white fw-semibold mb-3">Resources</h6>
-                        <ul class="list-unstyled">
-                            <li class="mb-2">
-                                <Link href="/betting-education" class="text-gray-light text-decoration-none footer-link">Education</Link>
-                            </li>
-                            <li class="mb-2">
-                                <Link href="/about-us" class="text-gray-light text-decoration-none footer-link">About Us</Link>
-                            </li>
-                            <li class="mb-2">
-                                <Link href="/careers-jobs" class="text-gray-light text-decoration-none footer-link">Careers</Link>
-                            </li>
-                            <li class="mb-2">
-                                <Link href="/support" class="text-gray-light text-decoration-none footer-link">Support</Link>
-                            </li>
-                        </ul>
-                    </div>
-                    
-                    <!-- Legal -->
-                    <div class="col-lg-2 col-md-4 mb-4 mb-lg-0">
-                        <h6 class="text-white fw-semibold mb-3">Legal</h6>
-                        <ul class="list-unstyled">
-                            <li class="mb-2">
-                                <Link href="/terms" class="text-gray-light text-decoration-none footer-link">Terms of Service</Link>
-                            </li>
-                            <li class="mb-2">
-                                <Link href="/privacy" class="text-gray-light text-decoration-none footer-link">Privacy Policy</Link>
-                            </li>
-                            <li class="mb-2">
-                                <Link href="/responsible-gaming" class="text-gray-light text-decoration-none footer-link">Responsible Gaming</Link>
-                            </li>
-                        </ul>
-                    </div>
-                    
-                    <!-- Newsletter -->
-                    <div class="col-lg-2">
-                        <h6 class="text-white fw-semibold mb-3">Stay Updated</h6>
-                        <p class="text-gray-light small mb-3">Get the latest picks and updates</p>
-                        <Link href="/register" class="btn btn-primary btn-sm w-100">
-                            <i class="bi bi-envelope me-2"></i>
-                            Subscribe
-                        </Link>
-                    </div>
-                </div>
-                
-                <!-- Bottom Bar -->
-                <div class="pt-4 border-top" style="border-color: var(--bs-gray-medium) !important;">
-                    <div class="row align-items-center">
-                        <div class="col-md-6 mb-3 mb-md-0">
-                            <p class="text-gray-light small mb-0">
-                                &copy; {{ new Date().getFullYear() }} WeWinGames. All rights reserved.
-                            </p>
-                        </div>
-                        <div class="col-md-6 text-md-end">
-                            <p class="text-gray-light small mb-0">
-                                Made with <i class="bi bi-heart-fill text-danger mx-1"></i> by 
-                                <a href="https://jcompsolu.com" target="_blank" class="text-purple text-decoration-none">J Computer Solutions LLC</a>
-                            </p>
+                        <div class="col-lg-9">
+                            <h2 class="text-warning fw-bold mb-4">Frequently Asked Questions</h2>
+                            <div class="accordion accordion-flush" id="faqAccordion">
+                                <div class="accordion-item bg-transparent border-bottom border-secondary">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed bg-transparent text-white" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                            What is the difference between silver, gold and platinum bets?
+                                        </button>
+                                    </h2>
+                                    <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                        <div class="accordion-body text-secondary">
+                                            Silver bets are our standard picks, Gold bets offer higher value with better odds, and Platinum bets are our premium selections with the highest potential returns.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item bg-transparent border-bottom border-secondary">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed bg-transparent text-white" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                            Can I rely on the accuracy of the betting tips provided by WeWinGames.com?
+                                        </button>
+                                    </h2>
+                                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                        <div class="accordion-body text-secondary">
+                                            Our tips are based on extensive research and analysis. While we maintain a strong track record, remember that sports betting always involves risk.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item bg-transparent border-bottom border-secondary">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed bg-transparent text-white" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                            How much should I place on each bet?
+                                        </button>
+                                    </h2>
+                                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                        <div class="accordion-body text-secondary">
+                                            We recommend responsible bankroll management. Never bet more than you can afford to lose, and consider using a fixed percentage of your bankroll per bet.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
+            
+            <!-- Footer Links Section -->
+            <section class="py-5" style="background-color: #0d1829;">
+                <div class="container">
+                    <div class="row">
+                        <!-- Logo and Info -->
+                        <div class="col-lg-4 mb-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="text-warning fw-bold fs-2 me-1">W</span>
+                                <span class="text-white fw-bold fs-2">G</span>
+                                <div class="ms-2">
+                                    <div class="text-warning fw-bold">WeWinGames</div>
+                                    <div class="text-white small">THE BEST SPORT BETTING TIPS</div>
+                                </div>
+                            </div>
+                            <p class="text-secondary mb-4">The sports betting app world is taking off and we want you to enjoy it more by becoming a profitable sports bettor.</p>
+                            <div class="d-flex align-items-center p-3 border border-warning rounded">
+                                <span class="text-warning fw-bold fs-4 me-3">18+</span>
+                                <Link href="/responsible-gaming" class="text-white text-decoration-none">Responsible Gaming</Link>
+                            </div>
+                        </div>
+                        
+                        <!-- Navigate To -->
+                        <div class="col-lg-2 col-md-4 mb-4">
+                            <h5 class="text-warning mb-3">NAVIGATE TO</h5>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><Link href="/" class="text-secondary text-decoration-none footer-link">Home</Link></li>
+                                <li class="mb-2"><Link href="/about-us" class="text-secondary text-decoration-none footer-link">About Us</Link></li>
+                                <li class="mb-2"><Link href="/blog" class="text-secondary text-decoration-none footer-link">Sports News</Link></li>
+                                <li class="mb-2"><Link href="/partner-offers" class="text-secondary text-decoration-none footer-link">Partners Offers</Link></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Navigate To 2 -->
+                        <div class="col-lg-2 col-md-4 mb-4">
+                            <h5 class="text-warning mb-3">NAVIGATE TO</h5>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><Link href="/careers-jobs" class="text-secondary text-decoration-none footer-link">Our Events</Link></li>
+                                <li class="mb-2"><Link href="/todays-bets" class="text-secondary text-decoration-none footer-link">Today Tips</Link></li>
+                                <li class="mb-2"><Link href="/betting-education" class="text-secondary text-decoration-none footer-link">Betting Education</Link></li>
+                                <li class="mb-2"><Link href="/testimonials" class="text-secondary text-decoration-none footer-link">Our Clients</Link></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Support -->
+                        <div class="col-lg-4 col-md-4 mb-4">
+                            <h5 class="text-warning mb-3">SUPPORT</h5>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><Link href="/privacy" class="text-secondary text-decoration-none footer-link">Privacy Policy</Link></li>
+                                <li class="mb-2"><Link href="/sweepstakes-rules" class="text-secondary text-decoration-none footer-link">Sweepstakes Rules</Link></li>
+                                <li class="mb-2"><Link href="/terms" class="text-secondary text-decoration-none footer-link">Terms & Condition</Link></li>
+                                <li class="mb-2"><Link href="/team" class="text-secondary text-decoration-none footer-link">Our Team</Link></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Bottom Bar -->
+            <section class="py-3 border-top border-secondary">
+                <div class="container">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-3 mb-2 mb-md-0">
+                            <span class="text-secondary">FOLLOW US</span>
+                            <div class="social-links d-flex gap-2">
+                                <a href="#" class="text-secondary"><i class="bi bi-facebook"></i></a>
+                                <a href="#" class="text-secondary"><i class="bi bi-instagram"></i></a>
+                                <a href="#" class="text-secondary"><i class="bi bi-twitter"></i></a>
+                                <a href="#" class="text-secondary"><i class="bi bi-linkedin"></i></a>
+                                <a href="#" class="text-secondary"><i class="bi bi-youtube"></i></a>
+                            </div>
+                        </div>
+                        <div class="text-secondary small">
+                            © Copyright {{ new Date().getFullYear() }} We Win Games. All Rights Reserved. Designed by 
+                            <a href="https://adsrole.com" target="_blank" class="text-warning text-decoration-none">AdsRole Pvt. Ltd.</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </footer>
     </div>
 </template>
@@ -295,7 +354,15 @@ const auth = computed(() => page.props.auth || null);
 }
 
 .nav-link:hover {
-    color: var(--bs-purple-light) !important;
+    color: #ffc107 !important;
+}
+
+.social-links a {
+    transition: color 0.3s ease;
+}
+
+.social-links a:hover {
+    color: #ffc107 !important;
 }
 
 .dropdown-item {
@@ -303,8 +370,8 @@ const auth = computed(() => page.props.auth || null);
 }
 
 .dropdown-item:hover {
-    background-color: rgba(124, 58, 237, 0.1);
-    color: white !important;
+    background-color: rgba(255, 193, 7, 0.1);
+    color: #ffc107 !important;
 }
 
 .dropdown-item:hover i {
@@ -328,6 +395,42 @@ const auth = computed(() => page.props.auth || null);
 }
 
 .footer-link:hover {
-    color: var(--bs-purple-light) !important;
+    color: #ffc107 !important;
+}
+
+/* Accordion Customization */
+.accordion-button {
+    box-shadow: none !important;
+    padding: 1.25rem 0;
+}
+
+.accordion-button:not(.collapsed) {
+    color: #ffc107;
+    background-color: transparent;
+}
+
+.accordion-button::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffc107'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+    filter: brightness(0) invert(1);
+}
+
+.accordion-button:not(.collapsed)::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffc107'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+    filter: none;
+}
+
+/* Top bar styles */
+.form-select-sm {
+    font-size: 0.875rem;
+}
+
+/* Button hover effects */
+.btn-warning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+.btn-outline-warning:hover {
+    transform: translateY(-2px);
 }
 </style>

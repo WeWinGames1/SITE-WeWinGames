@@ -38,8 +38,8 @@ class AuthenticatedSessionController extends Controller
             return redirect()->intended(route('admin.dashboard', absolute: false));
         }
 
-        // Otherwise, redirect customers to the frontend
-        return redirect()->intended(route('todays-tips', absolute: false));
+        // Otherwise, redirect customers to their dashboard
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 
     /**
