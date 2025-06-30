@@ -31,7 +31,13 @@ defineProps<{
       >
         <div class="card-body d-flex flex-column p-5">
           <!-- Plan Header -->
-          <div class="mb-4">
+          <div class="mb-4 text-center">
+            <img 
+              :src="`/images/plan-icon-${plan.name.toLowerCase()}.svg`" 
+              :alt="`${plan.name} Plan`" 
+              class="mb-3"
+              style="height: 60px; width: auto;"
+            >
             <h3 class="fw-bold text-white mb-2">{{ plan.name }}</h3>
             <p class="text-gray-light mb-0">
               {{ plan.highlight ? 'Most popular choice' : plan.name === 'Platinum' ? 'Maximum value' : 'Great for beginners' }}

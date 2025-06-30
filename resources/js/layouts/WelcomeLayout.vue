@@ -38,36 +38,44 @@ const auth = computed(() => page.props.auth || null);
         <ImpersonationBanner />
         
         <!-- Top Bar -->
-        <div class="bg-dark py-2">
+        <div class="py-2" style="background-color: #0a1628; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
             <div class="container">
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center gap-3">
-                        <Link href="/support" class="text-warning text-decoration-none small">
-                            <i class="bi bi-headset"></i> Support
+                        <Link href="/support" class="text-white text-decoration-none small d-flex align-items-center">
+                            <i class="bi bi-headset me-1"></i> Support
                         </Link>
                         <div class="text-secondary small">|</div>
                         <div class="social-links d-flex gap-2">
-                            <a :href="socialMediaLinks.facebook" target="_blank" rel="noopener" class="text-secondary"><i class="bi bi-facebook"></i></a>
-                            <a :href="socialMediaLinks.instagram" target="_blank" rel="noopener" class="text-secondary"><i class="bi bi-instagram"></i></a>
-                            <a :href="socialMediaLinks.twitter" target="_blank" rel="noopener" class="text-secondary"><i class="bi bi-twitter"></i></a>
+                            <a :href="socialMediaLinks.facebook" target="_blank" rel="noopener" class="text-white opacity-75"><i class="bi bi-facebook"></i></a>
+                            <a :href="socialMediaLinks.instagram" target="_blank" rel="noopener" class="text-white opacity-75"><i class="bi bi-instagram"></i></a>
+                            <a :href="socialMediaLinks.twitter" target="_blank" rel="noopener" class="text-white opacity-75"><i class="bi bi-twitter"></i></a>
+                            <a href="#" class="text-white opacity-75"><i class="bi bi-telegram"></i></a>
                         </div>
                     </div>
-                    <div class="d-flex align-items-center gap-3">
-                        <select class="form-select form-select-sm bg-dark text-white border-secondary" style="width: auto;">
-                            <option>English</option>
-                            <option>Spanish</option>
-                        </select>
-                        <select class="form-select form-select-sm bg-dark text-white border-secondary" style="width: auto;">
-                            <option>Colorado</option>
-                            <option>Nevada</option>
-                        </select>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-white small me-2">English</span>
+                        <div class="dropdown">
+                            <button class="btn btn-sm text-white p-0" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                        </div>
+                        <div class="text-secondary mx-2">|</div>
+                        <div class="d-flex align-items-center">
+                            <span class="text-white small">🇺🇸 Colorado</span>
+                            <button class="btn btn-sm text-white p-0 ms-1" type="button">
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                        </div>
+                        <div class="text-secondary mx-2">|</div>
+                        <i class="bi bi-person-circle text-white"></i>
                     </div>
                 </div>
             </div>
         </div>
         
         <!-- Header -->
-        <header class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 100%);">
+        <header class="navbar navbar-expand-lg navbar-dark py-3" style="background-color: #0a1628;">
             <div class="container">
                 <!-- Logo and Brand -->
                 <Link href="/" class="navbar-brand d-flex align-items-center">
@@ -129,10 +137,10 @@ const auth = computed(() => page.props.auth || null);
                         
                         <!-- Auth Buttons -->
                         <li class="nav-item ms-lg-3" v-if="!auth.user">
-                            <Link href="/login" class="btn btn-outline-warning text-warning fw-medium px-4">Login</Link>
+                            <Link href="/login" class="btn btn-sm btn-outline-light px-3 py-2" style="border-radius: 20px; font-size: 14px;">Login</Link>
                         </li>
                         <li class="nav-item ms-lg-2" v-if="!auth.user">
-                            <Link href="/register" class="btn btn-warning text-dark fw-bold px-4">Sign Up</Link>
+                            <Link href="/register" class="btn btn-sm btn-warning text-dark fw-bold px-3 py-2" style="border-radius: 20px; font-size: 14px;">Sign Up</Link>
                         </li>
                         <!-- Account Dropdown for Authenticated Users -->
                         <li class="nav-item dropdown ms-lg-3" v-else>
@@ -184,22 +192,6 @@ const auth = computed(() => page.props.auth || null);
             <slot />
         </main>
 
-        <!-- Disclaimer -->
-        <div class="container mt-5">
-            <div class="rounded p-4 text-center" style="background-color: var(--bs-gray-dark); border: 1px solid var(--bs-gray-medium);">
-                <p class="text-white small mb-2">
-                    DISCLAIMER: This site is 100% for entertainment purposes only and does not involve real money betting. Gambling can be addictive, please play responsibly. If you or someone you know has a gambling problem and wants help, call 1-800 GAMBLER in the U.S. This service is intended for adult users 21+ only.
-                </p>
-                <p class="text-white small mb-3">
-                    The sports betting app world is taking off and we want you to enjoy it more by becoming a profitable sports bettor.
-                </p>
-                <div class="d-flex flex-wrap justify-content-center align-items-center gap-4">
-                    <img src="/images/rg.jpeg" alt="Responsible Gaming" style="height: 48px; width: auto;" />
-                    <img src="/images/ncpg.png" alt="National Council on Problem Gambling" style="height: 48px; width: auto;" />
-                    <img src="/images/21plus.png" alt="21+ Only" style="height: 48px; width: auto;" />
-                </div>
-            </div>
-        </div>
 
         <!-- Footer -->
         <footer style="background-color: #1a1a1a; position: relative; overflow: hidden;">
@@ -208,20 +200,23 @@ const auth = computed(() => page.props.auth || null);
                 <img src="/images/footer-bottom-ellipse.png" alt="" class="img-fluid" style="opacity: 0.5;" />
             </div>
             
+            <!-- Trophy positioned to align with footer top -->
+            <div class="position-absolute" style="left: 5%; bottom: 100%; transform: translateY(100px); z-index: 10;">
+                <img src="/images/footer-trophy.png" alt="Trophy" style="height: 250px; width: auto;" />
+            </div>
+            
             <!-- FAQ Section -->
             <section class="py-5 position-relative">
                 <div class="container">
-                    <div class="row align-items-start">
-                        <div class="col-lg-3 text-center mb-4 mb-lg-0">
-                            <img src="/images/footer-trophy.png" alt="Trophy" class="img-fluid mb-3" style="max-height: 200px;" />
+                    <div class="position-relative">
+                        <!-- FAQ Icon floating right -->
+                        <img src="/images/footer-faq-icon.png" alt="FAQ" class="position-absolute" style="height: 120px; right: 0; top: -20px; z-index: 10;" />
+                        
+                        <div class="text-center mb-4">
+                            <h2 class="text-white fw-bold d-inline">FREQUENTLY ASKED </h2>
+                            <h2 class="text-warning fw-bold d-inline">QUESTIONS</h2>
                         </div>
-                        <div class="col-lg-9">
-                            <div class="d-flex align-items-center mb-4">
-                                <h2 class="text-white fw-bold mb-0">FREQUENTLY ASKED </h2>
-                                <h2 class="text-warning fw-bold mb-0 ms-2">QUESTIONS</h2>
-                                <img src="/images/footer-faq-icon.png" alt="FAQ" class="ms-3" style="height: 80px;" />
-                            </div>
-                            <p class="text-secondary mb-4">Hopefully, Any Queries Are Covered Below, If Not, Please Get In Touch.</p>
+                        <p class="text-center text-secondary mb-5">Hopefully, Any Queries Are Covered Below, If Not, Please Get In Touch.</p>
                             <div class="accordion accordion-flush" id="faqAccordion" style="background-color: transparent;">
                                 <div class="accordion-item bg-transparent border-0 mb-3">
                                     <h2 class="accordion-header">
@@ -230,7 +225,7 @@ const auth = computed(() => page.props.auth || null);
                                         </button>
                                     </h2>
                                     <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
-                                        <div class="accordion-body text-secondary p-3" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid #333; border-top: none;">
+                                        <div class="accordion-body text-white p-3" style="background-color: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 193, 7, 0.3); border-top: none;">
                                             We give out our basic silver picks free and charge a good value monthly subscription for our premium gold and platinum picks. These range from a total of $100 for gold to $225 for gold & platinum FOR ALL SPORTS. This competes to the US industry-leading sites that charge up to $300-400 a month PER TIPSTER.
                                         </div>
                                     </div>
@@ -242,7 +237,7 @@ const auth = computed(() => page.props.auth || null);
                                         </button>
                                     </h2>
                                     <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                        <div class="accordion-body text-secondary p-3" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid #333; border-top: none;">
+                                        <div class="accordion-body text-white p-3" style="background-color: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 193, 7, 0.3); border-top: none;">
                                             Silver bets are our standard picks, Gold bets offer higher value with better odds, and Platinum bets are our premium selections with the highest potential returns.
                                         </div>
                                     </div>
@@ -254,7 +249,7 @@ const auth = computed(() => page.props.auth || null);
                                         </button>
                                     </h2>
                                     <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                        <div class="accordion-body text-secondary p-3" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid #333; border-top: none;">
+                                        <div class="accordion-body text-white p-3" style="background-color: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 193, 7, 0.3); border-top: none;">
                                             Our tips are based on extensive research and analysis. While we maintain a strong track record, remember that sports betting always involves risk.
                                         </div>
                                     </div>
@@ -266,7 +261,7 @@ const auth = computed(() => page.props.auth || null);
                                         </button>
                                     </h2>
                                     <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                        <div class="accordion-body text-secondary p-3" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid #333; border-top: none;">
+                                        <div class="accordion-body text-white p-3" style="background-color: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 193, 7, 0.3); border-top: none;">
                                             We recommend responsible bankroll management. Never bet more than you can afford to lose, and consider using a fixed percentage of your bankroll per bet.
                                         </div>
                                     </div>
@@ -278,7 +273,7 @@ const auth = computed(() => page.props.auth || null);
             </section>
             
             <!-- Footer Links Section -->
-            <section class="py-5 position-relative" style="background-color: #0d1829; border-top: 1px solid #333;">
+            <section class="py-5 position-relative" style="background-color: #0d1829; border-top: 1px solid rgba(255, 255, 255, 0.1);">
                 <div class="container">
                     <div class="row">
                         <!-- Logo and Info -->
@@ -286,12 +281,18 @@ const auth = computed(() => page.props.auth || null);
                             <div class="mb-3">
                                 <img src="/images/logo.png" alt="WeWinGames" style="height: 50px; width: auto;" class="mb-2">
                             </div>
-                            <p class="text-secondary mb-4">The sports betting app world is taking off and we want you to enjoy it more by becoming a profitable sports bettor.</p>
-                            <div class="p-3 rounded" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid #333;">
-                                <div class="input-group">
-                                    <span class="input-group-text bg-transparent border-0 text-warning fw-bold fs-5">18+</span>
-                                    <input type="text" class="form-control bg-transparent border-0 text-white" value="Responsible Gaming" readonly style="outline: none;">
-                                </div>
+                            <p class="text-white mb-4" style="font-size: 14px; line-height: 1.6;">The sports betting app world is taking off and we want you to enjoy it more by becoming a profitable sports bettor.</p>
+                            <div class="d-flex align-items-center p-2 rounded mb-3" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 193, 7, 0.3); width: fit-content;">
+                                <span class="text-warning fw-bold me-3" style="font-size: 18px;">21+</span>
+                                <span class="text-white" style="font-size: 14px;">Responsible Gaming</span>
+                            </div>
+                            <p class="text-white small mb-3" style="font-size: 12px; line-height: 1.5;">
+                                DISCLAIMER: This site is 100% for entertainment purposes only and does not involve real money betting. Gambling can be addictive, please play responsibly. If you or someone you know has a gambling problem and wants help, call 1-800 GAMBLER in the U.S. This service is intended for adult users 21+ only.
+                            </p>
+                            <div class="d-flex align-items-center gap-3">
+                                <img src="/images/legal-ncpg.png" alt="National Council on Problem Gambling" style="height: 32px; width: auto;" />
+                                <img src="/images/legal-rg.jpg" alt="Responsible Gaming" style="height: 32px; width: auto;" />
+                                <img src="/images/legal-21plus.png" alt="21+ Only" style="height: 32px; width: auto;" />
                             </div>
                         </div>
                         
@@ -299,10 +300,10 @@ const auth = computed(() => page.props.auth || null);
                         <div class="col-lg-2 col-md-4 mb-4">
                             <h5 class="text-warning mb-3">NAVIGATE TO</h5>
                             <ul class="list-unstyled">
-                                <li class="mb-2"><Link href="/" class="text-secondary text-decoration-none footer-link">Home</Link></li>
-                                <li class="mb-2"><Link href="/about-us" class="text-secondary text-decoration-none footer-link">About Us</Link></li>
-                                <li class="mb-2"><Link href="/blog" class="text-secondary text-decoration-none footer-link">Sports News</Link></li>
-                                <li class="mb-2"><Link href="/partner-offers" class="text-secondary text-decoration-none footer-link">Partners Offers</Link></li>
+                                <li class="mb-2"><Link href="/" class="text-white text-decoration-none footer-link">Home</Link></li>
+                                <li class="mb-2"><Link href="/about-us" class="text-white text-decoration-none footer-link">About Us</Link></li>
+                                <li class="mb-2"><Link href="/blog" class="text-white text-decoration-none footer-link">Sports News</Link></li>
+                                <li class="mb-2"><Link href="/partner-offers" class="text-white text-decoration-none footer-link">Partners Offers</Link></li>
                             </ul>
                         </div>
                         
@@ -310,10 +311,10 @@ const auth = computed(() => page.props.auth || null);
                         <div class="col-lg-2 col-md-4 mb-4">
                             <h5 class="text-warning mb-3">NAVIGATE TO</h5>
                             <ul class="list-unstyled">
-                                <li class="mb-2"><Link href="/careers-jobs" class="text-secondary text-decoration-none footer-link">Our Events</Link></li>
-                                <li class="mb-2"><Link href="/todays-bets" class="text-secondary text-decoration-none footer-link">Today Tips</Link></li>
-                                <li class="mb-2"><Link href="/betting-education" class="text-secondary text-decoration-none footer-link">Betting Education</Link></li>
-                                <li class="mb-2"><Link href="/testimonials" class="text-secondary text-decoration-none footer-link">Our Clients</Link></li>
+                                <li class="mb-2"><Link href="/careers-jobs" class="text-white text-decoration-none footer-link">Our Events</Link></li>
+                                <li class="mb-2"><Link href="/todays-bets" class="text-white text-decoration-none footer-link">Today Tips</Link></li>
+                                <li class="mb-2"><Link href="/betting-education" class="text-white text-decoration-none footer-link">Betting Education</Link></li>
+                                <li class="mb-2"><Link href="/testimonials" class="text-white text-decoration-none footer-link">Our Clients</Link></li>
                             </ul>
                         </div>
                         
@@ -321,10 +322,10 @@ const auth = computed(() => page.props.auth || null);
                         <div class="col-lg-4 col-md-4 mb-4">
                             <h5 class="text-warning mb-3">SUPPORT</h5>
                             <ul class="list-unstyled">
-                                <li class="mb-2"><Link href="/privacy" class="text-secondary text-decoration-none footer-link">Privacy Policy</Link></li>
-                                <li class="mb-2"><Link href="/sweepstakes-rules" class="text-secondary text-decoration-none footer-link">Sweepstakes Rules</Link></li>
-                                <li class="mb-2"><Link href="/terms" class="text-secondary text-decoration-none footer-link">Terms & Condition</Link></li>
-                                <li class="mb-2"><Link href="/team" class="text-secondary text-decoration-none footer-link">Our Team</Link></li>
+                                <li class="mb-2"><Link href="/privacy" class="text-white text-decoration-none footer-link">Privacy Policy</Link></li>
+                                <li class="mb-2"><Link href="/sweepstakes-rules" class="text-white text-decoration-none footer-link">Sweepstakes Rules</Link></li>
+                                <li class="mb-2"><Link href="/terms" class="text-white text-decoration-none footer-link">Terms & Condition</Link></li>
+                                <li class="mb-2"><Link href="/team" class="text-white text-decoration-none footer-link">Our Team</Link></li>
                             </ul>
                         </div>
                     </div>
@@ -332,11 +333,11 @@ const auth = computed(() => page.props.auth || null);
             </section>
             
             <!-- Bottom Bar -->
-            <section class="py-3" style="background-color: #000; border-top: 1px solid #333;">
+            <section class="py-3" style="background-color: #000; border-top: 1px solid rgba(255, 255, 255, 0.1);">
                 <div class="container">
                     <div class="d-flex flex-wrap justify-content-between align-items-center">
                         <div class="d-flex align-items-center gap-4 mb-2 mb-md-0">
-                            <span class="text-secondary text-uppercase small">Follow Us</span>
+                            <span class="text-white text-uppercase small">FOLLOW US</span>
                             <div class="social-links d-flex gap-3">
                                 <a :href="socialMediaLinks.facebook" target="_blank" rel="noopener" class="text-secondary"><i class="bi bi-facebook"></i></a>
                                 <a :href="socialMediaLinks.instagram" target="_blank" rel="noopener" class="text-secondary"><i class="bi bi-instagram"></i></a>
@@ -365,7 +366,9 @@ const auth = computed(() => page.props.auth || null);
 /* Custom hover effects */
 .nav-link {
     transition: color 0.3s ease;
-    font-weight: var(--bs-font-weight-medium);
+    font-weight: 500;
+    font-size: 14px;
+    padding: 0.5rem 1rem !important;
 }
 
 .nav-link:hover {
@@ -407,10 +410,13 @@ const auth = computed(() => page.props.auth || null);
 /* Footer link hover effect */
 .footer-link {
     transition: color 0.3s ease;
+    font-size: 14px;
+    opacity: 0.9;
 }
 
 .footer-link:hover {
     color: #ffc107 !important;
+    opacity: 1;
 }
 
 /* Accordion Customization */
@@ -426,8 +432,9 @@ const auth = computed(() => page.props.auth || null);
 }
 
 .accordion-button:not(.collapsed) {
-    color: #ffc107;
-    background-color: rgba(255, 193, 7, 0.1) !important;
+    color: #000;
+    background-color: #ffc107 !important;
+    font-weight: 600;
 }
 
 .accordion-button:focus {
