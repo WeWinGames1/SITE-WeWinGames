@@ -77,15 +77,17 @@ const plans = [
 <template>
   <WelcomeLayout>
     <Head title="Buy Our Picks" />
-    <div class="min-h-screen bg-gradient-to-b from-indigo-900 via-gray-900 to-black text-gray-200">
-      <div class="container mx-auto px-4 py-16 max-w-5xl">
-        <h1 class="text-4xl font-bold mb-4 text-center text-white">Buy Our Picks</h1>
-        <p class="text-lg text-center text-gray-300 mb-10">
-          We help people enjoy their experience betting on their mobiles. The sports betting app world is taking off and we want you to enjoy your experience. What better way than with our profitable free betting tips. We have set up WeWinGames to help you avail of this opportunity.
-        </p>
+    <div class="min-vh-100" style="background: linear-gradient(180deg, #4f46e5 0%, #1a2332 50%, #0a1628 100%);">
+      <div class="container-fluid px-4 px-lg-5 py-5" style="max-width: 1200px;">
+        <div class="pt-5 mt-5">
+          <h1 class="display-4 fw-bold mb-4 text-center text-white">Buy Our Picks</h1>
+          <p class="fs-5 text-center text-gray-light mb-5 mx-auto" style="max-width: 800px;">
+            We help people enjoy their experience betting on their mobiles. The sports betting app world is taking off and we want you to enjoy your experience. What better way than with our profitable free betting tips. We have set up WeWinGames to help you avail of this opportunity.
+          </p>
+        </div>
 
         <!-- Pricing Cards -->
-       <PricingCards :plans="plans" />
+        <PricingCards :plans="plans" />
       
       </div>
     </div>

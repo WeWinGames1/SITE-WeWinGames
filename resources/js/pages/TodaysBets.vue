@@ -176,13 +176,7 @@ const getMembershipBadgeStyle = (membership: string) => {
                                 <!-- Card Header -->
                                 <div class="card-header d-flex align-items-center justify-content-between py-3" style="background-color: #0d1829; border-bottom: 1px solid #2e4057;">
                                     <div class="d-flex align-items-center gap-2">
-                                        <img 
-                                            v-if="bet.sports === 'Football'"
-                                            src="/images/nfl-logo.png" 
-                                            alt="NFL" 
-                                            style="height: 24px; width: auto;"
-                                            onerror="this.style.display='none'"
-                                        >
+                                        <span v-if="bet.sports === 'Football'" class="fs-5">🏈</span>
                                         <span class="text-white fw-semibold">{{ bet.sports }}</span>
                                     </div>
                                     <div class="d-flex align-items-center gap-3 text-secondary small">
@@ -198,22 +192,22 @@ const getMembershipBadgeStyle = (membership: string) => {
                                         <div class="d-flex align-items-center justify-content-center gap-4">
                                             <div class="text-center">
                                                 <img 
-                                                    :src="bet.team_one_logo || '/images/team-placeholder.png'"
+                                                    :src="bet.team_one_logo || '/images/team-placeholder.svg'"
                                                     :alt="bet.team_one"
                                                     class="mb-2"
                                                     style="height: 60px; width: auto;"
-                                                    onerror="this.src='/images/team-placeholder.png'"
+                                                    onerror="this.src='/images/team-placeholder.svg'"
                                                 >
                                                 <div class="text-white fw-medium">{{ bet.team_one }}</div>
                                             </div>
                                             <div class="text-white fs-4 fw-bold">VS</div>
                                             <div class="text-center">
                                                 <img 
-                                                    :src="bet.team_two_logo || '/images/team-placeholder.png'"
+                                                    :src="bet.team_two_logo || '/images/team-placeholder.svg'"
                                                     :alt="bet.team_two"
                                                     class="mb-2"
                                                     style="height: 60px; width: auto;"
-                                                    onerror="this.src='/images/team-placeholder.png'"
+                                                    onerror="this.src='/images/team-placeholder.svg'"
                                                 >
                                                 <div class="text-white fw-medium">{{ bet.team_two }}</div>
                                             </div>

@@ -16,6 +16,11 @@ class CustomerDashboardController extends Controller
     {
         $user = Auth::user();
         
+        // Redirect admin users to admin dashboard
+        if ($user->hasRole('admin')) {
+            return redirect()->route('admin.dashboard');
+        }
+        
         // Get today's bets for the customer based on their subscription
         $todaysBets = $this->betService->getTodaysBets();
         

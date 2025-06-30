@@ -35,7 +35,7 @@ const auth = computed(() => page.props.auth || null);
     <div>
         <!-- Top Bar -->
         <div class="py-2" style="background-color: #0a1628; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-            <div class="container">
+            <div class="container-fluid px-4 px-lg-5">
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center gap-3">
                         <Link href="/support" class="text-white text-decoration-none small d-flex align-items-center">
@@ -72,7 +72,7 @@ const auth = computed(() => page.props.auth || null);
         
         <!-- Header -->
         <header class="navbar navbar-expand-lg navbar-dark py-3" style="background-color: #0a1628;">
-            <div class="container">
+            <div class="container-fluid px-4 px-lg-5">
                 <!-- Logo and Brand -->
                 <Link href="/" class="navbar-brand d-flex align-items-center">
                     <img src="/images/logo.png" alt="WeWinGames" style="height: 45px; width: auto;" class="me-2">
@@ -196,15 +196,15 @@ const auth = computed(() => page.props.auth || null);
                 <img src="/images/footer-bottom-ellipse.png" alt="" class="img-fluid" style="opacity: 0.5;" />
             </div>
             
-            <!-- Trophy positioned to align with footer top -->
-            <div class="position-absolute" style="left: 5%; bottom: 100%; transform: translateY(100px); z-index: 10;">
-                <img src="/images/footer-trophy.png" alt="Trophy" style="height: 250px; width: auto;" />
-            </div>
-            
             <!-- FAQ Section -->
             <section class="py-5 position-relative">
-                <div class="container">
+                <div class="container-fluid px-4 px-lg-5">
                     <div class="position-relative">
+                        <!-- Trophy positioned to touch the footer links section below -->
+                        <div class="position-absolute d-none d-lg-block" style="left: -180px; bottom: -80px; z-index: 10;">
+                            <img src="/images/footer-trophy.png" alt="Trophy" style="height: 320px; width: auto;" />
+                        </div>
+                        
                         <!-- FAQ Icon floating right -->
                         <img src="/images/footer-faq-icon.png" alt="FAQ" class="position-absolute" style="height: 120px; right: 0; top: -20px; z-index: 10;" />
                         
@@ -213,7 +213,11 @@ const auth = computed(() => page.props.auth || null);
                             <h2 class="text-warning fw-bold d-inline">QUESTIONS</h2>
                         </div>
                         <p class="text-center text-secondary mb-5">Hopefully, Any Queries Are Covered Below, If Not, Please Get In Touch.</p>
-                            <div class="accordion accordion-flush" id="faqAccordion" style="background-color: transparent;">
+                        
+                        <!-- Accordion wrapper with reduced width and right alignment -->
+                        <div class="row justify-content-end">
+                            <div class="col-lg-10">
+                                <div class="accordion accordion-flush" id="faqAccordion" style="background-color: transparent;">
                                 <div class="accordion-item bg-transparent border-0 mb-3">
                                     <h2 class="accordion-header">
                                         <button class="accordion-button bg-transparent text-white p-3" type="button" data-bs-toggle="collapse" data-bs-target="#faq1" style="background-color: rgba(255, 193, 7, 0.1); border: 1px solid #333;">
@@ -263,13 +267,15 @@ const auth = computed(() => page.props.auth || null);
                                     </div>
                                 </div>
                             </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
             
             <!-- Footer Links Section -->
             <section class="py-5 position-relative" style="background-color: #0d1829; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-                <div class="container">
+                <div class="container-fluid px-4 px-lg-5">
                     <div class="row align-items-center">
                         <!-- Logo and Tagline (1/3) -->
                         <div class="col-lg-4 mb-4 mb-lg-0">
@@ -300,7 +306,7 @@ const auth = computed(() => page.props.auth || null);
             
             <!-- Bottom Bar -->
             <section class="py-3" style="background-color: #000; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-                <div class="container">
+                <div class="container-fluid px-4 px-lg-5">
                     <div class="d-flex flex-wrap justify-content-between align-items-center">
                         <div class="d-flex align-items-center gap-4 mb-2 mb-md-0">
                             <span class="text-white text-uppercase small">FOLLOW US</span>

@@ -49,7 +49,7 @@ function fillCredentials(email: string, password: string) {
         <div class="min-vh-100 d-flex align-items-center" style="background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 100%);">
             <div class="container py-5">
                 <div class="row justify-content-center">
-                    <div class="col-md-6 col-lg-5">
+                    <div class="col-md-8 col-lg-7">
                         <div class="text-center mb-4">
                             <h1 class="display-4 fw-bold text-white mb-2">Welcome Back</h1>
                             <p class="fs-5 text-gray-light">Sign in to access your picks</p>

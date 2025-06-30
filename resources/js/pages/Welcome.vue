@@ -216,20 +216,17 @@ const allGroupedBets = computed(() => {
 
         <div class="min-vh-100">
             <!-- Hero Section -->
-            <section class="position-relative overflow-hidden" style="background: url('/images/home-banner-bg.jpg') center/cover no-repeat; min-height: 720px;">
+            <section class="position-relative overflow-hidden" style="background: url('/images/home-banner-bg.jpg') center/cover no-repeat; min-height: 480px;">
                 <!-- Dark overlay for better text contrast -->
                 <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(90deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 60%, transparent 100%);"></div>
                 
                 <!-- Content -->
-                <div class="container position-relative h-100" style="padding-top: 6rem; padding-bottom: 4rem; min-height: 720px;">
+                <div class="container-fluid position-relative h-100 px-4 px-lg-5" style="padding-top: 5rem; padding-bottom: 3rem; min-height: 480px;">
                     <div class="row align-items-center h-100">
                         <div class="col-lg-6">
-                            <p class="text-white text-uppercase mb-3" style="letter-spacing: 2px; font-size: 0.875rem;">Welcome To</p>
-                            <h1 class="display-3 fw-bold text-white mb-3" style="line-height: 1.1;">
-                                A NEXT - LEVEL<br>
-                                SPORTS <span class="text-warning">BETTING</span>
+                            <h1 class="display-3 fw-bold text-white mb-4" style="line-height: 1.1;">
+                                We Win <span class="text-warning">Games</span>
                             </h1>
-                            <h2 class="h1 fw-bold text-white mb-4">We Win Games</h2>
                             <p class="fs-5 text-white mb-4" style="opacity: 0.9;">
                                 The most transparent sports betting platform with consistent profits and expert picks.
                             </p>
@@ -245,22 +242,22 @@ const allGroupedBets = computed(() => {
                         
                         <!-- Players Image -->
                         <div class="col-lg-6 position-relative d-none d-lg-block">
-                            <img src="/images/header-bg-players.png" alt="Sports Players" class="img-fluid position-absolute" style="right: -100px; bottom: 0; max-height: 600px; width: auto;" />
+                            <img src="/images/header-bg-players.png" alt="Sports Players" class="img-fluid position-absolute" style="right: -100px; bottom: -250px; max-height: 500px; width: auto;" />
                         </div>
                     </div>
                 </div>
             </section>
 
             <!-- Betting Results Section -->
-            <section class="py-5 animate-section-fadein" style="background-color: var(--bs-gray-dark);">
+            <section class="py-2 animate-section-fadein" style="background-color: var(--bs-gray-dark);">
                 <!-- Page Header -->
-                <div class="container text-center pt-5 pb-4">
+                <div class="container-fluid text-center pt-5 pb-4">
                     <h3 class="display-4 fw-bold text-white">
                         Proven Track Record
                     </h3>
                     <p class="fs-5 text-gray-light mb-4">Profits calculated for $30 bets across all our picks</p>
                 </div>
-                <div class="container">
+                <div class="container-fluid">
                     <div class="row g-4">
                         <div class="col-lg-4">
                             <div class="card bg-dark text-white h-100 shadow text-center">
@@ -362,7 +359,7 @@ const allGroupedBets = computed(() => {
 
             <!-- Why Choose Us Section -->
             <section class="py-5 animate-section-fadein" style="background-color: var(--bs-body-bg);">
-                <div class="container">
+                <div class="container-fluid">
                     <div class="row align-items-center">
                         <!-- Image on the left -->
                         <div class="col-md-6 text-center mb-4 mb-md-0">
@@ -426,7 +423,7 @@ const allGroupedBets = computed(() => {
 
             <!-- Free Picks Section -->
             <section class="py-5 animate-section-fadein" style="background-color: var(--bs-body-bg);">
-                <div class="container">
+                <div class="container-fluid">
                     <div class="text-center mb-5">
                         <h2 class="display-4 fw-bold text-white mb-4">Today's Free Picks</h2>
                         <p class="fs-5 text-gray-light mb-5">Get a taste of our expert analysis - no credit card required</p>
@@ -448,7 +445,7 @@ const allGroupedBets = computed(() => {
 
             <!-- Subscription Plans Section -->
             <section class="py-5 animate-section-fadein" id="pricing" style="background-color: var(--bs-body-bg);">
-                <div class="container">
+                <div class="container-fluid">
                     <div class="text-center mb-5">
                         <h2 class="display-4 fw-bold text-white mb-4">Choose Your Plan</h2>
                         <p class="fs-5 text-gray-light mb-5">Start with a free trial, upgrade anytime</p>

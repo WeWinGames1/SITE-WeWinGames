@@ -62,7 +62,7 @@ const submit = () => {
         <div class="min-vh-100 d-flex align-items-center" style="background: linear-gradient(135deg, #7C3AED 0%, #111827 100%);">
             <div class="container py-5">
                 <div class="row justify-content-center">
-                    <div class="col-md-6 col-lg-5">
+                    <div class="col-md-8 col-lg-7">
                         <div class="text-center mb-4">
                             <h1 class="display-4 fw-bold text-white mb-2">Get Started</h1>
                             <p class="fs-5 text-gray-light">Join thousands of winning bettors today</p>

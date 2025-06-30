@@ -31,7 +31,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/pick/{id}', [BetController::class, 'showPick'])->name('pick.show');
 Route::get('/odds', [StaticPageController::class, 'odds'])->name('odds');
 Route::get('/futures', [StaticPageController::class, 'futures'])->name('futures');
-Route::get('/todays-tips', [BetController::class, 'todaysBets'])->name('todays-bets');
+Route::get('/todays-bets', [BetController::class, 'todaysBets'])->name('todays-bets');
 Route::get('/buy-our-picks', [StaticPageController::class, 'buyOurPicks'])->name('buy-our-picks');
 Route::get('/betting-results', [BetController::class, 'bettingResults'])->name('betting-results');
 Route::get('/betting-education', BettingEducationController::class)->name('betting-tips');

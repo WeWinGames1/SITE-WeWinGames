@@ -23,7 +23,7 @@
                 <div class="d-flex align-items-center justify-content-center gap-4">
                     <div class="text-center">
                         <img
-                            :src="bet.team_one_logo || '/images/placeholder-team-logo.png'"
+                            :src="bet.team_one_logo || '/images/team-placeholder.svg'"
                             :alt="bet.team_one"
                             class="mb-2"
                             style="width: 64px; height: 64px; object-fit: contain;"
@@ -33,7 +33,7 @@
                     <div class="text-white fs-4 fw-bold">VS</div>
                     <div class="text-center">
                         <img
-                            :src="bet.team_two_logo || '/images/placeholder-team-logo.png'"
+                            :src="bet.team_two_logo || '/images/team-placeholder.svg'"
                             :alt="bet.team_two"
                             class="mb-2"
                             style="width: 64px; height: 64px; object-fit: contain;"
@@ -137,7 +137,17 @@ const props = defineProps({
 
 const emit = defineEmits();
 const { props: pageProps } = usePage();
-const isAdmin = pageProps.auth?.isAdmin || false;
+// Only show admin controls if user is logged in AND has admin role
+const isAdmin = pageProps.auth?.user && pageProps.auth?.isAdmin === true;
+
+// Debug log - remove in production
+if (typeof window !== 'undefined') {
+    console.log('BetPickCard - Auth state:', {
+        user: pageProps.auth?.user,
+        isAdmin: pageProps.auth?.isAdmin,
+        calculatedIsAdmin: isAdmin
+    });
+}
 
 const updatedStatus = ref(props.bet.status);
 const updatedDate = ref(props.bet.betting_date || '');
