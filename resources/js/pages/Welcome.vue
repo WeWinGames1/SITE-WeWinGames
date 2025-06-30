@@ -216,83 +216,38 @@ const allGroupedBets = computed(() => {
 
         <div class="min-vh-100">
             <!-- Hero Section -->
-            <section class="position-relative overflow-hidden" style="background: linear-gradient(135deg, #7C3AED 0%, #111827 100%); min-height: 100vh;">
-                <!-- Background Pattern -->
-                <div class="position-absolute top-0 start-0 w-100 h-100" style="opacity: 0.1;">
-                    <div class="position-absolute" style="top: -50%; left: -20%; width: 600px; height: 600px; background: radial-gradient(circle, #7C3AED 0%, transparent 70%); filter: blur(100px);"></div>
-                    <div class="position-absolute" style="bottom: -30%; right: -10%; width: 500px; height: 500px; background: radial-gradient(circle, #A78BFA 0%, transparent 70%); filter: blur(80px);"></div>
-                </div>
+            <section class="position-relative overflow-hidden" style="background: url('/images/home-banner-bg.jpg') center/cover no-repeat; min-height: 720px;">
+                <!-- Dark overlay for better text contrast -->
+                <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(90deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 60%, transparent 100%);"></div>
                 
                 <!-- Content -->
-                <div class="container position-relative" style="padding-top: 8rem; padding-bottom: 6rem;">
-                    <div class="row align-items-center min-vh-100">
-                        <div class="col-lg-7">
-                            <h1 class="display-1 fw-extrabold text-white mb-4 animate-fadein">
-                                Win More<br>
-                                <span class="text-purple-light">Bet Smarter</span>
+                <div class="container position-relative h-100" style="padding-top: 6rem; padding-bottom: 4rem; min-height: 720px;">
+                    <div class="row align-items-center h-100">
+                        <div class="col-lg-6">
+                            <p class="text-white text-uppercase mb-3" style="letter-spacing: 2px; font-size: 0.875rem;">Welcome To</p>
+                            <h1 class="display-3 fw-bold text-white mb-3" style="line-height: 1.1;">
+                                A NEXT - LEVEL<br>
+                                SPORTS <span class="text-warning">BETTING</span>
                             </h1>
-                            <p class="fs-4 text-gray-light mb-5 animate-fadein" style="animation-delay: 0.2s; max-width: 600px;">
-                                Join thousands of winning bettors. Get expert picks, real-time analysis, and proven strategies.
+                            <h2 class="h1 fw-bold text-white mb-4">We Win Games</h2>
+                            <p class="fs-5 text-white mb-4" style="opacity: 0.9;">
+                                The most transparent sports betting platform with consistent profits and expert picks.
                             </p>
-                            <div class="d-flex flex-wrap gap-3 animate-fadein" style="animation-delay: 0.4s;">
-                                <Link href="/register" class="btn btn-primary btn-lg px-5 py-3">
-                                    <i class="bi bi-rocket-takeoff me-2"></i>
-                                    Start Free Trial
-                                </Link>
-                                <Link href="#pricing" class="btn btn-outline-light btn-lg px-5 py-3">
-                                    View Pricing
+                            <div class="mb-5">
+                                <Link href="/register" class="btn btn-warning btn-lg px-5 py-3 text-dark fw-bold">
+                                    Start Winning Today
                                 </Link>
                             </div>
-                            
-                            <!-- Stats -->
-                            <div class="row mt-5 animate-fadein" style="animation-delay: 0.6s;">
-                                <div class="col-4">
-                                    <h3 class="display-6 fw-bold text-white mb-0">68%</h3>
-                                    <p class="text-gray-light small">Win Rate</p>
-                                </div>
-                                <div class="col-4">
-                                    <h3 class="display-6 fw-bold text-white mb-0">15K+</h3>
-                                    <p class="text-gray-light small">Active Users</p>
-                                </div>
-                                <div class="col-4">
-                                    <h3 class="display-6 fw-bold text-white mb-0">$2M+</h3>
-                                    <p class="text-gray-light small">Profits Generated</p>
-                                </div>
-                            </div>
+                            <p class="text-white" style="opacity: 0.8; max-width: 500px;">
+                                We Make Sports Betting Easy—by doing all the hard work analyzing hundreds of betting sources to give you the best picks.
+                            </p>
                         </div>
                         
-                        <!-- Hero Image/Graphic -->
-                        <div class="col-lg-5 position-relative animate-fadein" style="animation-delay: 0.8s;">
-                            <div class="position-relative">
-                                <!-- Floating Cards Effect -->
-                                <div class="position-absolute bg-dark rounded-3 p-4 shadow-lg" style="top: 0; right: 20%; width: 280px; transform: rotate(-5deg); border: 1px solid var(--bs-gray-medium);">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <i class="bi bi-trophy-fill text-warning fs-3 me-3"></i>
-                                        <div>
-                                            <h5 class="mb-0 text-white">Today's Pick</h5>
-                                            <small class="text-gray-light">Lakers -3.5</small>
-                                        </div>
-                                    </div>
-                                    <div class="badge bg-success">WIN +$125</div>
-                                </div>
-                                
-                                <div class="position-absolute bg-dark rounded-3 p-4 shadow-lg" style="bottom: 10%; left: 10%; width: 260px; transform: rotate(3deg); border: 1px solid var(--bs-gray-medium);">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="text-white mb-1">Monthly ROI</h6>
-                                            <h3 class="text-success mb-0">+18.5%</h3>
-                                        </div>
-                                        <i class="bi bi-graph-up-arrow text-success fs-2"></i>
-                                    </div>
-                                </div>
-                            </div>
+                        <!-- Players Image -->
+                        <div class="col-lg-6 position-relative d-none d-lg-block">
+                            <img src="/images/header-bg-players.png" alt="Sports Players" class="img-fluid position-absolute" style="right: -100px; bottom: 0; max-height: 600px; width: auto;" />
                         </div>
                     </div>
-                </div>
-                
-                <!-- Scroll Indicator -->
-                <div class="position-absolute bottom-0 start-50 translate-middle-x pb-4 animate-bounceY">
-                    <i class="bi bi-chevron-down text-white fs-2"></i>
                 </div>
             </section>
 

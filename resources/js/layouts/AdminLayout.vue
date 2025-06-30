@@ -125,7 +125,7 @@ function logout() {
         >
             <div class="p-3 border-bottom border-secondary">
                 <div class="d-flex align-items-center">
-                    <ApplicationLogo style="height: 40px; width: 40px;" class="text-white" />
+                    <img src="/images/logo.png" alt="WeWinGames" style="height: 40px; width: auto;" />
                     <span class="ms-3 fs-5 fw-bold text-white">Admin Portal</span>
                 </div>
             </div>
@@ -220,8 +220,7 @@ function logout() {
 
                     <!-- Logo -->
                     <Link href="/" class="navbar-brand d-flex align-items-center me-3">
-                        <ApplicationLogo style="height: 32px; width: 32px;" class="me-2" />
-                        <span class="fw-bold">WeWinGames</span>
+                        <img src="/images/logo.png" alt="WeWinGames" style="height: 32px; width: auto;" class="me-2" />
                     </Link>
 
                     <!-- Search -->

@@ -13,7 +13,7 @@ class SupportTicketController extends Controller
 {
     public function index(Request $request)
     {
-        $query = SupportTicket::with(['user', 'category', 'assignedTo', 'latestReply'])
+        $query = SupportTicket::with(['user', 'category', 'assignedTo', 'latestReply', 'potentialUser'])
             ->latest();
 
         // Apply filters
@@ -39,6 +39,8 @@ class SupportTicketController extends Controller
                 $q->where('ticket_number', 'like', "%{$search}%")
                   ->orWhere('subject', 'like', "%{$search}%")
                   ->orWhere('content', 'like', "%{$search}%")
+                  ->orWhere('guest_name', 'like', "%{$search}%")
+                  ->orWhere('guest_email', 'like', "%{$search}%")
                   ->orWhereHas('user', function($q) use ($search) {
                       $q->where('name', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%");

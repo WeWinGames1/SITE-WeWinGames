@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SupportTicket;
 use App\Models\TicketCategory;
 use App\Models\TicketReply;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
@@ -114,5 +115,79 @@ class SupportTicketController extends Controller
         $ticket->update(['status' => 'open']);
 
         return redirect()->back()->with('success', 'Ticket reopened successfully.');
+    }
+
+    /**
+     * Show public support form (for both guests and authenticated users)
+     */
+    public function publicCreate()
+    {
+        return Inertia::render('support/PublicCreate', [
+            'categories' => TicketCategory::all(),
+            'isAuthenticated' => auth()->check(),
+        ]);
+    }
+
+    /**
+     * Store support ticket from public form
+     */
+    public function publicStore(Request $request)
+    {
+        // Different validation rules for guests vs authenticated users
+        $rules = [
+            'category_id' => 'required|exists:ticket_categories,id',
+            'subject' => 'required|string|max:255',
+            'content' => 'required|string',
+            'priority' => 'required|in:low,medium,high,urgent',
+        ];
+
+        // If user is not authenticated, require guest information
+        if (!auth()->check()) {
+            $rules['first_name'] = 'required|string|max:255';
+            $rules['last_name'] = 'required|string|max:255';
+            $rules['email'] = 'required|email|max:255';
+        }
+
+        $validated = $request->validate($rules);
+
+        // Check if email belongs to existing user
+        $existingUser = null;
+        $isGuestSubmission = !auth()->check();
+        
+        if ($isGuestSubmission) {
+            $existingUser = User::where('email', $validated['email'])->first();
+        }
+
+        // Create ticket
+        $ticketData = [
+            'ticket_number' => 'TICKET-' . strtoupper(Str::random(8)),
+            'category_id' => $validated['category_id'],
+            'subject' => $validated['subject'],
+            'content' => $validated['content'],
+            'priority' => $validated['priority'],
+            'status' => 'open',
+            'user_id' => auth()->id(),
+            'is_guest_submission' => $isGuestSubmission,
+        ];
+
+        // Add guest information if not authenticated
+        if ($isGuestSubmission) {
+            $ticketData['guest_name'] = $validated['first_name'] . ' ' . $validated['last_name'];
+            $ticketData['guest_email'] = $validated['email'];
+            $ticketData['potential_user_id'] = $existingUser?->id;
+        }
+
+        $ticket = SupportTicket::create($ticketData);
+
+        // Return appropriate response
+        if (auth()->check()) {
+            return redirect("/support/tickets/{$ticket->id}")
+                ->with('success', 'Support ticket created successfully.');
+        } else {
+            return Inertia::render('support/GuestTicketCreated', [
+                'ticketNumber' => $ticket->ticket_number,
+                'email' => $validated['email'],
+            ]);
+        }
     }
 }

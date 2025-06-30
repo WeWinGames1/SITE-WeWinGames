@@ -3,6 +3,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import ImpersonationBanner from '@/components/ImpersonationBanner.vue';
+import { socialMediaLinks } from '@/config/social';
 
 const mobileMenuOpen = ref(false);
 const toggleMobileMenu = () => {
@@ -25,11 +26,6 @@ const dropdownLinks = [
     //{ title: 'Odds', href: '/odds' },
     //{ title: 'Futures', href: '/futures' }
 ];
-const socialLinks = [
-    { icon: 'mdi:twitter', url: 'https://twitter.com/wewingames' },
-    { icon: 'mdi:instagram', url: 'https://instagram.com/wewingames' },
-    { icon: 'mdi:facebook', url: 'https://facebook.com/wewingames' },
-];
 
 const page = usePage();
 const auth = computed(() => page.props.auth || null);
@@ -46,15 +42,14 @@ const auth = computed(() => page.props.auth || null);
             <div class="container">
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center gap-3">
-                        <a href="#" class="text-warning text-decoration-none small">
+                        <Link href="/support" class="text-warning text-decoration-none small">
                             <i class="bi bi-headset"></i> Support
-                        </a>
+                        </Link>
                         <div class="text-secondary small">|</div>
                         <div class="social-links d-flex gap-2">
-                            <a href="#" class="text-secondary"><i class="bi bi-facebook"></i></a>
-                            <a href="#" class="text-secondary"><i class="bi bi-instagram"></i></a>
-                            <a href="#" class="text-secondary"><i class="bi bi-twitter"></i></a>
-                            <a href="#" class="text-secondary"><i class="bi bi-github"></i></a>
+                            <a :href="socialMediaLinks.facebook" target="_blank" rel="noopener" class="text-secondary"><i class="bi bi-facebook"></i></a>
+                            <a :href="socialMediaLinks.instagram" target="_blank" rel="noopener" class="text-secondary"><i class="bi bi-instagram"></i></a>
+                            <a :href="socialMediaLinks.twitter" target="_blank" rel="noopener" class="text-secondary"><i class="bi bi-twitter"></i></a>
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-3">
@@ -76,13 +71,9 @@ const auth = computed(() => page.props.auth || null);
             <div class="container">
                 <!-- Logo and Brand -->
                 <Link href="/" class="navbar-brand d-flex align-items-center">
-                    <div class="d-flex align-items-center">
-                        <span class="text-warning fw-bold fs-3 me-1">W</span>
-                        <span class="text-white fw-bold fs-3">G</span>
-                    </div>
-                    <div class="ms-2">
-                        <div class="text-warning fw-bold" style="font-size: 0.9rem; line-height: 1;">WeWinGames</div>
-                        <div class="text-white" style="font-size: 0.6rem; line-height: 1;">THE BEST SPORT BETTING TIPS</div>
+                    <img src="/images/logo.png" alt="WeWinGames" style="height: 45px; width: auto;" class="me-2">
+                    <div class="d-none d-lg-block ms-2">
+                        <div class="text-white fw-medium" style="font-size: 0.85rem; line-height: 1.2; letter-spacing: 0.5px;">We make sports betting easy</div>
                     </div>
                 </Link>
                 
@@ -211,49 +202,71 @@ const auth = computed(() => page.props.auth || null);
         </div>
 
         <!-- Footer -->
-        <footer style="background-color: #0a0e1a;">
+        <footer style="background-color: #1a1a1a; position: relative; overflow: hidden;">
+            <!-- Background Ellipse -->
+            <div class="position-absolute bottom-0 end-0" style="width: 600px; height: 600px; pointer-events: none;">
+                <img src="/images/footer-bottom-ellipse.png" alt="" class="img-fluid" style="opacity: 0.5;" />
+            </div>
+            
             <!-- FAQ Section -->
-            <section class="py-5">
+            <section class="py-5 position-relative">
                 <div class="container">
-                    <div class="row align-items-center mb-5">
-                        <div class="col-lg-3">
-                            <img src="/images/trophy-sports.png" alt="Trophy" class="img-fluid" style="max-height: 250px;" />
+                    <div class="row align-items-start">
+                        <div class="col-lg-3 text-center mb-4 mb-lg-0">
+                            <img src="/images/footer-trophy.png" alt="Trophy" class="img-fluid mb-3" style="max-height: 200px;" />
                         </div>
                         <div class="col-lg-9">
-                            <h2 class="text-warning fw-bold mb-4">Frequently Asked Questions</h2>
-                            <div class="accordion accordion-flush" id="faqAccordion">
-                                <div class="accordion-item bg-transparent border-bottom border-secondary">
+                            <div class="d-flex align-items-center mb-4">
+                                <h2 class="text-white fw-bold mb-0">FREQUENTLY ASKED </h2>
+                                <h2 class="text-warning fw-bold mb-0 ms-2">QUESTIONS</h2>
+                                <img src="/images/footer-faq-icon.png" alt="FAQ" class="ms-3" style="height: 80px;" />
+                            </div>
+                            <p class="text-secondary mb-4">Hopefully, Any Queries Are Covered Below, If Not, Please Get In Touch.</p>
+                            <div class="accordion accordion-flush" id="faqAccordion" style="background-color: transparent;">
+                                <div class="accordion-item bg-transparent border-0 mb-3">
                                     <h2 class="accordion-header">
-                                        <button class="accordion-button collapsed bg-transparent text-white" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                        <button class="accordion-button bg-transparent text-white p-3" type="button" data-bs-toggle="collapse" data-bs-target="#faq1" style="background-color: rgba(255, 193, 7, 0.1); border: 1px solid #333;">
+                                            Is there a membership or subscription fee to access the betting tips on WeWinGames.com?
+                                        </button>
+                                    </h2>
+                                    <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                        <div class="accordion-body text-secondary p-3" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid #333; border-top: none;">
+                                            We give out our basic silver picks free and charge a good value monthly subscription for our premium gold and platinum picks. These range from a total of $100 for gold to $225 for gold & platinum FOR ALL SPORTS. This competes to the US industry-leading sites that charge up to $300-400 a month PER TIPSTER.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item bg-transparent border-0 mb-3">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed bg-transparent text-white p-3" type="button" data-bs-toggle="collapse" data-bs-target="#faq2" style="background-color: transparent; border: 1px solid #333;">
                                             What is the difference between silver, gold and platinum bets?
                                         </button>
                                     </h2>
-                                    <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                        <div class="accordion-body text-secondary">
+                                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                        <div class="accordion-body text-secondary p-3" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid #333; border-top: none;">
                                             Silver bets are our standard picks, Gold bets offer higher value with better odds, and Platinum bets are our premium selections with the highest potential returns.
                                         </div>
                                     </div>
                                 </div>
-                                <div class="accordion-item bg-transparent border-bottom border-secondary">
+                                <div class="accordion-item bg-transparent border-0 mb-3">
                                     <h2 class="accordion-header">
-                                        <button class="accordion-button collapsed bg-transparent text-white" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                        <button class="accordion-button collapsed bg-transparent text-white p-3" type="button" data-bs-toggle="collapse" data-bs-target="#faq3" style="background-color: transparent; border: 1px solid #333;">
                                             Can I rely on the accuracy of the betting tips provided by WeWinGames.com?
                                         </button>
                                     </h2>
-                                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                        <div class="accordion-body text-secondary">
+                                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                        <div class="accordion-body text-secondary p-3" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid #333; border-top: none;">
                                             Our tips are based on extensive research and analysis. While we maintain a strong track record, remember that sports betting always involves risk.
                                         </div>
                                     </div>
                                 </div>
-                                <div class="accordion-item bg-transparent border-bottom border-secondary">
+                                <div class="accordion-item bg-transparent border-0">
                                     <h2 class="accordion-header">
-                                        <button class="accordion-button collapsed bg-transparent text-white" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                        <button class="accordion-button collapsed bg-transparent text-white p-3" type="button" data-bs-toggle="collapse" data-bs-target="#faq4" style="background-color: transparent; border: 1px solid #333;">
                                             How much should I place on each bet?
                                         </button>
                                     </h2>
-                                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                        <div class="accordion-body text-secondary">
+                                    <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                        <div class="accordion-body text-secondary p-3" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid #333; border-top: none;">
                                             We recommend responsible bankroll management. Never bet more than you can afford to lose, and consider using a fixed percentage of your bankroll per bet.
                                         </div>
                                     </div>
@@ -265,23 +278,20 @@ const auth = computed(() => page.props.auth || null);
             </section>
             
             <!-- Footer Links Section -->
-            <section class="py-5" style="background-color: #0d1829;">
+            <section class="py-5 position-relative" style="background-color: #0d1829; border-top: 1px solid #333;">
                 <div class="container">
                     <div class="row">
                         <!-- Logo and Info -->
                         <div class="col-lg-4 mb-4">
-                            <div class="d-flex align-items-center mb-3">
-                                <span class="text-warning fw-bold fs-2 me-1">W</span>
-                                <span class="text-white fw-bold fs-2">G</span>
-                                <div class="ms-2">
-                                    <div class="text-warning fw-bold">WeWinGames</div>
-                                    <div class="text-white small">THE BEST SPORT BETTING TIPS</div>
-                                </div>
+                            <div class="mb-3">
+                                <img src="/images/logo.png" alt="WeWinGames" style="height: 50px; width: auto;" class="mb-2">
                             </div>
                             <p class="text-secondary mb-4">The sports betting app world is taking off and we want you to enjoy it more by becoming a profitable sports bettor.</p>
-                            <div class="d-flex align-items-center p-3 border border-warning rounded">
-                                <span class="text-warning fw-bold fs-4 me-3">18+</span>
-                                <Link href="/responsible-gaming" class="text-white text-decoration-none">Responsible Gaming</Link>
+                            <div class="p-3 rounded" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid #333;">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-transparent border-0 text-warning fw-bold fs-5">18+</span>
+                                    <input type="text" class="form-control bg-transparent border-0 text-white" value="Responsible Gaming" readonly style="outline: none;">
+                                </div>
                             </div>
                         </div>
                         
@@ -322,22 +332,27 @@ const auth = computed(() => page.props.auth || null);
             </section>
             
             <!-- Bottom Bar -->
-            <section class="py-3 border-top border-secondary">
+            <section class="py-3" style="background-color: #000; border-top: 1px solid #333;">
                 <div class="container">
                     <div class="d-flex flex-wrap justify-content-between align-items-center">
-                        <div class="d-flex align-items-center gap-3 mb-2 mb-md-0">
-                            <span class="text-secondary">FOLLOW US</span>
-                            <div class="social-links d-flex gap-2">
-                                <a href="#" class="text-secondary"><i class="bi bi-facebook"></i></a>
-                                <a href="#" class="text-secondary"><i class="bi bi-instagram"></i></a>
-                                <a href="#" class="text-secondary"><i class="bi bi-twitter"></i></a>
+                        <div class="d-flex align-items-center gap-4 mb-2 mb-md-0">
+                            <span class="text-secondary text-uppercase small">Follow Us</span>
+                            <div class="social-links d-flex gap-3">
+                                <a :href="socialMediaLinks.facebook" target="_blank" rel="noopener" class="text-secondary"><i class="bi bi-facebook"></i></a>
+                                <a :href="socialMediaLinks.instagram" target="_blank" rel="noopener" class="text-secondary"><i class="bi bi-instagram"></i></a>
+                                <a :href="socialMediaLinks.twitter" target="_blank" rel="noopener" class="text-secondary"><i class="bi bi-twitter"></i></a>
                                 <a href="#" class="text-secondary"><i class="bi bi-linkedin"></i></a>
-                                <a href="#" class="text-secondary"><i class="bi bi-youtube"></i></a>
+                                <a href="#" class="text-secondary"><i class="bi bi-telegram"></i></a>
                             </div>
                         </div>
-                        <div class="text-secondary small">
-                            © Copyright {{ new Date().getFullYear() }} We Win Games. All Rights Reserved. Designed by 
-                            <a href="https://adsrole.com" target="_blank" class="text-warning text-decoration-none">AdsRole Pvt. Ltd.</a>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="text-secondary small">
+                                © Copyright {{ new Date().getFullYear() }} We Win Games. All Right Reserved. Designed by 
+                                <a href="https://adsrole.com" target="_blank" class="text-warning text-decoration-none">AdsRole Pvt. Ltd.</a>
+                            </div>
+                            <a href="/support" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-headset"></i> Support
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -401,22 +416,38 @@ const auth = computed(() => page.props.auth || null);
 /* Accordion Customization */
 .accordion-button {
     box-shadow: none !important;
-    padding: 1.25rem 0;
+    border-radius: 0 !important;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.accordion-button:hover {
+    background-color: rgba(255, 193, 7, 0.05) !important;
 }
 
 .accordion-button:not(.collapsed) {
     color: #ffc107;
-    background-color: transparent;
+    background-color: rgba(255, 193, 7, 0.1) !important;
+}
+
+.accordion-button:focus {
+    box-shadow: none !important;
 }
 
 .accordion-button::after {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffc107'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
-    filter: brightness(0) invert(1);
+    content: '+';
+    background-image: none;
+    font-size: 1.5rem;
+    font-weight: 300;
+    width: auto;
+    height: auto;
+    color: #ffc107;
+    transition: transform 0.3s ease;
 }
 
 .accordion-button:not(.collapsed)::after {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffc107'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
-    filter: none;
+    content: '+';
+    transform: rotate(45deg);
 }
 
 /* Top bar styles */

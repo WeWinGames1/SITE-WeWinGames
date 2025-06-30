@@ -40,6 +40,28 @@ function updateSubscription(user) {
 function impersonateUser(user) {
   router.post(route('admin.customers.impersonate', user.id));
 }
+
+function sendPasswordReset(user) {
+  if (confirm(`Send password reset link to ${user.email}?`)) {
+    router.post(route('admin.customers.password-reset', user.id), {}, {
+      preserveScroll: true,
+      onSuccess: (page) => {
+        // Show success message if available
+        if (page.props.flash?.success) {
+          alert(page.props.flash.success);
+        }
+      },
+      onError: (errors) => {
+        // Show error message if available
+        if (page.props.flash?.error) {
+          alert(page.props.flash.error);
+        } else {
+          alert('Failed to send password reset link.');
+        }
+      }
+    });
+  }
+}
 </script>
 
 <template>
@@ -118,7 +140,7 @@ function impersonateUser(user) {
                     />
                   </td>
                   <td>
-                    <div class="btn-group" role="group">
+                    <div class="d-flex gap-1">
                       <button
                         class="btn btn-sm btn-primary"
                         @click="updateSubscription(customer)"
@@ -131,7 +153,14 @@ function impersonateUser(user) {
                         @click="impersonateUser(customer)"
                         title="Impersonate this user"
                       >
-                        <i class="bi bi-person-badge"></i> Impersonate
+                        <i class="bi bi-person-badge"></i>
+                      </button>
+                      <button
+                        class="btn btn-sm btn-secondary"
+                        @click="sendPasswordReset(customer)"
+                        title="Send password reset link"
+                      >
+                        <i class="bi bi-key"></i>
                       </button>
                     </div>
                   </td>

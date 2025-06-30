@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Password;
 
 class CustomerController extends Controller
 {
@@ -62,5 +63,22 @@ class CustomerController extends Controller
         }
 
         return back()->with('success', 'Subscription updated!');
+    }
+
+    /**
+     * Send a password reset link to a customer
+     */
+    public function sendPasswordReset(Request $request, User $user)
+    {
+        // Generate password reset token and send email
+        $status = Password::sendResetLink(
+            ['email' => $user->email]
+        );
+
+        if ($status === Password::RESET_LINK_SENT) {
+            return back()->with('success', 'Password reset link has been sent to ' . $user->email);
+        }
+
+        return back()->with('error', 'Unable to send password reset link. Please try again.');
     }
 }

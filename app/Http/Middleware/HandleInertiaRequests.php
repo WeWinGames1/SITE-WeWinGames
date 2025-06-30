@@ -98,6 +98,10 @@ class HandleInertiaRequests extends Middleware
                 'APP_ENV' => config('app.env'),
                 'APP_DEBUG' => config('app.debug'),
             ],
+            'social' => [
+                'links' => config('social.links'),
+                'icons' => config('social.icons'),
+            ],
         ]);
     }
 }

@@ -52,6 +52,10 @@ Route::get('/subscription-checkout', [RegisteredUserController::class, 'newSubsc
 
 Route::post('/careers/apply', [CareerApplicationController::class, 'submit'])->name('careers.apply');
 
+// Public Support Route (for both guests and authenticated users)
+Route::get('/support', [SupportTicketController::class, 'publicCreate'])->name('support.public');
+Route::post('/support', [SupportTicketController::class, 'publicStore'])->name('support.public.store');
+
 // Support Ticket Routes
 Route::middleware(['auth', 'verified'])->prefix('support')->name('support.')->group(function () {
     Route::get('/', [SupportTicketController::class, 'index'])->name('tickets.index');
@@ -145,6 +149,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/customers')->
     Route::get('/', [CustomerController::class, 'index'])->name('index');
     Route::put('/{user}', [CustomerController::class, 'update'])->name('update');
     Route::post('/{user}/impersonate', [\App\Http\Controllers\Admin\ImpersonationController::class, 'start'])->name('impersonate');
+    Route::post('/{user}/password-reset', [CustomerController::class, 'sendPasswordReset'])->name('password-reset');
 });
 
 // Impersonation stop route (accessible when impersonating)

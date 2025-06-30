@@ -271,8 +271,20 @@ function formatDate(date: string) {
                                 <td class="fw-bold">{{ ticket.ticket_number }}</td>
                                 <td>{{ ticket.subject }}</td>
                                 <td>
-                                    <div>{{ ticket.user.name }}</div>
-                                    <small class="text-muted">{{ ticket.user.email }}</small>
+                                    <div v-if="ticket.is_guest_submission" class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-warning text-dark">GUEST</span>
+                                        <div>
+                                            <div>{{ ticket.guest_name }}</div>
+                                            <small class="text-muted">{{ ticket.guest_email }}</small>
+                                            <div v-if="ticket.potential_user" class="text-info small">
+                                                <i class="bi bi-info-circle"></i> Possible match: {{ ticket.potential_user.name }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-else>
+                                        <div>{{ ticket.user.name }}</div>
+                                        <small class="text-muted">{{ ticket.user.email }}</small>
+                                    </div>
                                 </td>
                                 <td>{{ ticket.category.name }}</td>
                                 <td>
