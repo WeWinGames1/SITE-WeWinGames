@@ -11,11 +11,23 @@ const isImpersonating = computed(() => page.props.impersonation?.isImpersonating
 
 // Simple reactive state for navigation
 const activeParent = computed(() => {
+    const currentPath = currentUrl.value;
+    console.log('Current path for activeParent:', currentPath);
+    
     for (const item of navigation) {
-        if (item.children && item.children.some(child => isActiveRoute(child.href))) {
-            return item.name;
+        if (item.children) {
+            const hasActiveChild = item.children.some(child => {
+                const isActive = isActiveRoute(child.href);
+                console.log(`Checking ${child.name} (${child.href}): ${isActive}`);
+                return isActive;
+            });
+            if (hasActiveChild) {
+                console.log(`Active parent found: ${item.name}`);
+                return item.name;
+            }
         }
     }
+    console.log('No active parent found');
     return null;
 });
 
@@ -23,18 +35,34 @@ const activeParent = computed(() => {
 const updateCollapseState = async () => {
     await nextTick();
     
+    console.log('updateCollapseState called, activeParent:', activeParent.value);
+    
     // Close all collapse elements first
-    const allCollapses = document.querySelectorAll('.collapse');
+    const allCollapses = document.querySelectorAll('.admin-sidebar .collapse');
     allCollapses.forEach(collapse => {
         collapse.classList.remove('show');
+        // Also update aria-expanded on parent links
+        const parentLink = document.querySelector(`[data-bs-target="#${collapse.id}"]`);
+        if (parentLink) {
+            parentLink.setAttribute('aria-expanded', 'false');
+        }
     });
     
     // Open the active parent collapse
     if (activeParent.value) {
         const collapseId = `collapse-${activeParent.value.replace(/\s+/g, '-')}`;
         const collapseElement = document.getElementById(collapseId);
+        const parentLink = document.querySelector(`[data-bs-target="#${collapseId}"]`);
+        
+        console.log('Trying to expand:', collapseId);
+        console.log('Found collapse element:', !!collapseElement);
+        console.log('Found parent link:', !!parentLink);
+        
         if (collapseElement) {
             collapseElement.classList.add('show');
+        }
+        if (parentLink) {
+            parentLink.setAttribute('aria-expanded', 'true');
         }
     }
 };
@@ -135,8 +163,9 @@ const navigation: NavItem[] = [
 
 function isActiveRoute(href: string): boolean {
     if (href === '#') return false;
-    // Check if the current URL matches the href
-    return currentUrl.value === href || currentUrl.value.startsWith(href + '?');
+    const current = currentUrl.value;
+    // Check if the current URL matches the href exactly or starts with the href
+    return current === href || current.startsWith(href + '/') || current.startsWith(href + '?');
 }
 
 // No longer needed - using reactive computed property instead
@@ -425,23 +454,42 @@ function logout() {
     font-size: 0.875rem;
     padding: 0.5rem 1rem;
     margin-left: 0.5rem;
+    margin-bottom: 0.125rem;
     border-radius: 0.375rem;
+    transition: all 0.2s ease;
+    position: relative;
 }
 
 .admin-sidebar .collapse .nav-link:hover {
-    background-color: rgba(148, 163, 184, 0.1);
+    background-color: rgba(148, 163, 184, 0.15);
     color: #e2e8f0;
     padding-left: 1.25rem;
+    transform: translateX(2px);
 }
 
 .admin-sidebar .collapse .nav-link.active {
-    background: rgba(59, 130, 246, 0.3);
-    color: #fff;
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.3) 0%, rgba(37, 99, 235, 0.3) 100%);
+    color: #fff !important;
     font-weight: 500;
+    border-left: 2px solid #3b82f6;
+    padding-left: 0.875rem;
 }
 
 .admin-sidebar .collapse .nav-link.active:hover {
-    background: rgba(59, 130, 246, 0.4);
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.4) 0%, rgba(37, 99, 235, 0.4) 100%);
+    transform: translateX(1px);
+}
+
+.admin-sidebar .collapse .nav-link.active::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 16px;
+    background-color: #3b82f6;
+    border-radius: 0 2px 2px 0;
 }
 
 /* Mobile sidebar styles */
@@ -498,11 +546,24 @@ function logout() {
 
 /* Active parent link */
 .nav-link[data-bs-toggle="collapse"][aria-expanded="true"] {
-    color: #fff;
+    color: #fff !important;
+    background-color: rgba(148, 163, 184, 0.15);
+    font-weight: 500;
+}
+
+.nav-link[data-bs-toggle="collapse"][aria-expanded="true"]:hover {
+    color: #fff !important;
+    background-color: rgba(148, 163, 184, 0.2);
 }
 
 .nav-link[data-bs-toggle="collapse"][aria-expanded="true"] .bi-chevron-down {
     transform: rotate(180deg);
+}
+
+.nav-link[data-bs-toggle="collapse"]:hover {
+    color: #e2e8f0;
+    background-color: rgba(148, 163, 184, 0.1);
+    padding-left: 1.25rem;
 }
 
 .bi-chevron-down {
