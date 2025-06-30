@@ -110,4 +110,12 @@ class User extends Authenticatable implements MustVerifyEmail
         
         return null;
     }
+
+    /**
+     * Get the user's support tickets
+     */
+    public function supportTickets()
+    {
+        return $this->hasMany(SupportTicket::class);
+    }
 }

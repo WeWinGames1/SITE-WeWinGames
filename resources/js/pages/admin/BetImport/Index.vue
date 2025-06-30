@@ -1,16 +1,22 @@
 <template>
   <AdminLayout title="Import Bets">
-    <div class="container mx-auto px-4 py-8">
-      <div class="max-w-6xl mx-auto">
-        <h1 class="text-3xl font-bold mb-8">CSV Bet Import Wizard</h1>
+    <div class="container-fluid">
+      <div class="row mb-4">
+        <div class="col-12">
+          <h1 class="h2 mb-0">CSV Bet Import Wizard</h1>
+        </div>
+      </div>
 
-        <!-- Progress Steps -->
-        <div class="mb-8">
+      <!-- Progress Steps -->
+      <div class="row mb-4">
+        <div class="col-12">
           <ImportProgress :current-step="currentStep" :steps="steps" />
         </div>
+      </div>
 
-        <!-- Step Content -->
-        <div class="bg-white rounded-lg shadow-lg p-6">
+      <!-- Step Content -->
+      <div class="card">
+        <div class="card-body">
           <!-- Step 1: Upload -->
           <UploadStep
             v-if="currentStep === 1"

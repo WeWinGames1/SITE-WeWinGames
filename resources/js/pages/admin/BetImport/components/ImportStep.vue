@@ -1,92 +1,107 @@
 <template>
   <div>
-    <h2 class="text-2xl font-semibold mb-4">Import in Progress</h2>
+    <h2 class="h3 mb-4">Import in Progress</h2>
     
     <!-- Progress Bar -->
-    <div class="mb-6">
-      <div class="flex justify-between text-sm text-gray-600 mb-2">
+    <div class="mb-4">
+      <div class="d-flex justify-content-between small text-muted mb-2">
         <span>Processing bets...</span>
         <span>{{ progress.percentage }}%</span>
       </div>
-      <div class="w-full bg-gray-200 rounded-full h-3">
+      <div class="progress" style="height: 12px;">
         <div
-          class="bg-indigo-600 h-3 rounded-full transition-all duration-300"
+          class="progress-bar progress-bar-striped progress-bar-animated"
           :style="{ width: `${progress.percentage}%` }"
-        />
+          role="progressbar"
+          :aria-valuenow="progress.percentage"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        ></div>
       </div>
     </div>
 
     <!-- Progress Stats -->
-    <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="bg-white p-4 rounded-lg border">
-        <dt class="text-sm font-medium text-gray-500">Total</dt>
-        <dd class="mt-1 text-2xl font-semibold text-gray-900">{{ progress.total }}</dd>
+    <div class="row mb-4">
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card">
+          <div class="card-body">
+            <dt class="small text-muted">Total</dt>
+            <dd class="h3 mb-0">{{ progress.total }}</dd>
+          </div>
+        </div>
       </div>
-      <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-        <dt class="text-sm font-medium text-blue-700">Processed</dt>
-        <dd class="mt-1 text-2xl font-semibold text-blue-900">{{ progress.processed }}</dd>
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-primary bg-opacity-10 border-primary">
+          <div class="card-body">
+            <dt class="small text-primary">Processed</dt>
+            <dd class="h3 mb-0 text-primary">{{ progress.processed }}</dd>
+          </div>
+        </div>
       </div>
-      <div class="bg-green-50 p-4 rounded-lg border border-green-200">
-        <dt class="text-sm font-medium text-green-700">Success</dt>
-        <dd class="mt-1 text-2xl font-semibold text-green-900">{{ progress.success }}</dd>
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-success bg-opacity-10 border-success">
+          <div class="card-body">
+            <dt class="small text-success">Success</dt>
+            <dd class="h3 mb-0 text-success">{{ progress.success }}</dd>
+          </div>
+        </div>
       </div>
-      <div class="bg-red-50 p-4 rounded-lg border border-red-200">
-        <dt class="text-sm font-medium text-red-700">Errors</dt>
-        <dd class="mt-1 text-2xl font-semibold text-red-900">{{ progress.errors }}</dd>
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-danger bg-opacity-10 border-danger">
+          <div class="card-body">
+            <dt class="small text-danger">Errors</dt>
+            <dd class="h3 mb-0 text-danger">{{ progress.errors }}</dd>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Status Messages -->
-    <div class="mb-6">
-      <div v-if="progress.status === 'processing'" class="flex items-center text-blue-700">
-        <svg class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
+    <div class="mb-4">
+      <div v-if="progress.status === 'processing'" class="alert alert-primary d-flex align-items-center">
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
         <span>Processing your import...</span>
       </div>
       
-      <div v-else-if="progress.status === 'completed'" class="flex items-center text-green-700">
-        <CheckCircleIcon class="h-5 w-5 mr-2" />
+      <div v-else-if="progress.status === 'completed'" class="alert alert-success d-flex align-items-center">
+        <i class="bi bi-check-circle me-2"></i>
         <span>Import completed successfully!</span>
       </div>
       
-      <div v-else-if="progress.status === 'failed'" class="flex items-center text-red-700">
-        <XCircleIcon class="h-5 w-5 mr-2" />
+      <div v-else-if="progress.status === 'failed'" class="alert alert-danger d-flex align-items-center">
+        <i class="bi bi-exclamation-circle me-2"></i>
         <span>Import failed. Please try again.</span>
       </div>
     </div>
 
     <!-- Error Log -->
-    <div v-if="errorLog.length > 0" class="mb-6">
-      <h3 class="font-semibold mb-2">Error Log</h3>
-      <div class="bg-red-50 border border-red-200 rounded-lg p-4 max-h-60 overflow-y-auto">
-        <div v-for="(error, index) in errorLog" :key="index" class="text-sm text-red-700 mb-2">
-          <span class="font-medium">Row {{ error.row }}:</span>
-          <span class="ml-1">{{ error.message }}</span>
+    <div v-if="errorLog.length > 0" class="mb-4">
+      <h3 class="h5 mb-2">Error Log</h3>
+      <div class="alert alert-danger" style="max-height: 240px; overflow-y: auto;">
+        <div v-for="(error, index) in errorLog" :key="index" class="small mb-2">
+          <span class="fw-medium">Row {{ error.row }}:</span>
+          <span class="ms-1">{{ error.message }}</span>
         </div>
       </div>
     </div>
 
     <!-- Actions -->
-    <div class="flex justify-center space-x-4">
+    <div class="d-flex justify-content-center gap-3">
       <button
         v-if="errorReportAvailable && (progress.status === 'completed' || progress.status === 'completed_with_errors')"
         @click="downloadErrorReport"
-        class="inline-flex items-center px-6 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50"
+        class="btn btn-outline-secondary"
       >
-        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-        </svg>
+        <i class="bi bi-download me-2"></i>
         Download Error Report
       </button>
       
       <button
         v-if="progress.status === 'completed' || progress.status === 'completed_with_errors' || progress.status === 'failed'"
         @click="$emit('import-complete')"
-        class="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+        class="btn btn-primary"
       >
-        <CheckIcon class="h-5 w-5 mr-2" />
+        <i class="bi bi-check me-2"></i>
         View Imported Bets
       </button>
     </div>
@@ -95,7 +110,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { CheckCircleIcon, XCircleIcon, CheckIcon } from '@heroicons/vue/24/outline'
+// Bootstrap icons are used in template
 
 interface Props {
   importId: string

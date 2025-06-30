@@ -1,66 +1,213 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, useForm, usePage, router } from '@inertiajs/vue3';
-import { reactive } from 'vue';
+import { ref, computed, watch } from 'vue';
+import { debounce } from 'lodash';
 
-const props = defineProps<{ customers: Array<any> }>();
+interface Customer {
+  id: number;
+  name: string;
+  email: string;
+  created_at: string;
+  subscriptions: Array<{
+    stripe_status: string;
+    price: string;
+    trial_ends_at: string | null;
+  }>;
+}
+
+interface Props {
+  customers: {
+    data: Customer[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number;
+    to: number;
+  };
+  filters: {
+    search?: string;
+    status?: string;
+    tier?: string;
+    start_date?: string;
+    end_date?: string;
+    sort?: string;
+    direction?: string;
+    per_page?: number;
+  };
+  stats: {
+    total: number;
+    active: number;
+    trialing: number;
+    no_subscription: number;
+  };
+}
+
+const props = defineProps<Props>();
 const page = usePage();
 const stripePrices = page.props.stripePrices || {};
 
-const editableSubs = reactive(
-  props.customers.reduce((acc, customer) => {
-    const sub = customer.subscriptions && customer.subscriptions.length > 0
-      ? customer.subscriptions[0]
-      : { stripe_status: '', price: '', trial_ends_at: null };
-    acc[customer.id] = {
-      subscription_price: sub.price || '',
-      subscription_status: sub.stripe_status || '',
-      trial_days: '',
-      trial_ends_at: sub.trial_ends_at,
-    };
-    return acc;
-  }, {})
-);
+// Filter state
+const filters = ref({
+  search: props.filters.search || '',
+  status: props.filters.status || '',
+  tier: props.filters.tier || '',
+  start_date: props.filters.start_date || '',
+  end_date: props.filters.end_date || '',
+  sort: props.filters.sort || 'created_at',
+  direction: props.filters.direction || 'desc',
+  per_page: props.filters.per_page || 25,
+});
 
-function updateSubscription(user) {
-  const form = useForm({
-    subscription_price: editableSubs[user.id].subscription_price,
-    subscription_status: editableSubs[user.id].subscription_status,
-    trial_days: editableSubs[user.id].trial_days,
+// Modal state
+const showGrantModal = ref(false);
+const selectedCustomer = ref<Customer | null>(null);
+const grantForm = useForm({
+  subscription_price: '',
+  subscription_status: 'active',
+  trial_days: ''
+});
+
+// Apply filters with debounce for search
+const applyFilters = debounce(() => {
+  router.get(route('admin.customers.index'), {
+    ...filters.value,
+    page: 1, // Reset to first page when filtering
+  }, {
+    preserveState: true,
+    preserveScroll: true,
+    replace: true,
   });
+}, 300);
 
-  form.put(route('admin.customers.update', user.id), {
+// Watch for filter changes
+watch(() => filters.value.search, applyFilters);
+watch(() => filters.value.status, () => {
+  router.get(route('admin.customers.index'), filters.value, {
+    preserveState: true,
+    preserveScroll: true,
+    replace: true,
+  });
+});
+watch(() => filters.value.tier, () => {
+  router.get(route('admin.customers.index'), filters.value, {
+    preserveState: true,
+    preserveScroll: true,
+    replace: true,
+  });
+});
+watch(() => filters.value.per_page, () => {
+  router.get(route('admin.customers.index'), filters.value, {
+    preserveState: true,
+    preserveScroll: true,
+    replace: true,
+  });
+});
+
+function toggleSort(field: string) {
+  if (filters.value.sort === field) {
+    filters.value.direction = filters.value.direction === 'asc' ? 'desc' : 'asc';
+  } else {
+    filters.value.sort = field;
+    filters.value.direction = 'asc';
+  }
+  
+  router.get(route('admin.customers.index'), filters.value, {
+    preserveState: true,
+    preserveScroll: true,
+    replace: true,
+  });
+}
+
+function getSortIcon(field: string) {
+  if (filters.value.sort !== field) return 'bi-chevron-expand';
+  return filters.value.direction === 'asc' ? 'bi-chevron-up' : 'bi-chevron-down';
+}
+
+function getSubscriptionBadgeClass(status: string) {
+  switch (status) {
+    case 'active': return 'bg-success';
+    case 'canceled': return 'bg-secondary';
+    case 'past_due': return 'bg-warning';
+    case 'unpaid': return 'bg-danger';
+    default: return 'bg-secondary';
+  }
+}
+
+function openGrantModal(customer: Customer) {
+  selectedCustomer.value = customer;
+  showGrantModal.value = true;
+  
+  // Pre-fill form if customer has subscription
+  if (customer.subscriptions && customer.subscriptions.length > 0) {
+    const sub = customer.subscriptions[0];
+    grantForm.subscription_price = sub.price || '';
+    grantForm.subscription_status = sub.stripe_status || 'active';
+  } else {
+    grantForm.reset();
+    grantForm.subscription_status = 'active';
+  }
+}
+
+function grantSubscription() {
+  if (!selectedCustomer.value) return;
+  
+  grantForm.put(route('admin.customers.update', selectedCustomer.value.id), {
     preserveScroll: true,
     onSuccess: () => {
-      editableSubs[user.id].trial_days = '';
+      showGrantModal.value = false;
+      grantForm.reset();
     }
   });
 }
 
-function impersonateUser(user) {
-  router.post(route('admin.customers.impersonate', user.id));
+function impersonateUser(user: Customer) {
+  if (confirm(`Impersonate ${user.name}?`)) {
+    router.post(route('admin.customers.impersonate', user.id));
+  }
 }
 
-function sendPasswordReset(user) {
+function sendPasswordReset(user: Customer) {
   if (confirm(`Send password reset link to ${user.email}?`)) {
     router.post(route('admin.customers.password-reset', user.id), {}, {
-      preserveScroll: true,
-      onSuccess: (page) => {
-        // Show success message if available
-        if (page.props.flash?.success) {
-          alert(page.props.flash.success);
-        }
-      },
-      onError: (errors) => {
-        // Show error message if available
-        if (page.props.flash?.error) {
-          alert(page.props.flash.error);
-        } else {
-          alert('Failed to send password reset link.');
-        }
-      }
+      preserveScroll: true
     });
   }
+}
+
+function exportCustomers() {
+  const params = new URLSearchParams(filters.value as any);
+  window.location.href = route('admin.customers.export') + '?' + params.toString();
+}
+
+function clearFilters() {
+  filters.value = {
+    search: '',
+    status: '',
+    tier: '',
+    start_date: '',
+    end_date: '',
+    sort: 'created_at',
+    direction: 'desc',
+    per_page: 25,
+  };
+  
+  router.get(route('admin.customers.index'), {}, {
+    preserveState: false,
+    preserveScroll: true,
+  });
+}
+
+// Navigate to page
+function goToPage(page: number) {
+  router.get(route('admin.customers.index'), {
+    ...filters.value,
+    page: page,
+  }, {
+    preserveState: true,
+    preserveScroll: true,
+  });
 }
 </script>
 
@@ -68,97 +215,217 @@ function sendPasswordReset(user) {
   <AdminLayout>
     <Head title="Customers" />
     <div class="container-fluid p-4">
+      <!-- Header -->
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h2 mb-0">Customers & Subscriptions</h1>
+        <h1 class="h2 mb-0">Customer Management</h1>
+        <button class="btn btn-primary" @click="exportCustomers">
+          <i class="bi bi-download me-2"></i>Export CSV
+        </button>
       </div>
       
-      <div class="card">
+      <!-- Stats Cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-md-3">
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="text-muted small">Total Customers</div>
+                  <div class="h4 mb-0">{{ stats.total }}</div>
+                </div>
+                <i class="bi bi-people fs-2 text-primary opacity-25"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="text-muted small">Active Subscriptions</div>
+                  <div class="h4 mb-0">{{ stats.active }}</div>
+                </div>
+                <i class="bi bi-check-circle fs-2 text-success opacity-25"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="text-muted small">Trial Users</div>
+                  <div class="h4 mb-0">{{ stats.trialing }}</div>
+                </div>
+                <i class="bi bi-clock fs-2 text-warning opacity-25"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="text-muted small">No Subscription</div>
+                  <div class="h4 mb-0">{{ stats.no_subscription }}</div>
+                </div>
+                <i class="bi bi-x-circle fs-2 text-secondary opacity-25"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Filters -->
+      <div class="card mb-4">
         <div class="card-body">
+          <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+              <label class="form-label">Search</label>
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="bi bi-search"></i>
+                </span>
+                <input
+                  v-model="filters.search"
+                  type="text"
+                  class="form-control"
+                  placeholder="Search by name, email, or ID..."
+                />
+              </div>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Status</label>
+              <select v-model="filters.status" class="form-select">
+                <option value="">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="canceled">Canceled</option>
+                <option value="past_due">Past Due</option>
+                <option value="unpaid">Unpaid</option>
+                <option value="no_subscription">No Subscription</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Tier</label>
+              <select v-model="filters.tier" class="form-select">
+                <option value="">All Tiers</option>
+                <option value="silver">Silver</option>
+                <option value="gold">Gold</option>
+                <option value="platinum">Platinum</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Per Page</label>
+              <select v-model.number="filters.per_page" class="form-select">
+                <option :value="25">25</option>
+                <option :value="50">50</option>
+                <option :value="100">100</option>
+                <option :value="250">250</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <div class="d-flex gap-2 justify-content-end">
+                <button 
+                  class="btn btn-secondary"
+                  @click="clearFilters"
+                  v-if="filters.search || filters.status || filters.tier"
+                >
+                  <i class="bi bi-x-circle me-1"></i>Clear
+                </button>
+                <div class="text-muted small">
+                  Showing {{ customers.from || 0 }} to {{ customers.to || 0 }} of {{ customers.total || 0 }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Table -->
+      <div class="card">
+        <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table table-hover align-middle">
-              <thead class="table-light">
+            <table class="table table-hover mb-0">
+              <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Current Status</th>
-                  <th>Assign Plan</th>
+                  <th @click="toggleSort('name')" role="button" class="user-select-none">
+                    Name
+                    <i :class="getSortIcon('name')" class="bi ms-1 small"></i>
+                  </th>
+                  <th @click="toggleSort('email')" role="button" class="user-select-none">
+                    Email
+                    <i :class="getSortIcon('email')" class="bi ms-1 small"></i>
+                  </th>
                   <th>Status</th>
+                  <th>Plan</th>
                   <th>Trial</th>
-                  <th>Actions</th>
+                  <th @click="toggleSort('created_at')" role="button" class="user-select-none">
+                    Joined
+                    <i :class="getSortIcon('created_at')" class="bi ms-1 small"></i>
+                  </th>
+                  <th class="text-end">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="customer in props.customers" :key="customer.id">
+                <tr v-for="customer in customers.data" :key="customer.id">
                   <td>
                     <div class="fw-medium">{{ customer.name }}</div>
-                    <small class="text-muted">ID: {{ customer.id }}</small>
+                    <div class="text-muted small">ID: {{ customer.id }}</div>
                   </td>
                   <td>{{ customer.email }}</td>
                   <td>
-                    <div v-if="customer.subscriptions.length">
-                      <span :class="[
-                        'badge',
-                        customer.subscriptions[0].stripe_status === 'active' ? 'bg-success' :
-                        customer.subscriptions[0].stripe_status === 'canceled' ? 'bg-secondary' :
-                        customer.subscriptions[0].stripe_status === 'past_due' ? 'bg-warning' :
-                        'bg-danger'
-                      ]">
+                    <div v-if="customer.subscriptions && customer.subscriptions.length">
+                      <span 
+                        :class="['badge', getSubscriptionBadgeClass(customer.subscriptions[0].stripe_status)]"
+                      >
                         {{ customer.subscriptions[0].stripe_status }}
                       </span>
-                      <div v-if="customer.subscriptions[0].trial_ends_at" class="small text-warning mt-1">
-                        <i class="bi bi-clock me-1"></i>Trial ends: {{ customer.subscriptions[0].trial_ends_at }}
-                      </div>
                     </div>
-                    <div v-else>
-                      <span class="text-muted">No subscription</span>
+                    <span v-else class="text-muted">No subscription</span>
+                  </td>
+                  <td>
+                    <div v-if="customer.subscriptions && customer.subscriptions.length && customer.subscriptions[0].price">
+                      <span class="badge bg-info">
+                        {{ Object.keys(stripePrices).find(key => stripePrices[key] === customer.subscriptions[0].price)?.replace('_', ' ').toUpperCase() || 'Custom' }}
+                      </span>
                     </div>
+                    <span v-else class="text-muted">-</span>
                   </td>
                   <td>
-                    <select v-model="editableSubs[customer.id].subscription_price" class="form-select form-select-sm">
-                      <option value="">-- Select Plan --</option>
-                      <option v-for="(price, key) in stripePrices" :key="key" :value="price">
-                        {{ key.replace('_', ' ').toUpperCase() }}
-                      </option>
-                    </select>
+                    <div v-if="customer.subscriptions && customer.subscriptions.length && customer.subscriptions[0].trial_ends_at">
+                      <i class="bi bi-clock text-warning me-1"></i>
+                      <small>{{ new Date(customer.subscriptions[0].trial_ends_at).toLocaleDateString() }}</small>
+                    </div>
+                    <span v-else class="text-muted">-</span>
                   </td>
                   <td>
-                    <select v-model="editableSubs[customer.id].subscription_status" class="form-select form-select-sm">
-                      <option value="active">Active</option>
-                      <option value="canceled">Canceled</option>
-                      <option value="past_due">Past Due</option>
-                      <option value="unpaid">Unpaid</option>
-                    </select>
+                    <small class="text-muted">
+                      {{ new Date(customer.created_at).toLocaleDateString() }}
+                    </small>
                   </td>
                   <td>
-                    <input
-                      v-model="editableSubs[customer.id].trial_days"
-                      type="number"
-                      min="0"
-                      placeholder="Days"
-                      class="form-control form-control-sm"
-                      style="width: 80px;"
-                    />
-                  </td>
-                  <td>
-                    <div class="d-flex gap-1">
+                    <div class="d-flex gap-1 justify-content-end">
                       <button
-                        class="btn btn-sm btn-primary"
-                        @click="updateSubscription(customer)"
-                        title="Save changes"
+                        class="btn btn-sm btn-outline-primary"
+                        @click="openGrantModal(customer)"
+                        title="Manage subscription"
                       >
-                        <i class="bi bi-save"></i> Save
+                        <i class="bi bi-gift"></i>
                       </button>
                       <button
-                        class="btn btn-sm btn-warning"
+                        class="btn btn-sm btn-outline-warning"
                         @click="impersonateUser(customer)"
-                        title="Impersonate this user"
+                        title="Impersonate user"
                       >
                         <i class="bi bi-person-badge"></i>
                       </button>
                       <button
-                        class="btn btn-sm btn-secondary"
+                        class="btn btn-sm btn-outline-secondary"
                         @click="sendPasswordReset(customer)"
-                        title="Send password reset link"
+                        title="Send password reset"
                       >
                         <i class="bi bi-key"></i>
                       </button>
@@ -168,8 +435,157 @@ function sendPasswordReset(user) {
               </tbody>
             </table>
           </div>
+          
+          <!-- Pagination -->
+          <div v-if="customers.last_page > 1" class="card-footer d-flex justify-content-between align-items-center">
+            <div class="text-muted small">
+              Page {{ customers.current_page }} of {{ customers.last_page }}
+            </div>
+            <nav>
+              <ul class="pagination mb-0">
+                <li class="page-item" :class="{ disabled: customers.current_page === 1 }">
+                  <a class="page-link" href="#" @click.prevent="goToPage(1)">
+                    <i class="bi bi-chevron-double-left"></i>
+                  </a>
+                </li>
+                <li class="page-item" :class="{ disabled: customers.current_page === 1 }">
+                  <a class="page-link" href="#" @click.prevent="goToPage(customers.current_page - 1)">
+                    <i class="bi bi-chevron-left"></i>
+                  </a>
+                </li>
+                
+                <template v-for="page in customers.last_page" :key="page">
+                  <li
+                    v-if="page === 1 || page === customers.last_page || Math.abs(page - customers.current_page) < 3"
+                    class="page-item"
+                    :class="{ active: page === customers.current_page }"
+                  >
+                    <a class="page-link" href="#" @click.prevent="goToPage(page)">
+                      {{ page }}
+                    </a>
+                  </li>
+                  <li
+                    v-else-if="page === customers.current_page - 3 || page === customers.current_page + 3"
+                    class="page-item disabled"
+                  >
+                    <span class="page-link">...</span>
+                  </li>
+                </template>
+                
+                <li class="page-item" :class="{ disabled: customers.current_page === customers.last_page }">
+                  <a class="page-link" href="#" @click.prevent="goToPage(customers.current_page + 1)">
+                    <i class="bi bi-chevron-right"></i>
+                  </a>
+                </li>
+                <li class="page-item" :class="{ disabled: customers.current_page === customers.last_page }">
+                  <a class="page-link" href="#" @click.prevent="goToPage(customers.last_page)">
+                    <i class="bi bi-chevron-double-right"></i>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
         </div>
       </div>
     </div>
+    
+    <!-- Grant Subscription Modal -->
+    <div 
+      class="modal fade" 
+      :class="{ show: showGrantModal }"
+      :style="{ display: showGrantModal ? 'block' : 'none' }"
+      tabindex="-1"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              Manage Subscription
+              <span v-if="selectedCustomer" class="text-muted small ms-2">
+                {{ selectedCustomer.name }}
+              </span>
+            </h5>
+            <button 
+              type="button" 
+              class="btn-close" 
+              @click="showGrantModal = false"
+            ></button>
+          </div>
+          <form @submit.prevent="grantSubscription">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Subscription Plan</label>
+                <select v-model="grantForm.subscription_price" class="form-select" required>
+                  <option value="">-- Select Plan --</option>
+                  <option v-for="(price, key) in stripePrices" :key="key" :value="price">
+                    {{ key.replace('_', ' ').toUpperCase() }}
+                  </option>
+                </select>
+                <div v-if="grantForm.errors.subscription_price" class="invalid-feedback d-block">
+                  {{ grantForm.errors.subscription_price }}
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Status</label>
+                <select v-model="grantForm.subscription_status" class="form-select" required>
+                  <option value="active">Active</option>
+                  <option value="canceled">Canceled</option>
+                  <option value="past_due">Past Due</option>
+                  <option value="unpaid">Unpaid</option>
+                </select>
+                <div v-if="grantForm.errors.subscription_status" class="invalid-feedback d-block">
+                  {{ grantForm.errors.subscription_status }}
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Trial Days (optional)</label>
+                <input
+                  v-model="grantForm.trial_days"
+                  type="number"
+                  min="0"
+                  class="form-control"
+                  placeholder="Leave empty for no trial"
+                />
+                <div class="form-text">Add trial days to the subscription</div>
+                <div v-if="grantForm.errors.trial_days" class="invalid-feedback d-block">
+                  {{ grantForm.errors.trial_days }}
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button 
+                type="button" 
+                class="btn btn-secondary" 
+                @click="showGrantModal = false"
+                :disabled="grantForm.processing"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                class="btn btn-primary"
+                :disabled="grantForm.processing"
+              >
+                <span v-if="grantForm.processing">
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                  Saving...
+                </span>
+                <span v-else>
+                  <i class="bi bi-check-circle me-2"></i>
+                  Save Changes
+                </span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div 
+      v-if="showGrantModal" 
+      class="modal-backdrop fade show"
+      @click="showGrantModal = false"
+    ></div>
   </AdminLayout>
 </template>

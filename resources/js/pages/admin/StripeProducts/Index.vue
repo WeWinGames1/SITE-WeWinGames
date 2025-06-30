@@ -1,14 +1,7 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
+import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
-import { Dialog as Modal } from "@/components/ui/dialog";
-import { Button as PrimaryButton } from "@/components/ui/button";
-import { Button as SecondaryButton } from "@/components/ui/button";
-import { Label as InputLabel } from "@/components/ui/label";
-import { Input as TextInput } from "@/components/ui/input";
-import InputError from '@/components/InputError.vue';
-import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/vue/24/outline';
 
 interface StripeProduct {
     id: number;
@@ -267,312 +260,372 @@ async function disconnectFromStripe(product: StripeProduct) {
         }
     }
 }
+
+// Get tier badge class
+function getTierBadgeClass(tier: string) {
+    switch (tier) {
+        case 'Bronze': return 'bg-warning';
+        case 'Silver': return 'bg-secondary';
+        case 'Gold': return 'bg-warning';
+        case 'Platinum': return 'bg-purple';
+        default: return 'bg-secondary';
+    }
+}
 </script>
 
 <template>
-    <AppLayout :breadcrumbs="{ title: 'Stripe Product Management', href: route('admin.stripe-products.index') }">
+    <AdminLayout>
         <Head title="Stripe Product Management" />
         
-        <div class="max-w-7xl mx-auto p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h1 class="text-2xl font-bold">Stripe Product Management</h1>
-                <PrimaryButton @click="showCreateModal = true">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Stripe Product Management</h1>
+                <button class="btn btn-primary" @click="showCreateModal = true">
+                    <i class="bi bi-plus-circle me-2"></i>
                     Add New Product
-                </PrimaryButton>
+                </button>
             </div>
             
             <!-- How To Section -->
-            <div class="bg-blue-50 border border-blue-200 rounded-lg mb-6">
-                <button 
-                    @click="showInstructions = !showInstructions"
-                    class="w-full p-4 flex items-center justify-between text-left hover:bg-blue-100 transition-colors"
-                >
-                    <h2 class="text-lg font-semibold text-blue-900">How Stripe Product Management Works</h2>
-                    <ChevronDownIcon v-if="!showInstructions" class="w-5 h-5 text-blue-600" />
-                    <ChevronUpIcon v-else class="w-5 h-5 text-blue-600" />
-                </button>
+            <div class="card bg-info bg-opacity-10 border-info mb-4">
+                <div class="card-header bg-transparent border-info cursor-pointer" @click="showInstructions = !showInstructions">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            How Stripe Product Management Works
+                        </h5>
+                        <i :class="showInstructions ? 'bi-chevron-up' : 'bi-chevron-down'" class="bi text-info"></i>
+                    </div>
+                </div>
                 
-                <div v-if="showInstructions" class="px-6 pb-6">
-                    <div class="grid md:grid-cols-2 gap-6 text-sm text-blue-800">
-                    <div>
-                        <h3 class="font-semibold mb-2">🚀 Getting Started</h3>
-                        <ol class="space-y-1 ml-4">
-                            <li>1. Create product configurations for each tier/period combination</li>
-                            <li>2. Set your desired prices and features</li>
-                            <li>3. Choose one of two connection methods:</li>
-                        </ol>
-                        
-                        <div class="mt-3 ml-6 space-y-2">
-                            <div>
-                                <span class="font-semibold">Option A:</span> Connect to Existing
-                                <p class="text-xs mt-1">Use products already created in your Stripe dashboard</p>
-                            </div>
-                            <div>
-                                <span class="font-semibold">Option B:</span> Create in Stripe
-                                <p class="text-xs mt-1">Let the system create new products in Stripe for you</p>
+                <div v-if="showInstructions" class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-3">🚀 Getting Started</h6>
+                            <ol class="small text-dark">
+                                <li>Create product configurations for each tier/period combination</li>
+                                <li>Set your desired prices and features</li>
+                                <li>Choose one of two connection methods:</li>
+                            </ol>
+                            
+                            <div class="ms-4 mt-3">
+                                <div class="mb-3">
+                                    <div class="fw-bold text-primary">Option A: Connect to Existing</div>
+                                    <p class="text-muted small mb-0">Use products already created in your Stripe dashboard</p>
+                                </div>
+                                <div class="mb-0">
+                                    <div class="fw-bold text-success">Option B: Create in Stripe</div>
+                                    <p class="text-muted small mb-0">Let the system create new products in Stripe for you</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div>
-                        <h3 class="font-semibold mb-2">⚡ Important Notes</h3>
-                        <ul class="space-y-1 ml-4 list-disc">
-                            <li>Products must be connected to Stripe to be used for subscriptions</li>
-                            <li>Prices can be updated anytime (affects new subscriptions only)</li>
-                            <li>Connected products cannot be deleted (disconnect first)</li>
-                            <li>The system uses these products automatically at checkout</li>
-                            <li>Legacy env variables are still supported as fallback</li>
-                        </ul>
                         
-                        <div class="mt-3 p-2 bg-yellow-100 rounded">
-                            <p class="text-xs text-yellow-800">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-3">⚡ Important Notes</h6>
+                            <ul class="small text-dark">
+                                <li>Products must be connected to Stripe to be used for subscriptions</li>
+                                <li>Prices can be updated anytime (affects new subscriptions only)</li>
+                                <li>Connected products cannot be deleted (disconnect first)</li>
+                                <li>The system uses these products automatically at checkout</li>
+                                <li>Legacy env variables are still supported as fallback</li>
+                            </ul>
+                            
+                            <div class="alert alert-warning small p-2 mt-3">
                                 <strong>Pro Tip:</strong> Create products in Stripe first if you need advanced settings like trial periods or custom metadata.
-                            </p>
+                            </div>
                         </div>
-                    </div>
                     </div>
                 </div>
             </div>
             
             <!-- Products by Billing Period -->
-            <div class="space-y-8">
-                <div v-for="(period, key) in groupedProducts" :key="key">
-                    <h2 class="text-xl font-semibold mb-4 capitalize">{{ key }} Plans</h2>
+            <div class="row g-4">
+                <div v-for="(period, key) in groupedProducts" :key="key" class="col-12">
+                    <h4 class="text-capitalize mb-3">{{ key }} Plans</h4>
                     
-                    <div class="bg-white rounded-lg shadow overflow-hidden">
-                        <table class="w-full">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tier</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stripe Connection</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200">
-                                <tr v-for="product in period" :key="product.id">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                                              :class="{
-                                                  'bg-amber-100 text-amber-800': product.tier === 'Bronze',
-                                                  'bg-gray-100 text-gray-800': product.tier === 'Silver',
-                                                  'bg-yellow-100 text-yellow-800': product.tier === 'Gold',
-                                                  'bg-purple-100 text-purple-800': product.tier === 'Platinum',
-                                              }">
-                                            {{ product.tier }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div>
-                                            <div class="font-medium">{{ product.name }}</div>
-                                            <div v-if="product.badge_text" class="text-sm text-green-600">{{ product.badge_text }}</div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 font-semibold">{{ product.formatted_price }}</td>
-                                    <td class="px-6 py-4">
-                                        <span v-if="product.is_active" class="text-green-600">Active</span>
-                                        <span v-else class="text-red-600">Inactive</span>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div v-if="product.is_connected" class="space-y-1">
-                                            <div class="text-sm text-green-600">✓ Connected</div>
-                                            <div class="text-xs text-gray-500">{{ product.stripe_price_id }}</div>
-                                        </div>
-                                        <span v-else class="text-gray-400">Not connected</span>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex flex-wrap gap-2">
-                                            <button @click="editProduct(product)" 
-                                                    class="text-blue-600 hover:text-blue-800 text-sm">
-                                                Edit
-                                            </button>
-                                            
-                                            <template v-if="!product.is_connected">
-                                                <button @click="openConnectModal(product)" 
-                                                        class="text-green-600 hover:text-green-800 text-sm">
-                                                    Connect to Stripe
+                    <div class="card">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Tier</th>
+                                        <th>Name</th>
+                                        <th>Price</th>
+                                        <th>Status</th>
+                                        <th>Stripe Connection</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="product in period" :key="product.id">
+                                        <td>
+                                            <span :class="`badge ${getTierBadgeClass(product.tier)}`">
+                                                {{ product.tier }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <div class="fw-medium">{{ product.name }}</div>
+                                                <div v-if="product.badge_text" class="small text-success">{{ product.badge_text }}</div>
+                                            </div>
+                                        </td>
+                                        <td class="fw-bold">{{ product.formatted_price }}</td>
+                                        <td>
+                                            <span v-if="product.is_active" class="text-success">
+                                                <i class="bi bi-check-circle me-1"></i>Active
+                                            </span>
+                                            <span v-else class="text-danger">
+                                                <i class="bi bi-x-circle me-1"></i>Inactive
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div v-if="product.is_connected">
+                                                <div class="text-success small">
+                                                    <i class="bi bi-check-circle-fill me-1"></i>Connected
+                                                </div>
+                                                <div class="text-muted" style="font-size: 0.75rem;">{{ product.stripe_price_id }}</div>
+                                            </div>
+                                            <span v-else class="text-muted">Not connected</span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                <button @click="editProduct(product)" 
+                                                        class="btn btn-sm btn-outline-primary">
+                                                    Edit
                                                 </button>
-                                                <button @click="createInStripe(product)" 
-                                                        class="text-purple-600 hover:text-purple-800 text-sm">
-                                                    Create in Stripe
+                                                
+                                                <template v-if="!product.is_connected">
+                                                    <button @click="openConnectModal(product)" 
+                                                            class="btn btn-sm btn-outline-success">
+                                                        Connect
+                                                    </button>
+                                                    <button @click="createInStripe(product)" 
+                                                            class="btn btn-sm btn-outline-purple">
+                                                        Create
+                                                    </button>
+                                                </template>
+                                                <template v-else>
+                                                    <button @click="disconnectFromStripe(product)" 
+                                                            class="btn btn-sm btn-outline-warning">
+                                                        Disconnect
+                                                    </button>
+                                                </template>
+                                                
+                                                <button v-if="!product.is_connected" 
+                                                        @click="deleteProduct(product)" 
+                                                        class="btn btn-sm btn-outline-danger">
+                                                    Delete
                                                 </button>
-                                            </template>
-                                            <template v-else>
-                                                <button @click="disconnectFromStripe(product)" 
-                                                        class="text-orange-600 hover:text-orange-800 text-sm">
-                                                    Disconnect
-                                                </button>
-                                            </template>
-                                            
-                                            <button v-if="!product.is_connected" 
-                                                    @click="deleteProduct(product)" 
-                                                    class="text-red-600 hover:text-red-800 text-sm">
-                                                Delete
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         
         <!-- Create Modal -->
-        <Modal :show="showCreateModal" @close="showCreateModal = false">
-            <div class="p-6">
-                <h2 class="text-lg font-semibold mb-4">Create New Product</h2>
-                
-                <form @submit.prevent="createProduct" class="space-y-4">
-                    <div>
-                        <InputLabel for="name" value="Product Name" />
-                        <TextInput v-model="createForm.name" id="name" class="w-full" required />
-                        <InputError :message="createForm.errors.name" />
+        <div class="modal fade" :class="{ show: showCreateModal, 'd-block': showCreateModal }" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Create New Product</h5>
+                        <button type="button" class="btn-close" @click="showCreateModal = false"></button>
                     </div>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <InputLabel for="tier" value="Tier" />
-                            <select v-model="createForm.tier" id="tier" class="w-full">
-                                <option v-for="tier in tiers" :key="tier" :value="tier">{{ tier }}</option>
-                            </select>
-                            <InputError :message="createForm.errors.tier" />
-                        </div>
-                        
-                        <div>
-                            <InputLabel for="billing_period" value="Billing Period" />
-                            <select v-model="createForm.billing_period" id="billing_period" class="w-full">
-                                <option v-for="period in billing_periods" :key="period" :value="period">
-                                    {{ period.charAt(0).toUpperCase() + period.slice(1) }}
-                                </option>
-                            </select>
-                            <InputError :message="createForm.errors.billing_period" />
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <InputLabel for="price" value="Price (USD)" />
-                        <TextInput v-model.number="createForm.price" id="price" type="number" step="0.01" min="0" class="w-full" required />
-                        <InputError :message="createForm.errors.price" />
-                    </div>
-                    
-                    <div>
-                        <InputLabel for="badge_text" value="Badge Text (optional)" />
-                        <TextInput v-model="createForm.badge_text" id="badge_text" class="w-full" placeholder="e.g., Best Value" />
-                        <InputError :message="createForm.errors.badge_text" />
-                    </div>
-                    
-                    <div>
-                        <InputLabel value="Features" />
-                        <div class="space-y-2">
-                            <div v-for="(feature, index) in createForm.features" :key="index" class="flex gap-2">
-                                <TextInput v-model="createForm.features[index]" class="flex-1" placeholder="Feature description" />
-                                <button @click="removeFeature(createForm, index)" type="button" class="text-red-600">Remove</button>
+                    <form @submit.prevent="createProduct">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Product Name</label>
+                                <input v-model="createForm.name" id="name" type="text" class="form-control" required />
+                                <div v-if="createForm.errors.name" class="text-danger small mt-1">{{ createForm.errors.name }}</div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="tier" class="form-label">Tier</label>
+                                    <select v-model="createForm.tier" id="tier" class="form-select">
+                                        <option v-for="tier in tiers" :key="tier" :value="tier">{{ tier }}</option>
+                                    </select>
+                                    <div v-if="createForm.errors.tier" class="text-danger small mt-1">{{ createForm.errors.tier }}</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="billing_period" class="form-label">Billing Period</label>
+                                    <select v-model="createForm.billing_period" id="billing_period" class="form-select">
+                                        <option v-for="period in billing_periods" :key="period" :value="period">
+                                            {{ period.charAt(0).toUpperCase() + period.slice(1) }}
+                                        </option>
+                                    </select>
+                                    <div v-if="createForm.errors.billing_period" class="text-danger small mt-1">{{ createForm.errors.billing_period }}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="price" class="form-label">Price (USD)</label>
+                                <input v-model.number="createForm.price" id="price" type="number" step="0.01" min="0" class="form-control" required />
+                                <div v-if="createForm.errors.price" class="text-danger small mt-1">{{ createForm.errors.price }}</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="badge_text" class="form-label">Badge Text (optional)</label>
+                                <input v-model="createForm.badge_text" id="badge_text" type="text" class="form-control" placeholder="e.g., Best Value" />
+                                <div v-if="createForm.errors.badge_text" class="text-danger small mt-1">{{ createForm.errors.badge_text }}</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Features</label>
+                                <div v-for="(feature, index) in createForm.features" :key="index" class="d-flex gap-2 mb-2">
+                                    <input v-model="createForm.features[index]" type="text" class="form-control" placeholder="Feature description" />
+                                    <button @click="removeFeature(createForm, index)" type="button" class="btn btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                                <button @click="addFeature(createForm)" type="button" class="btn btn-sm btn-outline-primary mt-2">
+                                    <i class="bi bi-plus me-1"></i> Add Feature
+                                </button>
                             </div>
                         </div>
-                        <button @click="addFeature(createForm)" type="button" class="mt-2 text-blue-600 text-sm">+ Add Feature</button>
-                    </div>
-                    
-                    <div class="flex justify-end gap-3">
-                        <SecondaryButton @click="showCreateModal = false">Cancel</SecondaryButton>
-                        <PrimaryButton type="submit" :disabled="createForm.processing">Create Product</PrimaryButton>
-                    </div>
-                </form>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" @click="showCreateModal = false">Cancel</button>
+                            <button type="submit" class="btn btn-primary" :disabled="createForm.processing">
+                                <span v-if="createForm.processing" class="spinner-border spinner-border-sm me-2"></span>
+                                Create Product
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </Modal>
+        </div>
+        <div v-if="showCreateModal" class="modal-backdrop fade show"></div>
         
         <!-- Edit Modal -->
-        <Modal :show="showEditModal" @close="showEditModal = false">
-            <div class="p-6">
-                <h2 class="text-lg font-semibold mb-4">Edit Product</h2>
-                
-                <form @submit.prevent="updateProduct" class="space-y-4">
-                    <div>
-                        <InputLabel for="edit-name" value="Product Name" />
-                        <TextInput v-model="editForm.name" id="edit-name" class="w-full" required />
-                        <InputError :message="editForm.errors.name" />
+        <div class="modal fade" :class="{ show: showEditModal, 'd-block': showEditModal }" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Product</h5>
+                        <button type="button" class="btn-close" @click="showEditModal = false"></button>
                     </div>
-                    
-                    <div>
-                        <InputLabel for="edit-price" value="Price (USD)" />
-                        <TextInput v-model.number="editForm.price" id="edit-price" type="number" step="0.01" min="0" class="w-full" required />
-                        <InputError :message="editForm.errors.price" />
-                    </div>
-                    
-                    <div>
-                        <InputLabel for="edit-badge" value="Badge Text (optional)" />
-                        <TextInput v-model="editForm.badge_text" id="edit-badge" class="w-full" placeholder="e.g., Best Value" />
-                        <InputError :message="editForm.errors.badge_text" />
-                    </div>
-                    
-                    <div>
-                        <InputLabel value="Features" />
-                        <div class="space-y-2">
-                            <div v-for="(feature, index) in editForm.features" :key="index" class="flex gap-2">
-                                <TextInput v-model="editForm.features[index]" class="flex-1" placeholder="Feature description" />
-                                <button @click="removeFeature(editForm, index)" type="button" class="text-red-600">Remove</button>
+                    <form @submit.prevent="updateProduct">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="edit-name" class="form-label">Product Name</label>
+                                <input v-model="editForm.name" id="edit-name" type="text" class="form-control" required />
+                                <div v-if="editForm.errors.name" class="text-danger small mt-1">{{ editForm.errors.name }}</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="edit-price" class="form-label">Price (USD)</label>
+                                <input v-model.number="editForm.price" id="edit-price" type="number" step="0.01" min="0" class="form-control" required />
+                                <div v-if="editForm.errors.price" class="text-danger small mt-1">{{ editForm.errors.price }}</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="edit-badge" class="form-label">Badge Text (optional)</label>
+                                <input v-model="editForm.badge_text" id="edit-badge" type="text" class="form-control" placeholder="e.g., Best Value" />
+                                <div v-if="editForm.errors.badge_text" class="text-danger small mt-1">{{ editForm.errors.badge_text }}</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Features</label>
+                                <div v-for="(feature, index) in editForm.features" :key="index" class="d-flex gap-2 mb-2">
+                                    <input v-model="editForm.features[index]" type="text" class="form-control" placeholder="Feature description" />
+                                    <button @click="removeFeature(editForm, index)" type="button" class="btn btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                                <button @click="addFeature(editForm)" type="button" class="btn btn-sm btn-outline-primary mt-2">
+                                    <i class="bi bi-plus me-1"></i> Add Feature
+                                </button>
+                            </div>
+                            
+                            <div class="form-check">
+                                <input type="checkbox" v-model="editForm.is_active" class="form-check-input" id="edit-active" />
+                                <label class="form-check-label" for="edit-active">Active</label>
                             </div>
                         </div>
-                        <button @click="addFeature(editForm)" type="button" class="mt-2 text-blue-600 text-sm">+ Add Feature</button>
-                    </div>
-                    
-                    <div>
-                        <label class="flex items-center">
-                            <input type="checkbox" v-model="editForm.is_active" class="mr-2" />
-                            <span>Active</span>
-                        </label>
-                    </div>
-                    
-                    <div class="flex justify-end gap-3">
-                        <SecondaryButton @click="showEditModal = false">Cancel</SecondaryButton>
-                        <PrimaryButton type="submit" :disabled="editForm.processing">Update Product</PrimaryButton>
-                    </div>
-                </form>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" @click="showEditModal = false">Cancel</button>
+                            <button type="submit" class="btn btn-primary" :disabled="editForm.processing">
+                                <span v-if="editForm.processing" class="spinner-border spinner-border-sm me-2"></span>
+                                Update Product
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </Modal>
+        </div>
+        <div v-if="showEditModal" class="modal-backdrop fade show"></div>
         
         <!-- Connect to Stripe Modal -->
-        <Modal :show="showConnectModal" @close="showConnectModal = false">
-            <div class="p-6">
-                <h2 class="text-lg font-semibold mb-4">Connect to Stripe Product</h2>
-                
-                <div class="space-y-4">
-                    <div>
-                        <InputLabel value="Select Stripe Product" />
-                        <div v-if="loadingStripe" class="text-gray-500">Loading...</div>
-                        <select v-else v-model="selectedStripeProductId" @change="fetchStripePrices($event.target.value)" class="w-full">
-                            <option value="">Select a product...</option>
-                            <option v-for="product in stripeProducts" :key="product.id" :value="product.id">
-                                {{ product.name }} ({{ product.id }})
-                            </option>
-                        </select>
+        <div class="modal fade" :class="{ show: showConnectModal, 'd-block': showConnectModal }" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Connect to Stripe Product</h5>
+                        <button type="button" class="btn-close" @click="showConnectModal = false"></button>
                     </div>
-                    
-                    <div v-if="selectedStripeProductId && stripePrices.length > 0">
-                        <InputLabel value="Select Price" />
-                        <select v-model="selectedStripePriceId" class="w-full">
-                            <option value="">Select a price...</option>
-                            <option v-for="price in stripePrices" :key="price.id" :value="price.id">
-                                ${{ price.unit_amount_dollars }} {{ price.currency.toUpperCase() }}
-                                <template v-if="price.recurring">
-                                    / {{ price.recurring.interval }}
-                                </template>
-                                ({{ price.id }})
-                            </option>
-                        </select>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Select Stripe Product</label>
+                            <div v-if="loadingStripe" class="text-muted">
+                                <span class="spinner-border spinner-border-sm me-2"></span>Loading...
+                            </div>
+                            <select v-else v-model="selectedStripeProductId" @change="fetchStripePrices($event.target.value)" class="form-select">
+                                <option value="">Select a product...</option>
+                                <option v-for="product in stripeProducts" :key="product.id" :value="product.id">
+                                    {{ product.name }} ({{ product.id }})
+                                </option>
+                            </select>
+                        </div>
+                        
+                        <div v-if="selectedStripeProductId && stripePrices.length > 0" class="mb-3">
+                            <label class="form-label">Select Price</label>
+                            <select v-model="selectedStripePriceId" class="form-select">
+                                <option value="">Select a price...</option>
+                                <option v-for="price in stripePrices" :key="price.id" :value="price.id">
+                                    ${{ price.unit_amount_dollars }} {{ price.currency.toUpperCase() }}
+                                    <template v-if="price.recurring">
+                                        / {{ price.recurring.interval }}
+                                    </template>
+                                    ({{ price.id }})
+                                </option>
+                            </select>
+                        </div>
                     </div>
-                    
-                    <div class="flex justify-end gap-3">
-                        <SecondaryButton @click="showConnectModal = false">Cancel</SecondaryButton>
-                        <PrimaryButton @click="connectToStripe" :disabled="!selectedStripeProductId || !selectedStripePriceId">
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @click="showConnectModal = false">Cancel</button>
+                        <button @click="connectToStripe" class="btn btn-primary" :disabled="!selectedStripeProductId || !selectedStripePriceId">
                             Connect
-                        </PrimaryButton>
+                        </button>
                     </div>
                 </div>
             </div>
-        </Modal>
-    </AppLayout>
+        </div>
+        <div v-if="showConnectModal" class="modal-backdrop fade show"></div>
+    </AdminLayout>
 </template>
+
+<style scoped>
+.bg-purple {
+    background-color: #6f42c1 !important;
+}
+
+.btn-outline-purple {
+    color: #6f42c1;
+    border-color: #6f42c1;
+}
+
+.btn-outline-purple:hover {
+    color: #fff;
+    background-color: #6f42c1;
+    border-color: #6f42c1;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+</style>

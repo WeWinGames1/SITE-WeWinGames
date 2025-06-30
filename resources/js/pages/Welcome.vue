@@ -454,33 +454,24 @@ const allGroupedBets = computed(() => {
                         <p class="fs-5 text-gray-light mb-5">Start with a free trial, upgrade anytime</p>
                     </div>
                     
-                    <!-- Affiliate Links Component -->
-                    <AffiliateLinks
-                        :affiliates="[
-                            {
-                                logo: '/images/draft_kings_logo_2.jpeg',
-                                text: 'Draftkings Sportsbook',
-                                url: 'https://sportsbook.draftkings.com/acq-bet-and-get?pcid=420313&pcn=Promo1&pcrid=xx&pcrn=xx&pscid=xx&pscn=WeWinGames&psn=1967&referrer=singular_click_id%3d63c8a1b6-2dcc-42b9-928e-bdb91b06dee3&sl_id=tqhb&wpcid=420313&wpcn=Promo1&wpcrid=xx&wpcrn=xx&wpscid=xx&wpscn=WeWinGames&wpsrc=1967',
-                                description: 'Bet $10, get $300 in free bets if your bet wins.'
-                            }
-                        ]"
-                        class="mb-5"
-                    />
-
                     <PricingCards :plans="plans" />
                     
-                    <!-- Affiliate Links Component -->
-                    <AffiliateLinks
-                        :affiliates="[
-                            {
-                                logo: '/images/draftkings_logo_1.png',
-                                text: 'Draftkings Casino',
-                                url: 'https://bit.ly/42HzBOi?r=lp&m=Mp1umLbk8Wo',
-                                description: 'Bet $10 and get 350 free spins + up to $1000 back in casino credits for any day 1 losses'
-                            }
-                        ]"
-                        class="mt-5"
-                    />
+                    <!-- DraftKings Casino Affiliate -->
+                    <div class="row justify-content-center mt-5">
+                        <div class="col-lg-8">
+                            <div class="card text-center" style="background-color: var(--bs-card-bg); border: 2px solid var(--bs-purple);">
+                                <div class="card-body p-5">
+                                    <img src="/images/draftkings_logo_1.png" alt="DraftKings Casino" class="mb-4" style="height: 60px; width: auto;">
+                                    <h3 class="h4 text-white mb-3">DraftKings Casino</h3>
+                                    <p class="text-gray-light mb-4">Bet $10 and get 350 free spins + up to $1000 back in casino credits for any day 1 losses</p>
+                                    <a href="https://bit.ly/42HzBOi?r=lp&m=Mp1umLbk8Wo" target="_blank" rel="noopener" class="btn btn-lg btn-primary px-5">
+                                        <i class="bi bi-box-arrow-up-right me-2"></i>
+                                        Claim Offer
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
         </div>

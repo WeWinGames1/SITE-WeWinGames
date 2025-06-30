@@ -1,71 +1,352 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
+import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
-const props = defineProps<{ admins: Array<any>, users: Array<any> }>();
+import { ref } from 'vue';
+
+interface Admin {
+    id: number;
+    name: string;
+    email: string;
+}
+
+interface User {
+    id: number;
+    name: string;
+    email: string;
+}
+
+const props = defineProps<{ 
+    admins: Admin[];
+    users: User[];
+}>();
 
 const addForm = useForm({ user_id: '' });
 const removeForm = useForm({ user_id: '' });
+const showAddModal = ref(false);
+const adminToRemove = ref<Admin | null>(null);
+const showRemoveModal = ref(false);
+
+function openAddModal() {
+    showAddModal.value = true;
+}
+
+function closeAddModal() {
+    showAddModal.value = false;
+    addForm.reset('user_id');
+}
 
 function addAdmin() {
     if (addForm.user_id) {
         addForm.post(route('admin.admins.add'), {
             preserveScroll: true,
-            onSuccess: () => addForm.reset('user_id'),
+            onSuccess: () => {
+                closeAddModal();
+            },
         });
     }
 }
 
-function removeAdmin(userId: number) {
-    removeForm.user_id = userId;
-    removeForm.post(route('admin.admins.remove'), {
-        preserveScroll: true,
-        onSuccess: () => removeForm.reset('user_id'),
-    });
+function confirmRemoveAdmin(admin: Admin) {
+    adminToRemove.value = admin;
+    showRemoveModal.value = true;
+}
+
+function removeAdmin() {
+    if (adminToRemove.value) {
+        removeForm.user_id = adminToRemove.value.id;
+        removeForm.post(route('admin.admins.remove'), {
+            preserveScroll: true,
+            onSuccess: () => {
+                showRemoveModal.value = false;
+                adminToRemove.value = null;
+                removeForm.reset('user_id');
+            },
+        });
+    }
 }
 </script>
 
 <template>
-    <AppLayout :breadcrumbs="{ title: 'Manage Admins', href: route('admin.admins.index') }">
+    <AdminLayout>
+        <Head title="Manage Admins" />
         
-    <Head title="Manage Admins" />
-    <div class="max-w-3xl mx-auto p-6">
-        <h1 class="text-2xl font-bold mb-4">Admin Users</h1>
-        <h2 class="text-xl font-semibold mt-6 mb-2">Current Admins</h2>
-        <table class="w-full mb-6">
-            <thead>
-                <tr>
-                    <th class="text-left">Name</th>
-                    <th class="text-left">Email</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="admin in props.admins" :key="admin.id">
-                    <td>{{ admin.name }}</td>
-                    <td>{{ admin.email }}</td>
-                    <td>
-                        <button
-                            class="text-red-600"
-                            @click="removeAdmin(admin.id)"
-                            :disabled="admin.id === 1"
-                        >
-                            Remove
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="container-fluid">
+            <div class="row mb-4">
+                <div class="col-12 d-flex justify-content-between align-items-center">
+                    <h1 class="h2 mb-0">Admin Users</h1>
+                    <button 
+                        type="button" 
+                        class="btn btn-primary"
+                        @click="openAddModal"
+                    >
+                        <i class="bi bi-person-plus me-2"></i>Add Admin
+                    </button>
+                </div>
+            </div>
 
-        <h2 class="text-xl font-semibold mt-8 mb-2">Add New Admin</h2>
-        <form @submit.prevent="addAdmin" class="flex gap-2 items-center">
-            <select v-model="addForm.user_id" class="border rounded px-2 py-1">
-                <option value="">Select user</option>
-                <option v-for="user in props.users" :key="user.id" :value="user.id">
-                    {{ user.name }} ({{ user.email }})
-                </option>
-            </select>
-            <button class="bg-indigo-600 text-white px-4 py-2 rounded" type="submit">Add Admin</button>
-        </form>
-    </div>
-    </AppLayout>
+            <!-- Stats Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Total Admins</h6>
+                                    <h3 class="mb-0">{{ admins.length }}</h3>
+                                </div>
+                                <div class="text-primary">
+                                    <i class="bi bi-people fs-1"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Super Admin</h6>
+                                    <h3 class="mb-0">1</h3>
+                                </div>
+                                <div class="text-warning">
+                                    <i class="bi bi-shield-check fs-1"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Regular Admins</h6>
+                                    <h3 class="mb-0">{{ admins.length - 1 }}</h3>
+                                </div>
+                                <div class="text-success">
+                                    <i class="bi bi-person-check fs-1"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Available Users</h6>
+                                    <h3 class="mb-0">{{ users.length }}</h3>
+                                </div>
+                                <div class="text-info">
+                                    <i class="bi bi-person-add fs-1"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Admins Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Current Admin Users</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Added</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="admin in admins" :key="admin.id">
+                                    <td>{{ admin.id }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3">
+                                                <i class="bi bi-person text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium">{{ admin.name }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ admin.email }}</td>
+                                    <td>
+                                        <span v-if="admin.id === 1" class="badge bg-warning">
+                                            <i class="bi bi-shield-check me-1"></i>Super Admin
+                                        </span>
+                                        <span v-else class="badge bg-primary">
+                                            <i class="bi bi-person-check me-1"></i>Admin
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted">{{ new Date(admin.created_at).toLocaleDateString() }}</span>
+                                    </td>
+                                    <td>
+                                        <button
+                                            v-if="admin.id !== 1"
+                                            type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            @click="confirmRemoveAdmin(admin)"
+                                        >
+                                            <i class="bi bi-trash me-1"></i>Remove
+                                        </button>
+                                        <span v-else class="text-muted small">
+                                            <i class="bi bi-lock me-1"></i>Protected
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Admin Modal -->
+        <div 
+            class="modal fade" 
+            :class="{ show: showAddModal }"
+            :style="{ display: showAddModal ? 'block' : 'none' }"
+            tabindex="-1"
+        >
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add New Admin</h5>
+                        <button 
+                            type="button" 
+                            class="btn-close" 
+                            @click="closeAddModal"
+                        ></button>
+                    </div>
+                    <form @submit.prevent="addAdmin">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="user_select" class="form-label">Select User</label>
+                                <select 
+                                    id="user_select"
+                                    v-model="addForm.user_id" 
+                                    class="form-select"
+                                    :class="{ 'is-invalid': addForm.errors.user_id }"
+                                >
+                                    <option value="">Choose a user to make admin...</option>
+                                    <option v-for="user in users" :key="user.id" :value="user.id">
+                                        {{ user.name }} ({{ user.email }})
+                                    </option>
+                                </select>
+                                <div v-if="addForm.errors.user_id" class="invalid-feedback">
+                                    {{ addForm.errors.user_id }}
+                                </div>
+                            </div>
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Note:</strong> This will grant the selected user full administrative access to the system.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button 
+                                type="button" 
+                                class="btn btn-secondary" 
+                                @click="closeAddModal"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                type="submit" 
+                                class="btn btn-primary"
+                                :disabled="addForm.processing || !addForm.user_id"
+                            >
+                                <span v-if="addForm.processing">
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                    Adding...
+                                </span>
+                                <span v-else>
+                                    <i class="bi bi-person-plus me-2"></i>Add Admin
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Remove Admin Confirmation Modal -->
+        <div 
+            class="modal fade" 
+            :class="{ show: showRemoveModal }"
+            :style="{ display: showRemoveModal ? 'block' : 'none' }"
+            tabindex="-1"
+        >
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Remove Admin Access</h5>
+                        <button 
+                            type="button" 
+                            class="btn-close" 
+                            @click="showRemoveModal = false"
+                        ></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Warning!</strong> You are about to remove admin privileges from:
+                        </div>
+                        <div v-if="adminToRemove" class="mb-3">
+                            <p class="mb-1"><strong>Name:</strong> {{ adminToRemove.name }}</p>
+                            <p class="mb-1"><strong>Email:</strong> {{ adminToRemove.email }}</p>
+                        </div>
+                        <p>This action will revoke all administrative access for this user. They will become a regular user.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button 
+                            type="button" 
+                            class="btn btn-secondary" 
+                            @click="showRemoveModal = false"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            type="button" 
+                            class="btn btn-danger"
+                            @click="removeAdmin"
+                            :disabled="removeForm.processing"
+                        >
+                            <span v-if="removeForm.processing">
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                                Removing...
+                            </span>
+                            <span v-else>
+                                <i class="bi bi-trash me-2"></i>Remove Admin
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Backdrop -->
+        <div 
+            v-if="showAddModal || showRemoveModal" 
+            class="modal-backdrop fade show"
+            @click="showAddModal = false; showRemoveModal = false"
+        ></div>
+    </AdminLayout>
 </template>
+
+<style scoped>
+.avatar-sm {
+    width: 40px;
+    height: 40px;
+}
+</style>

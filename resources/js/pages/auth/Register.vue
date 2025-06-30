@@ -191,6 +191,7 @@ const submit = () => {
                                     Sign In
                                 </a>
                             </div>
+                            </div>
                         </div>
                     </div>
                     

@@ -6,6 +6,8 @@ use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SanitizeInput;
 use App\Http\Middleware\CacheHeaders;
 use App\Http\Middleware\LogApiRequests;
+use App\Http\Middleware\AdminSecurityHeaders;
+use App\Http\Middleware\AdminRateLimit;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -57,6 +59,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Alias middleware
         $middleware->alias([
             'cache.headers' => CacheHeaders::class,
+            'admin.security' => AdminSecurityHeaders::class,
+            'admin.rate_limit' => AdminRateLimit::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

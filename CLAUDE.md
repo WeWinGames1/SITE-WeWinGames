@@ -17,8 +17,8 @@ WeWinGames is a full-stack sports betting information and picks service built wi
 ### Frontend
 - **Framework**: Vue.js 3 with TypeScript
 - **Build Tool**: Vite
-- **CSS**: Tailwind CSS v4
-- **UI Components**: Reka UI (custom component library)
+- **CSS**: Bootstrap 5 (converted from Tailwind CSS in December 2024)
+- **UI Components**: Bootstrap 5 components with custom admin theme
 - **Rich Text**: TinyMCE and Tiptap editors
 - **Charts**: Chart.js
 - **3D Graphics**: Three.js
@@ -491,6 +491,99 @@ The admin portal has been completely redesigned with improved UX and comprehensi
    - Queue status
    - Error log tracking
    - Performance metrics
+
+## UI/UX Updates (December 2024)
+
+### Bootstrap 5 Migration
+
+The platform has been completely migrated from Tailwind CSS to Bootstrap 5 for improved consistency and maintainability:
+
+1. **Admin Portal Redesign**:
+   - Complete conversion of AdminLayout to Bootstrap 5
+   - Dark sidebar with light main content area
+   - Consistent navigation with parent/child expansion states
+   - Improved hover effects and active states
+   - Responsive design optimized for mobile and desktop
+
+2. **Import System Overhaul**:
+   - CSV import wizard completely redesigned with Bootstrap components
+   - Multi-step process with progress indicators
+   - Form validation with Bootstrap styling
+   - Improved data tables and preview functionality
+   - Better error handling and user feedback
+
+3. **Navigation Improvements**:
+   - Smart navigation expansion for current page parents
+   - Enhanced hover states and visual feedback
+   - Clean navigation structure with proper grouping
+   - Removed duplicate elements and optimized layout
+
+4. **Form and Table Consistency**:
+   - All admin forms converted to Bootstrap form controls
+   - Consistent table styling across all admin pages
+   - Proper validation states and error messaging
+   - Improved accessibility with ARIA labels
+
+5. **Component Library**:
+   - Standardized Bootstrap button variants
+   - Consistent card layouts and spacing
+   - Unified modal designs
+   - Progress bars and status indicators
+
+### Key Technical Improvements
+
+1. **CSS Architecture**:
+   - Removed Tailwind dependencies
+   - Custom Bootstrap theme for admin area
+   - Consistent color scheme and typography
+   - Optimized bundle size
+
+2. **Component Structure**:
+   - Vue 3 components optimized for Bootstrap
+   - TypeScript interfaces for props validation
+   - Consistent naming conventions
+   - Improved reusability
+
+3. **Performance Optimizations**:
+   - Reduced CSS bundle size
+   - Improved loading times
+   - Better caching strategies
+   - Optimized build process
+
+### Development Commands Updated
+
+```bash
+# Build with Bootstrap optimizations
+npm run build
+
+# Development with hot reload
+npm run dev
+
+# Type checking with Bootstrap types
+npm run typecheck
+
+# Format code (includes Vue templates)
+npm run format
+```
+
+### Testing and Quality Assurance
+
+1. **Cross-browser Testing**:
+   - Chrome, Firefox, Safari compatibility
+   - Mobile responsive design verification
+   - Touch interface optimization
+
+2. **Accessibility Improvements**:
+   - WCAG 2.1 compliance
+   - Keyboard navigation support
+   - Screen reader compatibility
+   - High contrast mode support
+
+3. **Performance Metrics**:
+   - Lighthouse score improvements
+   - Core Web Vitals optimization
+   - Bundle size reduction
+   - Loading time improvements
 
 ## Contact and Support
 

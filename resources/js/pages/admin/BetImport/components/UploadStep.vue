@@ -1,11 +1,11 @@
 <template>
   <div>
-    <h2 class="text-2xl font-semibold mb-4">Upload CSV File</h2>
+    <h2 class="h3 mb-4">Upload CSV File</h2>
     
     <!-- File Requirements -->
-    <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-      <h3 class="font-semibold text-blue-900 mb-2">File Requirements</h3>
-      <ul class="list-disc list-inside text-sm text-blue-800 space-y-1">
+    <div class="alert alert-info mb-4">
+      <h5 class="alert-heading"><i class="bi bi-info-circle me-2"></i>File Requirements</h5>
+      <ul class="mb-0">
         <li>File must be in CSV format (.csv or .txt)</li>
         <li>Maximum file size: 10MB</li>
         <li>First row must contain column headers</li>
@@ -14,111 +14,101 @@
     </div>
 
     <!-- Required Columns -->
-    <div class="mb-6 grid md:grid-cols-2 gap-4">
-      <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-        <h3 class="font-semibold text-green-900 mb-2">Required Columns</h3>
-        <dl class="space-y-1">
-          <div v-for="(desc, field) in columnRequirements.required" :key="field" class="text-sm">
-            <dt class="inline font-medium text-green-800">{{ field }}:</dt>
-            <dd class="inline text-green-700 ml-1">{{ desc }}</dd>
+    <div class="row mb-4">
+      <div class="col-md-6 mb-3 mb-md-0">
+        <div class="card bg-success bg-opacity-10 border-success">
+          <div class="card-body">
+            <h5 class="card-title text-success"><i class="bi bi-check-circle me-2"></i>Required Columns</h5>
+            <dl class="mb-0">
+              <div v-for="(desc, field) in columnRequirements.required" :key="field" class="mb-1">
+                <dt class="d-inline fw-medium">{{ field }}:</dt>
+                <dd class="d-inline ms-1">{{ desc }}</dd>
+              </div>
+            </dl>
           </div>
-        </dl>
+        </div>
       </div>
 
-      <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h3 class="font-semibold text-gray-900 mb-2">Optional Columns</h3>
-        <dl class="space-y-1">
-          <div v-for="(desc, field) in columnRequirements.optional" :key="field" class="text-sm">
-            <dt class="inline font-medium text-gray-700">{{ field }}:</dt>
-            <dd class="inline text-gray-600 ml-1">{{ desc }}</dd>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title"><i class="bi bi-info-circle me-2"></i>Optional Columns</h5>
+            <dl class="mb-0">
+              <div v-for="(desc, field) in columnRequirements.optional" :key="field" class="mb-1">
+                <dt class="d-inline fw-medium">{{ field }}:</dt>
+                <dd class="d-inline ms-1">{{ desc }}</dd>
+              </div>
+            </dl>
           </div>
-        </dl>
+        </div>
       </div>
     </div>
 
     <!-- File Upload -->
-    <div class="mb-6">
+    <div class="mb-4">
       <div
         @drop="handleDrop"
         @dragover.prevent
         @dragenter.prevent
         @dragleave.prevent
-        class="border-2 border-dashed rounded-lg p-8 text-center transition-colors"
+        class="border border-2 rounded p-5 text-center"
         :class="{
-          'border-gray-300 bg-gray-50': !isDragging && !file,
-          'border-indigo-500 bg-indigo-50': isDragging,
-          'border-green-500 bg-green-50': file && !error
+          'border-secondary bg-light': !isDragging && !file,
+          'border-primary bg-primary bg-opacity-10': isDragging,
+          'border-success bg-success bg-opacity-10': file && !error,
+          'border-danger bg-danger bg-opacity-10': error
         }"
+        style="border-style: dashed !important;"
       >
         <input
           ref="fileInput"
           type="file"
           accept=".csv,.txt"
           @change="handleFileSelect"
-          class="hidden"
+          class="d-none"
         />
 
-        <CloudArrowUpIcon class="mx-auto h-12 w-12 text-gray-400 mb-3" />
-
-        <p class="text-base mb-2">
-          <button
-            type="button"
-            @click="$refs.fileInput.click()"
-            class="font-medium text-indigo-600 hover:text-indigo-500"
-          >
-            Click to upload
+        <div v-if="!file">
+          <i class="bi bi-cloud-upload fs-1 text-muted d-block mb-3"></i>
+          <p class="mb-2">Drag and drop your CSV file here, or</p>
+          <button @click="$refs.fileInput.click()" class="btn btn-primary">
+            <i class="bi bi-folder-open me-2"></i>Browse Files
           </button>
-          <span class="text-gray-600"> or drag and drop</span>
-        </p>
-
-        <p class="text-sm text-gray-500">CSV files up to 10MB</p>
-
-        <!-- Selected File -->
-        <div v-if="file" class="mt-4 p-3 bg-white rounded-md border">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <DocumentTextIcon class="h-5 w-5 text-gray-400 mr-2" />
-              <span class="text-sm font-medium">{{ file.name }}</span>
-              <span class="ml-2 text-sm text-gray-500">({{ formatFileSize(file.size) }})</span>
-            </div>
-            <button
-              @click="removeFile"
-              class="text-red-600 hover:text-red-800"
-            >
-              <XMarkIcon class="h-5 w-5" />
-            </button>
-          </div>
         </div>
 
-        <!-- Error Message -->
-        <div v-if="error" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-          <p class="text-sm text-red-800">{{ error }}</p>
+        <div v-else>
+          <i class="bi bi-file-earmark-check fs-1 text-success d-block mb-3"></i>
+          <p class="mb-2 fw-medium">{{ file.name }}</p>
+          <p class="text-muted small mb-3">{{ formatFileSize(file.size) }}</p>
+          <button @click="removeFile" class="btn btn-sm btn-outline-danger">
+            <i class="bi bi-trash me-1"></i>Remove File
+          </button>
         </div>
+      </div>
+
+      <!-- Error Message -->
+      <div v-if="error" class="alert alert-danger mt-3">
+        <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
       </div>
     </div>
 
-    <!-- Actions -->
-    <div class="flex justify-between">
-      <button
-        @click="$emit('download-template')"
-        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-      >
-        <CloudArrowDownIcon class="h-4 w-4 mr-2" />
-        Download Template
+    <!-- Action Buttons -->
+    <div class="d-flex justify-content-between">
+      <button @click="$emit('download-template')" class="btn btn-outline-secondary">
+        <i class="bi bi-download me-2"></i>Download Template
       </button>
-
+      
       <button
         @click="uploadFile"
         :disabled="!file || uploading"
-        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+        class="btn btn-primary"
       >
-        <span v-if="!uploading">Continue</span>
-        <span v-else class="flex items-center">
-          <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
+        <span v-if="uploading">
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
           Uploading...
+        </span>
+        <span v-else>
+          Next: Map Columns <i class="bi bi-arrow-right ms-2"></i>
         </span>
       </button>
     </div>
@@ -127,7 +117,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { CloudArrowUpIcon, CloudArrowDownIcon, DocumentTextIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+import { useToast } from '@/composables/useToast'
 
 interface Props {
   columnRequirements: {
@@ -143,24 +133,26 @@ const emit = defineEmits<{
   'download-template': []
 }>()
 
-const fileInput = ref<HTMLInputElement>()
+const { showToast } = useToast()
+
 const file = ref<File | null>(null)
+const fileInput = ref<HTMLInputElement>()
 const isDragging = ref(false)
 const uploading = ref(false)
 const error = ref('')
 
-const handleDrop = (e: DragEvent) => {
-  e.preventDefault()
+const handleDrop = (event: DragEvent) => {
+  event.preventDefault()
   isDragging.value = false
   
-  const files = e.dataTransfer?.files
+  const files = event.dataTransfer?.files
   if (files && files.length > 0) {
     handleFile(files[0])
   }
 }
 
-const handleFileSelect = (e: Event) => {
-  const target = e.target as HTMLInputElement
+const handleFileSelect = (event: Event) => {
+  const target = event.target as HTMLInputElement
   if (target.files && target.files.length > 0) {
     handleFile(target.files[0])
   }
@@ -171,7 +163,7 @@ const handleFile = (selectedFile: File) => {
   
   // Validate file type
   if (!selectedFile.name.match(/\.(csv|txt)$/i)) {
-    error.value = 'Please select a CSV file'
+    error.value = 'Please select a CSV or TXT file'
     return
   }
   
@@ -215,19 +207,21 @@ const uploadFile = async () => {
     if (result.success) {
       emit('file-uploaded', result)
     } else {
-      error.value = result.message || 'Upload failed'
+      error.value = result.message || 'Failed to upload file'
     }
   } catch (err) {
-    error.value = 'Failed to upload file. Please try again.'
-    // console.error(err)
+    error.value = 'An error occurred while uploading the file'
+    console.error(err)
   } finally {
     uploading.value = false
   }
 }
 
 const formatFileSize = (bytes: number): string => {
-  if (bytes < 1024) return bytes + ' B'
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 </script>

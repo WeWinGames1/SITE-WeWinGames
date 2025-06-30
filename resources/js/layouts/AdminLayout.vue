@@ -1,11 +1,48 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
 import ApplicationLogo from '@/components/AppLogo.vue';
+import ImpersonationBanner from '@/components/ImpersonationBanner.vue';
 
 const page = usePage();
 const sidebarOpen = ref(false);
 const userMenuOpen = ref(false);
+const isImpersonating = computed(() => page.props.impersonation?.isImpersonating || false);
+
+// Simple reactive state for navigation
+const activeParent = computed(() => {
+    for (const item of navigation) {
+        if (item.children && item.children.some(child => isActiveRoute(child.href))) {
+            return item.name;
+        }
+    }
+    return null;
+});
+
+// Function to update collapse state
+const updateCollapseState = async () => {
+    await nextTick();
+    
+    // Close all collapse elements first
+    const allCollapses = document.querySelectorAll('.collapse');
+    allCollapses.forEach(collapse => {
+        collapse.classList.remove('show');
+    });
+    
+    // Open the active parent collapse
+    if (activeParent.value) {
+        const collapseId = `collapse-${activeParent.value.replace(/\s+/g, '-')}`;
+        const collapseElement = document.getElementById(collapseId);
+        if (collapseElement) {
+            collapseElement.classList.add('show');
+        }
+    }
+};
+
+// Initialize navigation state on mount
+onMounted(() => {
+    updateCollapseState();
+});
 
 interface NavItem {
     name: string;
@@ -15,6 +52,13 @@ interface NavItem {
     children?: NavItem[];
     disabled?: boolean;
 }
+
+const currentUrl = computed(() => page.url);
+
+// Watch for route changes and update collapse state
+watch(currentUrl, () => {
+    updateCollapseState();
+});
 
 const navigation: NavItem[] = [
     {
@@ -29,7 +73,6 @@ const navigation: NavItem[] = [
         children: [
             { name: 'Bets', href: route('admin.bets.index'), icon: 'bi-bar-chart' },
             { name: 'Import Bets', href: route('admin.bets.import.index'), icon: 'bi-upload' },
-            { name: 'Export Bets', href: route('admin.bets.export'), icon: 'bi-download' },
             // { name: 'Games', href: '#', icon: 'bi-calendar-event' }, // TODO: Implement
             // { name: 'Teams', href: '#', icon: 'bi-people-fill' }, // TODO: Implement
             // { name: 'Sports', href: '#', icon: 'bi-dribbble' }, // TODO: Implement
@@ -90,17 +133,13 @@ const navigation: NavItem[] = [
     // }, // TODO: Implement
 ];
 
-const currentRoute = computed(() => route().current());
-
 function isActiveRoute(href: string): boolean {
     if (href === '#') return false;
-    return currentRoute.value === href;
+    // Check if the current URL matches the href
+    return currentUrl.value === href || currentUrl.value.startsWith(href + '?');
 }
 
-function isActiveParent(item: NavItem): boolean {
-    if (!item.children) return false;
-    return item.children.some(child => isActiveRoute(child.href));
-}
+// No longer needed - using reactive computed property instead
 
 function logout() {
     router.post(route('admin.logout'));
@@ -155,11 +194,11 @@ function logout() {
                                     href="#"
                                     :class="[
                                         'nav-link d-flex align-items-center',
-                                        isActiveParent(item) ? 'text-white' : ''
+                                        activeParent === item.name ? 'text-white' : ''
                                     ]"
                                     data-bs-toggle="collapse"
                                     :data-bs-target="`#collapse-${item.name.replace(/\s+/g, '-')}`"
-                                    :aria-expanded="isActiveParent(item)"
+                                    :aria-expanded="activeParent === item.name ? 'true' : 'false'"
                                 >
                                     <i :class="[item.icon, 'me-3']"></i>
                                     {{ item.name }}
@@ -167,7 +206,7 @@ function logout() {
                                 </a>
                                 <div
                                     :id="`collapse-${item.name.replace(/\s+/g, '-')}`"
-                                    :class="['collapse', isActiveParent(item) ? 'show' : '']"
+                                    :class="['collapse', activeParent === item.name ? 'show' : '']"
                                 >
                                     <ul class="nav flex-column ms-4">
                                         <li v-for="child in item.children" :key="child.name" class="nav-item">
@@ -206,7 +245,7 @@ function logout() {
         </nav>
 
         <!-- Main Content -->
-        <div class="flex-grow-1" style="margin-left: 280px;">
+        <div class="flex-grow-1 admin-main-content" style="margin-left: 280px;">
             <!-- Top Bar -->
             <nav class="navbar navbar-expand navbar-light bg-white border-bottom sticky-top">
                 <div class="container-fluid">
@@ -218,10 +257,6 @@ function logout() {
                         <i class="bi bi-list fs-4"></i>
                     </button>
 
-                    <!-- Logo -->
-                    <Link href="/" class="navbar-brand d-flex align-items-center me-3">
-                        <img src="/images/logo.png" alt="WeWinGames" style="height: 32px; width: auto;" class="me-2" />
-                    </Link>
 
                     <!-- Search -->
                     <form class="d-flex flex-grow-1 me-3" style="max-width: 400px;">
@@ -283,7 +318,10 @@ function logout() {
             </nav>
 
             <!-- Page content -->
-            <main>
+            <main class="admin-main-content">
+                <!-- Impersonation Banner -->
+                <ImpersonationBanner v-if="isImpersonating" />
+                
                 <slot />
             </main>
         </div>
@@ -291,6 +329,58 @@ function logout() {
 </template>
 
 <style scoped>
+/* Admin Main Content - Light Theme */
+.admin-main-content {
+    background-color: #f8f9fa;
+    min-height: calc(100vh - 56px);
+}
+
+/* Override Bootstrap dark theme for admin area */
+.admin-main-content :deep(.card) {
+    background-color: #ffffff !important;
+    border: 1px solid #dee2e6 !important;
+}
+
+.admin-main-content :deep(.card-body) {
+    background-color: #ffffff !important;
+}
+
+.admin-main-content :deep(.text-white) {
+    color: #212529 !important;
+}
+
+.admin-main-content :deep(.text-gray-light) {
+    color: #6c757d !important;
+}
+
+.admin-main-content :deep(.bg-dark) {
+    background-color: #f8f9fa !important;
+}
+
+.admin-main-content :deep(.bg-gray-dark) {
+    background-color: #ffffff !important;
+}
+
+.admin-main-content :deep(.border-gray-medium) {
+    border-color: #dee2e6 !important;
+}
+
+/* Make all headings black in admin area */
+.admin-main-content :deep(h1),
+.admin-main-content :deep(h2),
+.admin-main-content :deep(h3),
+.admin-main-content :deep(h4),
+.admin-main-content :deep(h5),
+.admin-main-content :deep(h6),
+.admin-main-content :deep(.h1),
+.admin-main-content :deep(.h2),
+.admin-main-content :deep(.h3),
+.admin-main-content :deep(.h4),
+.admin-main-content :deep(.h5),
+.admin-main-content :deep(.h6) {
+    color: #212529 !important;
+}
+
 /* Admin Sidebar Styles */
 .admin-sidebar {
     background: linear-gradient(180deg, #1a1f2e 0%, #0f1218 100%);
@@ -334,10 +424,24 @@ function logout() {
 .admin-sidebar .collapse .nav-link {
     font-size: 0.875rem;
     padding: 0.5rem 1rem;
+    margin-left: 0.5rem;
+    border-radius: 0.375rem;
+}
+
+.admin-sidebar .collapse .nav-link:hover {
+    background-color: rgba(148, 163, 184, 0.1);
+    color: #e2e8f0;
+    padding-left: 1.25rem;
 }
 
 .admin-sidebar .collapse .nav-link.active {
-    background: rgba(59, 130, 246, 0.2);
+    background: rgba(59, 130, 246, 0.3);
+    color: #fff;
+    font-weight: 500;
+}
+
+.admin-sidebar .collapse .nav-link.active:hover {
+    background: rgba(59, 130, 246, 0.4);
 }
 
 /* Mobile sidebar styles */
@@ -422,6 +526,126 @@ function logout() {
 main {
     background-color: #f8fafc;
     min-height: calc(100vh - 56px);
+}
+
+/* Admin Main Content - Light Theme */
+.admin-main-content {
+    background-color: #f8f9fa;
+    min-height: calc(100vh - 56px);
+}
+
+/* Override Bootstrap dark theme for admin area */
+.admin-main-content :deep(.card) {
+    background-color: #ffffff !important;
+    border: 1px solid #dee2e6 !important;
+}
+
+.admin-main-content :deep(.table) {
+    --bs-table-color: #212529 !important;
+    --bs-table-bg: #ffffff !important;
+    --bs-table-border-color: #dee2e6 !important;
+    --bs-table-striped-bg: #f8f9fa !important;
+    --bs-table-striped-color: #212529 !important;
+    --bs-table-active-bg: #f8f9fa !important;
+    --bs-table-active-color: #212529 !important;
+    --bs-table-hover-bg: #f8f9fa !important;
+    --bs-table-hover-color: #212529 !important;
+    color: #212529 !important;
+    background-color: #ffffff !important;
+}
+
+.admin-main-content :deep(.table-dark) {
+    --bs-table-color: #ffffff !important;
+    --bs-table-bg: #212529 !important;
+    --bs-table-border-color: #373b3e !important;
+}
+
+.admin-main-content :deep(.btn-primary) {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #0d6efd;
+    --bs-btn-border-color: #0d6efd;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #0b5ed7;
+    --bs-btn-hover-border-color: #0a58ca;
+}
+
+.admin-main-content :deep(.btn-secondary) {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #6c757d;
+    --bs-btn-border-color: #6c757d;
+}
+
+.admin-main-content :deep(.btn-outline-secondary) {
+    --bs-btn-color: #6c757d;
+    --bs-btn-border-color: #6c757d;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #6c757d;
+    --bs-btn-hover-border-color: #6c757d;
+}
+
+.admin-main-content :deep(.form-control),
+.admin-main-content :deep(.form-select) {
+    background-color: #ffffff !important;
+    border: 1px solid #ced4da !important;
+    color: #212529 !important;
+}
+
+.admin-main-content :deep(.form-control:focus),
+.admin-main-content :deep(.form-select:focus) {
+    background-color: #ffffff !important;
+    border-color: #86b7fe !important;
+    color: #212529 !important;
+}
+
+.admin-main-content :deep(.input-group-text) {
+    background-color: #e9ecef !important;
+    border: 1px solid #ced4da !important;
+    color: #212529 !important;
+}
+
+.admin-main-content :deep(.dropdown-menu) {
+    background-color: #ffffff !important;
+    border: 1px solid rgba(0,0,0,.15) !important;
+}
+
+.admin-main-content :deep(.dropdown-item) {
+    color: #212529 !important;
+}
+
+.admin-main-content :deep(.dropdown-item:hover) {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+}
+
+.admin-main-content :deep(.modal-content) {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+}
+
+.admin-main-content :deep(.modal-header) {
+    border-bottom: 1px solid #dee2e6 !important;
+}
+
+.admin-main-content :deep(.modal-footer) {
+    border-top: 1px solid #dee2e6 !important;
+}
+
+.admin-main-content :deep(.alert) {
+    color: #212529 !important;
+}
+
+.admin-main-content :deep(.list-group-item) {
+    background-color: #ffffff !important;
+    border: 1px solid #dee2e6 !important;
+    color: #212529 !important;
+}
+
+.admin-main-content :deep(.badge) {
+    color: #ffffff !important;
+}
+
+.admin-main-content :deep(.text-muted) {
+    color: #6c757d !important;
 }
 
 /* Responsive adjustments */

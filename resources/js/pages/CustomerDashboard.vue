@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
+import CustomerLayout from '@/layouts/CustomerLayout.vue';
 import { computed } from 'vue';
 
 const page = usePage();
@@ -34,7 +34,7 @@ const subscriptionBadge = computed(() => {
 </script>
 
 <template>
-    <WelcomeLayout>
+    <CustomerLayout>
         <Head title="Dashboard" />
 
         <div class="min-vh-100" style="background-color: var(--bs-body-bg);">
@@ -50,8 +50,8 @@ const subscriptionBadge = computed(() => {
                                 Track your betting performance and access today's expert picks
                             </p>
                             <div class="d-flex align-items-center gap-3">
-                                <span :class="subscriptionBadge.value.class" class="badge fs-6 px-3 py-2">
-                                    {{ subscriptionBadge.value.text }} Member
+                                <span :class="subscriptionBadge.class" class="badge fs-6 px-3 py-2">
+                                    {{ subscriptionBadge.text }} Member
                                 </span>
                                 <span class="text-gray-light">
                                     Member since {{ new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }}
@@ -238,7 +238,7 @@ const subscriptionBadge = computed(() => {
                 </div>
             </section>
         </div>
-    </WelcomeLayout>
+    </CustomerLayout>
 </template>
 
 <style scoped>

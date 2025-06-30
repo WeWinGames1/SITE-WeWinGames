@@ -70,12 +70,12 @@ Route::middleware(['auth', 'verified'])->prefix('support')->name('support.')->gr
 // Admin Authentication Routes
 Route::prefix('admin')->group(function () {
     Route::get('/login', [AdminAuthController::class, 'create'])->name('admin.login');
-    Route::post('/login', [AdminAuthController::class, 'store']);
+    Route::post('/login', [AdminAuthController::class, 'store'])->middleware('admin.rate_limit:login');
     Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('admin.logout');
 });
 
 // Admin Dashboard
-Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
     
     // Support Ticket Management
@@ -91,9 +91,10 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
     });
     
     // Bet Management
-    Route::resource('bets', BetManagementController::class);
+    Route::resource('bets', BetManagementController::class)->except(['show']);
     Route::post('bets/bulk-update-status', [BetManagementController::class, 'bulkUpdateStatus'])->name('bets.bulk-update-status');
     Route::get('bets/statistics', [BetManagementController::class, 'statistics'])->name('bets.statistics');
+    Route::get('bets/export', [BetManagementController::class, 'export'])->name('bets.export')->middleware('admin.rate_limit:export');
     
     // Game Management (TODO)
     // Route::resource('games', Admin\GameManagementController::class);
@@ -121,7 +122,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
 
 
 // New bet import wizard routes
-Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/bets/import')->name('admin.bets.import.')->group(function () {
+Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit:import'])->prefix('admin/bets/import')->name('admin.bets.import.')->group(function () {
     Route::get('/', [BetImportWizardController::class, 'index'])->name('index');
     Route::post('/upload', [BetImportWizardController::class, 'upload'])->name('upload');
     Route::post('/validate', [BetImportWizardController::class, 'validate'])->name('validate');
@@ -131,11 +132,11 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/bets/import')
     Route::get('/error-report', [BetImportWizardController::class, 'downloadErrorReport'])->name('error-report');
 });
 // Admin tools routes
-Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit:export'])->prefix('admin')->name('admin.')->group(function () {
     Route::post('/notify-all', [AdminToolsController::class, 'notifyAll'])->name('notify-all');
     Route::get('/bets/export-csv', [AdminToolsController::class, 'exportBets'])->name('bets.export');
 });
-Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/pages')->name('admin.pages.')->group(function () {
+Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin/pages')->name('admin.pages.')->group(function () {
     Route::get('/', [PageController::class, 'index'])->name('index');
     Route::get('/create', [PageController::class, 'create'])->name('create');
     Route::post('/', [PageController::class, 'store'])->name('store');
@@ -145,11 +146,12 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/pages')->name
 });
 Route::get('/pages/{slug}', [PageShowController::class, 'showPage'])->name('pages.show');
 
-Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/customers')->name('admin.customers.')->group(function () {
+Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin/customers')->name('admin.customers.')->group(function () {
     Route::get('/', [CustomerController::class, 'index'])->name('index');
     Route::put('/{user}', [CustomerController::class, 'update'])->name('update');
     Route::post('/{user}/impersonate', [\App\Http\Controllers\Admin\ImpersonationController::class, 'start'])->name('impersonate');
     Route::post('/{user}/password-reset', [CustomerController::class, 'sendPasswordReset'])->name('password-reset');
+    Route::get('/export', [CustomerController::class, 'export'])->name('export')->middleware('admin.rate_limit:export');
 });
 
 // Impersonation stop route (accessible when impersonating)
@@ -157,13 +159,13 @@ Route::get('/admin/impersonate/stop', [\App\Http\Controllers\Admin\Impersonation
     ->name('admin.impersonate.stop')
     ->middleware('auth');
 
-Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/admins')->name('admin.admins.')->group(function () {
+Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin/admins')->name('admin.admins.')->group(function () {
     Route::get('/', [AdminUserController::class, 'index'])->name('index');
     Route::post('/add', [AdminUserController::class, 'add'])->name('add');
     Route::post('/remove', [AdminUserController::class, 'remove'])->name('remove');
 });
 
-Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/landing-pages')->name('admin.landing-pages.')->group(function () {
+Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin/landing-pages')->name('admin.landing-pages.')->group(function () {
     Route::get('/', [LandingPageController::class, 'index'])->name('index');
     Route::get('/create', [LandingPageController::class, 'create'])->name('create');
     Route::post('/', [LandingPageController::class, 'store'])->name('store');
@@ -178,7 +180,7 @@ Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{post:slug}', [BlogController::class, 'show'])->name('blog.show');
 
 // Stripe Product Management Routes
-Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/stripe-products')->name('admin.stripe-products.')->group(function () {
+Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin/stripe-products')->name('admin.stripe-products.')->group(function () {
     Route::get('/', [StripeProductController::class, 'index'])->name('index');
     Route::post('/', [StripeProductController::class, 'store'])->name('store');
     Route::put('/{stripeProduct}', [StripeProductController::class, 'update'])->name('update');
@@ -193,7 +195,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/stripe-produc
 });
 
 // Subscription Dashboard Routes
-Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/subscriptions')->name('admin.subscriptions.')->group(function () {
+Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin/subscriptions')->name('admin.subscriptions.')->group(function () {
     Route::get('/', [SubscriptionDashboardController::class, 'index'])->name('index');
     Route::post('/export', [SubscriptionDashboardController::class, 'export'])->name('export');
     Route::post('/grant', [SubscriptionDashboardController::class, 'grantSubscription'])->name('grant');

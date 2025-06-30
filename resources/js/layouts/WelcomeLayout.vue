@@ -2,7 +2,6 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
-import ImpersonationBanner from '@/components/ImpersonationBanner.vue';
 import { socialMediaLinks } from '@/config/social';
 
 const mobileMenuOpen = ref(false);
@@ -34,9 +33,6 @@ const auth = computed(() => page.props.auth || null);
 
 <template>
     <div>
-        <!-- Impersonation Banner -->
-        <ImpersonationBanner />
-        
         <!-- Top Bar -->
         <div class="py-2" style="background-color: #0a1628; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
             <div class="container">
@@ -267,7 +263,6 @@ const auth = computed(() => page.props.auth || null);
                                     </div>
                                 </div>
                             </div>
-                        </div>
                     </div>
                 </div>
             </section>
@@ -275,13 +270,17 @@ const auth = computed(() => page.props.auth || null);
             <!-- Footer Links Section -->
             <section class="py-5 position-relative" style="background-color: #0d1829; border-top: 1px solid rgba(255, 255, 255, 0.1);">
                 <div class="container">
-                    <div class="row">
-                        <!-- Logo and Info -->
-                        <div class="col-lg-4 mb-4">
+                    <div class="row align-items-center">
+                        <!-- Logo and Tagline (1/3) -->
+                        <div class="col-lg-4 mb-4 mb-lg-0">
                             <div class="mb-3">
                                 <img src="/images/logo.png" alt="WeWinGames" style="height: 50px; width: auto;" class="mb-2">
                             </div>
-                            <p class="text-white mb-4" style="font-size: 14px; line-height: 1.6;">The sports betting app world is taking off and we want you to enjoy it more by becoming a profitable sports bettor.</p>
+                            <p class="text-white mb-0" style="font-size: 14px; line-height: 1.6;">The sports betting app world is taking off and we want you to enjoy it more by becoming a profitable sports bettor.</p>
+                        </div>
+                        
+                        <!-- Disclaimer and Icons (2/3) -->
+                        <div class="col-lg-8">
                             <div class="d-flex align-items-center p-2 rounded mb-3" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 193, 7, 0.3); width: fit-content;">
                                 <span class="text-warning fw-bold me-3" style="font-size: 18px;">21+</span>
                                 <span class="text-white" style="font-size: 14px;">Responsible Gaming</span>
@@ -294,39 +293,6 @@ const auth = computed(() => page.props.auth || null);
                                 <img src="/images/legal-rg.jpg" alt="Responsible Gaming" style="height: 32px; width: auto;" />
                                 <img src="/images/legal-21plus.png" alt="21+ Only" style="height: 32px; width: auto;" />
                             </div>
-                        </div>
-                        
-                        <!-- Navigate To -->
-                        <div class="col-lg-2 col-md-4 mb-4">
-                            <h5 class="text-warning mb-3">NAVIGATE TO</h5>
-                            <ul class="list-unstyled">
-                                <li class="mb-2"><Link href="/" class="text-white text-decoration-none footer-link">Home</Link></li>
-                                <li class="mb-2"><Link href="/about-us" class="text-white text-decoration-none footer-link">About Us</Link></li>
-                                <li class="mb-2"><Link href="/blog" class="text-white text-decoration-none footer-link">Sports News</Link></li>
-                                <li class="mb-2"><Link href="/partner-offers" class="text-white text-decoration-none footer-link">Partners Offers</Link></li>
-                            </ul>
-                        </div>
-                        
-                        <!-- Navigate To 2 -->
-                        <div class="col-lg-2 col-md-4 mb-4">
-                            <h5 class="text-warning mb-3">NAVIGATE TO</h5>
-                            <ul class="list-unstyled">
-                                <li class="mb-2"><Link href="/careers-jobs" class="text-white text-decoration-none footer-link">Our Events</Link></li>
-                                <li class="mb-2"><Link href="/todays-bets" class="text-white text-decoration-none footer-link">Today Tips</Link></li>
-                                <li class="mb-2"><Link href="/betting-education" class="text-white text-decoration-none footer-link">Betting Education</Link></li>
-                                <li class="mb-2"><Link href="/testimonials" class="text-white text-decoration-none footer-link">Our Clients</Link></li>
-                            </ul>
-                        </div>
-                        
-                        <!-- Support -->
-                        <div class="col-lg-4 col-md-4 mb-4">
-                            <h5 class="text-warning mb-3">SUPPORT</h5>
-                            <ul class="list-unstyled">
-                                <li class="mb-2"><Link href="/privacy" class="text-white text-decoration-none footer-link">Privacy Policy</Link></li>
-                                <li class="mb-2"><Link href="/sweepstakes-rules" class="text-white text-decoration-none footer-link">Sweepstakes Rules</Link></li>
-                                <li class="mb-2"><Link href="/terms" class="text-white text-decoration-none footer-link">Terms & Condition</Link></li>
-                                <li class="mb-2"><Link href="/team" class="text-white text-decoration-none footer-link">Our Team</Link></li>
-                            </ul>
                         </div>
                     </div>
                 </div>
@@ -348,8 +314,7 @@ const auth = computed(() => page.props.auth || null);
                         </div>
                         <div class="d-flex align-items-center gap-3">
                             <div class="text-secondary small">
-                                © Copyright {{ new Date().getFullYear() }} We Win Games. All Right Reserved. Designed by 
-                                <a href="https://adsrole.com" target="_blank" class="text-warning text-decoration-none">AdsRole Pvt. Ltd.</a>
+                                © Copyright {{ new Date().getFullYear() }} We Win Games. All Right Reserved.
                             </div>
                             <a href="/support" class="btn btn-sm btn-outline-secondary">
                                 <i class="bi bi-headset"></i> Support

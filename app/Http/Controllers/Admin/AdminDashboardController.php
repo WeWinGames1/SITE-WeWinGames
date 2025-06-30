@@ -197,10 +197,10 @@ class AdminDashboardController extends Controller
         });
 
         // Recent bets
-        $recentBets = Bet::with('user')->latest()->limit(5)->get()->map(function ($bet) {
+        $recentBets = Bet::latest()->limit(5)->get()->map(function ($bet) {
             return [
                 'type' => 'bet_placed',
-                'message' => "Bet placed by {$bet->user->name}",
+                'message' => "New {$bet->membership} bet: {$bet->team_one} vs {$bet->team_two}",
                 'time' => $bet->created_at,
                 'icon' => 'CurrencyDollarIcon',
                 'color' => 'green',

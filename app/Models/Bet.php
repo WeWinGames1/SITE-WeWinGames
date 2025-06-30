@@ -28,6 +28,27 @@ class Bet extends Model
         'place_fraction',
     ];
 
+    // Relationships
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function sport()
+    {
+        return $this->belongsTo(Sport::class);
+    }
+
+    public function game()
+    {
+        return $this->belongsTo(Game::class);
+    }
+
+    public function operator()
+    {
+        return $this->belongsTo(Operator::class);
+    }
+
     // Accessor for formatted sport name
     public function getSportsAttribute($value)
     {

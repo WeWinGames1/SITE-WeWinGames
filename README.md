@@ -133,6 +133,98 @@ npm run build
 
 # Run with SSR
 composer dev:ssr
+
+# Clear caches (useful after updates)
+php artisan view:clear && php artisan config:clear && php artisan route:clear && php artisan cache:clear
+```
+
+## Production Deployment
+
+### Prerequisites
+- PHP 8.2+ with required extensions
+- MySQL 8.0+ or compatible database
+- Redis (recommended for caching)
+- Web server (Apache/Nginx)
+- SSL certificate
+
+### Deployment Steps
+
+1. **Clone and setup**:
+   ```bash
+   git clone [repository-url]
+   cd SITE-WeWinGames
+   composer install --optimize-autoloader --no-dev
+   npm ci && npm run build
+   ```
+
+2. **Environment configuration**:
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+
+3. **Configure production environment** in `.env`:
+   ```env
+   APP_ENV=production
+   APP_DEBUG=false
+   APP_URL=https://yourdomain.com
+   
+   # Database
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=production_db
+   DB_USERNAME=production_user
+   DB_PASSWORD=secure_password
+   
+   # Stripe (Production)
+   STRIPE_KEY=pk_live_...
+   STRIPE_SECRET=sk_live_...
+   STRIPE_WEBHOOK_SECRET=whsec_...
+   
+   # Redis
+   REDIS_HOST=127.0.0.1
+   REDIS_PASSWORD=null
+   REDIS_PORT=6379
+   ```
+
+4. **Database setup**:
+   ```bash
+   php artisan migrate --force
+   php artisan db:seed --class=UserSeeder
+   php artisan db:seed --class=StripeProductSeeder
+   ```
+
+5. **Optimize for production**:
+   ```bash
+   php artisan config:cache
+   php artisan route:cache
+   php artisan view:cache
+   php artisan optimize
+   ```
+
+6. **Set permissions**:
+   ```bash
+   chown -R www-data:www-data storage bootstrap/cache
+   chmod -R 755 storage bootstrap/cache
+   ```
+
+### Performance Optimization
+
+```bash
+# Enable OPcache in php.ini
+opcache.enable=1
+opcache.memory_consumption=128
+opcache.interned_strings_buffer=8
+opcache.max_accelerated_files=4000
+opcache.revalidate_freq=60
+opcache.fast_shutdown=1
+
+# Queue workers (run as systemd service)
+php artisan queue:work --daemon
+
+# Scheduled tasks (add to crontab)
+* * * * * cd /path-to-project && php artisan schedule:run >> /dev/null 2>&1
 ```
 
 ## Key Features
@@ -146,6 +238,21 @@ composer dev:ssr
 - **Enhanced Security**: Production-ready security headers and configurations
 - **Tier-Based Features**: Silver, Gold, and Platinum subscription tiers
 - **Ambassador Program**: Support for gifted and ambassador users
+
+## Recent Updates (December 2024)
+
+### Major UI/UX Improvements
+- **Bootstrap 5 Migration**: Complete conversion from Tailwind CSS to Bootstrap 5
+- **Admin Portal Redesign**: Modern dark sidebar with light content area
+- **Enhanced Navigation**: Smart parent/child expansion and improved hover states
+- **Import System Overhaul**: Redesigned CSV import wizard with better UX
+- **Mobile Optimization**: Improved responsive design across all admin pages
+
+### Technical Enhancements
+- **Performance**: Optimized bundle sizes and loading times
+- **Accessibility**: WCAG 2.1 compliance and keyboard navigation
+- **Code Quality**: TypeScript improvements and consistent coding standards
+- **Testing**: Enhanced cross-browser compatibility and quality assurance
 
 ## Project Structure
 
