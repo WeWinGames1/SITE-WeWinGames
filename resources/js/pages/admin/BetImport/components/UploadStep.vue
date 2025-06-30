@@ -22,7 +22,7 @@
             <dl class="mb-0">
               <div v-for="(desc, field) in columnRequirements.required" :key="field" class="mb-1">
                 <dt class="d-inline fw-medium">{{ field }}:</dt>
-                <dd class="d-inline ms-1">{{ desc }}</dd>
+                <dd class="d-inline ms-1 text-dark">{{ desc }}</dd>
               </div>
             </dl>
           </div>
@@ -36,7 +36,7 @@
             <dl class="mb-0">
               <div v-for="(desc, field) in columnRequirements.optional" :key="field" class="mb-1">
                 <dt class="d-inline fw-medium">{{ field }}:</dt>
-                <dd class="d-inline ms-1">{{ desc }}</dd>
+                <dd class="d-inline ms-1 text-dark">{{ desc }}</dd>
               </div>
             </dl>
           </div>
@@ -69,8 +69,8 @@
         />
 
         <div v-if="!file">
-          <i class="bi bi-cloud-upload fs-1 text-muted d-block mb-3"></i>
-          <p class="mb-2">Drag and drop your CSV file here, or</p>
+          <i class="bi bi-cloud-upload fs-1 text-secondary d-block mb-3"></i>
+          <p class="mb-2 text-dark">Drag and drop your CSV file here, or</p>
           <button @click="$refs.fileInput.click()" class="btn btn-primary">
             <i class="bi bi-folder-open me-2"></i>Browse Files
           </button>
@@ -79,7 +79,7 @@
         <div v-else>
           <i class="bi bi-file-earmark-check fs-1 text-success d-block mb-3"></i>
           <p class="mb-2 fw-medium">{{ file.name }}</p>
-          <p class="text-muted small mb-3">{{ formatFileSize(file.size) }}</p>
+          <p class="text-dark small mb-3">{{ formatFileSize(file.size) }}</p>
           <button @click="removeFile" class="btn btn-sm btn-outline-danger">
             <i class="bi bi-trash me-1"></i>Remove File
           </button>

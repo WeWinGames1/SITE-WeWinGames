@@ -50,12 +50,12 @@
             :class="{
               'text-primary': step.number === currentStep,
               'text-dark': step.number < currentStep,
-              'text-muted': step.number > currentStep
+              'text-secondary': step.number > currentStep
             }"
           >
             {{ step.name }}
           </p>
-          <p class="mb-0 text-muted" style="font-size: 0.75rem;">{{ step.description }}</p>
+          <p class="mb-0 text-dark" style="font-size: 0.75rem;">{{ step.description }}</p>
         </div>
       </div>
     </div>

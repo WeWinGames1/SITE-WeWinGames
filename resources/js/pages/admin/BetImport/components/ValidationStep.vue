@@ -7,7 +7,7 @@
       <div class="col-lg-3 col-md-6 mb-3">
         <div class="card">
           <div class="card-body">
-            <dt class="small text-muted">Total Rows</dt>
+            <dt class="small text-dark">Total Rows</dt>
             <dd class="h3 mb-0">{{ summary.total }}</dd>
           </div>
         </div>
@@ -112,7 +112,7 @@
 
     <!-- Invalid Rows -->
     <div v-if="activeTab === 'invalid'" class="mb-4">
-      <div v-if="invalidRows.length === 0" class="text-center py-5 text-muted">
+      <div v-if="invalidRows.length === 0" class="text-center py-5 text-dark">
         No invalid rows found
       </div>
       <div v-else>

@@ -187,19 +187,14 @@ function getStatusBadgeClass(code: DiscountCode): string {
     <AdminLayout>
         <Head title="Discount Codes" />
         
-        <div class="container-fluid">
+        <div class="container-fluid p-4">
             <!-- Page Header -->
-            <div class="row mb-4">
-                <div class="col">
-                    <h1 class="h3 mb-1">Discount Code Management</h1>
-                    <p class="text-muted">Create and manage discount codes for subscriptions</p>
-                </div>
-                <div class="col-auto">
-                    <button type="button" class="btn btn-primary" @click="showCreateModal = true">
-                        <i class="bi bi-plus-lg"></i>
-                        Create Discount Code
-                    </button>
-                </div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">Discount Code Management</h1>
+                <button type="button" class="btn btn-primary" @click="showCreateModal = true">
+                    <i class="bi bi-plus-lg me-1"></i>
+                    Create Discount Code
+                </button>
             </div>
             
             <!-- Filters -->
@@ -207,7 +202,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
                 <div class="card-body">
                     <div class="row g-3 align-items-end">
                         <div class="col-md-6">
-                            <label class="form-label small">Search</label>
+                            <label class="form-label small text-dark fw-medium">Search</label>
                             <div class="input-group">
                                 <span class="input-group-text">
                                     <i class="bi bi-search"></i>
@@ -223,7 +218,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
                         </div>
                         
                         <div class="col-md-4">
-                            <label class="form-label small">Status</label>
+                            <label class="form-label small text-dark fw-medium">Status</label>
                             <select v-model="filterForm.status" @change="applyFilters" class="form-select">
                                 <option value="">All Statuses</option>
                                 <option value="active">Active</option>

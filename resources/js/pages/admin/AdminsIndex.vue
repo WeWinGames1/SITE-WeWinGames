@@ -70,18 +70,16 @@ function removeAdmin() {
     <AdminLayout>
         <Head title="Manage Admins" />
         
-        <div class="container-fluid">
-            <div class="row mb-4">
-                <div class="col-12 d-flex justify-content-between align-items-center">
-                    <h1 class="h2 mb-0">Admin Users</h1>
-                    <button 
-                        type="button" 
-                        class="btn btn-primary"
-                        @click="openAddModal"
-                    >
-                        <i class="bi bi-person-plus me-2"></i>Add Admin
-                    </button>
-                </div>
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">Admin Users</h1>
+                <button 
+                    type="button" 
+                    class="btn btn-primary"
+                    @click="openAddModal"
+                >
+                    <i class="bi bi-person-plus me-2"></i>Add Admin
+                </button>
             </div>
 
             <!-- Stats Cards -->

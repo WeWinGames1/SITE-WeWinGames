@@ -151,11 +151,26 @@ class BetManagementController extends Controller
         return Inertia::render('admin/Bets/Create', [
             'users' => User::orderBy('name')->get(['id', 'name', 'email']),
             'sports' => Sport::orderBy('name')->get(['id', 'name']),
-            'games' => Game::with(['sport', 'homeTeam', 'awayTeam'])
-                ->where('game_at', '>=', now())
-                ->orderBy('game_at')
+            'games' => Game::with(['sport', 'operator'])
+                ->where('game_date', '>=', now())
+                ->orderBy('game_date')
                 ->limit(100)
-                ->get(),
+                ->get()
+                ->map(function ($game) {
+                    return [
+                        'id' => $game->id,
+                        'title' => $game->title,
+                        'game_date' => $game->game_date,
+                        'sport' => $game->sport,
+                        'operator' => $game->operator,
+                        'team1' => $game->team1,
+                        'team2' => $game->team2,
+                        'team1_img' => $game->team1_img,
+                        'team2_img' => $game->team2_img,
+                        'homeTeam' => $game->homeTeam(),
+                        'awayTeam' => $game->awayTeam(),
+                    ];
+                }),
             'operators' => Operator::orderBy('name')->get(['id', 'name']),
             'betTypes' => [
                 'moneyline' => 'Moneyline',
@@ -233,11 +248,26 @@ class BetManagementController extends Controller
             'bet' => $bet,
             'users' => User::orderBy('name')->get(['id', 'name', 'email']),
             'sports' => Sport::orderBy('name')->get(['id', 'name']),
-            'games' => Game::with(['sport', 'homeTeam', 'awayTeam'])
+            'games' => Game::with(['sport', 'operator'])
                 ->where('sport_id', $bet->sport_id)
-                ->orderBy('game_at', 'desc')
+                ->orderBy('game_date', 'desc')
                 ->limit(100)
-                ->get(),
+                ->get()
+                ->map(function ($game) {
+                    return [
+                        'id' => $game->id,
+                        'title' => $game->title,
+                        'game_date' => $game->game_date,
+                        'sport' => $game->sport,
+                        'operator' => $game->operator,
+                        'team1' => $game->team1,
+                        'team2' => $game->team2,
+                        'team1_img' => $game->team1_img,
+                        'team2_img' => $game->team2_img,
+                        'homeTeam' => $game->homeTeam(),
+                        'awayTeam' => $game->awayTeam(),
+                    ];
+                }),
             'operators' => Operator::orderBy('name')->get(['id', 'name']),
             'betTypes' => [
                 'moneyline' => 'Moneyline',

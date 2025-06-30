@@ -138,9 +138,9 @@ function formatDate(date: string) {
     <AdminLayout>
         <Head title="Support Tickets" />
         
-        <div class="container-fluid">
+        <div class="container-fluid p-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3 mb-0">Support Tickets</h1>
+                <h1 class="h2 mb-0">Support Tickets</h1>
             </div>
 
             <!-- Filters -->
@@ -149,7 +149,7 @@ function formatDate(date: string) {
                     <form @submit.prevent="applyFilters">
                         <div class="row g-3">
                             <div class="col-md-3">
-                                <label class="form-label">Search</label>
+                                <label class="form-label text-dark fw-medium">Search</label>
                                 <input 
                                     v-model="filterForm.search" 
                                     type="text" 
@@ -158,7 +158,7 @@ function formatDate(date: string) {
                                 />
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label">Status</label>
+                                <label class="form-label text-dark fw-medium">Status</label>
                                 <select v-model="filterForm.status" class="form-select">
                                     <option value="">All</option>
                                     <option value="open">Open</option>
@@ -168,7 +168,7 @@ function formatDate(date: string) {
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label">Priority</label>
+                                <label class="form-label text-dark fw-medium">Priority</label>
                                 <select v-model="filterForm.priority" class="form-select">
                                     <option value="">All</option>
                                     <option value="low">Low</option>
@@ -178,7 +178,7 @@ function formatDate(date: string) {
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label">Category</label>
+                                <label class="form-label text-dark fw-medium">Category</label>
                                 <select v-model="filterForm.category_id" class="form-select">
                                     <option value="">All</option>
                                     <option v-for="cat in categories" :key="cat.id" :value="cat.id">
@@ -187,7 +187,7 @@ function formatDate(date: string) {
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label">Assigned To</label>
+                                <label class="form-label text-dark fw-medium">Assigned To</label>
                                 <select v-model="filterForm.assigned_to" class="form-select">
                                     <option value="">All</option>
                                     <option v-for="admin in adminUsers" :key="admin.id" :value="admin.id">

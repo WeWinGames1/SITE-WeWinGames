@@ -22,7 +22,7 @@
                   <label :for="`mapping-${field}`" class="form-label fw-medium">
                     {{ field }}
                     <span class="text-danger">*</span>
-                    <div class="small text-muted">{{ description }}</div>
+                    <div class="small text-dark">{{ description }}</div>
                   </label>
                 </div>
                 <div class="col-md-8">
@@ -57,7 +57,7 @@
                 <div class="col-md-4">
                   <label :for="`mapping-${field}`" class="form-label fw-medium">
                     {{ field }}
-                    <div class="small">{{ description }}</div>
+                    <div class="small text-dark">{{ description }}</div>
                   </label>
                 </div>
                 <div class="col-md-8">

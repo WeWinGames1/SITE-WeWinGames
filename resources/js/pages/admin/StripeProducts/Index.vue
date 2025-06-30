@@ -277,9 +277,9 @@ function getTierBadgeClass(tier: string) {
     <AdminLayout>
         <Head title="Stripe Product Management" />
         
-        <div class="container-fluid">
+        <div class="container-fluid p-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3 mb-0">Stripe Product Management</h1>
+                <h1 class="h2 mb-0">Stripe Product Management</h1>
                 <button class="btn btn-primary" @click="showCreateModal = true">
                     <i class="bi bi-plus-circle me-2"></i>
                     Add New Product

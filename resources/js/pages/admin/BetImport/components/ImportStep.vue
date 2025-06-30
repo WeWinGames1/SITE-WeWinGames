@@ -4,7 +4,7 @@
     
     <!-- Progress Bar -->
     <div class="mb-4">
-      <div class="d-flex justify-content-between small text-muted mb-2">
+      <div class="d-flex justify-content-between small text-dark mb-2">
         <span>Processing bets...</span>
         <span>{{ progress.percentage }}%</span>
       </div>
@@ -25,7 +25,7 @@
       <div class="col-lg-3 col-md-6 mb-3">
         <div class="card">
           <div class="card-body">
-            <dt class="small text-muted">Total</dt>
+            <dt class="small text-dark">Total</dt>
             <dd class="h3 mb-0">{{ progress.total }}</dd>
           </div>
         </div>

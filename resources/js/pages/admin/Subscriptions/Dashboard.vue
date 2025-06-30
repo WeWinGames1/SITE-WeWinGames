@@ -193,13 +193,10 @@ watch(() => filterForm.search, (value) => {
     <AdminLayout>
         <Head title="Subscription Dashboard" />
         
-        <div class="container-fluid">
+        <div class="container-fluid p-4">
             <!-- Header -->
-            <div class="row mb-4">
-                <div class="col">
-                    <h1 class="h2 mb-1 text-dark">Subscription Dashboard</h1>
-                    <p class="text-muted mb-0">Manage customer subscriptions and billing</p>
-                </div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">Subscription Dashboard</h1>
             </div>
                 
             <!-- Stats Cards -->
@@ -328,7 +325,7 @@ watch(() => filterForm.search, (value) => {
                         <div class="card-body">
                             <div class="row g-3">
                                 <div class="col-lg-3 col-md-6">
-                                    <label class="form-label">Status</label>
+                                    <label class="form-label text-dark fw-medium">Status</label>
                                     <select v-model="filterForm.status" class="form-select">
                                         <option value="">All Statuses</option>
                                         <option value="active">Active</option>
@@ -339,7 +336,7 @@ watch(() => filterForm.search, (value) => {
                                 </div>
                                 
                                 <div class="col-lg-3 col-md-6">
-                                    <label class="form-label">Tier</label>
+                                    <label class="form-label text-dark fw-medium">Tier</label>
                                     <select v-model="filterForm.tier" class="form-select">
                                         <option value="">All Tiers</option>
                                         <option v-for="tier in tiers" :key="tier" :value="tier">{{ tier }}</option>
@@ -347,7 +344,7 @@ watch(() => filterForm.search, (value) => {
                                 </div>
                                 
                                 <div class="col-lg-3 col-md-6">
-                                    <label class="form-label">Renewal Period</label>
+                                    <label class="form-label text-dark fw-medium">Renewal Period</label>
                                     <select v-model="filterForm.renewal_period" class="form-select">
                                         <option value="">Any Time</option>
                                         <option value="7">Next 7 days</option>

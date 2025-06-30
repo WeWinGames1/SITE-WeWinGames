@@ -2,13 +2,6 @@
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
-import { 
-    ArrowLeftIcon,
-    CalendarIcon,
-    CurrencyDollarIcon,
-    ChartBarIcon,
-    TrophyIcon
-} from '@heroicons/vue/24/outline';
 
 interface User {
     id: number;
@@ -32,6 +25,7 @@ interface Game {
     homeTeam: Team;
     awayTeam: Team;
     game_at: string;
+    game_date?: string;
 }
 
 interface Operator {
@@ -81,7 +75,7 @@ const form = useForm({
     odds: props.bet.odds,
     stake: props.bet.stake,
     potential_win: props.bet.potential_win,
-    game_at: new Date(props.bet.game_at).toISOString().slice(0, 16),
+    game_at: props.bet.game_at ? new Date(props.bet.game_at).toISOString().slice(0, 16) : '',
     status: props.bet.status,
     actual_result: props.bet.actual_result || '',
     profit: props.bet.profit || 0,
@@ -144,7 +138,9 @@ function submit() {
 }
 
 function formatGameOption(game: Game): string {
-    return `${game.awayTeam.name} @ ${game.homeTeam.name} - ${new Date(game.game_at).toLocaleDateString()}`;
+    const gameDate = game.game_date || game.game_at;
+    const dateStr = gameDate ? new Date(gameDate).toLocaleDateString() : 'No date';
+    return `${game.awayTeam.name} @ ${game.homeTeam.name} - ${dateStr}`;
 }
 </script>
 
@@ -152,377 +148,366 @@ function formatGameOption(game: Game): string {
     <AdminLayout>
         <Head title="Edit Bet" />
         
-        <div class="p-6">
+        <div class="p-4">
             <!-- Header -->
-            <div class="mb-8">
+            <div class="mb-4">
                 <Link
                     :href="route('admin.bets.index')"
-                    class="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-4"
+                    class="btn btn-link text-decoration-none p-0 mb-3"
                 >
-                    <ArrowLeftIcon class="h-4 w-4 mr-1" />
+                    <i class="bi bi-arrow-left me-2"></i>
                     Back to Bets
                 </Link>
                 
-                <h1 class="text-3xl font-bold text-gray-900">Edit Bet</h1>
-                <p class="mt-2 text-sm text-gray-700">
+                <h1 class="h2 fw-bold text-dark">Edit Bet</h1>
+                <p class="text-muted small">
                     Update bet #{{ bet.id }} details
                 </p>
             </div>
 
-            <form @submit.prevent="submit" class="space-y-8">
-                <div class="bg-white shadow-sm rounded-lg p-6">
-                    <h2 class="text-lg font-medium text-gray-900 mb-6">Basic Information</h2>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- User -->
-                        <div>
-                            <label for="user_id" class="block text-sm font-medium text-gray-700 mb-1">
-                                User <span class="text-red-500">*</span>
-                            </label>
-                            <select
-                                id="user_id"
-                                v-model="form.user_id"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                required
-                            >
-                                <option value="">Select a user...</option>
-                                <option v-for="user in users" :key="user.id" :value="user.id">
-                                    {{ user.name }} ({{ user.email }})
-                                </option>
-                            </select>
-                            <p v-if="form.errors.user_id" class="mt-1 text-sm text-red-600">
-                                {{ form.errors.user_id }}
-                            </p>
-                        </div>
+            <form @submit.prevent="submit">
+                <!-- Basic Information -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h2 class="h5 fw-medium text-dark mb-3">Basic Information</h2>
+                        
+                        <div class="row g-3">
+                            <!-- User -->
+                            <div class="col-md-6">
+                                <label for="user_id" class="form-label text-dark fw-medium">
+                                    User <span class="text-danger">*</span>
+                                </label>
+                                <select
+                                    id="user_id"
+                                    v-model="form.user_id"
+                                    class="form-select"
+                                    required
+                                >
+                                    <option value="">Select a user...</option>
+                                    <option v-for="user in users" :key="user.id" :value="user.id">
+                                        {{ user.name }} ({{ user.email }})
+                                    </option>
+                                </select>
+                                <div v-if="form.errors.user_id" class="invalid-feedback d-block">
+                                    {{ form.errors.user_id }}
+                                </div>
+                            </div>
 
-                        <!-- Sport -->
-                        <div>
-                            <label for="sport_id" class="block text-sm font-medium text-gray-700 mb-1">
-                                Sport <span class="text-red-500">*</span>
-                            </label>
-                            <select
-                                id="sport_id"
-                                v-model="form.sport_id"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                required
-                            >
-                                <option value="">Select a sport...</option>
-                                <option v-for="sport in sports" :key="sport.id" :value="sport.id">
-                                    {{ sport.name }}
-                                </option>
-                            </select>
-                            <p v-if="form.errors.sport_id" class="mt-1 text-sm text-red-600">
-                                {{ form.errors.sport_id }}
-                            </p>
-                        </div>
+                            <!-- Sport -->
+                            <div class="col-md-6">
+                                <label for="sport_id" class="form-label text-dark fw-medium">
+                                    Sport <span class="text-danger">*</span>
+                                </label>
+                                <select
+                                    id="sport_id"
+                                    v-model="form.sport_id"
+                                    class="form-select"
+                                    required
+                                >
+                                    <option value="">Select a sport...</option>
+                                    <option v-for="sport in sports" :key="sport.id" :value="sport.id">
+                                        {{ sport.name }}
+                                    </option>
+                                </select>
+                                <div v-if="form.errors.sport_id" class="invalid-feedback d-block">
+                                    {{ form.errors.sport_id }}
+                                </div>
+                            </div>
 
-                        <!-- Game -->
-                        <div>
-                            <label for="game_id" class="block text-sm font-medium text-gray-700 mb-1">
-                                Game
-                            </label>
-                            <select
-                                id="game_id"
-                                v-model="form.game_id"
-                                :disabled="!form.sport_id"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm disabled:bg-gray-50"
-                            >
-                                <option value="">Select a game (optional)...</option>
-                                <option v-for="game in filteredGames" :key="game.id" :value="game.id">
-                                    {{ formatGameOption(game) }}
-                                </option>
-                            </select>
-                            <p v-if="form.errors.game_id" class="mt-1 text-sm text-red-600">
-                                {{ form.errors.game_id }}
-                            </p>
-                        </div>
+                            <!-- Game -->
+                            <div class="col-md-6">
+                                <label for="game_id" class="form-label text-dark fw-medium">Game</label>
+                                <select
+                                    id="game_id"
+                                    v-model="form.game_id"
+                                    :disabled="!form.sport_id"
+                                    class="form-select"
+                                >
+                                    <option value="">Select a game (optional)...</option>
+                                    <option v-for="game in filteredGames" :key="game.id" :value="game.id">
+                                        {{ formatGameOption(game) }}
+                                    </option>
+                                </select>
+                                <div v-if="form.errors.game_id" class="invalid-feedback d-block">
+                                    {{ form.errors.game_id }}
+                                </div>
+                            </div>
 
-                        <!-- Operator -->
-                        <div>
-                            <label for="operator_id" class="block text-sm font-medium text-gray-700 mb-1">
-                                Operator <span class="text-red-500">*</span>
-                            </label>
-                            <select
-                                id="operator_id"
-                                v-model="form.operator_id"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                required
-                            >
-                                <option value="">Select an operator...</option>
-                                <option v-for="operator in operators" :key="operator.id" :value="operator.id">
-                                    {{ operator.name }}
-                                </option>
-                            </select>
-                            <p v-if="form.errors.operator_id" class="mt-1 text-sm text-red-600">
-                                {{ form.errors.operator_id }}
-                            </p>
+                            <!-- Operator -->
+                            <div class="col-md-6">
+                                <label for="operator_id" class="form-label text-dark fw-medium">
+                                    Operator <span class="text-danger">*</span>
+                                </label>
+                                <select
+                                    id="operator_id"
+                                    v-model="form.operator_id"
+                                    class="form-select"
+                                    required
+                                >
+                                    <option value="">Select an operator...</option>
+                                    <option v-for="operator in operators" :key="operator.id" :value="operator.id">
+                                        {{ operator.name }}
+                                    </option>
+                                </select>
+                                <div v-if="form.errors.operator_id" class="invalid-feedback d-block">
+                                    {{ form.errors.operator_id }}
+                                </div>
+                            </div>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Bet Type -->
-                        <div>
-                            <label for="bet_type" class="block text-sm font-medium text-gray-700 mb-1">
-                                Bet Type <span class="text-red-500">*</span>
-                            </label>
-                            <select
-                                id="bet_type"
-                                v-model="form.bet_type"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                required
-                            >
-                                <option v-for="(label, value) in betTypes" :key="value" :value="value">
-                                    {{ label }}
-                                </option>
-                            </select>
-                            <p v-if="form.errors.bet_type" class="mt-1 text-sm text-red-600">
-                                {{ form.errors.bet_type }}
-                            </p>
-                        </div>
+                <!-- Bet Details -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h2 class="h5 fw-medium text-dark mb-3">Bet Details</h2>
+                        
+                        <div class="row g-3">
+                            <!-- Selection -->
+                            <div class="col-md-6">
+                                <label for="selection" class="form-label text-dark fw-medium">
+                                    Selection <span class="text-danger">*</span>
+                                </label>
+                                <input
+                                    id="selection"
+                                    v-model="form.selection"
+                                    type="text"
+                                    class="form-control"
+                                    placeholder="e.g., Lakers -5.5"
+                                    required
+                                />
+                                <div v-if="form.errors.selection" class="invalid-feedback d-block">
+                                    {{ form.errors.selection }}
+                                </div>
+                            </div>
 
-                        <!-- Game Date/Time -->
-                        <div>
-                            <label for="game_at" class="block text-sm font-medium text-gray-700 mb-1">
-                                Game Date/Time <span class="text-red-500">*</span>
-                            </label>
-                            <div class="relative">
+                            <!-- Bet Type -->
+                            <div class="col-md-6">
+                                <label for="bet_type" class="form-label text-dark fw-medium">
+                                    Bet Type <span class="text-danger">*</span>
+                                </label>
+                                <select
+                                    id="bet_type"
+                                    v-model="form.bet_type"
+                                    class="form-select"
+                                    required
+                                >
+                                    <option value="">Select bet type...</option>
+                                    <option v-for="(label, value) in betTypes" :key="value" :value="value">
+                                        {{ label }}
+                                    </option>
+                                </select>
+                                <div v-if="form.errors.bet_type" class="invalid-feedback d-block">
+                                    {{ form.errors.bet_type }}
+                                </div>
+                            </div>
+
+                            <!-- Odds -->
+                            <div class="col-md-4">
+                                <label for="odds" class="form-label text-dark fw-medium">
+                                    Odds <span class="text-danger">*</span>
+                                </label>
+                                <input
+                                    id="odds"
+                                    v-model.number="form.odds"
+                                    type="number"
+                                    step="any"
+                                    class="form-control"
+                                    placeholder="e.g., -110, +200"
+                                    required
+                                />
+                                <div v-if="form.errors.odds" class="invalid-feedback d-block">
+                                    {{ form.errors.odds }}
+                                </div>
+                            </div>
+
+                            <!-- Stake -->
+                            <div class="col-md-4">
+                                <label for="stake" class="form-label text-dark fw-medium">
+                                    Stake <span class="text-danger">*</span>
+                                </label>
+                                <input
+                                    id="stake"
+                                    v-model.number="form.stake"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    class="form-control"
+                                    placeholder="0.00"
+                                    required
+                                />
+                                <div v-if="form.errors.stake" class="invalid-feedback d-block">
+                                    {{ form.errors.stake }}
+                                </div>
+                            </div>
+
+                            <!-- Potential Win -->
+                            <div class="col-md-4">
+                                <label for="potential_win" class="form-label text-dark fw-medium">
+                                    Potential Win <span class="text-danger">*</span>
+                                </label>
+                                <input
+                                    id="potential_win"
+                                    v-model.number="form.potential_win"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    class="form-control"
+                                    placeholder="0.00"
+                                    required
+                                />
+                                <div v-if="form.errors.potential_win" class="invalid-feedback d-block">
+                                    {{ form.errors.potential_win }}
+                                </div>
+                            </div>
+
+                            <!-- Game Date -->
+                            <div class="col-md-6">
+                                <label for="game_at" class="form-label text-dark fw-medium">
+                                    Game Date/Time <span class="text-danger">*</span>
+                                </label>
                                 <input
                                     id="game_at"
                                     v-model="form.game_at"
                                     type="datetime-local"
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                    class="form-control"
                                     required
                                 />
-                                <CalendarIcon class="absolute right-3 top-2.5 h-5 w-5 text-gray-400 pointer-events-none" />
-                            </div>
-                            <p v-if="form.errors.game_at" class="mt-1 text-sm text-red-600">
-                                {{ form.errors.game_at }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white shadow-sm rounded-lg p-6">
-                    <h2 class="text-lg font-medium text-gray-900 mb-6">Bet Details</h2>
-                    
-                    <div class="space-y-6">
-                        <!-- Selection -->
-                        <div>
-                            <label for="selection" class="block text-sm font-medium text-gray-700 mb-1">
-                                Selection <span class="text-red-500">*</span>
-                            </label>
-                            <input
-                                id="selection"
-                                v-model="form.selection"
-                                type="text"
-                                placeholder="e.g., Team A -3.5, Over 48.5, Player to score"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                required
-                            />
-                            <p v-if="form.errors.selection" class="mt-1 text-sm text-red-600">
-                                {{ form.errors.selection }}
-                            </p>
-                        </div>
-
-                        <!-- Description -->
-                        <div>
-                            <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
-                                Description
-                            </label>
-                            <textarea
-                                id="description"
-                                v-model="form.description"
-                                rows="3"
-                                placeholder="Additional details about this bet..."
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                            />
-                            <p v-if="form.errors.description" class="mt-1 text-sm text-red-600">
-                                {{ form.errors.description }}
-                            </p>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <!-- Odds -->
-                            <div>
-                                <label for="odds" class="block text-sm font-medium text-gray-700 mb-1">
-                                    Odds <span class="text-red-500">*</span>
-                                </label>
-                                <div class="relative">
-                                    <input
-                                        id="odds"
-                                        v-model.number="form.odds"
-                                        type="number"
-                                        step="1"
-                                        placeholder="-110"
-                                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                        required
-                                    />
+                                <div v-if="form.errors.game_at" class="invalid-feedback d-block">
+                                    {{ form.errors.game_at }}
                                 </div>
-                                <p class="mt-1 text-xs text-gray-500">American odds format</p>
-                                <p v-if="form.errors.odds" class="mt-1 text-sm text-red-600">
-                                    {{ form.errors.odds }}
-                                </p>
                             </div>
 
-                            <!-- Stake -->
-                            <div>
-                                <label for="stake" class="block text-sm font-medium text-gray-700 mb-1">
-                                    Stake <span class="text-red-500">*</span>
+                            <!-- Status -->
+                            <div class="col-md-6">
+                                <label for="status" class="form-label text-dark fw-medium">
+                                    Status <span class="text-danger">*</span>
                                 </label>
-                                <div class="relative">
-                                    <CurrencyDollarIcon class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                                    <input
-                                        id="stake"
-                                        v-model.number="form.stake"
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        placeholder="100"
-                                        class="block w-full pl-10 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                        required
-                                    />
+                                <select
+                                    id="status"
+                                    v-model="form.status"
+                                    class="form-select"
+                                    required
+                                >
+                                    <option value="pending">Pending</option>
+                                    <option value="won">Won</option>
+                                    <option value="lost">Lost</option>
+                                    <option value="push">Push</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                                <div v-if="form.errors.status" class="invalid-feedback d-block">
+                                    {{ form.errors.status }}
                                 </div>
-                                <p v-if="form.errors.stake" class="mt-1 text-sm text-red-600">
-                                    {{ form.errors.stake }}
-                                </p>
                             </div>
 
-                            <!-- Potential Win -->
-                            <div>
-                                <label for="potential_win" class="block text-sm font-medium text-gray-700 mb-1">
-                                    Potential Win
-                                </label>
-                                <div class="relative">
-                                    <CurrencyDollarIcon class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                                    <input
-                                        id="potential_win"
-                                        :value="form.potential_win.toFixed(2)"
-                                        type="text"
-                                        class="block w-full pl-10 rounded-md border-gray-300 bg-gray-50 shadow-sm sm:text-sm"
-                                        readonly
-                                    />
+                            <!-- Description -->
+                            <div class="col-12">
+                                <label for="description" class="form-label text-dark fw-medium">Description</label>
+                                <textarea
+                                    id="description"
+                                    v-model="form.description"
+                                    class="form-control"
+                                    rows="3"
+                                    placeholder="Additional details about this bet..."
+                                ></textarea>
+                                <div v-if="form.errors.description" class="invalid-feedback d-block">
+                                    {{ form.errors.description }}
                                 </div>
-                                <p class="mt-1 text-xs text-gray-500">Calculated automatically</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white shadow-sm rounded-lg p-6">
-                    <h2 class="text-lg font-medium text-gray-900 mb-6">Result & Status</h2>
-                    
-                    <div class="space-y-6">
-                        <!-- Status -->
-                        <div>
-                            <label for="status" class="block text-sm font-medium text-gray-700 mb-1">
-                                Status
-                            </label>
-                            <select
-                                id="status"
-                                v-model="form.status"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                            >
-                                <option value="pending">Pending</option>
-                                <option value="won">Won</option>
-                                <option value="lost">Lost</option>
-                                <option value="push">Push</option>
-                                <option value="cancelled">Cancelled</option>
-                            </select>
-                            <p v-if="form.errors.status" class="mt-1 text-sm text-red-600">
-                                {{ form.errors.status }}
-                            </p>
-                        </div>
+                <!-- Additional Settings -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h2 class="h5 fw-medium text-dark mb-3">Additional Settings</h2>
+                        
+                        <div class="row g-3">
+                            <!-- Actual Result -->
+                            <div class="col-md-6">
+                                <label for="actual_result" class="form-label text-dark fw-medium">Actual Result</label>
+                                <input
+                                    id="actual_result"
+                                    v-model="form.actual_result"
+                                    type="text"
+                                    class="form-control"
+                                    placeholder="Final score or result..."
+                                />
+                                <div v-if="form.errors.actual_result" class="invalid-feedback d-block">
+                                    {{ form.errors.actual_result }}
+                                </div>
+                            </div>
 
-                        <!-- Actual Result -->
-                        <div>
-                            <label for="actual_result" class="block text-sm font-medium text-gray-700 mb-1">
-                                Actual Result
-                            </label>
-                            <input
-                                id="actual_result"
-                                v-model="form.actual_result"
-                                type="text"
-                                placeholder="e.g., Team A won 27-24"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                            />
-                            <p v-if="form.errors.actual_result" class="mt-1 text-sm text-red-600">
-                                {{ form.errors.actual_result }}
-                            </p>
-                        </div>
-
-                        <!-- Profit -->
-                        <div>
-                            <label for="profit" class="block text-sm font-medium text-gray-700 mb-1">
-                                Profit/Loss
-                            </label>
-                            <div class="relative">
-                                <CurrencyDollarIcon class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                            <!-- Profit -->
+                            <div class="col-md-6">
+                                <label for="profit" class="form-label text-dark fw-medium">Profit/Loss</label>
                                 <input
                                     id="profit"
-                                    :value="form.profit.toFixed(2)"
-                                    type="text"
-                                    :class="[
-                                        'block w-full pl-10 rounded-md border-gray-300 bg-gray-50 shadow-sm sm:text-sm',
-                                        form.profit > 0 ? 'text-green-600' : form.profit < 0 ? 'text-red-600' : 'text-gray-900'
-                                    ]"
-                                    readonly
+                                    v-model.number="form.profit"
+                                    type="number"
+                                    step="0.01"
+                                    class="form-control"
+                                    placeholder="0.00"
                                 />
+                                <div v-if="form.errors.profit" class="invalid-feedback d-block">
+                                    {{ form.errors.profit }}
+                                </div>
                             </div>
-                            <p class="mt-1 text-xs text-gray-500">Calculated based on status</p>
-                        </div>
 
-                        <!-- Confidence -->
-                        <div>
-                            <label for="confidence" class="block text-sm font-medium text-gray-700 mb-1">
-                                Confidence Level
-                            </label>
-                            <div class="flex items-center space-x-4">
+                            <!-- Confidence -->
+                            <div class="col-md-6">
+                                <label for="confidence" class="form-label text-dark fw-medium">Confidence (1-10)</label>
                                 <input
                                     id="confidence"
                                     v-model.number="form.confidence"
-                                    type="range"
+                                    type="number"
                                     min="1"
                                     max="10"
-                                    class="flex-1"
+                                    class="form-control"
+                                    placeholder="5"
                                 />
-                                <div class="flex items-center">
-                                    <ChartBarIcon class="h-5 w-5 text-gray-400 mr-2" />
-                                    <span class="text-sm font-medium text-gray-700 w-8">{{ form.confidence }}/10</span>
+                                <div v-if="form.errors.confidence" class="invalid-feedback d-block">
+                                    {{ form.errors.confidence }}
                                 </div>
                             </div>
-                            <p v-if="form.errors.confidence" class="mt-1 text-sm text-red-600">
-                                {{ form.errors.confidence }}
-                            </p>
-                        </div>
 
-                        <!-- Featured -->
-                        <div class="flex items-center">
-                            <input
-                                id="is_featured"
-                                v-model="form.is_featured"
-                                type="checkbox"
-                                class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                            />
-                            <label for="is_featured" class="ml-3 flex items-center">
-                                <TrophyIcon class="h-5 w-5 text-yellow-500 mr-2" />
-                                <span class="text-sm font-medium text-gray-700">Feature this bet</span>
-                            </label>
+                            <!-- Featured -->
+                            <div class="col-md-6">
+                                <div class="form-check mt-4">
+                                    <input
+                                        id="is_featured"
+                                        v-model="form.is_featured"
+                                        type="checkbox"
+                                        class="form-check-input"
+                                    />
+                                    <label for="is_featured" class="form-check-label">
+                                        Featured Bet
+                                    </label>
+                                </div>
+                                <div v-if="form.errors.is_featured" class="invalid-feedback d-block">
+                                    {{ form.errors.is_featured }}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Submit -->
-                <div class="flex justify-end space-x-3">
+                <!-- Submit Button -->
+                <div class="d-flex justify-content-end gap-2">
                     <Link
                         :href="route('admin.bets.index')"
-                        class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                        class="btn btn-secondary"
                     >
                         Cancel
                     </Link>
                     <button
                         type="submit"
+                        class="btn btn-primary"
                         :disabled="form.processing"
-                        class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {{ form.processing ? 'Saving...' : 'Save Changes' }}
+                        <span v-if="form.processing" class="spinner-border spinner-border-sm me-2"></span>
+                        {{ form.processing ? 'Updating...' : 'Update Bet' }}
                     </button>
                 </div>
             </form>
