@@ -21,8 +21,8 @@
             <h5 class="card-title text-success"><i class="bi bi-check-circle me-2"></i>Required Columns</h5>
             <dl class="mb-0">
               <div v-for="(desc, field) in columnRequirements.required" :key="field" class="mb-1">
-                <dt class="d-inline fw-medium">{{ field }}:</dt>
-                <dd class="d-inline ms-1 text-dark">{{ desc }}</dd>
+                <dt class="d-inline fw-bold text-primary">{{ field }}:</dt>
+                <dd class="d-inline ms-1 fw-normal" style="color: #212529;">{{ desc }}</dd>
               </div>
             </dl>
           </div>
@@ -35,8 +35,8 @@
             <h5 class="card-title"><i class="bi bi-info-circle me-2"></i>Optional Columns</h5>
             <dl class="mb-0">
               <div v-for="(desc, field) in columnRequirements.optional" :key="field" class="mb-1">
-                <dt class="d-inline fw-medium">{{ field }}:</dt>
-                <dd class="d-inline ms-1 text-dark">{{ desc }}</dd>
+                <dt class="d-inline fw-bold text-secondary">{{ field }}:</dt>
+                <dd class="d-inline ms-1 fw-normal" style="color: #212529;">{{ desc }}</dd>
               </div>
             </dl>
           </div>
@@ -70,7 +70,7 @@
 
         <div v-if="!file">
           <i class="bi bi-cloud-upload fs-1 text-secondary d-block mb-3"></i>
-          <p class="mb-2 text-dark">Drag and drop your CSV file here, or</p>
+          <p class="mb-2 fw-normal" style="color: #212529;">Drag and drop your CSV file here, or</p>
           <button @click="$refs.fileInput.click()" class="btn btn-primary">
             <i class="bi bi-folder-open me-2"></i>Browse Files
           </button>
@@ -79,7 +79,7 @@
         <div v-else>
           <i class="bi bi-file-earmark-check fs-1 text-success d-block mb-3"></i>
           <p class="mb-2 fw-medium">{{ file.name }}</p>
-          <p class="text-dark small mb-3">{{ formatFileSize(file.size) }}</p>
+          <p class="small mb-3 fw-normal" style="color: #495057;">{{ formatFileSize(file.size) }}</p>
           <button @click="removeFile" class="btn btn-sm btn-outline-danger">
             <i class="bi bi-trash me-1"></i>Remove File
           </button>
@@ -118,6 +118,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useToast } from '@/composables/useToast'
+import axios from 'axios'
 
 interface Props {
   columnRequirements: {
@@ -194,23 +195,27 @@ const uploadFile = async () => {
   formData.append('file', file.value)
   
   try {
-    const response = await fetch('/admin/bets/import/upload', {
-      method: 'POST',
+    const response = await axios.post('/admin/bets/import/upload', formData, {
       headers: {
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-      },
-      body: formData
+        'Content-Type': 'multipart/form-data'
+      }
     })
     
-    const result = await response.json()
+    const result = response.data
     
     if (result.success) {
       emit('file-uploaded', result)
     } else {
       error.value = result.message || 'Failed to upload file'
     }
-  } catch (err) {
-    error.value = 'An error occurred while uploading the file'
+  } catch (err: any) {
+    if (err.response?.data?.message) {
+      error.value = err.response.data.message
+    } else if (err.response?.status === 419) {
+      error.value = 'Session expired. Please refresh the page and try again.'
+    } else {
+      error.value = 'An error occurred while uploading the file'
+    }
     console.error(err)
   } finally {
     uploading.value = false

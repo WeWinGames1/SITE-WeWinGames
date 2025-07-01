@@ -237,7 +237,7 @@ function insertVariable(variable: string) {
                                         @click="insertVariable(variable)"
                                         class="btn btn-sm btn-outline-primary"
                                     >
-                                        {{{{ variable }}}}
+                                        {{ variable }}
                                     </button>
                                 </div>
                                 <hr class="my-3">

@@ -8,15 +8,13 @@ class PageService
 {
     public function all()
     {
-        return Page::with('author')
-            ->orderBy('created_at', 'desc')
+        return Page::orderBy('created_at', 'desc')
             ->paginate(20);
     }
     
     public function getAllUnpaginated()
     {
-        return Page::with('author')
-            ->orderBy('created_at', 'desc')
+        return Page::orderBy('created_at', 'desc')
             ->get();
     }
 

@@ -293,7 +293,7 @@ const allGroupedBets = computed(() => {
                                         ${{ formatMoney(props.thisYearProfit + 20) }}
                                     </div>
                                     <div class="fs-5 text-secondary mb-2">
-                                        ROI: <span class="fw-bold text-white">{{ Math.round(props.thisYearROI ?? 0, 2) }}%</span>
+                                        ROI: <span class="fw-bold text-white">{{ Math.round(props.thisYearROI ?? 0) }}%</span>
                                     </div>
                                     <div class="fs-5 text-secondary">
                                         Win/Loss: <span class="fw-bold text-white">{{ Math.round(props.thisYearWinLoss ?? 0) }}%</span>

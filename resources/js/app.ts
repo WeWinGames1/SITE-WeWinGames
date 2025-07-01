@@ -8,9 +8,19 @@ import { createApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
 import { initializeTheme } from './composables/useAppearance';
 import { useGoogleAnalytics } from './composables/useGoogleAnalytics';
+import axios from 'axios';
 
 // Make Bootstrap available globally
 window.bootstrap = bootstrap;
+
+// Configure axios defaults
+if (typeof window !== 'undefined') {
+    axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    if (token) {
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = token;
+    }
+}
 
 // Extend ImportMeta interface for Vite...
 declare module 'vite/client' {

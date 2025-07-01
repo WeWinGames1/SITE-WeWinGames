@@ -194,7 +194,7 @@ const auth = computed(() => page.props.auth || null);
                 <div class="container-fluid px-4 px-lg-5">
                     <div class="position-relative">
                         <!-- Trophy positioned to touch the footer links section below -->
-                        <div class="position-absolute d-none d-lg-block" style="left: -180px; bottom: -80px; z-index: 10;">
+                        <div class="position-absolute d-none d-lg-block" style="left: -100px; bottom: -80px; z-index: 10;">
                             <img src="/images/footer-trophy.png" alt="Trophy" style="height: 320px; width: auto;" />
                         </div>
                         
@@ -307,8 +307,6 @@ const auth = computed(() => page.props.auth || null);
                                 <a :href="socialMediaLinks.facebook" target="_blank" rel="noopener" class="text-secondary"><i class="bi bi-facebook"></i></a>
                                 <a :href="socialMediaLinks.instagram" target="_blank" rel="noopener" class="text-secondary"><i class="bi bi-instagram"></i></a>
                                 <a :href="socialMediaLinks.twitter" target="_blank" rel="noopener" class="text-secondary"><i class="bi bi-twitter"></i></a>
-                                <a href="#" class="text-secondary"><i class="bi bi-linkedin"></i></a>
-                                <a href="#" class="text-secondary"><i class="bi bi-telegram"></i></a>
                             </div>
                         </div>
                         <div class="d-flex align-items-center gap-3">

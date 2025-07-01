@@ -1,0 +1,42 @@
+Sport,League,Month,Date,Game,Bet Type,Wager Type,Wager Name,odds,level,code,Status,ROI(net),Wager,Profits,Winning Amount
+Baseball,MLB,June,6/27/2025,Miami Marlins @ Arizona Diamondbacks,Moneyline,Straight,Miami Marlins (E Perez) ML,157,Gold,BB,Won,157%,$40.00,$62.80,$102.80
+Baseball,MLB,June,6/27/2025,Washington Nationals @ Los Angeles Angels,Moneyline,Straight,Los Angeles Angels (J Soriano) ML,-163,Silver,BB,Lost,0%,$50.00,$0.00,$0.00
+Baseball,MLB,June,6/27/2025,New York Mets @ Pittsburgh Pirates,Moneyline,Straight,New York Mets (D Peterson) ML,-135,Silver,BB,Lost,0%,$50.00,$0.00,$0.00
+Baseball,MLB,June,6/27/2025,Tampa Bay Rays @ Baltimore Orioles,Moneyline,Straight,Tampa Bay Rays (R Pepiot) ML,-130,Silver,BB,Lost,0%,$50.00,$0.00,$0.00
+Baseball,MLB,June,6/27/2025,Oakland Athletics @ New York Yankees,Runline,Straight,New York Yankees (W Warren) -1.5 RL,-125,Silver,BB,Won,80%,$50.00,$40.00,$90.00
+Baseball,MLB,June,6/27/2025,San Diego Padres @ Cincinnati Reds,Moneyline,Straight,San Diego Padres (D Cease) ML,-125,Silver,BB,Lost,0%,$50.00,$0.00,$0.00
+Baseball,MLB,June,6/27/2025,Minnesota Twins @ Detroit Tigers,Moneyline,Straight,Minnesota Twins (D Festa) ML,114,Gold,BB,Won,114%,$40.00,$45.60,$85.60
+Baseball,MLB,June,6/27/2025,Toronto Blue Jays @ Boston Red Sox,Moneyline,Straight,Toronto Blue Jays (J Berrios) ML,108,Gold,BB,Won,108%,$40.00,$43.20,$83.20
+Baseball,MLB,June,6/27/2025,St. Louis Cardinals @ Cleveland Guardians,Moneyline,Straight,St. Louis Cardinals (S Gray) ML,-126,Silver,BB,Won,39.68%,$50.00,$19.84,$69.84
+Baseball,MLB,June,6/27/2025,Philadelphia Phillies @ Atlanta Braves,Runline,Straight,Atlanta Braves (B Elder) -1.5 RL,115,Gold,BB,Lost,0%,$40.00,$0.00,$0.00
+Baseball,MLB,June,6/27/2025,Seattle Mariners @ Texas Rangers,Runline,Straight,Seattle Mariners (L Gilbert) -1.5 RL,150,Gold,BB,Lost,0%,$40.00,$0.00,$0.00
+Baseball,MLB,June,6/27/2025,Seattle Mariners @ Texas Rangers,Moneyline,Straight,Seattle Mariners (L Gilbert) ML,-113,Silver,BB,Won,44%,$50.00,$22.13,$72.13
+Baseball,MLB,June,6/27/2025,Colorado Rockies @ Milwaukee Brewers,Runline,Straight,Milwaukee Brewers (J Quintana) -1.5 RL,100,Gold,BB,Won,100%,$40.00,$40.00,$80.00
+Baseball,MLB,June,6/27/2025,Chicago Cubs @ Houston Astros,Moneyline,Straight,Chicago Cubs (C Horton) ML,102,Gold,BB,Lost,0%,$40.00,$0.00,$0.00
+Baseball,MLB,June,6/27/2025,Los Angeles Dodgers @ Kansas City Royals,Runline,Straight,Los Angeles Dodgers (D May) -1.5 RL,105,Gold,BB,Lost,0%,$40.00,$0.00,$0.00
+Baseball,MLB,June,6/27/2025,Los Angeles Dodgers @ Kansas City Royals,Moneyline,Straight,Los Angeles Dodgers (D May) ML,-145,Silver,BB,Won,68.97%,$50.00,$34.49,$84.49
+Baseball,MLB,June,6/28/2025,Washington Nationals (M Soroka) @ Los Angeles Angels (K Hendricks),Moneyline,Straight,Los Angeles Angels (K Hendricks) ML,-120,Silver,BB,Pending,--,$50.00,--,--
+Baseball,MLB,June,6/28/2025,Oakland Athletics (J Sears) @ New York Yankees (C Schmidt),Runline,Straight,New York Yankees (C Schmidt) -1.5 RL,-135,Silver,BB,Pending,--,$50.00,--,--
+Baseball,MLB,June,6/28/2025,Minnesota Twins (B Ober) @ Detroit Tigers (C Mize),Moneyline,Straight,Minnesota Twins (B Ober) ML,123,Gold,BB,Pending,--,$40.00,--,--
+Baseball,MLB,June,6/28/2025,New York Mets (P Blackburn) @ Pittsburgh Pirates (B Falter),Moneyline,Straight,New York Mets (P Blackburn) ML,-136,Silver,BB,Pending,--,$50.00,--,--
+Baseball,MLB,June,6/28/2025,Tampa Bay Rays (Z Littell) @ Baltimore Orioles (Z Eflin),Moneyline,Straight,Baltimore Orioles (Z Eflin) ML,-113,Silver,BB,Pending,--,$50.00,--,--
+Baseball,MLB,June,6/28/2025,Seattle Mariners (B Woo) @ Texas Rangers (K Rocker),Moneyline,Straight,Seattle Mariners (B Woo) ML,-120,Silver,BB,Pending,--,$50.00,--,--
+Baseball,MLB,June,6/28/2025,San Diego Padres (R Vasquez) @ Cincinnati Reds (A Abbott),Moneyline,Straight,Cincinnati Reds (A Abbott) ML,-150,Silver,BB,Pending,--,$50.00,--,--
+Baseball,MLB,June,6/28/2025,Miami Marlins (S Alcantara) @ Arizona Diamondbacks (B Pfaadt),Moneyline,Straight,Arizona Diamondbacks (B Pfaadt) ML,-145,Silver,BB,Pending,--,$50.00,--,--
+Baseball,MLB,June,6/28/2025,Colorado Rockies (A Senzatela) @ Milwaukee Brewers (Q Priester),Runline,Straight,Milwaukee Brewers (Q Priester) -1.5 RL,-120,Silver,BB,Pending,--,$50.00,--,--
+Baseball,MLB,June,6/28/2025,Toronto Blue Jays (C Bassitt) @ Boston Red Sox (L Giolito),Moneyline,Straight,Toronto Blue Jays (C Bassitt) ML,-115,Silver,BB,Pending,--,$50.00,--,--
+Baseball,MLB,June,6/28/2025,Los Angeles Dodgers (S Ohtani) @ Kansas City Royals (S Lugo),Runline,Straight,Los Angeles Dodgers (S Ohtani) -1.5 RL,100,Gold,BB,Pending,--,$40.00,--,--
+Baseball,MLB,June,6/28/2025,San Francisco Giants (R Ray) @ Chicago White Sox (A Houser),Moneyline,Straight,San Francisco Giants (R Ray) ML,-155,Silver,BB,Pending,--,$50.00,--,--
+Baseball,MLB,June,6/28/2025,St. Louis Cardinals (M Mikolas) @ Cleveland Guardians (S Cecconi),Moneyline,Straight,St. Louis Cardinals (M Mikolas) ML,105,Gold,BB,Pending,--,$40.00,--,--
+Baseball,MLB,June,6/28/2025,Philadelphia Phillies (J Luzardo) @ Atlanta Braves (S Schwellenbach),Moneyline,Straight,Atlanta Braves (S Schwellenbach) ML,-150,Silver,BB,Pending,--,$50.00,--,--
+Baseball,MLB,June,6/28/2025,Chicago Cubs (C Rea) @ Houston Astros (L McCullers),Moneyline,Straight,Chicago Cubs (C Rea) ML,103,Gold,BB,Pending,--,$40.00,--,--
+Baseball,MLB,June,6/28/2025,Toronto Blue Jays @ Boston Red Sox,Player Strikeouts,Straight,Chris Bassitt Over 5.5 Strikeouts,-111,Silver,BB,Pending,--,$50.00,--,--
+Baseball,MLB,June,6/28/2025,San Francisco Giants @ Chicago White Sox,Player Strikeouts,Straight,Robbie Ray Over 6.5 Strikeouts,-115,Silver,BB,Pending,--,$50.00,--,--
+Baseball,MLB,June,2025-06-28,Toronto Blue Jays @ Boston Red Sox,Player Strikeouts,Straight,Chris Bassitt 7+ Strikeouts,220,Platinum,BB,Pending,--,$35.00,--,--
+Baseball,MLB,June,2025-06-28,Washington Nationals @ Los Angeles Angels,Player Strikeouts,Straight,Michael Soroka 7+ Strikeouts,147,Gold,BB,Pending,--,$35.00,--,--
+Baseball,MLB,June,2025-06-28,Tampa Bay Rays @ Baltimore Orioles,Player Strikeouts,Straight,Zach Eflin Over 6.5 Strikeouts,1100,Platinum,BB,Pending,--,$20.00,--,--
+Baseball,MLB,June,2025-06-28,Tampa Bay Rays @ Baltimore Orioles,Player Strikeouts,Straight,Zach Eflin Over 3.5 Strikeouts,-105,Bronze,BB,Pending,--,$50.00,--,--
+Baseball,MLB,June,2025-06-28,Strikeout @ Parlay,Player Strikeouts,Parlay,"Strikeout Parlay: Ray 7.5+, Bassitt 7.5+, Soroka 7.5+",4228,Platinum,BB,Pending,--,$20.00,--,--
+Baseball,MLB,June,2025-06-28,Strikeout @ Parlay,Player Strikeouts,Parlay,"Strikeout Parlay: Ray 6.5+, Bassitt 7+, Soroka 7+",1383,Gold,BB,Pending,--,$15.00,--,--
+Baseball,MLB,June,2025-06-28,Pitched Outs @ Parlay ,Pitched Outs,Parlay,"Pitched Outs Parlay: Littell 17.5+, Ray 17.5+, Schmidt 17.5+, Ober 17.5+",683,Platinum,BB,Pending,--,$20.00,--,--
+Baseball,MLB,June,2025-06-28,Multiple Games,Player Strikeouts,Parlay,"Strikeout Parlay: Ray 4.5+, Soroka 4.5+, Luzardo 4.5+",103,Bronze,BB,Pending,--,$45.00,--,--

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Inertia\Inertia;
+use App\Models\TicketCategory;
 
 class StaticPageController extends Controller
 {
@@ -28,7 +29,11 @@ class StaticPageController extends Controller
 
     public function careersJobs()
     {
-        return Inertia::render('CareersJobs');
+        $resumeCategory = TicketCategory::where('slug', 'resume')->first();
+        
+        return Inertia::render('CareersJobs', [
+            'resumeCategoryId' => $resumeCategory ? $resumeCategory->id : null,
+        ]);
     }
 
     public function aboutUs()

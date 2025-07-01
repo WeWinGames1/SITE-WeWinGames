@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CareerApplicationController;
 use App\Http\Controllers\Admin\BetImportWizardController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\CustomerController;
@@ -52,7 +51,6 @@ Route::get('/subscription-checkout', [RegisteredUserController::class, 'newSubsc
     ->name('subscription.checkout')
     ->middleware(['auth', 'verified']);
 
-Route::post('/careers/apply', [CareerApplicationController::class, 'submit'])->name('careers.apply');
 
 // Public Support Route (for both guests and authenticated users)
 Route::get('/support', [SupportTicketController::class, 'publicCreate'])->name('support.public');
