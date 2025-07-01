@@ -48,8 +48,8 @@ class BetManagementController extends Controller
         $this->applyFilters($query, $request);
         
         // Apply sorting using trait
-        $validSortFields = ['game_at', 'created_at', 'stake', 'potential_win', 'profit', 'odds', 'confidence', 'status'];
-        $this->applySorting($query, $request, $validSortFields, 'game_at', 'desc');
+        $validSortFields = ['betting_date', 'created_at', 'wager_amount', 'winning_amount', 'profit_amount', 'wager_odds', 'status'];
+        $this->applySorting($query, $request, $validSortFields, 'betting_date', 'desc');
         
         // Execute query with optimized pagination
         $bets = $query->paginate($perPage)->withQueryString();
@@ -69,7 +69,7 @@ class BetManagementController extends Controller
             'filters' => $request->only([
                 'status', 'sport_id', 'operator_id', 'user_id', 
                 'date_from', 'date_to', 'search', 'bet_type', 
-                'is_featured', 'min_confidence', 'profit_status',
+                'is_featured', 'profit_status',
                 'sort', 'direction', 'per_page'
             ]),
             'stats' => $stats,
@@ -110,12 +110,9 @@ class BetManagementController extends Controller
             $query->where('is_featured', $request->boolean('is_featured'));
         }
         
-        if ($request->filled('min_confidence')) {
-            $query->where('confidence', '>=', $request->min_confidence);
-        }
         
         // Date filters using trait
-        $this->applyDateFilters($query, $request, 'game_at');
+        $this->applyDateFilters($query, $request, 'betting_date');
         
         // Profit status filter
         if ($request->filled('profit_status')) {
@@ -158,11 +155,10 @@ class BetManagementController extends Controller
             SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as pending_count,
             SUM(CASE WHEN status = "won" THEN 1 ELSE 0 END) as won_count,
             SUM(CASE WHEN status = "lost" THEN 1 ELSE 0 END) as lost_count,
-            SUM(stake) as total_stake,
-            SUM(CASE WHEN status = "won" THEN profit ELSE 0 END) as total_profit,
-            SUM(CASE WHEN status = "lost" THEN ABS(profit) ELSE 0 END) as total_loss,
-            AVG(confidence) as avg_confidence,
-            AVG(odds) as avg_odds
+            SUM(wager_amount) as total_stake,
+            SUM(CASE WHEN status = "won" THEN profit_amount ELSE 0 END) as total_profit,
+            SUM(CASE WHEN status = "lost" THEN ABS(profit_amount) ELSE 0 END) as total_loss,
+            AVG(wager_odds) as avg_odds
         ')->first();
         
         // Calculate derived stats
@@ -181,7 +177,6 @@ class BetManagementController extends Controller
             'net_profit' => round($stats->total_profit - $stats->total_loss, 2),
             'win_rate' => round($winRate, 2),
             'roi' => round($roi, 2),
-            'avg_confidence' => round($stats->avg_confidence, 1),
             'avg_odds' => round($stats->avg_odds, 2),
         ];
     }
@@ -223,7 +218,6 @@ class BetManagementController extends Controller
             'odds' => 'required|numeric',
             'game_at' => 'required|date',
             'status' => 'required|in:pending,won,lost,void,push',
-            'confidence' => 'nullable|integer|min:1|max:100',
             'is_featured' => 'boolean',
             'membership' => 'required|in:bronze,silver,gold,platinum',
         ]);
@@ -265,7 +259,6 @@ class BetManagementController extends Controller
             'game_at' => 'required|date',
             'status' => 'required|in:pending,won,lost,void,push',
             'actual_result' => 'nullable|string',
-            'confidence' => 'nullable|integer|min:1|max:100',
             'is_featured' => 'boolean',
             'membership' => 'required|in:bronze,silver,gold,platinum',
         ]);

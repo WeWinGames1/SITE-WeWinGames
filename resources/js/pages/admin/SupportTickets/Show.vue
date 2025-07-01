@@ -31,7 +31,10 @@ interface Ticket {
         id: number;
         name: string;
         email: string;
-    };
+    } | null;
+    guest_name?: string;
+    guest_email?: string;
+    is_guest_submission?: boolean;
     assignedTo?: {
         id: number;
         name: string;
@@ -122,7 +125,9 @@ function updateAssignment() {
 
 // Impersonate user
 function impersonateUser() {
-    router.post(`/admin/customers/${props.ticket.user.id}/impersonate`);
+    if (props.ticket.user) {
+        router.post(`/admin/customers/${props.ticket.user.id}/impersonate`);
+    }
 }
 </script>
 
@@ -149,12 +154,13 @@ function impersonateUser() {
                         <div class="card-header bg-light">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <strong>{{ ticket.user.name }}</strong>
-                                    <span class="text-muted ms-2">{{ ticket.user.email }}</span>
+                                    <strong>{{ ticket.user ? ticket.user.name : ticket.guest_name }}</strong>
+                                    <span class="text-muted ms-2">{{ ticket.user ? ticket.user.email : ticket.guest_email }}</span>
                                     <span class="text-muted ms-2">{{ formatDate(ticket.created_at) }}</span>
+                                    <span v-if="ticket.is_guest_submission" class="badge bg-info ms-2">Guest</span>
                                 </div>
                                 <div>
-                                    <button @click="impersonateUser" class="btn btn-sm btn-outline-primary me-2">
+                                    <button v-if="ticket.user" @click="impersonateUser" class="btn btn-sm btn-outline-primary me-2">
                                         <i class="bi bi-person-badge me-1"></i> Impersonate
                                     </button>
                                     <span class="badge bg-primary">Original Message</span>
@@ -316,14 +322,14 @@ function impersonateUser() {
                         </div>
                         <div class="card-body">
                             <div class="mb-2">
-                                <strong>{{ ticket.user.name }}</strong>
+                                <strong>{{ ticket.user ? ticket.user.name : ticket.guest_name }}</strong>
                             </div>
                             <div class="mb-3">
-                                <a :href="`mailto:${ticket.user.email}`" class="text-decoration-none">
-                                    {{ ticket.user.email }}
+                                <a :href="`mailto:${ticket.user ? ticket.user.email : ticket.guest_email}`" class="text-decoration-none">
+                                    {{ ticket.user ? ticket.user.email : ticket.guest_email }}
                                 </a>
                             </div>
-                            <a :href="`/admin/customers?search=${ticket.user.email}`" class="btn btn-sm btn-outline-primary">
+                            <a v-if="ticket.user" :href="`/admin/customers?search=${ticket.user.email}`" class="btn btn-sm btn-outline-primary">
                                 View Customer
                             </a>
                         </div>

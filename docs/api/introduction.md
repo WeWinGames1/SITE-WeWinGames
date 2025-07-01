@@ -3,7 +3,7 @@
 WeWinGames Sports Betting API provides endpoints for managing bets, games, users, and sports data. This API uses bearer token authentication via Laravel Sanctum.
 
 <aside>
-    <strong>Base URL</strong>: <code>http://localhost</code>
+    <strong>Base URL</strong>: <code>http://site-wewingames.test</code>
 </aside>
 
     This documentation provides comprehensive information about the WeWinGames API.

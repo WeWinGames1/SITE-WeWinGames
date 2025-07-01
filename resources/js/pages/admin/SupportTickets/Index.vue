@@ -148,7 +148,7 @@ function formatDate(date: string) {
                 <div class="card-body">
                     <form @submit.prevent="applyFilters">
                         <div class="row g-3">
-                            <div class="col-md-3">
+                            <div class="col-lg-3 col-md-6">
                                 <label class="form-label text-dark fw-medium">Search</label>
                                 <input 
                                     v-model="filterForm.search" 
@@ -157,7 +157,7 @@ function formatDate(date: string) {
                                     placeholder="Ticket #, subject, user..."
                                 />
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-lg-2 col-md-6 col-sm-6">
                                 <label class="form-label text-dark fw-medium">Status</label>
                                 <select v-model="filterForm.status" class="form-select">
                                     <option value="">All</option>
@@ -167,7 +167,7 @@ function formatDate(date: string) {
                                     <option value="closed">Closed</option>
                                 </select>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-lg-2 col-md-6 col-sm-6">
                                 <label class="form-label text-dark fw-medium">Priority</label>
                                 <select v-model="filterForm.priority" class="form-select">
                                     <option value="">All</option>
@@ -177,7 +177,7 @@ function formatDate(date: string) {
                                     <option value="urgent">Urgent</option>
                                 </select>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-lg-2 col-md-6 col-sm-6">
                                 <label class="form-label text-dark fw-medium">Category</label>
                                 <select v-model="filterForm.category_id" class="form-select">
                                     <option value="">All</option>
@@ -186,7 +186,7 @@ function formatDate(date: string) {
                                     </option>
                                 </select>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-lg-2 col-md-6 col-sm-6">
                                 <label class="form-label text-dark fw-medium">Assigned To</label>
                                 <select v-model="filterForm.assigned_to" class="form-select">
                                     <option value="">All</option>
@@ -195,9 +195,13 @@ function formatDate(date: string) {
                                     </option>
                                 </select>
                             </div>
-                            <div class="col-md-1 d-flex align-items-end">
-                                <button type="submit" class="btn btn-primary me-2">Filter</button>
-                                <button type="button" @click="clearFilters" class="btn btn-secondary">Clear</button>
+                            <div class="col-lg-auto col-md-12 d-flex align-items-end gap-2 mt-3 mt-lg-0">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-funnel me-1"></i>Filter
+                                </button>
+                                <button type="button" @click="clearFilters" class="btn btn-outline-secondary">
+                                    Clear
+                                </button>
                             </div>
                         </div>
                     </form>

@@ -102,6 +102,11 @@ function removeFeature(form: typeof createForm | typeof editForm, index: number)
 
 // CRUD operations
 function createProduct() {
+    // Auto-generate name from tier and billing period
+    const tierName = createForm.tier;
+    const periodName = createForm.billing_period.charAt(0).toUpperCase() + createForm.billing_period.slice(1);
+    createForm.name = `${tierName} ${periodName}`;
+    
     createForm.post(route('admin.stripe-products.store'), {
         onSuccess: () => {
             showCreateModal.value = false;
@@ -323,6 +328,7 @@ function getTierBadgeClass(tier: string) {
                         <div class="col-md-6">
                             <h6 class="fw-bold mb-3">⚡ Important Notes</h6>
                             <ul class="small text-dark">
+                                <li>Product names are auto-generated (e.g., "Silver Monthly", "Gold Weekly")</li>
                                 <li>Products must be connected to Stripe to be used for subscriptions</li>
                                 <li>Prices can be updated anytime (affects new subscriptions only)</li>
                                 <li>Connected products cannot be deleted (disconnect first)</li>
@@ -331,7 +337,7 @@ function getTierBadgeClass(tier: string) {
                             </ul>
                             
                             <div class="alert alert-warning small p-2 mt-3">
-                                <strong>Pro Tip:</strong> Create products in Stripe first if you need advanced settings like trial periods or custom metadata.
+                                <strong>Purpose:</strong> This system links your website's subscription tiers (Bronze, Silver, Gold, Platinum) with Stripe products for proper billing integration.
                             </div>
                         </div>
                     </div>

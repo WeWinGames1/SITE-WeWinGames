@@ -36,7 +36,7 @@ return [
 
             // Exclude these routes even if they matched the rules above.
             'exclude' => [
-                'api/docs', 'api/docs/*', 'sanctum/*'
+                'api/docs', 'api/docs/*', 'sanctum/*', 'telescope/*', 'admin/*'
             ],
         ],
     ],
