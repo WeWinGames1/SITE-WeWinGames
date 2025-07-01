@@ -60,12 +60,19 @@ const selectedStripePriceId = ref('');
 // Forms
 const createForm = useForm({
     name: '',
-    tier: 'Bronze',
+    tier: 'Silver',
     billing_period: 'monthly',
     price: 0,
     features: [''],
     badge_text: '',
     sort_order: 0,
+});
+
+// Computed property for auto-generated product name
+const generatedProductName = computed(() => {
+    const tierName = createForm.tier;
+    const periodName = createForm.billing_period.charAt(0).toUpperCase() + createForm.billing_period.slice(1);
+    return `${tierName} ${periodName}`;
 });
 
 const editForm = useForm({
@@ -102,10 +109,8 @@ function removeFeature(form: typeof createForm | typeof editForm, index: number)
 
 // CRUD operations
 function createProduct() {
-    // Auto-generate name from tier and billing period
-    const tierName = createForm.tier;
-    const periodName = createForm.billing_period.charAt(0).toUpperCase() + createForm.billing_period.slice(1);
-    createForm.name = `${tierName} ${periodName}`;
+    // Use the auto-generated name
+    createForm.name = generatedProductName.value;
     
     createForm.post(route('admin.stripe-products.store'), {
         onSuccess: () => {
@@ -328,7 +333,7 @@ function getTierBadgeClass(tier: string) {
                         <div class="col-md-6">
                             <h6 class="fw-bold mb-3">⚡ Important Notes</h6>
                             <ul class="small text-dark">
-                                <li>Product names are auto-generated (e.g., "Silver Monthly", "Gold Weekly")</li>
+                                <li>Product names are auto-generated from Tier + Billing Period (e.g., "Silver Monthly", "Gold Weekly")</li>
                                 <li>Products must be connected to Stripe to be used for subscriptions</li>
                                 <li>Prices can be updated anytime (affects new subscriptions only)</li>
                                 <li>Connected products cannot be deleted (disconnect first)</li>
@@ -337,7 +342,7 @@ function getTierBadgeClass(tier: string) {
                             </ul>
                             
                             <div class="alert alert-warning small p-2 mt-3">
-                                <strong>Purpose:</strong> This system links your website's subscription tiers (Bronze, Silver, Gold, Platinum) with Stripe products for proper billing integration.
+                                <strong>Purpose:</strong> This system links your website's subscription tiers (Bronze, Silver, Gold, Platinum) with corresponding Stripe products for proper billing integration. Names are auto-generated to ensure consistency.
                             </div>
                         </div>
                     </div>
@@ -443,12 +448,6 @@ function getTierBadgeClass(tier: string) {
                     </div>
                     <form @submit.prevent="createProduct">
                         <div class="modal-body">
-                            <div class="mb-3">
-                                <label for="name" class="form-label">Product Name</label>
-                                <input v-model="createForm.name" id="name" type="text" class="form-control" required />
-                                <div v-if="createForm.errors.name" class="text-danger small mt-1">{{ createForm.errors.name }}</div>
-                            </div>
-                            
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="tier" class="form-label">Tier</label>
@@ -466,6 +465,17 @@ function getTierBadgeClass(tier: string) {
                                         </option>
                                     </select>
                                     <div v-if="createForm.errors.billing_period" class="text-danger small mt-1">{{ createForm.errors.billing_period }}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Product Name (Auto-Generated)</label>
+                                <div class="form-control bg-light" style="cursor: not-allowed;">
+                                    {{ generatedProductName }}
+                                </div>
+                                <div class="form-text text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Product names are automatically generated to maintain consistency between your website tiers and Stripe products.
                                 </div>
                             </div>
                             
@@ -519,8 +529,13 @@ function getTierBadgeClass(tier: string) {
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label for="edit-name" class="form-label">Product Name</label>
-                                <input v-model="editForm.name" id="edit-name" type="text" class="form-control" required />
-                                <div v-if="editForm.errors.name" class="text-danger small mt-1">{{ editForm.errors.name }}</div>
+                                <div class="form-control bg-light" style="cursor: not-allowed;">
+                                    {{ editForm.name }}
+                                </div>
+                                <div class="form-text text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Product names cannot be changed to maintain consistency with Stripe.
+                                </div>
                             </div>
                             
                             <div class="mb-3">

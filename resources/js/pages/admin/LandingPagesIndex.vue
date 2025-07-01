@@ -28,19 +28,25 @@ function closeQR() {
         <Head title="Landing Pages" />
         
         <div class="container-fluid">
-            <!-- Page Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h1 class="h2 mb-1 text-dark">Landing Pages</h1>
-                    <p class="text-muted mb-0">Manage your marketing and landing pages</p>
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h2 mb-1 text-dark">Landing Pages</h1>
+                            <p class="text-muted mb-0">
+                                Manage your marketing and landing pages
+                            </p>
+                        </div>
+                        <Link 
+                            :href="route('admin.landing-pages.create')" 
+                            class="btn btn-primary"
+                        >
+                            <i class="bi bi-plus-circle me-1"></i>
+                            Create New Page
+                        </Link>
+                    </div>
                 </div>
-                <Link 
-                    :href="route('admin.landing-pages.create')" 
-                    class="btn btn-primary"
-                >
-                    <i class="bi bi-plus-circle me-2"></i>
-                    Create New Page
-                </Link>
             </div>
 
             <!-- Pages Table -->

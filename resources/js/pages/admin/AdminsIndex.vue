@@ -25,6 +25,13 @@ const removeForm = useForm({ user_id: '' });
 const showAddModal = ref(false);
 const adminToRemove = ref<Admin | null>(null);
 const showRemoveModal = ref(false);
+const showCreateCustomerModal = ref(false);
+const createCustomerForm = useForm({
+    name: '',
+    email: '',
+    password: '',
+    password_confirmation: '',
+});
 
 function openAddModal() {
     showAddModal.value = true;
@@ -64,6 +71,24 @@ function removeAdmin() {
         });
     }
 }
+
+function openCreateCustomerModal() {
+    showCreateCustomerModal.value = true;
+}
+
+function closeCreateCustomerModal() {
+    showCreateCustomerModal.value = false;
+    createCustomerForm.reset();
+}
+
+function createCustomer() {
+    createCustomerForm.post(route('admin.customers.create'), {
+        preserveScroll: true,
+        onSuccess: () => {
+            closeCreateCustomerModal();
+        },
+    });
+}
 </script>
 
 <template>
@@ -73,13 +98,22 @@ function removeAdmin() {
         <div class="container-fluid p-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h2 mb-0">Admin Users</h1>
-                <button 
-                    type="button" 
-                    class="btn btn-primary"
-                    @click="openAddModal"
-                >
-                    <i class="bi bi-person-plus me-2"></i>Add Admin
-                </button>
+                <div class="d-flex gap-2">
+                    <button 
+                        type="button" 
+                        class="btn btn-success"
+                        @click="openCreateCustomerModal"
+                    >
+                        <i class="bi bi-person-plus-fill me-2"></i>Create Customer
+                    </button>
+                    <button 
+                        type="button" 
+                        class="btn btn-primary"
+                        @click="openAddModal"
+                    >
+                        <i class="bi bi-person-plus me-2"></i>Add Admin
+                    </button>
+                </div>
             </div>
 
             <!-- Stats Cards -->
@@ -333,11 +367,118 @@ function removeAdmin() {
             </div>
         </div>
 
+        <!-- Create Customer Modal -->
+        <div 
+            class="modal fade" 
+            :class="{ show: showCreateCustomerModal }"
+            :style="{ display: showCreateCustomerModal ? 'block' : 'none' }"
+            tabindex="-1"
+        >
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Create New Customer</h5>
+                        <button 
+                            type="button" 
+                            class="btn-close" 
+                            @click="closeCreateCustomerModal"
+                        ></button>
+                    </div>
+                    <form @submit.prevent="createCustomer">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="customer_name" class="form-label">Name</label>
+                                <input 
+                                    id="customer_name"
+                                    v-model="createCustomerForm.name" 
+                                    type="text"
+                                    class="form-control"
+                                    :class="{ 'is-invalid': createCustomerForm.errors.name }"
+                                    required
+                                />
+                                <div v-if="createCustomerForm.errors.name" class="invalid-feedback">
+                                    {{ createCustomerForm.errors.name }}
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="customer_email" class="form-label">Email</label>
+                                <input 
+                                    id="customer_email"
+                                    v-model="createCustomerForm.email" 
+                                    type="email"
+                                    class="form-control"
+                                    :class="{ 'is-invalid': createCustomerForm.errors.email }"
+                                    required
+                                />
+                                <div v-if="createCustomerForm.errors.email" class="invalid-feedback">
+                                    {{ createCustomerForm.errors.email }}
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="customer_password" class="form-label">Password</label>
+                                <input 
+                                    id="customer_password"
+                                    v-model="createCustomerForm.password" 
+                                    type="password"
+                                    class="form-control"
+                                    :class="{ 'is-invalid': createCustomerForm.errors.password }"
+                                    required
+                                />
+                                <div v-if="createCustomerForm.errors.password" class="invalid-feedback">
+                                    {{ createCustomerForm.errors.password }}
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="customer_password_confirmation" class="form-label">Confirm Password</label>
+                                <input 
+                                    id="customer_password_confirmation"
+                                    v-model="createCustomerForm.password_confirmation" 
+                                    type="password"
+                                    class="form-control"
+                                    :class="{ 'is-invalid': createCustomerForm.errors.password_confirmation }"
+                                    required
+                                />
+                                <div v-if="createCustomerForm.errors.password_confirmation" class="invalid-feedback">
+                                    {{ createCustomerForm.errors.password_confirmation }}
+                                </div>
+                            </div>
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Note:</strong> This will create a new customer account. The user will receive a welcome email with their login credentials.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button 
+                                type="button" 
+                                class="btn btn-secondary" 
+                                @click="closeCreateCustomerModal"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                type="submit" 
+                                class="btn btn-success"
+                                :disabled="createCustomerForm.processing"
+                            >
+                                <span v-if="createCustomerForm.processing">
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                    Creating...
+                                </span>
+                                <span v-else>
+                                    <i class="bi bi-person-plus-fill me-2"></i>Create Customer
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <!-- Modal Backdrop -->
         <div 
-            v-if="showAddModal || showRemoveModal" 
+            v-if="showAddModal || showRemoveModal || showCreateCustomerModal" 
             class="modal-backdrop fade show"
-            @click="showAddModal = false; showRemoveModal = false"
+            @click="showAddModal = false; showRemoveModal = false; showCreateCustomerModal = false"
         ></div>
     </AdminLayout>
 </template>

@@ -49,7 +49,7 @@ class StripeProductController extends Controller
                 ];
             }),
             'tiers' => ['Bronze', 'Silver', 'Gold', 'Platinum'],
-            'billing_periods' => ['daily', 'weekly', 'monthly'],
+            'billing_periods' => ['daily', 'weekly', 'monthly', 'yearly'],
         ]);
     }
 
@@ -61,7 +61,7 @@ class StripeProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'tier' => 'required|in:Bronze,Silver,Gold,Platinum',
-            'billing_period' => 'required|in:daily,weekly,monthly',
+            'billing_period' => 'required|in:daily,weekly,monthly,yearly',
             'price' => 'required|numeric|min:0',
             'features' => 'nullable|array',
             'features.*' => 'string',

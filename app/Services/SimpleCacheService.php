@@ -24,6 +24,7 @@ class SimpleCacheService
     const KEY_BET_STATS = 'bets:stats';
     const KEY_DASHBOARD_STATS = 'dashboard:stats';
     const KEY_TESTIMONIALS = 'testimonials:published';
+    const KEY_SUBSCRIPTION_STATS = 'subscriptions:stats';
     
     /**
      * Remember a query result with optional user context
@@ -85,6 +86,12 @@ class SimpleCacheService
                 Cache::forget(self::KEY_CUSTOMER_STATS);
                 Cache::forget(self::KEY_DASHBOARD_STATS);
                 self::clearByPrefix('users:');
+                break;
+                
+            case 'subscription':
+                Cache::forget(self::KEY_SUBSCRIPTION_STATS);
+                Cache::forget(self::KEY_DASHBOARD_STATS);
+                self::clearByPrefix('subscriptions:');
                 break;
                 
             case 'testimonial':

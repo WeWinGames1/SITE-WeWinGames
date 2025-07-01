@@ -16,25 +16,79 @@ class AdminRateLimit
      */
     public function handle(Request $request, Closure $next, string $type = 'default'): Response
     {
-        $key = $this->resolveRequestSignature($request, $type);
-        
-        $maxAttempts = $this->getMaxAttempts($type);
-        $decayMinutes = $this->getDecayMinutes($type);
-        
-        if (RateLimiter::tooManyAttempts($key, $maxAttempts)) {
-            return $this->buildResponse($key, $maxAttempts, $type);
+        try {
+            // BYPASS RATE LIMITING COMPLETELY FOR ADMIN ROUTES
+            // If we're in the admin area, the user has already passed authentication and authorization
+            if (str_starts_with($request->path(), 'admin/')) {
+                return $next($request);
+            }
+            
+            // Check if user is an admin - if so, bypass rate limiting entirely
+            $user = $request->user();
+            
+            // Multiple ways to check for admin status
+            $isAdmin = false;
+            if ($user) {
+                // Check multiple conditions for admin status
+                $isAdmin = $user->id === 1 || // Super admin
+                    (method_exists($user, 'hasRole') && $user->hasRole('admin')) || // Has admin role
+                    (isset($user->is_admin) && $user->is_admin); // Has is_admin flag
+                    
+                if ($isAdmin) {
+                    \Log::info('AdminRateLimit: Admin user bypassing rate limit', [
+                        'user_id' => $user->id,
+                        'user_email' => $user->email,
+                        'route' => $request->path(),
+                        'type' => $type
+                    ]);
+                    return $next($request);
+                }
+            }
+            
+            $key = $this->resolveRequestSignature($request, $type);
+            
+            $maxAttempts = $this->getMaxAttempts($type, $request);
+            $decayMinutes = $this->getDecayMinutes($type);
+            
+            if (RateLimiter::tooManyAttempts($key, $maxAttempts)) {
+                return $this->buildResponse($key, $maxAttempts, $type);
+            }
+            
+            RateLimiter::hit($key, $decayMinutes * 60);
+            
+            $response = $next($request);
+            
+            return $this->addHeaders(
+                $response, 
+                $maxAttempts,
+                RateLimiter::attempts($key),
+                RateLimiter::availableIn($key)
+            );
+        } catch (\Exception $e) {
+            // If there's any error, log it and return a proper error response
+            \Log::error('AdminRateLimit middleware error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+                'route' => $request->path(),
+                'user_id' => $request->user() ? $request->user()->id : null,
+                'type' => $type ?? 'unknown'
+            ]);
+            
+            // Return a proper error response instead of throwing a fatal error
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'An error occurred while processing your request.',
+                    'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+                ], 500);
+            }
+            
+            // For non-JSON requests, redirect to an error page
+            return response()->view('errors.500', [
+                'message' => 'An error occurred while processing your request.',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
         }
-        
-        RateLimiter::hit($key, $decayMinutes * 60);
-        
-        $response = $next($request);
-        
-        return $this->addHeaders(
-            $response, 
-            $maxAttempts,
-            RateLimiter::attempts($key),
-            RateLimiter::availableIn($key)
-        );
     }
     
     /**
@@ -58,23 +112,24 @@ class AdminRateLimit
     /**
      * Get the maximum number of attempts based on type.
      */
-    protected function getMaxAttempts(string $type): int
+    protected function getMaxAttempts(string $type, Request $request = null): int
     {
         // Check if user is an admin and give them higher limits
         $isAdmin = false;
-        if ($user = request()->user()) {
+        $user = $request ? $request->user() : request()->user();
+        if ($user) {
             // Check if user has admin role or is user ID 1 (typically the super admin)
             $isAdmin = $user->hasRole('admin') || $user->id === 1;
         }
         
-        // Admin gets significantly higher limits
+        // Admin gets significantly higher limits or bypasses rate limiting
         if ($isAdmin) {
             return match($type) {
-                'login' => 20,       // 20 login attempts (4x normal)
-                'api' => 300,        // 300 API calls per minute (5x normal)
-                'export' => 50,      // 50 exports per hour (5x normal)
-                'import' => 50,      // 50 imports per hour (10x normal)
-                default => 500,      // 500 general requests per minute (5x normal)
+                'login' => 100,      // 100 login attempts
+                'api' => 10000,      // 10,000 API calls per minute (virtually unlimited)
+                'export' => 1000,    // 1000 exports per hour (virtually unlimited)
+                'import' => 1000,    // 1000 imports per hour (virtually unlimited)
+                default => 10000,    // 10,000 general requests per minute (virtually unlimited)
             };
         }
         
@@ -120,11 +175,32 @@ class AdminRateLimit
         // Add context-specific messages
         if ($type === 'import') {
             $message = $isAdmin 
-                ? "Import rate limit reached (50 imports per hour for admins). Please wait {$seconds} seconds."
+                ? "Import rate limit reached (1000 imports per hour for admins). Please wait {$seconds} seconds."
                 : "Import rate limit reached (5 imports per hour). Please wait {$seconds} seconds.";
+        } elseif ($type === 'export') {
+            $message = $isAdmin 
+                ? "Export rate limit reached (1000 exports per hour for admins). Please wait {$seconds} seconds."
+                : "Export rate limit reached (10 exports per hour). Please wait {$seconds} seconds.";
+        } elseif ($type === 'login') {
+            $message = "Too many login attempts. Please wait {$seconds} seconds before trying again.";
         }
         
-        return response()->json([
+        // For JSON requests (API/AJAX)
+        if (request()->expectsJson()) {
+            return response()->json([
+                'message' => $message,
+                'retry_after' => $seconds,
+                'limit_type' => $type,
+                'is_admin' => $isAdmin,
+            ], 429)->withHeaders([
+                'Retry-After' => $seconds,
+                'X-RateLimit-Limit' => $maxAttempts,
+                'X-RateLimit-Remaining' => 0,
+            ]);
+        }
+        
+        // For regular web requests, return a nice error page
+        return response()->view('errors.429', [
             'message' => $message,
             'retry_after' => $seconds,
             'limit_type' => $type,

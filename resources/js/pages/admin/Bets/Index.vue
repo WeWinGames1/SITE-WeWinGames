@@ -337,16 +337,16 @@ function formatCurrency(amount: number | null | undefined): string {
                                 @click="exportBets"
                                 type="button"
                                 class="btn btn-outline-secondary"
+                                style="padding: 0.375rem 0.75rem;"
                             >
-                                <ArrowDownTrayIcon class="h-4 w-4 me-1" />
-                                Export
+                                <i class="bi bi-download me-2"></i>Export
                             </button>
                             <Link
                                 :href="route('admin.bets.create')"
                                 class="btn btn-primary"
+                                style="padding: 0.375rem 0.75rem;"
                             >
-                                <PlusIcon class="h-4 w-4 me-1" />
-                                Add Bet
+                                <i class="bi bi-plus-circle me-2"></i>Add Bet
                             </Link>
                         </div>
                     </div>

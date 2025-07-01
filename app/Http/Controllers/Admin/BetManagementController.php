@@ -202,6 +202,23 @@ class BetManagementController extends Controller
     }
     
     /**
+     * Show the form for creating a new bet.
+     */
+    public function create()
+    {
+        // Get filter options for dropdowns
+        $sports = Sport::orderBy('name')->get(['id', 'name']);
+        $operators = Operator::orderBy('name')->get(['id', 'name']);
+        $users = User::orderBy('name')->get(['id', 'name', 'email']);
+        
+        return Inertia::render('admin/Bets/Create', [
+            'sports' => $sports,
+            'operators' => $operators,
+            'users' => $users,
+        ]);
+    }
+    
+    /**
      * Store a newly created bet.
      */
     public function store(Request $request)

@@ -146,15 +146,16 @@ const navigation: NavItem[] = [
             // { name: 'Ticket Categories', href: '#', icon: 'bi-tags' }, // TODO: Implement
         ],
     },
-    // {
-    //     name: 'Communications',
-    //     href: '#',
-    //     icon: 'bi-envelope',
-    //     children: [
-    //         { name: 'Send Notification', href: '#', icon: 'bi-bell' }, // TODO: Implement notification page
-    //         { name: 'Email Templates', href: '#', icon: 'bi-envelope' }, // TODO: Implement
-    //     ],
-    // },
+    {
+        name: 'Notifications',
+        href: '#',
+        icon: 'bi-bell',
+        children: [
+            { name: 'Email Templates', href: route('admin.notifications.email-templates.index'), icon: 'bi-envelope' },
+            { name: 'Email Logs', href: route('admin.notifications.email-logs.index'), icon: 'bi-clock-history' },
+            // { name: 'Send Notification', href: '#', icon: 'bi-send' }, // TODO: Implement notification sending
+        ],
+    },
     // {
     //     name: 'Settings',
     //     href: '#',

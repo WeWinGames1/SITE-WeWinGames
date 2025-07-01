@@ -12,11 +12,18 @@ interface Ticket {
     category: {
         id: number;
         name: string;
-    };
+    } | null;
     user: {
         id: number;
         name: string;
         email: string;
+    } | null;
+    is_guest_submission?: boolean;
+    guest_name?: string;
+    guest_email?: string;
+    potential_user?: {
+        id: number;
+        name: string;
     };
     assigned_to?: number;
     assignedTo?: {
@@ -148,7 +155,7 @@ function formatDate(date: string) {
                 <div class="card-body">
                     <form @submit.prevent="applyFilters">
                         <div class="row g-3">
-                            <div class="col-lg-3 col-md-6">
+                            <div class="col-lg-3 col-md-4 col-sm-6">
                                 <label class="form-label text-dark fw-medium">Search</label>
                                 <input 
                                     v-model="filterForm.search" 
@@ -157,7 +164,7 @@ function formatDate(date: string) {
                                     placeholder="Ticket #, subject, user..."
                                 />
                             </div>
-                            <div class="col-lg-2 col-md-6 col-sm-6">
+                            <div class="col-lg-2 col-md-4 col-sm-6">
                                 <label class="form-label text-dark fw-medium">Status</label>
                                 <select v-model="filterForm.status" class="form-select">
                                     <option value="">All</option>
@@ -167,7 +174,7 @@ function formatDate(date: string) {
                                     <option value="closed">Closed</option>
                                 </select>
                             </div>
-                            <div class="col-lg-2 col-md-6 col-sm-6">
+                            <div class="col-lg-2 col-md-4 col-sm-6">
                                 <label class="form-label text-dark fw-medium">Priority</label>
                                 <select v-model="filterForm.priority" class="form-select">
                                     <option value="">All</option>
@@ -177,7 +184,7 @@ function formatDate(date: string) {
                                     <option value="urgent">Urgent</option>
                                 </select>
                             </div>
-                            <div class="col-lg-2 col-md-6 col-sm-6">
+                            <div class="col-lg-2 col-md-4 col-sm-6">
                                 <label class="form-label text-dark fw-medium">Category</label>
                                 <select v-model="filterForm.category_id" class="form-select">
                                     <option value="">All</option>
@@ -186,7 +193,7 @@ function formatDate(date: string) {
                                     </option>
                                 </select>
                             </div>
-                            <div class="col-lg-2 col-md-6 col-sm-6">
+                            <div class="col-lg-2 col-md-4 col-sm-6">
                                 <label class="form-label text-dark fw-medium">Assigned To</label>
                                 <select v-model="filterForm.assigned_to" class="form-select">
                                     <option value="">All</option>
@@ -195,7 +202,7 @@ function formatDate(date: string) {
                                     </option>
                                 </select>
                             </div>
-                            <div class="col-lg-auto col-md-12 d-flex align-items-end gap-2 mt-3 mt-lg-0">
+                            <div class="col-12 col-md-4 col-lg-auto d-flex align-items-end gap-2">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="bi bi-funnel me-1"></i>Filter
                                 </button>
@@ -285,12 +292,15 @@ function formatDate(date: string) {
                                             </div>
                                         </div>
                                     </div>
-                                    <div v-else>
+                                    <div v-else-if="ticket.user">
                                         <div>{{ ticket.user.name }}</div>
                                         <small class="text-muted">{{ ticket.user.email }}</small>
                                     </div>
+                                    <div v-else>
+                                        <span class="text-muted">No user data</span>
+                                    </div>
                                 </td>
-                                <td>{{ ticket.category.name }}</td>
+                                <td>{{ ticket.category?.name || 'Uncategorized' }}</td>
                                 <td>
                                     <span :class="`badge ${statusClasses[ticket.status]}`">
                                         {{ ticket.status }}

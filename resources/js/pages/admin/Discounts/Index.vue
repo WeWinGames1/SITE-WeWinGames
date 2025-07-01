@@ -351,7 +351,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
         <!-- Create Discount Modal -->
         <div class="modal fade" :class="{ 'show': showCreateModal }" :style="{ display: showCreateModal ? 'block' : 'none' }" tabindex="-1">
             <div class="modal-dialog modal-xl">
-                <div class="modal-content">
+                <div class="modal-content bg-light text-dark">
                     <div class="modal-header">
                         <h5 class="modal-title">Create New Discount Code</h5>
                         <button type="button" class="btn-close" @click="showCreateModal = false"></button>
@@ -359,38 +359,38 @@ function getStatusBadgeClass(code: DiscountCode): string {
                     <form @submit.prevent="createDiscount">
                         <div class="modal-body">
                             <!-- Basic Information -->
-                            <div class="card mb-4">
+                            <div class="card mb-4 bg-white">
                                 <div class="card-header bg-light">
-                                    <h6 class="mb-0">Basic Information</h6>
+                                    <h6 class="mb-0 text-dark">Basic Information</h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="row g-3">
                                         <div class="col-md-6">
-                                            <label for="code" class="form-label">Discount Code</label>
+                                            <label for="code" class="form-label text-dark fw-medium">Discount Code</label>
                                             <input 
                                                 v-model="createForm.code" 
                                                 id="code" 
                                                 type="text"
-                                                class="form-control text-uppercase font-monospace" 
+                                                class="form-control text-uppercase font-monospace bg-white text-dark" 
                                                 :class="{ 'is-invalid': createForm.errors.code }"
                                                 placeholder="e.g., SAVE20"
                                                 @input="e => createForm.code = e.target.value.toUpperCase()"
                                             />
-                                            <div class="form-text">Enter a unique code or leave blank to auto-generate</div>
+                                            <div class="form-text text-muted">Enter a unique code or leave blank to auto-generate</div>
                                             <div v-if="createForm.errors.code" class="invalid-feedback">{{ createForm.errors.code }}</div>
                                         </div>
                                         
                                         <div class="col-md-6">
-                                            <label for="description" class="form-label">Internal Description</label>
+                                            <label for="description" class="form-label text-dark fw-medium">Internal Description</label>
                                             <input 
                                                 v-model="createForm.description" 
                                                 id="description" 
                                                 type="text"
-                                                class="form-control" 
+                                                class="form-control bg-white text-dark" 
                                                 :class="{ 'is-invalid': createForm.errors.description }"
                                                 placeholder="e.g., Black Friday 2024 promotion"
                                             />
-                                            <div class="form-text">For admin reference only (not shown to customers)</div>
+                                            <div class="form-text text-muted">For admin reference only (not shown to customers)</div>
                                             <div v-if="createForm.errors.description" class="invalid-feedback">{{ createForm.errors.description }}</div>
                                         </div>
                                     </div>
@@ -398,22 +398,22 @@ function getStatusBadgeClass(code: DiscountCode): string {
                             </div>
                             
                             <!-- Discount Configuration -->
-                            <div class="card mb-4">
+                            <div class="card mb-4 bg-white">
                                 <div class="card-header bg-light">
-                                    <h6 class="mb-0">Discount Configuration</h6>
+                                    <h6 class="mb-0 text-dark">Discount Configuration</h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="row g-3">
                                         <div class="col-md-4">
-                                            <label for="discount_type" class="form-label">Discount Type</label>
-                                            <select v-model="createForm.discount_type" id="discount_type" class="form-select">
+                                            <label for="discount_type" class="form-label text-dark fw-medium">Discount Type</label>
+                                            <select v-model="createForm.discount_type" id="discount_type" class="form-select bg-white text-dark">
                                                 <option value="percentage">Percentage Off</option>
                                                 <option value="fixed">Fixed Amount Off</option>
                                             </select>
                                         </div>
                                         
                                         <div class="col-md-4">
-                                            <label for="discount_amount" class="form-label">Discount Amount</label>
+                                            <label for="discount_amount" class="form-label text-dark fw-medium">Discount Amount</label>
                                             <div class="input-group">
                                                 <span v-if="createForm.discount_type === 'fixed'" class="input-group-text">$</span>
                                                 <input 
@@ -423,22 +423,22 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                                     step="0.01" 
                                                     min="0"
                                                     :max="createForm.discount_type === 'percentage' ? 100 : null"
-                                                    class="form-control" 
+                                                    class="form-control bg-white text-dark" 
                                                     :class="{ 'is-invalid': createForm.errors.discount_amount }"
                                                     required 
                                                 />
                                                 <span v-if="createForm.discount_type === 'percentage'" class="input-group-text">%</span>
                                                 <div v-if="createForm.errors.discount_amount" class="invalid-feedback">{{ createForm.errors.discount_amount }}</div>
                                             </div>
-                                            <div class="form-text">
+                                            <div class="form-text text-muted">
                                                 <span v-if="createForm.discount_type === 'percentage'">Enter 0-100</span>
                                                 <span v-else>Amount in dollars</span>
                                             </div>
                                         </div>
                                         
                                         <div class="col-md-4">
-                                            <label for="apply_to" class="form-label">Duration</label>
-                                            <select v-model="createForm.apply_to" id="apply_to" class="form-select">
+                                            <label for="apply_to" class="form-label text-dark fw-medium">Duration</label>
+                                            <select v-model="createForm.apply_to" id="apply_to" class="form-select bg-white text-dark">
                                                 <option value="first_payment">First Payment Only</option>
                                                 <option value="forever">All Payments (Forever)</option>
                                                 <option value="specific_months">Specific Number of Months</option>
@@ -448,15 +448,15 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                     
                                     <div v-if="createForm.apply_to === 'specific_months'" class="row g-3 mt-1">
                                         <div class="col-md-4">
-                                            <label for="months_count" class="form-label">Number of Months</label>
+                                            <label for="months_count" class="form-label text-dark fw-medium">Number of Months</label>
                                             <input v-model.number="createForm.months_count" 
                                                    id="months_count" 
                                                    type="number" 
                                                    min="1" 
-                                                   class="form-control" 
+                                                   class="form-control bg-white text-dark" 
                                                    :class="{ 'is-invalid': createForm.errors.months_count }"
                                                    required />
-                                            <div class="form-text">Discount will apply for this many billing cycles</div>
+                                            <div class="form-text text-muted">Discount will apply for this many billing cycles</div>
                                             <div v-if="createForm.errors.months_count" class="invalid-feedback">{{ createForm.errors.months_count }}</div>
                                         </div>
                                     </div>
@@ -464,39 +464,39 @@ function getStatusBadgeClass(code: DiscountCode): string {
                             </div>
                             
                             <!-- Usage Limits -->
-                            <div class="card mb-4">
+                            <div class="card mb-4 bg-white">
                                 <div class="card-header bg-light">
-                                    <h6 class="mb-0">Usage Limits</h6>
+                                    <h6 class="mb-0 text-dark">Usage Limits</h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="row g-3">
                                         <div class="col-md-6">
-                                            <label for="max_uses" class="form-label">Total Usage Limit</label>
+                                            <label for="max_uses" class="form-label text-dark fw-medium">Total Usage Limit</label>
                                             <input 
                                                 v-model.number="createForm.max_uses" 
                                                 id="max_uses" 
                                                 type="number" 
                                                 min="1" 
-                                                class="form-control" 
+                                                class="form-control bg-white text-dark" 
                                                 :class="{ 'is-invalid': createForm.errors.max_uses }"
                                                 placeholder="Unlimited"
                                             />
-                                            <div class="form-text">Maximum total redemptions (leave empty for unlimited)</div>
+                                            <div class="form-text text-muted">Maximum total redemptions (leave empty for unlimited)</div>
                                             <div v-if="createForm.errors.max_uses" class="invalid-feedback">{{ createForm.errors.max_uses }}</div>
                                         </div>
                                         
                                         <div class="col-md-6">
-                                            <label for="max_uses_per_customer" class="form-label">Per Customer Limit</label>
+                                            <label for="max_uses_per_customer" class="form-label text-dark fw-medium">Per Customer Limit</label>
                                             <input 
                                                 v-model.number="createForm.max_uses_per_customer" 
                                                 id="max_uses_per_customer" 
                                                 type="number" 
                                                 min="1" 
-                                                class="form-control" 
+                                                class="form-control bg-white text-dark" 
                                                 :class="{ 'is-invalid': createForm.errors.max_uses_per_customer }"
                                                 required 
                                             />
-                                            <div class="form-text">How many times each customer can use this code</div>
+                                            <div class="form-text text-muted">How many times each customer can use this code</div>
                                             <div v-if="createForm.errors.max_uses_per_customer" class="invalid-feedback">{{ createForm.errors.max_uses_per_customer }}</div>
                                         </div>
                                     </div>
@@ -504,31 +504,31 @@ function getStatusBadgeClass(code: DiscountCode): string {
                             </div>
                             
                             <!-- Validity Period -->
-                            <div class="card mb-4">
+                            <div class="card mb-4 bg-white">
                                 <div class="card-header bg-light">
-                                    <h6 class="mb-0">Validity Period</h6>
+                                    <h6 class="mb-0 text-dark">Validity Period</h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="row g-3">
                                         <div class="col-md-6">
-                                            <label for="valid_from" class="form-label">Start Date</label>
+                                            <label for="valid_from" class="form-label text-dark fw-medium">Start Date</label>
                                             <input v-model="createForm.valid_from" 
                                                    id="valid_from" 
                                                    type="datetime-local" 
-                                                   class="form-control"
+                                                   class="form-control bg-white text-dark"
                                                    :class="{ 'is-invalid': createForm.errors.valid_from }" />
-                                            <div class="form-text">When this code becomes active (optional)</div>
+                                            <div class="form-text text-muted">When this code becomes active (optional)</div>
                                             <div v-if="createForm.errors.valid_from" class="invalid-feedback">{{ createForm.errors.valid_from }}</div>
                                         </div>
                                         
                                         <div class="col-md-6">
-                                            <label for="valid_until" class="form-label">Expiration Date</label>
+                                            <label for="valid_until" class="form-label text-dark fw-medium">Expiration Date</label>
                                             <input v-model="createForm.valid_until" 
                                                    id="valid_until" 
                                                    type="datetime-local" 
-                                                   class="form-control"
+                                                   class="form-control bg-white text-dark"
                                                    :class="{ 'is-invalid': createForm.errors.valid_until }" />
-                                            <div class="form-text">When this code expires (optional)</div>
+                                            <div class="form-text text-muted">When this code expires (optional)</div>
                                             <div v-if="createForm.errors.valid_until" class="invalid-feedback">{{ createForm.errors.valid_until }}</div>
                                         </div>
                                     </div>
@@ -536,9 +536,9 @@ function getStatusBadgeClass(code: DiscountCode): string {
                             </div>
                             
                             <!-- Product Restrictions -->
-                            <div class="card mb-4">
+                            <div class="card mb-4 bg-white">
                                 <div class="card-header bg-light">
-                                    <h6 class="mb-0">Product Restrictions</h6>
+                                    <h6 class="mb-0 text-dark">Product Restrictions</h6>
                                 </div>
                                 <div class="card-body">
                                     <p class="text-muted mb-3">Select which products this discount applies to. Leave empty to apply to all products.</p>
@@ -591,7 +591,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
         <!-- Details Modal -->
         <div class="modal fade" :class="{ 'show': showDetailsModal }" :style="{ display: showDetailsModal ? 'block' : 'none' }" tabindex="-1">
             <div class="modal-dialog modal-lg">
-                <div class="modal-content">
+                <div class="modal-content bg-light text-dark">
                     <div class="modal-header">
                         <h5 class="modal-title">Discount Code Details</h5>
                         <button type="button" class="btn-close" @click="showDetailsModal = false; selectedCode = null; codeDetails = null"></button>

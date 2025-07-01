@@ -11,7 +11,7 @@ interface TicketReply {
         id: number;
         name: string;
         is_admin: boolean;
-    };
+    } | null;
     created_at: string;
 }
 
@@ -26,7 +26,7 @@ interface Ticket {
     category: {
         id: number;
         name: string;
-    };
+    } | null;
     user: {
         id: number;
         name: string;
@@ -135,15 +135,19 @@ function impersonateUser() {
     <AdminLayout>
         <Head :title="`Ticket #${ticket.ticket_number}`" />
         
-        <div class="container-fluid">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h1 class="h3 mb-0">Ticket #{{ ticket.ticket_number }}</h1>
-                    <p class="text-muted mb-0">{{ ticket.subject }}</p>
+        <div class="container-fluid p-4">
+            <div class="row mb-4">
+                <div class="col">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h2 mb-1 text-dark">Ticket #{{ ticket.ticket_number }}</h1>
+                            <p class="text-muted mb-0">{{ ticket.subject }}</p>
+                        </div>
+                        <a href="/admin/support-tickets" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Tickets
+                        </a>
+                    </div>
                 </div>
-                <a href="/admin/support-tickets" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left me-1"></i> Back to Tickets
-                </a>
             </div>
 
             <div class="row">
@@ -176,13 +180,13 @@ function impersonateUser() {
                     <div v-for="reply in ticket.replies" :key="reply.id" class="card mb-4">
                         <div class="card-header" :class="{
                             'bg-warning bg-opacity-10': reply.is_internal,
-                            'bg-info bg-opacity-10': reply.user.is_admin && !reply.is_internal,
-                            'bg-light': !reply.user.is_admin
+                            'bg-info bg-opacity-10': reply.user?.is_admin && !reply.is_internal,
+                            'bg-light': !reply.user?.is_admin
                         }">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <strong>{{ reply.user.name }}</strong>
-                                    <span v-if="reply.user.is_admin" class="badge bg-info ms-2">Support Team</span>
+                                    <strong>{{ reply.user?.name || 'Unknown User' }}</strong>
+                                    <span v-if="reply.user?.is_admin" class="badge bg-info ms-2">Support Team</span>
                                     <span v-if="reply.is_internal" class="badge bg-warning ms-2">Internal Note</span>
                                     <span class="text-muted ms-2">{{ formatDate(reply.created_at) }}</span>
                                 </div>
@@ -249,7 +253,7 @@ function impersonateUser() {
                         <div class="card-body">
                             <!-- Status -->
                             <div class="mb-3">
-                                <label class="form-label small text-muted">Status</label>
+                                <label class="form-label small text-dark fw-medium">Status</label>
                                 <div class="input-group">
                                     <select v-model="statusForm.status" class="form-select">
                                         <option value="open">Open</option>
@@ -265,7 +269,7 @@ function impersonateUser() {
 
                             <!-- Priority -->
                             <div class="mb-3">
-                                <label class="form-label small text-muted">Priority</label>
+                                <label class="form-label small text-dark fw-medium">Priority</label>
                                 <div class="input-group">
                                     <select v-model="priorityForm.priority" class="form-select">
                                         <option value="low">Low</option>
@@ -281,7 +285,7 @@ function impersonateUser() {
 
                             <!-- Assignment -->
                             <div class="mb-3">
-                                <label class="form-label small text-muted">Assigned To</label>
+                                <label class="form-label small text-dark fw-medium">Assigned To</label>
                                 <div class="input-group">
                                     <select v-model="assignForm.assigned_to" class="form-select">
                                         <option value="">Unassigned</option>
@@ -297,19 +301,19 @@ function impersonateUser() {
 
                             <!-- Category -->
                             <div class="mb-3">
-                                <label class="form-label small text-muted">Category</label>
-                                <div>{{ ticket.category.name }}</div>
+                                <label class="form-label small text-dark fw-medium">Category</label>
+                                <div>{{ ticket.category?.name || 'Uncategorized' }}</div>
                             </div>
 
                             <!-- Created -->
                             <div class="mb-3">
-                                <label class="form-label small text-muted">Created</label>
+                                <label class="form-label small text-dark fw-medium">Created</label>
                                 <div>{{ formatDate(ticket.created_at) }}</div>
                             </div>
 
                             <!-- Updated -->
                             <div>
-                                <label class="form-label small text-muted">Last Updated</label>
+                                <label class="form-label small text-dark fw-medium">Last Updated</label>
                                 <div>{{ formatDate(ticket.updated_at) }}</div>
                             </div>
                         </div>

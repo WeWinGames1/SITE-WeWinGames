@@ -10,6 +10,8 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 
 class CustomerController extends Controller
 {
@@ -77,6 +79,7 @@ class CustomerController extends Controller
             SimpleCacheService::KEY_CUSTOMER_STATS,
             SimpleCacheService::TTL_SHORT,
             function () {
+                $now = now()->toDateTimeString();
                 return DB::selectOne('
                     SELECT 
                         COUNT(DISTINCT users.id) as total,
@@ -86,7 +89,7 @@ class CustomerController extends Controller
                         END) as active,
                         COUNT(DISTINCT CASE 
                             WHEN subscriptions.trial_ends_at IS NOT NULL 
-                            AND subscriptions.trial_ends_at > NOW() 
+                            AND subscriptions.trial_ends_at > ? 
                             THEN users.id 
                         END) as trialing,
                         COUNT(DISTINCT CASE 
@@ -95,7 +98,7 @@ class CustomerController extends Controller
                         END) as no_subscription
                     FROM users
                     LEFT JOIN subscriptions ON users.id = subscriptions.user_id
-                ');
+                ', [$now]);
             }
         );
         
@@ -254,5 +257,40 @@ class CustomerController extends Controller
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="customers_export_' . date('Y-m-d_His') . '.csv"',
         ]);
+    }
+    
+    /**
+     * Create a new customer account
+     */
+    public function create(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'confirmed', PasswordRule::defaults()],
+        ]);
+        
+        // Create the user
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'email_verified_at' => now(),
+        ]);
+        
+        // Log the action
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($user)
+            ->withProperties([
+                'created_by' => auth()->user()->email,
+                'user_email' => $user->email,
+            ])
+            ->log('Admin created new customer account');
+        
+        // Send welcome email
+        $user->sendEmailVerificationNotification();
+        
+        return back()->with('success', 'Customer account created successfully! A welcome email has been sent to ' . $user->email);
     }
 }

@@ -261,14 +261,17 @@ class SubscriptionDashboardController extends Controller
             SimpleCacheService::TTL_SHORT,
             function () {
                 // Get all stats in a single optimized query
+                $now = now()->toDateTimeString();
+                $thirtyDaysFromNow = now()->addDays(30)->toDateTimeString();
+                
                 $baseStats = DB::selectOne('
                     SELECT 
                         COUNT(CASE WHEN stripe_status = "active" THEN 1 END) as active,
                         COUNT(CASE WHEN stripe_status = "trialing" THEN 1 END) as trialing,
                         COUNT(CASE WHEN stripe_status = "canceled" THEN 1 END) as cancelled,
-                        COUNT(CASE WHEN stripe_status = "active" AND current_period_end BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 30 DAY) THEN 1 END) as renewals_30_days
+                        COUNT(CASE WHEN stripe_status = "active" AND current_period_end BETWEEN ? AND ? THEN 1 END) as renewals_30_days
                     FROM subscriptions
-                ');
+                ', [$now, $thirtyDaysFromNow]);
                 
                 // Get tier breakdown and MRR in one query
                 $tierData = DB::select('

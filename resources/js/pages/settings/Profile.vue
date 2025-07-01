@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, usePage, useForm } from '@inertiajs/vue3';
 import { onMounted, watch } from 'vue';
-import CustomerSettingsLayout from '@/layouts/CustomerSettingsLayout.vue';
+import CustomerLayout from '@/layouts/CustomerLayout.vue';
 import InputError from '@/components/InputError.vue';
 import axios from 'axios';
 
@@ -71,10 +71,32 @@ watch(
 </script>
 
 <template>
-    <CustomerSettingsLayout>
+    <CustomerLayout>
         <Head title="Profile Settings" />
 
-        <div class="row">
+        <div class="container py-4">
+            <!-- Settings Navigation -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h2 class="mb-3">Settings</h2>
+                    <nav class="nav nav-pills">
+                        <Link :href="route('profile.edit')" class="nav-link active">
+                            <i class="bi bi-person me-2"></i>Profile
+                        </Link>
+                        <Link :href="route('billing.edit')" class="nav-link">
+                            <i class="bi bi-credit-card me-2"></i>Billing
+                        </Link>
+                        <Link :href="route('password.edit')" class="nav-link">
+                            <i class="bi bi-shield-lock me-2"></i>Security
+                        </Link>
+                        <Link :href="route('appearance')" class="nav-link">
+                            <i class="bi bi-palette me-2"></i>Appearance
+                        </Link>
+                    </nav>
+                </div>
+            </div>
+
+            <div class="row">
             <div class="col-lg-8">
                 <div class="card">
                     <div class="card-header">
@@ -232,7 +254,8 @@ watch(
                 </div>
             </div>
         </div>
-    </CustomerSettingsLayout>
+        </div>
+    </CustomerLayout>
 </template>
 
 <style scoped>

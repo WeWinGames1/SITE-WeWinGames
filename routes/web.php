@@ -26,6 +26,8 @@ use App\Http\Controllers\PageShowController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Controllers\Admin\Notifications\EmailTemplateController;
+use App\Http\Controllers\Admin\Notifications\EmailLogController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/pick/{id}', [BetController::class, 'showPick'])->name('pick.show');
@@ -168,6 +170,7 @@ Route::get('/privacy', function () {
 
 Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin/customers')->name('admin.customers.')->group(function () {
     Route::get('/', [CustomerController::class, 'index'])->name('index');
+    Route::post('/create', [CustomerController::class, 'create'])->name('create');
     Route::put('/{user}', [CustomerController::class, 'update'])->name('update');
     Route::post('/{user}/impersonate', [\App\Http\Controllers\Admin\ImpersonationController::class, 'start'])->name('impersonate');
     Route::post('/{user}/password-reset', [CustomerController::class, 'sendPasswordReset'])->name('password-reset');
@@ -230,6 +233,25 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/discounts')->
     Route::put('/{discountCode}', [DiscountCodeController::class, 'update'])->name('update');
     Route::post('/{discountCode}/deactivate', [DiscountCodeController::class, 'deactivate'])->name('deactivate');
     Route::post('/validate', [DiscountCodeController::class, 'validate'])->name('validate');
+});
+
+// Notifications Management Routes
+Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin/notifications')->name('admin.notifications.')->group(function () {
+    // Email Templates
+    Route::prefix('email-templates')->name('email-templates.')->group(function () {
+        Route::get('/', [EmailTemplateController::class, 'index'])->name('index');
+        Route::get('/{emailTemplate}/edit', [EmailTemplateController::class, 'edit'])->name('edit');
+        Route::put('/{emailTemplate}', [EmailTemplateController::class, 'update'])->name('update');
+        Route::get('/{emailTemplate}/preview', [EmailTemplateController::class, 'preview'])->name('preview');
+        Route::post('/{emailTemplate}/reset', [EmailTemplateController::class, 'reset'])->name('reset');
+    });
+    
+    // Email Logs
+    Route::prefix('email-logs')->name('email-logs.')->group(function () {
+        Route::get('/', [EmailLogController::class, 'index'])->name('index');
+        Route::get('/{emailLog}', [EmailLogController::class, 'show'])->name('show');
+        Route::post('/{emailLog}/resend', [EmailLogController::class, 'resend'])->name('resend');
+    });
 });
 
 // Blog Post Management Routes
