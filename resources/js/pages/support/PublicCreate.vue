@@ -39,7 +39,7 @@ const submit = () => {
                 <div class="container">
                     <div class="text-center">
                         <h1 class="display-4 fw-bold text-white mb-3">How Can We Help?</h1>
-                        <p class="fs-5 text-gray-light">Our support team is here to assist you</p>
+                        <p class="fs-5 text-white-50">Our support team is here to assist you</p>
                     </div>
                 </div>
             </section>
@@ -64,7 +64,7 @@ const submit = () => {
                                                         consider <a href="/login" class="text-warning">logging in</a> or 
                                                         <a href="/register" class="text-warning">creating an account</a>.
                                                     </p>
-                                                    <p class="mb-0 text-gray-light small">
+                                                    <p class="mb-0 text-white-50 small">
                                                         If you're having login issues, please mention it in your ticket below.
                                                     </p>
                                                 </div>
@@ -209,21 +209,21 @@ const submit = () => {
                                         <div class="p-4 rounded" style="background-color: rgba(255, 255, 255, 0.05);">
                                             <i class="bi bi-envelope text-warning fs-2 mb-3 d-block"></i>
                                             <h5 class="text-white mb-2">Email</h5>
-                                            <p class="text-gray-light small mb-0">support@wewingames.com</p>
+                                            <p class="text-white-50 small mb-0">support@wewingames.com</p>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="p-4 rounded" style="background-color: rgba(255, 255, 255, 0.05);">
                                             <i class="bi bi-clock text-warning fs-2 mb-3 d-block"></i>
                                             <h5 class="text-white mb-2">Response Time</h5>
-                                            <p class="text-gray-light small mb-0">24-48 hours</p>
+                                            <p class="text-white-50 small mb-0">24-48 hours</p>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="p-4 rounded" style="background-color: rgba(255, 255, 255, 0.05);">
                                             <i class="bi bi-question-circle text-warning fs-2 mb-3 d-block"></i>
                                             <h5 class="text-white mb-2">FAQ</h5>
-                                            <p class="text-gray-light small mb-0">
+                                            <p class="small mb-0">
                                                 <a href="#faq" class="text-warning text-decoration-none">View common questions</a>
                                             </p>
                                         </div>
@@ -254,11 +254,17 @@ const submit = () => {
 }
 
 .form-control::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.6);
+    opacity: 0.8;
 }
 
 .form-select option {
     background-color: #1a2332;
     color: white;
+}
+
+/* Ensure the first disabled option is visible */
+.form-select option[value=""] {
+    color: rgba(255, 255, 255, 0.6);
 }
 </style>

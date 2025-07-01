@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Services\SimpleCacheService;
 use Laravel\Cashier\Subscription;
 
 class SubscriptionDashboardController extends Controller
@@ -66,10 +67,30 @@ class SubscriptionDashboardController extends Controller
         // Get paginated results
         $customers = $query->paginate(50)->withQueryString();
         
-        // Transform data for frontend
-        $customers->through(function ($user) {
+        // Pre-load all StripeProducts to avoid N+1 queries
+        $priceIds = [];
+        foreach ($customers as $user) {
             $subscription = $user->subscriptions->first();
-            $tier = $this->getSubscriptionTier($subscription);
+            if ($subscription && $subscription->items->first()) {
+                $priceIds[] = $subscription->items->first()->stripe_price;
+            }
+        }
+        
+        // Load all products in one query and create a lookup map
+        $productMap = StripeProduct::whereIn('stripe_price_id', array_unique($priceIds))
+            ->pluck('tier', 'stripe_price_id')
+            ->toArray();
+        
+        // Transform data for frontend
+        $customers->through(function ($user) use ($productMap) {
+            $subscription = $user->subscriptions->first();
+            
+            // Get tier from pre-loaded map
+            $tier = null;
+            if ($subscription && $subscription->items->first()) {
+                $priceId = $subscription->items->first()->stripe_price;
+                $tier = $productMap[$priceId] ?? 'Unknown';
+            }
             
             return [
                 'id' => $user->id,
@@ -235,49 +256,58 @@ class SubscriptionDashboardController extends Controller
      */
     private function getSubscriptionStats(): array
     {
-        $activeSubscriptions = Subscription::where('stripe_status', 'active')->count();
-        $trialingSubscriptions = Subscription::where('stripe_status', 'trialing')->count();
-        $cancelledSubscriptions = Subscription::where('stripe_status', 'canceled')->count();
-        
-        // Get tier breakdown
-        $tierBreakdown = DB::table('subscriptions')
-            ->join('subscription_items', 'subscriptions.id', '=', 'subscription_items.subscription_id')
-            ->join('stripe_products', 'subscription_items.stripe_price', '=', 'stripe_products.stripe_price_id')
-            ->where('subscriptions.stripe_status', 'active')
-            ->select('stripe_products.tier', DB::raw('count(*) as count'))
-            ->groupBy('stripe_products.tier')
-            ->pluck('count', 'tier')
-            ->toArray();
-        
-        // Get MRR (Monthly Recurring Revenue)
-        $mrr = DB::table('subscriptions')
-            ->join('subscription_items', 'subscriptions.id', '=', 'subscription_items.subscription_id')
-            ->join('stripe_products', 'subscription_items.stripe_price', '=', 'stripe_products.stripe_price_id')
-            ->where('subscriptions.stripe_status', 'active')
-            ->select(DB::raw('SUM(
-                CASE 
-                    WHEN stripe_products.billing_period = "monthly" THEN stripe_products.price
-                    WHEN stripe_products.billing_period = "weekly" THEN stripe_products.price * 4.33
-                    WHEN stripe_products.billing_period = "daily" THEN stripe_products.price * 30
-                    ELSE 0
-                END
-            ) as mrr'))
-            ->first()
-            ->mrr ?? 0;
-        
-        // Get renewals in next 30 days
-        $upcomingRenewals = Subscription::where('stripe_status', 'active')
-            ->whereBetween('current_period_end', [Carbon::now(), Carbon::now()->addDays(30)])
-            ->count();
-        
-        return [
-            'total_active' => $activeSubscriptions,
-            'total_trialing' => $trialingSubscriptions,
-            'total_cancelled' => $cancelledSubscriptions,
-            'tier_breakdown' => $tierBreakdown,
-            'mrr' => round($mrr, 2),
-            'upcoming_renewals' => $upcomingRenewals,
-        ];
+        return SimpleCacheService::rememberQuery(
+            SimpleCacheService::KEY_SUBSCRIPTION_STATS,
+            SimpleCacheService::TTL_SHORT,
+            function () {
+                // Get all stats in a single optimized query
+                $baseStats = DB::selectOne('
+                    SELECT 
+                        COUNT(CASE WHEN stripe_status = "active" THEN 1 END) as active,
+                        COUNT(CASE WHEN stripe_status = "trialing" THEN 1 END) as trialing,
+                        COUNT(CASE WHEN stripe_status = "canceled" THEN 1 END) as cancelled,
+                        COUNT(CASE WHEN stripe_status = "active" AND current_period_end BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 30 DAY) THEN 1 END) as renewals_30_days
+                    FROM subscriptions
+                ');
+                
+                // Get tier breakdown and MRR in one query
+                $tierData = DB::select('
+                    SELECT 
+                        sp.tier,
+                        COUNT(*) as count,
+                        SUM(
+                            CASE 
+                                WHEN sp.billing_period = "monthly" THEN sp.price
+                                WHEN sp.billing_period = "weekly" THEN sp.price * 4.33
+                                WHEN sp.billing_period = "daily" THEN sp.price * 30
+                                ELSE 0
+                            END
+                        ) as revenue
+                    FROM subscriptions s
+                    JOIN subscription_items si ON s.id = si.subscription_id
+                    JOIN stripe_products sp ON si.stripe_price = sp.stripe_price_id
+                    WHERE s.stripe_status = "active"
+                    GROUP BY sp.tier
+                ');
+                
+                $tierBreakdown = [];
+                $totalMrr = 0;
+                
+                foreach ($tierData as $tier) {
+                    $tierBreakdown[$tier->tier] = $tier->count;
+                    $totalMrr += $tier->revenue;
+                }
+                
+                return [
+                    'total_active' => $baseStats->active,
+                    'total_trialing' => $baseStats->trialing,
+                    'total_cancelled' => $baseStats->cancelled,
+                    'tier_breakdown' => $tierBreakdown,
+                    'mrr' => round($totalMrr, 2),
+                    'upcoming_renewals' => $baseStats->renewals_30_days,
+                ];
+            }
+        );
     }
     
     /**

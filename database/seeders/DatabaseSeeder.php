@@ -23,6 +23,8 @@ class DatabaseSeeder extends Seeder
             SportSeeder::class,
             OperatorSeeder::class,
            // BetSeeder::class,
+            LegalPagesSeeder::class,
+            TicketCategorySeeder::class,
         ]);
     }
 }

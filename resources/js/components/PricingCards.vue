@@ -16,7 +16,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="row g-4 justify-content-center mb-5">
+  <div class="row g-3 justify-content-center">
     <div
       v-for="plan in plans"
       :key="plan.name"
@@ -29,25 +29,25 @@ defineProps<{
         ]"
         style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);"
       >
-        <div class="card-body d-flex flex-column p-5">
+        <div class="card-body d-flex flex-column p-4">
           <!-- Plan Header -->
-          <div class="mb-4 text-center">
+          <div class="mb-3 text-center">
             <img 
               :src="`/images/plan-icon-${plan.name.toLowerCase()}.svg`" 
               :alt="`${plan.name} Plan`" 
-              class="mb-3"
-              style="height: 60px; width: auto;"
+              class="mb-2"
+              style="height: 45px; width: auto;"
             >
-            <h3 class="fw-bold text-white mb-2">{{ plan.name }}</h3>
-            <p class="text-gray-light mb-0">
+            <h3 class="h4 fw-bold text-white mb-1">{{ plan.name }}</h3>
+            <p class="text-gray-light mb-0 small">
               {{ plan.highlight ? 'Most popular choice' : plan.name === 'Platinum' ? 'Maximum value' : 'Great for beginners' }}
             </p>
           </div>
           
           <!-- Pricing -->
-          <div class="mb-5">
-            <div class="d-flex align-items-baseline mb-3">
-              <span class="display-3 fw-bold text-white">{{ plan.price }}</span>
+          <div class="mb-3">
+            <div class="d-flex align-items-baseline mb-2">
+              <span class="display-5 fw-bold text-white">{{ plan.price }}</span>
               <span class="text-gray-light ms-2">/ month</span>
             </div>
             <div class="d-flex flex-wrap gap-3 text-gray-light small">
@@ -57,10 +57,10 @@ defineProps<{
           </div>
           
           <!-- Features -->
-          <ul class="list-unstyled mb-5 flex-grow-1">
-            <li v-for="feature in plan.features" :key="feature" class="mb-3 d-flex align-items-start">
-              <i class="bi bi-check-circle-fill text-purple me-3 flex-shrink-0" style="margin-top: 2px;"></i>
-              <span class="text-gray-light">{{ feature }}</span>
+          <ul class="list-unstyled mb-3 flex-grow-1">
+            <li v-for="feature in plan.features" :key="feature" class="mb-2 d-flex align-items-start">
+              <i class="bi bi-check-circle-fill text-purple me-2 flex-shrink-0 small" style="margin-top: 2px;"></i>
+              <span class="text-gray-light small">{{ feature }}</span>
             </li>
           </ul>
           
@@ -68,7 +68,7 @@ defineProps<{
           <div class="mt-auto">
             <a
               :href="plan.monthlyLink"
-              class="btn btn-lg w-100 py-3 mb-3"
+              class="btn w-100 py-2 mb-2"
               :class="plan.highlight ? 'btn-primary' : 'btn-outline-primary'"
             >
               <span class="fw-semibold">{{ plan.highlight ? 'Start Free Trial' : 'Get Started' }}</span>

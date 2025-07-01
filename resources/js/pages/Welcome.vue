@@ -9,7 +9,7 @@ import ProfitsByLevelTable from '@/components/ProfitsByLevelTable.vue';
 import ProfitsBySportTable from '@/components/ProfitsBySportTable.vue';
 import GoogleReviews from '@/components/GoogleReviews.vue'; // <-- Import your new component
 import AffiliateLinks from '@/components/AffiliateLinks.vue';
-import { onMounted, onBeforeUnmount, computed } from 'vue';
+import { onMounted, onBeforeUnmount, computed, ref } from 'vue';
 function formatMoney(val: number | undefined) {
     return (Math.round(val ?? 0)).toLocaleString();
 }
@@ -36,6 +36,7 @@ const props = defineProps<{
     lastMonthWinLoss?: number,
     lastMonthROI?: number,
     thisMonthWinLoss?: number,
+    testimonials?: any[],
 }>(); // Get ROI data by subscription level
 const isGold = auth?.user?.data?.subscriptions[0]?.type === 'gold'; // Check if user is subscribed to Gold level
 const isSilver = auth?.user?.data?.subscriptions[0]?.type === 'silver';
@@ -43,6 +44,24 @@ const isPlatinum = auth?.user?.data?.subscriptions[0]?.type === 'platinum';
 const isDefault = auth?.user?.data?.subscriptions[0]?.type === 'default';
 
 const bronzeBets = bets.filter((bet) => bet.membership === 'bronze');
+
+// Sports filter
+const selectedSport = ref('all');
+const availableSports = computed(() => {
+    const sportsSet = new Set(bets.map(bet => bet.sports || bet.sport || 'Football'));
+    return ['all', ...Array.from(sportsSet)];
+});
+
+const sportIcons = {
+    'Football': 'bi-trophy-fill',
+    'Basketball': 'bi-dribbble',
+    'Hockey': 'bi-snow2',
+    'Baseball': 'bi-circle',
+    'Soccer': 'bi-globe',
+    'Golf': 'bi-flag',
+    'Ultimate Fighting Championship': 'bi-person-arms-up',
+    'all': 'bi-grid-3x3-gap-fill'
+};
 const silver_monthly = page.props.env.SILVER_MONTHLY;
 const silver_weekly = page.props.env.SILVER_WEEKLY;
 const gold_weekly = page.props.env.GOLD_WEEKLY;
@@ -200,9 +219,16 @@ const allGroupedBets = computed(() => {
   const all = [...(viewableBets.value || []), ...(coveredBets.value || [])].filter(
     (bet, idx, arr) => arr.findIndex(b => b.id === bet.id) === idx
   );
-  return all.reduce((acc, bet) => {
-    if (!acc[bet.sports]) acc[bet.sports] = [];
-    acc[bet.sports].push(bet);
+  
+  // Filter by selected sport
+  const filtered = selectedSport.value === 'all' 
+    ? all 
+    : all.filter(bet => (bet.sports || bet.sport) === selectedSport.value);
+  
+  return filtered.reduce((acc, bet) => {
+    const sport = bet.sports || bet.sport || 'Football';
+    if (!acc[sport]) acc[sport] = [];
+    acc[sport].push(bet);
     return acc;
   }, {});
 });
@@ -418,7 +444,7 @@ const allGroupedBets = computed(() => {
 
             <!-- Google Reviews Section -->
             <section class="py-5 animate-section-fadein" style="background-color: var(--bs-gray-dark);">
-                <GoogleReviews />
+                <GoogleReviews :testimonials="props.testimonials" />
             </section>
 
             <!-- Free Picks Section -->
@@ -428,12 +454,29 @@ const allGroupedBets = computed(() => {
                         <h2 class="display-4 fw-bold text-white mb-4">Today's Free Picks</h2>
                         <p class="fs-5 text-gray-light mb-5">Get a taste of our expert analysis - no credit card required</p>
                     </div>
+                    
+                    <!-- Sports Filter Bar -->
+                    <div class="sports-filter-bar mb-4 p-3 rounded" style="background: linear-gradient(90deg, #2e4057 0%, #1a2332 50%, #2e4057 100%);">
+                        <div class="d-flex align-items-center gap-3 overflow-auto pb-2" style="scrollbar-width: thin;">
+                            <button 
+                                v-for="sport in availableSports" 
+                                :key="sport"
+                                @click="selectedSport = sport"
+                                class="btn btn-sm px-4 py-2 text-nowrap d-flex align-items-center gap-2"
+                                :class="selectedSport === sport ? 'btn-warning text-dark' : 'btn-outline-light'"
+                            >
+                                <i :class="sportIcons[sport] || 'bi-star'"></i>
+                                {{ sport === 'all' ? 'All Sports' : sport }}
+                            </button>
+                        </div>
+                    </div>
+                    
                     <div class="mt-4">
                         <GroupedBetCards :grouped-bets="allGroupedBets" />
                     </div>
                     <div class="text-center mt-5">
                         <Link
-                            href="/todays-tips"
+                            href="/todays-bets"
                             class="btn btn-primary btn-lg px-5 py-3"
                         >
                             <i class="bi bi-arrow-right me-2"></i>
@@ -444,27 +487,36 @@ const allGroupedBets = computed(() => {
             </section>
 
             <!-- Subscription Plans Section -->
-            <section class="py-5 animate-section-fadein" id="pricing" style="background-color: var(--bs-body-bg);">
+            <section class="py-4 animate-section-fadein" id="pricing" style="background-color: var(--bs-body-bg);">
                 <div class="container-fluid">
-                    <div class="text-center mb-5">
-                        <h2 class="display-4 fw-bold text-white mb-4">Choose Your Plan</h2>
-                        <p class="fs-5 text-gray-light mb-5">Start with a free trial, upgrade anytime</p>
+                    <div class="text-center mb-4">
+                        <h2 class="display-5 fw-bold text-white mb-2">Choose Your Plan</h2>
+                        <p class="fs-6 text-gray-light mb-4">Start with a free trial, upgrade anytime</p>
                     </div>
                     
                     <PricingCards :plans="plans" />
                     
-                    <!-- DraftKings Casino Affiliate -->
-                    <div class="row justify-content-center mt-5">
-                        <div class="col-lg-8">
-                            <div class="card text-center" style="background-color: var(--bs-card-bg); border: 2px solid var(--bs-purple);">
-                                <div class="card-body p-5">
-                                    <img src="/images/draftkings_logo_1.png" alt="DraftKings Casino" class="mb-4" style="height: 60px; width: auto;">
-                                    <h3 class="h4 text-white mb-3">DraftKings Casino</h3>
-                                    <p class="text-gray-light mb-4">Bet $10 and get 350 free spins + up to $1000 back in casino credits for any day 1 losses</p>
-                                    <a href="https://bit.ly/42HzBOi?r=lp&m=Mp1umLbk8Wo" target="_blank" rel="noopener" class="btn btn-lg btn-primary px-5">
-                                        <i class="bi bi-box-arrow-up-right me-2"></i>
-                                        Claim Offer
-                                    </a>
+                    <!-- Subscription Plans Section -->
+                    <div class="mt-5">
+                        <h3 class="h4 fw-bold text-white text-center mb-4">Subscription Plans</h3>
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="card" style="background-color: var(--bs-card-bg); border: 2px solid #ff7900;">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-center justify-content-between flex-wrap">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <img src="/images/draftkings_logo_1.png" alt="DraftKings Sportsbook" style="height: 40px; width: auto;">
+                                                <div class="text-start">
+                                                    <h4 class="h6 text-white mb-1">DraftKings Sportsbook</h4>
+                                                    <p class="text-gray-light mb-0 small">Bet $10, get $300 in free bets if your bet wins.</p>
+                                                </div>
+                                            </div>
+                                            <a href="https://sportsbook.draftkings.com/acq-bet-and-get?pcid=420313&pcn=Promo1&pcrid=xx&pcrn=xx&pscid=xx&pscn=WeWinGames&psn=1967&referrer=singular_click_id%3d63c8a1b6-2dcc-42b9-928e-bdb91b06dee3&sl_id=tqhb&wpcid=420313&wpcn=Promo1&wpcrid=xx&wpcrn=xx&wpscid=xx&wpscn=WeWinGames&wpsrc=1967" target="_blank" rel="noopener" class="btn btn-primary btn-sm px-4 mt-2 mt-md-0">
+                                                <i class="bi bi-box-arrow-up-right me-2"></i>
+                                                Claim Offer
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -543,5 +595,24 @@ const allGroupedBets = computed(() => {
 
 .text-shadow {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Custom scrollbar for sports filter */
+.sports-filter-bar .overflow-auto::-webkit-scrollbar {
+    height: 6px;
+}
+
+.sports-filter-bar .overflow-auto::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.sports-filter-bar .overflow-auto::-webkit-scrollbar-thumb {
+    background: #ffc107;
+    border-radius: 3px;
+}
+
+.sports-filter-bar .overflow-auto::-webkit-scrollbar-thumb:hover {
+    background: #ffca2c;
 }
 </style>

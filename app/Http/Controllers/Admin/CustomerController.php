@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\SimpleCacheService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -70,18 +72,32 @@ class CustomerController extends Controller
         $perPage = $request->get('per_page', 25);
         $customers = $query->paginate($perPage)->withQueryString();
         
-        // Get statistics
-        $stats = [
-            'total' => User::count(),
-            'active' => User::whereHas('subscriptions', function ($q) {
-                $q->where('stripe_status', 'active');
-            })->count(),
-            'trialing' => User::whereHas('subscriptions', function ($q) {
-                $q->whereNotNull('trial_ends_at')
-                  ->where('trial_ends_at', '>', now());
-            })->count(),
-            'no_subscription' => User::doesntHave('subscriptions')->count(),
-        ];
+        // Get statistics with a single optimized query
+        $stats = SimpleCacheService::rememberQuery(
+            SimpleCacheService::KEY_CUSTOMER_STATS,
+            SimpleCacheService::TTL_SHORT,
+            function () {
+                return DB::selectOne('
+                    SELECT 
+                        COUNT(DISTINCT users.id) as total,
+                        COUNT(DISTINCT CASE 
+                            WHEN subscriptions.stripe_status = "active" 
+                            THEN users.id 
+                        END) as active,
+                        COUNT(DISTINCT CASE 
+                            WHEN subscriptions.trial_ends_at IS NOT NULL 
+                            AND subscriptions.trial_ends_at > NOW() 
+                            THEN users.id 
+                        END) as trialing,
+                        COUNT(DISTINCT CASE 
+                            WHEN subscriptions.id IS NULL 
+                            THEN users.id 
+                        END) as no_subscription
+                    FROM users
+                    LEFT JOIN subscriptions ON users.id = subscriptions.user_id
+                ');
+            }
+        );
         
         return Inertia::render('admin/CustomersIndex', [
             'customers' => $customers,

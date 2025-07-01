@@ -75,7 +75,7 @@ function isActive(href: string): boolean {
 
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <Link href="/support" class="nav-link text-dark d-flex align-items-center rounded px-3 py-2">
+                        <Link href="/support/tickets" class="nav-link text-dark d-flex align-items-center rounded px-3 py-2">
                             <i class="bi bi-headset me-3"></i>
                             Support Center
                         </Link>

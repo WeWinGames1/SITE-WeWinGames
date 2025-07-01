@@ -125,6 +125,7 @@ const navigation: NavItem[] = [
             { name: 'Blog Posts', href: route('admin.blog-posts.index'), icon: 'bi-newspaper' },
             { name: 'Pages', href: route('admin.pages.index'), icon: 'bi-file-earmark-text' },
             { name: 'Landing Pages', href: route('admin.landing-pages.index'), icon: 'bi-window-stack' },
+            { name: 'Testimonials', href: route('admin.testimonials.index'), icon: 'bi-chat-quote' },
         ],
     },
     {

@@ -58,7 +58,7 @@ Route::post('/support', [SupportTicketController::class, 'publicStore'])->name('
 
 // Support Ticket Routes
 Route::middleware(['auth', 'verified'])->prefix('support')->name('support.')->group(function () {
-    Route::get('/', [SupportTicketController::class, 'index'])->name('tickets.index');
+    Route::get('/tickets', [SupportTicketController::class, 'index'])->name('tickets.index');
     Route::get('/tickets/create', [SupportTicketController::class, 'create'])->name('tickets.create');
     Route::post('/tickets', [SupportTicketController::class, 'store'])->name('tickets.store');
     Route::get('/tickets/{ticket}', [SupportTicketController::class, 'show'])->name('tickets.show');
@@ -118,6 +118,10 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
     // System Settings (TODO)
     // Route::get('settings', [Admin\SettingsController::class, 'index'])->name('settings.index');
     // Route::post('settings', [Admin\SettingsController::class, 'update'])->name('settings.update');
+    
+    // Testimonial Management
+    Route::resource('testimonials', \App\Http\Controllers\Admin\TestimonialController::class);
+    Route::post('testimonials/update-order', [\App\Http\Controllers\Admin\TestimonialController::class, 'updateOrder'])->name('testimonials.update-order');
 });
 
 
@@ -134,7 +138,7 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
 // Admin tools routes
 Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit:export'])->prefix('admin')->name('admin.')->group(function () {
     Route::post('/notify-all', [AdminToolsController::class, 'notifyAll'])->name('notify-all');
-    Route::get('/bets/export-csv', [AdminToolsController::class, 'exportBets'])->name('bets.export');
+    Route::get('/bets/export-csv', [AdminToolsController::class, 'exportBets'])->name('bets.export-csv');
 });
 Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin/pages')->name('admin.pages.')->group(function () {
     Route::get('/', [PageController::class, 'index'])->name('index');
@@ -145,6 +149,22 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
     Route::delete('/{page}', [PageController::class, 'destroy'])->name('destroy');
 });
 Route::get('/pages/{slug}', [PageShowController::class, 'showPage'])->name('pages.show');
+
+// Static page routes that use the CMS
+Route::get('/terms', function () {
+    $controller = new PageShowController();
+    return $controller->showPage('terms-and-conditions');
+})->name('terms');
+
+Route::get('/privacy-policy', function () {
+    $controller = new PageShowController();
+    return $controller->showPage('privacy-policy');
+})->name('privacy');
+
+// Redirect /privacy to /privacy-policy
+Route::get('/privacy', function () {
+    return redirect('/privacy-policy');
+});
 
 Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin/customers')->name('admin.customers.')->group(function () {
     Route::get('/', [CustomerController::class, 'index'])->name('index');

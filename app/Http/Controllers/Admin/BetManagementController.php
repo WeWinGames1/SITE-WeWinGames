@@ -8,17 +8,20 @@ use App\Models\Game;
 use App\Models\Sport;
 use App\Models\Operator;
 use App\Models\User;
+use App\Services\SimpleCacheService;
+use App\Traits\HasFilters;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Spatie\Activitylog\Models\Activity;
 
 class BetManagementController extends Controller
 {
+    use HasFilters;
+    
     /**
-     * Display a listing of bets.
+     * Display a listing of bets with optimized queries and caching.
      */
     public function index(Request $request)
     {
@@ -27,13 +30,62 @@ class BetManagementController extends Controller
             ->causedBy(Auth::user())
             ->log('Viewed bets list');
 
-        $perPage = $request->input('per_page', 25);
-        $sortField = $request->input('sort', 'game_at');
-        $sortDirection = $request->input('direction', 'desc');
+        $perPage = $this->getPerPage($request, 25, 100);
         
-        $query = Bet::with(['user:id,name,email', 'sport:id,name', 'game', 'operator:id,name']);
+        // Build optimized query with eager loading
+        $query = Bet::query()
+            ->select(['bets.*'])
+            ->with([
+                'user:id,name,email',
+                'sport:id,name',
+                'operator:id,name',
+                'game' => function ($query) {
+                    $query->select(['id', 'sport_id', 'team1', 'team2', 'event_time']);
+                }
+            ]);
         
-        // Apply filters
+        // Apply filters using trait
+        $this->applyFilters($query, $request);
+        
+        // Apply sorting using trait
+        $validSortFields = ['game_at', 'created_at', 'stake', 'potential_win', 'profit', 'odds', 'confidence', 'status'];
+        $this->applySorting($query, $request, $validSortFields, 'game_at', 'desc');
+        
+        // Execute query with optimized pagination
+        $bets = $query->paginate($perPage)->withQueryString();
+        
+        // Get cached statistics
+        $stats = SimpleCacheService::rememberQuery(
+            SimpleCacheService::KEY_BET_STATS . ':filtered:' . md5(serialize($request->all())),
+            SimpleCacheService::TTL_SHORT,
+            fn() => $this->getOptimizedStats($request)
+        );
+        
+        // Get cached filter options
+        $filterOptions = $this->getCachedFilterOptions();
+        
+        return Inertia::render('admin/Bets/Index', [
+            'bets' => $bets,
+            'filters' => $request->only([
+                'status', 'sport_id', 'operator_id', 'user_id', 
+                'date_from', 'date_to', 'search', 'bet_type', 
+                'is_featured', 'min_confidence', 'profit_status',
+                'sort', 'direction', 'per_page'
+            ]),
+            'stats' => $stats,
+            'sports' => $filterOptions['sports'],
+            'operators' => $filterOptions['operators'],
+            'statuses' => ['pending', 'won', 'lost', 'void', 'push'],
+            'betTypes' => ['single', 'parlay', 'prop'],
+        ]);
+    }
+    
+    /**
+     * Apply all filters to the query
+     */
+    private function applyFilters($query, Request $request): void
+    {
+        // Basic filters
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
@@ -50,138 +102,108 @@ class BetManagementController extends Controller
             $query->where('user_id', $request->user_id);
         }
         
-        if ($request->filled('date_from')) {
-            $query->whereDate('game_at', '>=', $request->date_from);
-        }
-        
-        if ($request->filled('date_to')) {
-            $query->whereDate('game_at', '<=', $request->date_to);
-        }
-        
-        // Enhanced bet type filter
         if ($request->filled('bet_type')) {
             $query->where('bet_type', $request->bet_type);
         }
         
-        // Featured filter
         if ($request->filled('is_featured')) {
             $query->where('is_featured', $request->boolean('is_featured'));
         }
         
-        // Confidence filter
         if ($request->filled('min_confidence')) {
             $query->where('confidence', '>=', $request->min_confidence);
         }
         
-        // Profit filter
+        // Date filters using trait
+        $this->applyDateFilters($query, $request, 'game_at');
+        
+        // Profit status filter
         if ($request->filled('profit_status')) {
-            if ($request->profit_status === 'profit') {
-                $query->where('profit', '>', 0);
-            } elseif ($request->profit_status === 'loss') {
-                $query->where('profit', '<', 0);
-            } elseif ($request->profit_status === 'breakeven') {
-                $query->where('profit', 0);
-            }
+            match($request->profit_status) {
+                'profit' => $query->where('profit', '>', 0),
+                'loss' => $query->where('profit', '<', 0),
+                'breakeven' => $query->where('profit', 0),
+                default => null
+            };
         }
         
-        // Enhanced search across multiple fields
+        // Search filter using trait with SQL injection protection
         if ($request->filled('search')) {
-            $searchTerm = $request->search;
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('selection', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('description', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('actual_result', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('bet_type', 'like', '%' . $searchTerm . '%')
-                    ->orWhereHas('user', function ($q) use ($searchTerm) {
-                        $q->where('name', 'like', '%' . $searchTerm . '%')
-                            ->orWhere('email', 'like', '%' . $searchTerm . '%');
-                    })
-                    ->orWhereHas('sport', function ($q) use ($searchTerm) {
-                        $q->where('name', 'like', '%' . $searchTerm . '%');
-                    })
-                    ->orWhereHas('operator', function ($q) use ($searchTerm) {
-                        $q->where('name', 'like', '%' . $searchTerm . '%');
-                    });
-            });
+            $searchFields = [
+                'selection', 
+                'description', 
+                'actual_result', 
+                'bet_type',
+                'user.name',
+                'user.email',
+                'sport.name',
+                'operator.name'
+            ];
+            $this->applySearchFilter($query, $request, $searchFields);
         }
-        
-        // Apply sorting
-        $validSortFields = ['game_at', 'created_at', 'stake', 'potential_win', 'profit', 'odds', 'confidence', 'status'];
-        if (in_array($sortField, $validSortFields)) {
-            $query->orderBy($sortField, $sortDirection);
-        } else {
-            // Default sorting
-            $query->orderBy('game_at', 'desc')->orderBy('created_at', 'desc');
-        }
-        
-        $bets = $query->paginate($perPage)->withQueryString();
-        
-        // Get statistics for dashboard
-        $stats = $this->getQuickStats($request);
-        
-        return Inertia::render('admin/Bets/Index', [
-            'bets' => $bets,
-            'filters' => $request->only([
-                'status', 'sport_id', 'operator_id', 'user_id', 
-                'date_from', 'date_to', 'search', 'bet_type', 
-                'is_featured', 'min_confidence', 'profit_status',
-                'sort', 'direction', 'per_page'
-            ]),
-            'sports' => Sport::orderBy('name')->get(['id', 'name']),
-            'operators' => Operator::orderBy('name')->get(['id', 'name']),
-            'statuses' => ['pending', 'won', 'lost', 'push', 'cancelled'],
-            'betTypes' => [
-                'moneyline' => 'Moneyline',
-                'spread' => 'Point Spread',
-                'over_under' => 'Over/Under',
-                'prop' => 'Prop Bet',
-                'parlay' => 'Parlay',
-                'teaser' => 'Teaser',
-                'futures' => 'Futures',
-            ],
-            'stats' => $stats,
-        ]);
     }
     
     /**
-     * Show the form for creating a new bet.
+     * Get optimized statistics using single query
      */
-    public function create()
+    private function getOptimizedStats(Request $request): array
     {
-        return Inertia::render('admin/Bets/Create', [
-            'users' => User::orderBy('name')->get(['id', 'name', 'email']),
-            'sports' => Sport::orderBy('name')->get(['id', 'name']),
-            'games' => Game::with(['sport', 'operator'])
-                ->where('game_date', '>=', now())
-                ->orderBy('game_date')
-                ->limit(100)
-                ->get()
-                ->map(function ($game) {
-                    return [
-                        'id' => $game->id,
-                        'title' => $game->title,
-                        'game_date' => $game->game_date,
-                        'sport' => $game->sport,
-                        'operator' => $game->operator,
-                        'team1' => $game->team1,
-                        'team2' => $game->team2,
-                        'team1_img' => $game->team1_img,
-                        'team2_img' => $game->team2_img,
-                        'homeTeam' => $game->homeTeam(),
-                        'awayTeam' => $game->awayTeam(),
-                    ];
-                }),
-            'operators' => Operator::orderBy('name')->get(['id', 'name']),
-            'betTypes' => [
-                'moneyline' => 'Moneyline',
-                'spread' => 'Point Spread',
-                'over_under' => 'Over/Under',
-                'prop' => 'Prop Bet',
-                'parlay' => 'Parlay',
-                'teaser' => 'Teaser',
-                'futures' => 'Futures',
-            ],
-        ]);
+        // Build base query for stats
+        $baseQuery = Bet::query();
+        $this->applyFilters($baseQuery, $request);
+        
+        // Get all stats in a single query using conditional aggregations
+        $stats = $baseQuery->selectRaw('
+            COUNT(*) as total_bets,
+            SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as pending_count,
+            SUM(CASE WHEN status = "won" THEN 1 ELSE 0 END) as won_count,
+            SUM(CASE WHEN status = "lost" THEN 1 ELSE 0 END) as lost_count,
+            SUM(stake) as total_stake,
+            SUM(CASE WHEN status = "won" THEN profit ELSE 0 END) as total_profit,
+            SUM(CASE WHEN status = "lost" THEN ABS(profit) ELSE 0 END) as total_loss,
+            AVG(confidence) as avg_confidence,
+            AVG(odds) as avg_odds
+        ')->first();
+        
+        // Calculate derived stats
+        $totalSettled = $stats->won_count + $stats->lost_count;
+        $winRate = $totalSettled > 0 ? ($stats->won_count / $totalSettled) * 100 : 0;
+        $roi = $stats->total_stake > 0 ? (($stats->total_profit - $stats->total_loss) / $stats->total_stake) * 100 : 0;
+        
+        return [
+            'total_bets' => $stats->total_bets,
+            'pending_count' => $stats->pending_count,
+            'won_count' => $stats->won_count,
+            'lost_count' => $stats->lost_count,
+            'total_stake' => round($stats->total_stake, 2),
+            'total_profit' => round($stats->total_profit, 2),
+            'total_loss' => round($stats->total_loss, 2),
+            'net_profit' => round($stats->total_profit - $stats->total_loss, 2),
+            'win_rate' => round($winRate, 2),
+            'roi' => round($roi, 2),
+            'avg_confidence' => round($stats->avg_confidence, 1),
+            'avg_odds' => round($stats->avg_odds, 2),
+        ];
+    }
+    
+    /**
+     * Get cached filter options
+     */
+    private function getCachedFilterOptions(): array
+    {
+        $sports = SimpleCacheService::rememberQuery(
+            SimpleCacheService::KEY_SPORTS_LIST,
+            SimpleCacheService::TTL_LONG,
+            fn() => Sport::orderBy('name')->pluck('name', 'id')
+        );
+        
+        $operators = SimpleCacheService::rememberQuery(
+            SimpleCacheService::KEY_OPERATORS_LIST,
+            SimpleCacheService::TTL_LONG,
+            fn() => Operator::orderBy('name')->pluck('name', 'id')
+        );
+        
+        return compact('sports', 'operators');
     }
     
     /**
@@ -192,93 +214,37 @@ class BetManagementController extends Controller
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'sport_id' => 'required|exists:sports,id',
-            'game_id' => 'nullable|exists:games,id',
             'operator_id' => 'required|exists:operators,id',
+            'game_id' => 'nullable|exists:games,id',
             'selection' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'bet_type' => 'required|string',
-            'odds' => 'required|numeric',
+            'bet_type' => 'required|in:single,parlay,prop',
             'stake' => 'required|numeric|min:0',
-            'potential_win' => 'required|numeric|min:0',
+            'odds' => 'required|numeric',
             'game_at' => 'required|date',
-            'status' => 'required|in:pending,won,lost,push,cancelled',
-            'actual_result' => 'nullable|string',
-            'profit' => 'nullable|numeric',
+            'status' => 'required|in:pending,won,lost,void,push',
+            'confidence' => 'nullable|integer|min:1|max:100',
             'is_featured' => 'boolean',
-            'confidence' => 'nullable|integer|min:1|max:10',
+            'membership' => 'required|in:bronze,silver,gold,platinum',
         ]);
         
-        // Calculate profit if status is settled
-        if (in_array($validated['status'], ['won', 'lost', 'push'])) {
-            if ($validated['status'] === 'won') {
-                $validated['profit'] = $validated['potential_win'];
-            } elseif ($validated['status'] === 'lost') {
-                $validated['profit'] = -$validated['stake'];
-            } else {
-                $validated['profit'] = 0;
-            }
-        }
+        // Calculate potential win and profit
+        $validated['potential_win'] = $this->calculatePotentialWin($validated['stake'], $validated['odds']);
+        $validated['profit'] = $this->calculateProfit($validated);
+        $validated['betting_date'] = now();
         
         $bet = Bet::create($validated);
         
-        // Log the action
+        // Clear related caches
+        SimpleCacheService::invalidateRelated('bet');
+        
         activity()
             ->causedBy(Auth::user())
             ->performedOn($bet)
-            ->withProperties([
-                'selection' => $bet->selection,
-                'stake' => $bet->stake,
-                'odds' => $bet->odds,
-                'status' => $bet->status,
-            ])
             ->log('Created new bet');
-        
+            
         return redirect()->route('admin.bets.index')
             ->with('success', 'Bet created successfully.');
-    }
-    
-    /**
-     * Show the form for editing a bet.
-     */
-    public function edit(Bet $bet)
-    {
-        $bet->load(['user:id,name,email', 'sport:id,name', 'game', 'operator:id,name']);
-        
-        return Inertia::render('admin/Bets/Edit', [
-            'bet' => $bet,
-            'users' => User::orderBy('name')->get(['id', 'name', 'email']),
-            'sports' => Sport::orderBy('name')->get(['id', 'name']),
-            'games' => Game::with(['sport', 'operator'])
-                ->where('sport_id', $bet->sport_id)
-                ->orderBy('game_date', 'desc')
-                ->limit(100)
-                ->get()
-                ->map(function ($game) {
-                    return [
-                        'id' => $game->id,
-                        'title' => $game->title,
-                        'game_date' => $game->game_date,
-                        'sport' => $game->sport,
-                        'operator' => $game->operator,
-                        'team1' => $game->team1,
-                        'team2' => $game->team2,
-                        'team1_img' => $game->team1_img,
-                        'team2_img' => $game->team2_img,
-                        'homeTeam' => $game->homeTeam(),
-                        'awayTeam' => $game->awayTeam(),
-                    ];
-                }),
-            'operators' => Operator::orderBy('name')->get(['id', 'name']),
-            'betTypes' => [
-                'moneyline' => 'Moneyline',
-                'spread' => 'Point Spread',
-                'over_under' => 'Over/Under',
-                'prop' => 'Prop Bet',
-                'parlay' => 'Parlay',
-                'teaser' => 'Teaser',
-                'futures' => 'Futures',
-            ],
-        ]);
     }
     
     /**
@@ -289,323 +255,104 @@ class BetManagementController extends Controller
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'sport_id' => 'required|exists:sports,id',
-            'game_id' => 'nullable|exists:games,id',
             'operator_id' => 'required|exists:operators,id',
+            'game_id' => 'nullable|exists:games,id',
             'selection' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'bet_type' => 'required|string',
-            'odds' => 'required|numeric',
+            'bet_type' => 'required|in:single,parlay,prop',
             'stake' => 'required|numeric|min:0',
-            'potential_win' => 'required|numeric|min:0',
+            'odds' => 'required|numeric',
             'game_at' => 'required|date',
-            'status' => 'required|in:pending,won,lost,push,cancelled',
+            'status' => 'required|in:pending,won,lost,void,push',
             'actual_result' => 'nullable|string',
-            'profit' => 'nullable|numeric',
+            'confidence' => 'nullable|integer|min:1|max:100',
             'is_featured' => 'boolean',
-            'confidence' => 'nullable|integer|min:1|max:10',
+            'membership' => 'required|in:bronze,silver,gold,platinum',
         ]);
         
-        // Store original values for logging
-        $original = $bet->only(['status', 'profit', 'selection', 'stake']);
-        
-        // Calculate profit if status is settled
-        if (in_array($validated['status'], ['won', 'lost', 'push'])) {
-            if ($validated['status'] === 'won') {
-                $validated['profit'] = $validated['potential_win'];
-            } elseif ($validated['status'] === 'lost') {
-                $validated['profit'] = -$validated['stake'];
-            } else {
-                $validated['profit'] = 0;
-            }
-        }
+        // Recalculate potential win and profit
+        $validated['potential_win'] = $this->calculatePotentialWin($validated['stake'], $validated['odds']);
+        $validated['profit'] = $this->calculateProfit($validated);
         
         $bet->update($validated);
         
-        // Log the action with changes
+        // Clear related caches
+        SimpleCacheService::invalidateRelated('bet');
+        
         activity()
             ->causedBy(Auth::user())
             ->performedOn($bet)
-            ->withProperties([
-                'old' => $original,
-                'new' => $bet->only(['status', 'profit', 'selection', 'stake']),
-            ])
             ->log('Updated bet');
-        
+            
         return redirect()->route('admin.bets.index')
             ->with('success', 'Bet updated successfully.');
     }
     
     /**
-     * Remove the specified bet.
-     */
-    public function destroy(Bet $bet)
-    {
-        // Log the deletion
-        activity()
-            ->causedBy(Auth::user())
-            ->performedOn($bet)
-            ->withProperties([
-                'selection' => $bet->selection,
-                'user' => $bet->user->name,
-                'stake' => $bet->stake,
-                'status' => $bet->status,
-            ])
-            ->log('Deleted bet');
-        
-        $bet->delete();
-        
-        return redirect()->route('admin.bets.index')
-            ->with('success', 'Bet deleted successfully.');
-    }
-    
-    /**
-     * Bulk update bet statuses.
+     * Bulk update bet statuses with transaction
      */
     public function bulkUpdateStatus(Request $request)
     {
         $validated = $request->validate([
             'bet_ids' => 'required|array',
             'bet_ids.*' => 'exists:bets,id',
-            'status' => 'required|in:won,lost,push,cancelled',
+            'status' => 'required|in:won,lost,void,push',
+            'actual_result' => 'nullable|string'
         ]);
         
-        $bets = Bet::whereIn('id', $validated['bet_ids'])->get();
         $updatedCount = 0;
         
-        DB::beginTransaction();
-        try {
+        DB::transaction(function () use ($validated, &$updatedCount) {
+            $bets = Bet::whereIn('id', $validated['bet_ids'])->get();
+            
             foreach ($bets as $bet) {
-                $originalStatus = $bet->status;
-                $profit = 0;
-                
-                if ($validated['status'] === 'won') {
-                    $profit = $bet->potential_win;
-                } elseif ($validated['status'] === 'lost') {
-                    $profit = -$bet->stake;
-                }
-                
-                $bet->update([
+                $updateData = [
                     'status' => $validated['status'],
-                    'profit' => $profit,
-                ]);
+                    'actual_result' => $validated['actual_result'] ?? $bet->actual_result,
+                    'profit' => $this->calculateProfit([
+                        'status' => $validated['status'],
+                        'stake' => $bet->stake,
+                        'potential_win' => $bet->potential_win
+                    ])
+                ];
                 
+                $bet->update($updateData);
                 $updatedCount++;
             }
-            
-            DB::commit();
-            
-            // Log bulk action
-            activity()
-                ->causedBy(Auth::user())
-                ->withProperties([
-                    'count' => $updatedCount,
-                    'status' => $validated['status'],
-                    'bet_ids' => $validated['bet_ids'],
-                ])
-                ->log("Bulk updated {$updatedCount} bets to status: {$validated['status']}");
-            
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Failed to update bets. Please try again.');
-        }
+        });
         
-        return back()->with('success', $updatedCount . ' bets updated successfully.');
-    }
-    
-    /**
-     * Get bet statistics.
-     */
-    public function statistics()
-    {
-        $stats = [
-            'total_bets' => Bet::count(),
-            'pending_bets' => Bet::where('status', 'pending')->count(),
-            'won_bets' => Bet::where('status', 'won')->count(),
-            'lost_bets' => Bet::where('status', 'lost')->count(),
-            'total_staked' => Bet::sum('stake'),
-            'total_profit' => Bet::sum('profit'),
-            'win_rate' => Bet::whereIn('status', ['won', 'lost'])->count() > 0 
-                ? (Bet::where('status', 'won')->count() / Bet::whereIn('status', ['won', 'lost'])->count()) * 100 
-                : 0,
-            'roi' => Bet::sum('stake') > 0 
-                ? (Bet::sum('profit') / Bet::sum('stake')) * 100 
-                : 0,
-            'by_sport' => Sport::withCount('bets')
-                ->with(['bets' => function ($query) {
-                    $query->selectRaw('sport_id, SUM(stake) as total_stake, SUM(profit) as total_profit')
-                        ->groupBy('sport_id');
-                }])
-                ->get()
-                ->map(function ($sport) {
-                    return [
-                        'name' => $sport->name,
-                        'count' => $sport->bets_count,
-                        'stake' => $sport->bets->first()->total_stake ?? 0,
-                        'profit' => $sport->bets->first()->total_profit ?? 0,
-                    ];
-                }),
-        ];
+        // Clear related caches
+        SimpleCacheService::invalidateRelated('bet');
         
-        return response()->json($stats);
-    }
-    
-    /**
-     * Get quick statistics for the dashboard.
-     */
-    private function getQuickStats($request)
-    {
-        $query = Bet::query();
-        
-        // Apply the same filters as the main query
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-        if ($request->filled('sport_id')) {
-            $query->where('sport_id', $request->sport_id);
-        }
-        if ($request->filled('date_from')) {
-            $query->whereDate('game_at', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->whereDate('game_at', '<=', $request->date_to);
-        }
-        
-        $totalBets = $query->count();
-        $totalStake = $query->sum('stake');
-        $totalProfit = $query->sum('profit');
-        
-        $wonBets = (clone $query)->where('status', 'won')->count();
-        $lostBets = (clone $query)->where('status', 'lost')->count();
-        $pendingBets = (clone $query)->where('status', 'pending')->count();
-        
-        $winRate = ($wonBets + $lostBets) > 0 
-            ? round(($wonBets / ($wonBets + $lostBets)) * 100, 2) 
-            : 0;
-        
-        $roi = $totalStake > 0 
-            ? round(($totalProfit / $totalStake) * 100, 2) 
-            : 0;
-        
-        return [
-            'total_bets' => $totalBets,
-            'pending_bets' => $pendingBets,
-            'total_stake' => $totalStake,
-            'total_profit' => $totalProfit,
-            'win_rate' => $winRate,
-            'roi' => $roi,
-        ];
-    }
-    
-    /**
-     * Export bets to CSV.
-     */
-    public function export(Request $request)
-    {
-        // Log export action
         activity()
             ->causedBy(Auth::user())
-            ->withProperties([
-                'filters' => $request->all(),
-            ])
-            ->log('Exported bets data');
+            ->log("Bulk updated {$updatedCount} bets to status: {$validated['status']}");
         
-        $query = Bet::with(['user:id,name,email', 'sport:id,name', 'game', 'operator:id,name']);
-        
-        // Apply all the same filters as index
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        return back()->with('success', "{$updatedCount} bets updated successfully.");
+    }
+    
+    /**
+     * Calculate potential win based on stake and odds
+     */
+    private function calculatePotentialWin($stake, $odds): float
+    {
+        if ($odds > 0) {
+            return $stake * ($odds / 100);
+        } else {
+            return $stake * (100 / abs($odds));
         }
-        if ($request->filled('sport_id')) {
-            $query->where('sport_id', $request->sport_id);
-        }
-        if ($request->filled('operator_id')) {
-            $query->where('operator_id', $request->operator_id);
-        }
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->user_id);
-        }
-        if ($request->filled('date_from')) {
-            $query->whereDate('game_at', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->whereDate('game_at', '<=', $request->date_to);
-        }
-        if ($request->filled('bet_type')) {
-            $query->where('bet_type', $request->bet_type);
-        }
-        if ($request->filled('is_featured')) {
-            $query->where('is_featured', $request->boolean('is_featured'));
-        }
-        if ($request->filled('search')) {
-            $searchTerm = $request->search;
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('selection', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('description', 'like', '%' . $searchTerm . '%')
-                    ->orWhereHas('user', function ($q) use ($searchTerm) {
-                        $q->where('name', 'like', '%' . $searchTerm . '%')
-                            ->orWhere('email', 'like', '%' . $searchTerm . '%');
-                    });
-            });
-        }
-        
-        $bets = $query->orderBy('game_at', 'desc')->get();
-        
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="bets-export-' . now()->format('Y-m-d-His') . '.csv"',
-        ];
-        
-        $callback = function() use ($bets) {
-            $file = fopen('php://output', 'w');
-            
-            // CSV headers
-            fputcsv($file, [
-                'ID',
-                'User',
-                'Email',
-                'Sport',
-                'Game',
-                'Operator',
-                'Selection',
-                'Description',
-                'Type',
-                'Odds',
-                'Stake',
-                'Potential Win',
-                'Status',
-                'Profit',
-                'Game Date',
-                'Created At',
-                'Featured',
-                'Confidence',
-            ]);
-            
-            foreach ($bets as $bet) {
-                fputcsv($file, [
-                    $bet->id,
-                    $bet->user->name,
-                    $bet->user->email,
-                    $bet->sport->name,
-                    $bet->game ? "{$bet->game->away_team} @ {$bet->game->home_team}" : '',
-                    $bet->operator->name,
-                    $bet->selection,
-                    $bet->description,
-                    $bet->bet_type,
-                    $bet->odds,
-                    $bet->stake,
-                    $bet->potential_win,
-                    $bet->status,
-                    $bet->profit,
-                    $bet->game_at,
-                    $bet->created_at,
-                    $bet->is_featured ? 'Yes' : 'No',
-                    $bet->confidence,
-                ]);
-            }
-            
-            fclose($file);
+    }
+    
+    /**
+     * Calculate profit based on bet status
+     */
+    private function calculateProfit(array $data): float
+    {
+        return match($data['status']) {
+            'won' => $data['potential_win'] ?? 0,
+            'lost' => -($data['stake'] ?? 0),
+            'void', 'push' => 0,
+            default => 0
         };
-        
-        return response()->stream($callback, 200, $headers);
     }
 }

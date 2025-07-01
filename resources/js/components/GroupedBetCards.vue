@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BetPickCard from './BetPickCard.vue';
+import SimpleBetCard from './SimpleBetCard.vue';
 import CoveredBetPickCard from './CoveredBetPickCard.vue';
 
 const props = defineProps<{
@@ -26,39 +26,30 @@ const getSportIcon = (sport: string) => {
 
 <template>
   <div>
-    <div v-for="(bets, sport) in groupedBets" :key="sport" class="mb-5">
-      <div class="rounded-3 p-4" style="background-color: var(--bs-gray-dark); border: 1px solid var(--bs-gray-medium);">
-        <!-- Sport Header -->
-        <div class="d-flex align-items-center justify-content-between mb-4">
-          <div class="d-flex align-items-center">
-            <div class="rounded-circle bg-purple d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
-              <i :class="getSportIcon(sport)" class="bi text-white fs-4"></i>
-            </div>
-            <div>
-              <h3 class="h4 fw-bold text-white mb-0 text-capitalize">{{ sport }}</h3>
-              <p class="text-gray-light small mb-0">{{ bets.length }} {{ bets.length === 1 ? 'pick' : 'picks' }} available</p>
-            </div>
+    <div v-for="(bets, sport) in groupedBets" :key="sport" class="mb-4">
+      <!-- Sport Header -->
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div class="d-flex align-items-center">
+          <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+            <i :class="getSportIcon(sport)" class="bi text-white fs-5"></i>
           </div>
-          <div class="text-end">
-            <span class="badge bg-success">
-              <i class="bi bi-graph-up-arrow me-1"></i>
-              Live
-            </span>
-          </div>
+          <h3 class="h5 fw-bold text-white mb-0 text-capitalize">{{ sport }}</h3>
         </div>
-        
-        <!-- Bet Cards Grid -->
-        <div class="row g-4">
-          <div
-            v-for="(bet, index) in bets"
-            :key="bet.id"
-            class="col-12 col-sm-6 col-lg-4 col-xl-3"
-          >
-            <component
-              :is="bet.isCovered ? CoveredBetPickCard : BetPickCard"
-              :bet="bet"
-            />
-          </div>
+        <span class="badge bg-success">
+          <i class="bi bi-circle-fill me-1" style="font-size: 8px;"></i>
+          {{ bets.length }} {{ bets.length === 1 ? 'Pick' : 'Picks' }}
+        </span>
+      </div>
+      
+      <!-- Bet Cards Grid -->
+      <div class="row g-3">
+        <div
+          v-for="(bet, index) in bets.slice(0, 4)"
+          :key="bet.id"
+          class="col-12 col-md-6 col-lg-3"
+        >
+          <SimpleBetCard v-if="!bet.isCovered" :bet="bet" />
+          <CoveredBetPickCard v-else :bet="bet" />
         </div>
       </div>
     </div>
@@ -73,13 +64,5 @@ const getSportIcon = (sport: string) => {
 </template>
 
 <style scoped>
-/* Additional hover effects for the sport sections */
-.rounded-3 {
-  transition: all 0.3s ease;
-}
-
-.rounded-3:hover {
-  box-shadow: 0 0.5rem 1rem rgba(124, 58, 237, 0.1) !important;
-  border-color: rgba(124, 58, 237, 0.3) !important;
-}
+/* Clean, minimal styling */
 </style>

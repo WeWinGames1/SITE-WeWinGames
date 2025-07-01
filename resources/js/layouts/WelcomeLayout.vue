@@ -57,13 +57,6 @@ const auth = computed(() => page.props.auth || null);
                             </button>
                         </div>
                         <div class="text-secondary mx-2">|</div>
-                        <div class="d-flex align-items-center">
-                            <span class="text-white small">🇺🇸 Colorado</span>
-                            <button class="btn btn-sm text-white p-0 ms-1" type="button">
-                                <i class="bi bi-chevron-down"></i>
-                            </button>
-                        </div>
-                        <div class="text-secondary mx-2">|</div>
                         <i class="bi bi-person-circle text-white"></i>
                     </div>
                 </div>
@@ -163,7 +156,7 @@ const auth = computed(() => page.props.auth || null);
                                 <li><Link href="/todays-bets" class="dropdown-item text-light"><i class="bi bi-lightbulb me-2 text-warning"></i>Today's Tips</Link></li>
                                 <li><Link href="/settings/profile" class="dropdown-item text-light"><i class="bi bi-gear me-2 text-warning"></i>Settings</Link></li>
                                 <li><Link href="/settings/billing" class="dropdown-item text-light"><i class="bi bi-credit-card me-2 text-warning"></i>Billing</Link></li>
-                                <li><Link href="/support" class="dropdown-item text-light"><i class="bi bi-headset me-2 text-warning"></i>Support</Link></li>
+                                <li><Link href="/support/tickets" class="dropdown-item text-light"><i class="bi bi-headset me-2 text-warning"></i>Support</Link></li>
                                 <li v-if="auth.user.data.is_admin">
                                     <hr class="dropdown-divider" style="border-color: var(--bs-gray-medium) !important;">
                                 </li>
@@ -322,6 +315,10 @@ const auth = computed(() => page.props.auth || null);
                             <div class="text-secondary small">
                                 © Copyright {{ new Date().getFullYear() }} We Win Games. All Right Reserved.
                             </div>
+                            <a href="/terms" class="text-secondary text-decoration-none small">Terms</a>
+                            <span class="text-secondary">|</span>
+                            <a href="/privacy-policy" class="text-secondary text-decoration-none small">Privacy</a>
+                            <span class="text-secondary">|</span>
                             <a href="/support" class="btn btn-sm btn-outline-secondary">
                                 <i class="bi bi-headset"></i> Support
                             </a>
@@ -351,6 +348,11 @@ const auth = computed(() => page.props.auth || null);
 }
 
 .social-links a:hover {
+    color: #ffc107 !important;
+}
+
+/* Footer legal links */
+a.text-secondary:hover {
     color: #ffc107 !important;
 }
 

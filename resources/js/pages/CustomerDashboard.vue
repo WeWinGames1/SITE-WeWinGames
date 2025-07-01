@@ -170,7 +170,7 @@ const subscriptionBadge = computed(() => {
                             </Link>
                         </div>
                         <div class="col-md-6 col-lg-3">
-                            <Link href="/support" class="card h-100 text-decoration-none" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
+                            <Link href="/support/tickets" class="card h-100 text-decoration-none" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
                                 <div class="card-body p-4 text-center">
                                     <i class="bi bi-headset text-success fs-1 mb-3"></i>
                                     <h5 class="text-white">Support</h5>

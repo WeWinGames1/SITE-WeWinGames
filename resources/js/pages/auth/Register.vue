@@ -175,7 +175,7 @@ const submit = () => {
                                     By creating an account, you agree to our
                                     <a href="/terms" class="text-purple text-decoration-none">Terms of Service</a>
                                     and
-                                    <a href="/privacy" class="text-purple text-decoration-none">Privacy Policy</a>
+                                    <a href="/privacy-policy" class="text-purple text-decoration-none">Privacy Policy</a>
                                 </div>
                                 
                                 <div class="position-relative">
