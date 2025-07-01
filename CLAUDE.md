@@ -585,9 +585,187 @@ npm run format
    - Bundle size reduction
    - Loading time improvements
 
+## Recent Updates (January 2025)
+
+### Analytics Integration
+
+1. **Google Analytics**:
+   - Tag ID: `G-ZTJTTQP72Q` (configurable via `GOOGLE_ANALYTICS_TAG_ID`)
+   - Automatic page view tracking on route changes
+   - Custom event tracking via `useGoogleAnalytics` composable
+   - E-commerce tracking for subscriptions
+   - Implementation in `app.blade.php` and `app.ts`
+
+2. **Google Tag Manager**:
+   - Container ID: `GTM-PQDDCG6L` (configurable via `GOOGLE_TAG_MANAGER_ID`)
+   - Full dataLayer support
+   - Custom event pushing via `useGoogleTagManager` composable
+   - Enhanced e-commerce tracking
+   - Proper placement in head and body tags
+
+3. **Analytics Composables**:
+   ```typescript
+   // resources/js/composables/useGoogleAnalytics.ts
+   - trackEvent(eventName, parameters)
+   - trackPageView(path)
+   - trackEcommerce(event, parameters)
+   
+   // resources/js/composables/useGoogleTagManager.ts
+   - pushToDataLayer(data)
+   - trackEvent(eventName, parameters)
+   - trackEcommerce(eventType, data)
+   - trackUserData(userData)
+   ```
+
+### Security Enhancements
+
+1. **Cloudflare Turnstile**:
+   - Site Key: `0x4AAAAAABjA9oaFF9BSsznw`
+   - Secret Key: `0x4AAAAAABjA9iC5axcso_Tat1vZ1G-JsZc`
+   - Enabled on registration forms
+   - Backend validation in `RegisterRequest.php`
+   - Configuration via `TURNSTILE_ENABLED`, `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`
+
+2. **Environment Configuration**:
+   - All third-party services now configurable via `.env`
+   - Proper validation and fallbacks
+   - Secure key storage
+
+### UI/UX Improvements
+
+1. **DraftKings Integration**:
+   - Affiliate link added to home page
+   - Responsive card design
+   - Proper tracking parameters
+   - Located in subscription plans section
+
+2. **Support System Enhancements**:
+   - Fixed route conflicts (`/support` vs `/support/tickets`)
+   - Guest support without authentication
+   - Improved text visibility (fixed grey-on-grey issue)
+   - Better contrast ratios throughout
+
+3. **Home Page Updates**:
+   - Slimmer DraftKings promotional section
+   - Horizontal layout for better space utilization
+   - Improved responsive design
+
+### Technical Improvements
+
+1. **Route Organization**:
+   - Fixed duplicate route names
+   - Proper route grouping and prefixes
+   - Consistent naming conventions
+   - Support routes properly separated
+
+2. **Configuration Updates**:
+   - New `config/google.php` for Google services
+   - Updated `HandleInertiaRequests.php` to share analytics config
+   - Environment variables properly documented
+
+3. **Bug Fixes**:
+   - Fixed PHP syntax error in `SubscriptionDashboardController.php`
+   - Fixed missing closing braces in cache callback
+   - Corrected undefined variable references
+   - Fixed MRR calculation variable names
+
+### Development Workflow
+
+1. **New Commands**:
+   ```bash
+   # Clear and rebuild route cache
+   php artisan route:clear && php artisan route:cache
+   
+   # Test configuration
+   php artisan tinker --execute="echo config('google.analytics.tag_id');"
+   ```
+
+2. **Testing**:
+   - Added `SupportAccessTest.php` for support system validation
+   - All tests passing for guest and authenticated support access
+
+3. **Documentation**:
+   - Updated README.md with all new features
+   - Added analytics usage examples
+   - Documented all environment variables
+   - Created composables documentation
+
 ## Contact and Support
 
 For questions or issues:
+- Use the in-app support system at `/support`
 - Check Laravel documentation: https://laravel.com/docs
 - Vue.js documentation: https://vuejs.org/
 - Inertia.js documentation: https://inertiajs.com/
+
+# Important Instruction Reminders
+
+## Code Development Guidelines
+
+1. **File Creation**: 
+   - NEVER create files unless they're absolutely necessary
+   - ALWAYS prefer editing existing files over creating new ones
+   - NEVER proactively create documentation files (*.md) or README files unless explicitly requested
+
+2. **Code Style**:
+   - DO NOT add comments unless specifically asked
+   - Follow existing code patterns and conventions
+   - Use existing libraries and utilities rather than introducing new ones
+
+3. **Security**:
+   - Never expose or log secrets and keys
+   - Never commit sensitive information
+   - Always follow security best practices
+
+4. **Task Management**:
+   - Complete exactly what was asked - nothing more, nothing less
+   - Mark todos as completed immediately after finishing tasks
+   - Use the TodoWrite tool for complex multi-step tasks
+
+5. **Testing and Validation**:
+   - Run lint and typecheck commands after completing tasks
+   - Verify solutions with appropriate tests
+   - Check for and fix any syntax errors before marking tasks complete
+
+6. **Communication**:
+   - Keep responses concise (under 4 lines unless detail requested)
+   - Answer user questions directly without elaboration
+   - Avoid unnecessary preambles or summaries
+
+## Environment Variables Summary
+
+All sensitive configuration should be stored in `.env`:
+
+```env
+# Application
+APP_DEBUG=false  # CRITICAL: Must be false in production
+APP_ENV=production
+
+# Database
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=wewingames
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+
+# Stripe
+STRIPE_KEY=your_publishable_key
+STRIPE_SECRET=your_secret_key
+STRIPE_WEBHOOK_SECRET=your_webhook_secret
+
+# Google Services
+GOOGLE_ANALYTICS_TAG_ID=G-ZTJTTQP72Q
+GOOGLE_TAG_MANAGER_ID=GTM-PQDDCG6L
+
+# Cloudflare Turnstile
+TURNSTILE_ENABLED=true
+TURNSTILE_SITE_KEY=0x4AAAAAABjA9oaFF9BSsznw
+TURNSTILE_SECRET_KEY=0x4AAAAAABjA9iC5axcso_Tat1vZ1G-JsZc
+
+# Notifications (Optional)
+SLACK_BOT_USER_OAUTH_TOKEN=your_token
+SLACK_BOT_USER_DEFAULT_CHANNEL=your_channel
+POSTMARK_TOKEN=your_token
+RESEND_KEY=your_key
+```

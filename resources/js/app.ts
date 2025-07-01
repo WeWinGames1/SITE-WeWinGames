@@ -1,12 +1,13 @@
 import 'bootstrap';
 import * as bootstrap from 'bootstrap';
 
-import { createInertiaApp } from '@inertiajs/vue3';
+import { createInertiaApp, router } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
 import { initializeTheme } from './composables/useAppearance';
+import { useGoogleAnalytics } from './composables/useGoogleAnalytics';
 
 // Make Bootstrap available globally
 window.bootstrap = bootstrap;
@@ -42,6 +43,13 @@ createInertiaApp({
 
 // This will set light / dark mode on page load...
 initializeTheme();
+
+// Track page views with Google Analytics
+router.on('navigate', () => {
+    const { trackPageView } = useGoogleAnalytics();
+    trackPageView();
+});
+
 if ('serviceWorker' in navigator) {
     console.log('Service Worker is supported');
   window.addEventListener('load', () => {

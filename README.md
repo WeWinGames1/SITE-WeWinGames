@@ -70,6 +70,15 @@ WeWinGames is a comprehensive sports betting information and picks service built
    SLACK_BOT_USER_OAUTH_TOKEN=your_slack_token
    SLACK_BOT_USER_DEFAULT_CHANNEL=your_channel
    
+   # Google Analytics & Tag Manager
+   GOOGLE_ANALYTICS_TAG_ID=G-ZTJTTQP72Q
+   GOOGLE_TAG_MANAGER_ID=GTM-PQDDCG6L
+   
+   # Cloudflare Turnstile
+   TURNSTILE_SITE_KEY=0x4AAAAAABjA9oaFF9BSsznw
+   TURNSTILE_SECRET_KEY=0x4AAAAAABjA9iC5axcso_Tat1vZ1G-JsZc
+   TURNSTILE_ENABLED=true
+   
    # Production Settings (CRITICAL)
    APP_DEBUG=false  # Must be false in production
    APP_ENV=production
@@ -108,6 +117,12 @@ Access at `/admin/stripe-products` to:
 - Send to all users or specific user groups
 - Track notification delivery status
 
+### Support Ticket System
+- Guest and authenticated user support
+- Ticket categories and priority levels
+- Admin ticket management and responses
+- Email notifications for ticket updates
+
 ## Default Users
 
 After seeding, you can login with:
@@ -136,6 +151,10 @@ composer dev:ssr
 
 # Clear caches (useful after updates)
 php artisan view:clear && php artisan config:clear && php artisan route:clear && php artisan cache:clear
+
+# Run linting commands
+npm run lint
+composer lint
 ```
 
 ## Production Deployment
@@ -186,6 +205,15 @@ php artisan view:clear && php artisan config:clear && php artisan route:clear &&
    REDIS_HOST=127.0.0.1
    REDIS_PASSWORD=null
    REDIS_PORT=6379
+   
+   # Analytics
+   GOOGLE_ANALYTICS_TAG_ID=your_ga_tag_id
+   GOOGLE_TAG_MANAGER_ID=your_gtm_container_id
+   
+   # Security
+   TURNSTILE_ENABLED=true
+   TURNSTILE_SITE_KEY=your_site_key
+   TURNSTILE_SECRET_KEY=your_secret_key
    ```
 
 4. **Database setup**:
@@ -193,6 +221,7 @@ php artisan view:clear && php artisan config:clear && php artisan route:clear &&
    php artisan migrate --force
    php artisan db:seed --class=UserSeeder
    php artisan db:seed --class=StripeProductSeeder
+   php artisan db:seed --class=TicketCategorySeeder
    ```
 
 5. **Optimize for production**:
@@ -238,21 +267,33 @@ php artisan queue:work --daemon
 - **Enhanced Security**: Production-ready security headers and configurations
 - **Tier-Based Features**: Silver, Gold, and Platinum subscription tiers
 - **Ambassador Program**: Support for gifted and ambassador users
+- **Analytics Integration**: Google Analytics and Tag Manager for tracking
+- **Bot Protection**: Cloudflare Turnstile for form protection
+- **Support System**: Full-featured ticket system for customer support
 
-## Recent Updates (December 2024)
+## Recent Updates (January 2025)
 
-### Major UI/UX Improvements
-- **Bootstrap 5 Migration**: Complete conversion from Tailwind CSS to Bootstrap 5
-- **Admin Portal Redesign**: Modern dark sidebar with light content area
-- **Enhanced Navigation**: Smart parent/child expansion and improved hover states
-- **Import System Overhaul**: Redesigned CSV import wizard with better UX
-- **Mobile Optimization**: Improved responsive design across all admin pages
+### Analytics & Tracking
+- **Google Analytics**: Integrated with automatic page view tracking
+- **Google Tag Manager**: Full dataLayer integration for custom events
+- **E-commerce Tracking**: Support for subscription and conversion tracking
+
+### Security Enhancements
+- **Cloudflare Turnstile**: Bot protection on registration forms
+- **Environment-based Configuration**: All services configurable via .env
+- **Secure Headers**: Enhanced security headers for production
+
+### UI/UX Improvements
+- **DraftKings Integration**: Affiliate link integration on home page
+- **Support System**: Guest and authenticated user support with ticket tracking
+- **Text Visibility**: Improved contrast ratios for better readability
+- **Responsive Design**: Enhanced mobile experience across all pages
 
 ### Technical Enhancements
-- **Performance**: Optimized bundle sizes and loading times
-- **Accessibility**: WCAG 2.1 compliance and keyboard navigation
-- **Code Quality**: TypeScript improvements and consistent coding standards
-- **Testing**: Enhanced cross-browser compatibility and quality assurance
+- **TypeScript Support**: Full TypeScript coverage for Vue components
+- **Composables**: New composables for Google Analytics and Tag Manager
+- **Route Organization**: Cleaned up route definitions and naming
+- **Performance**: Optimized asset loading and caching strategies
 
 ## Project Structure
 
@@ -260,14 +301,58 @@ php artisan queue:work --daemon
 ├── app/                # Laravel application
 │   ├── Http/          # Controllers, Middleware, Requests
 │   ├── Models/        # Eloquent models
-│   └── Services/      # Business logic
+│   ├── Services/      # Business logic
+│   └── Traits/        # Reusable traits
 ├── resources/         # Frontend resources
 │   ├── js/           # Vue.js application
+│   │   ├── composables/ # Vue composition utilities
+│   │   ├── components/  # Reusable components
+│   │   └── pages/      # Page components
 │   └── css/          # Stylesheets
 ├── database/         # Migrations and seeders
 ├── routes/           # Application routes
+├── config/           # Configuration files
 └── tests/            # Test files
 ```
+
+## Analytics Implementation
+
+### Google Analytics
+- Automatic page view tracking on route changes
+- Custom event tracking via `useGoogleAnalytics` composable
+- E-commerce tracking for subscriptions
+
+### Google Tag Manager
+- Full dataLayer support
+- Custom event pushing via `useGoogleTagManager` composable
+- Enhanced e-commerce tracking capabilities
+
+Example usage:
+```typescript
+import { useGoogleAnalytics } from '@/composables/useGoogleAnalytics';
+import { useGoogleTagManager } from '@/composables/useGoogleTagManager';
+
+// Track custom events
+const { trackEvent } = useGoogleAnalytics();
+trackEvent('button_click', { category: 'engagement', label: 'header' });
+
+// Push to dataLayer
+const { pushToDataLayer } = useGoogleTagManager();
+pushToDataLayer({ event: 'subscription_started', tier: 'gold' });
+```
+
+## Security Features
+
+### Cloudflare Turnstile
+- Enabled on registration forms
+- Configurable via environment variables
+- Backend validation for all submissions
+
+### Environment Security
+- All sensitive keys in .env file
+- Proper validation and sanitization
+- CSRF protection on all forms
+- XSS prevention via Vue.js
 
 ## Documentation
 
@@ -277,6 +362,7 @@ For detailed documentation, see [CLAUDE.md](CLAUDE.md) which contains:
 - API endpoints
 - Development guidelines
 - Deployment instructions
+- Recent changes and best practices
 
 ## Contributing
 
@@ -284,6 +370,25 @@ For detailed documentation, see [CLAUDE.md](CLAUDE.md) which contains:
 2. Use TypeScript for all Vue components
 3. Run tests before submitting PRs
 4. Follow the existing code style and patterns
+5. Ensure all analytics events are properly tracked
+6. Maintain security best practices
+
+## Testing
+
+```bash
+# Run all tests
+php artisan test
+
+# Run specific test suites
+php artisan test --testsuite=Feature
+php artisan test --testsuite=Unit
+
+# Run with coverage
+php artisan test --coverage
+
+# Run JavaScript tests
+npm run test
+```
 
 ## License
 
@@ -291,4 +396,7 @@ This project is proprietary software. All rights reserved.
 
 ## Support
 
-For questions or issues, please contact the development team.
+For questions or issues:
+- Use the in-app support system at `/support`
+- Contact the development team
+- Check the detailed documentation in CLAUDE.md

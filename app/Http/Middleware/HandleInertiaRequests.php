@@ -97,6 +97,8 @@ class HandleInertiaRequests extends Middleware
             'env' => [
                 'APP_ENV' => config('app.env'),
                 'APP_DEBUG' => config('app.debug'),
+                'GOOGLE_ANALYTICS_TAG_ID' => config('google.analytics.tag_id'),
+                'GOOGLE_TAG_MANAGER_ID' => config('google.tag_manager.container_id'),
             ],
             'social' => [
                 'links' => config('social.links'),
