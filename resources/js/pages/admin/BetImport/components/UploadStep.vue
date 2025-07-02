@@ -78,8 +78,8 @@
 
         <div v-else>
           <i class="bi bi-file-earmark-check fs-1 text-success d-block mb-3"></i>
-          <p class="mb-2 fw-medium">{{ file.name }}</p>
-          <p class="small mb-3 fw-normal" style="color: #495057;">{{ formatFileSize(file.size) }}</p>
+          <p class="mb-2 fw-bold text-dark">{{ file.name }}</p>
+          <p class="mb-3 text-muted">{{ formatFileSize(file.size) }}</p>
           <button @click="removeFile" class="btn btn-sm btn-outline-danger">
             <i class="bi bi-trash me-1"></i>Remove File
           </button>

@@ -91,6 +91,20 @@ class BetImportService
 
     private function processRecord(array $record, int $lineNumber): void
     {
+        // Map the record using column mappings if provided
+        if (!empty($this->columnMappings)) {
+            $mappedRecord = [];
+            foreach ($this->columnMappings as $field => $csvColumn) {
+                if (isset($record[$csvColumn])) {
+                    $mappedRecord[$field] = $record[$csvColumn];
+                }
+            }
+            $record = $mappedRecord;
+        }
+        
+        // Transform data before validation
+        $record = $this->transformRecordData($record);
+        
         // Validate record
         $validation = $this->validateRecord($record);
         if (!$validation['valid']) {
@@ -140,30 +154,47 @@ class BetImportService
             );
             $this->successCount['games']++;
 
-            // Create bet
+            // Create bet using the correct field names
             $betData = [
-                'user_id' => auth()->id() ?? 1, // Default to user 1 if not authenticated
-                'game_id' => $game->id,
-                'sport_id' => $sport->id,
-                'operator_id' => $operator->id,
-                'bet_type' => $record['bet_type'],
-                'selection' => $record['selection'],
-                'odds' => (float) $record['odds'],
-                'stake' => (float) $record['stake'],
-                'potential_return' => (float) $record['stake'] * (float) $record['odds'],
+                'sports' => $record['sport'],
+                'league' => $record['league'] ?? null,
+                'matches' => $game->home_team->name . ' vs ' . $game->away_team->name,
+                'markets' => $record['bet_type'],
+                'team_one' => $record['home_team'],
+                'team_one_logo' => $homeTeam->logo ?? null,
+                'team_two' => $record['away_team'],
+                'team_two_logo' => $awayTeam->logo ?? null,
+                'tips' => $record['selection'],
+                'betting_date' => $record['game_date'],
+                'wager_odds' => (float) $record['odds'],
+                'wager_amount' => (float) $record['stake'],
                 'status' => $record['status'] ?? 'pending',
-                'description' => $record['description'] ?? null,
-                'placed_at' => $record['placed_at'] ?? now(),
+                'referrer' => $record['referrer'] ?? null,
             ];
 
-            // Calculate profit if bet is settled
+            // Calculate winning and profit amounts if bet is settled
             if (in_array($betData['status'], ['won', 'lost'])) {
-                $betData['profit'] = $betData['status'] === 'won' 
-                    ? ($betData['potential_return'] - $betData['stake'])
-                    : -$betData['stake'];
+                if ($betData['status'] === 'won') {
+                    $betData['winning_amount'] = $betData['wager_amount'] * $betData['wager_odds'];
+                    $betData['profit_amount'] = $betData['winning_amount'] - $betData['wager_amount'];
+                } else {
+                    $betData['winning_amount'] = 0;
+                    $betData['profit_amount'] = -$betData['wager_amount'];
+                }
+            } else {
+                $betData['winning_amount'] = 0;
+                $betData['profit_amount'] = 0;
             }
 
-            $this->betRepository->create($betData);
+            // Calculate ROI
+            if ($betData['wager_amount'] > 0) {
+                $betData['roi'] = ($betData['profit_amount'] / $betData['wager_amount']) * 100;
+            } else {
+                $betData['roi'] = 0;
+            }
+
+            // Create the bet directly using the model
+            Bet::create($betData);
             $this->successCount['bets']++;
 
         } catch (\Exception $e) {
@@ -181,6 +212,146 @@ class BetImportService
         }
     }
 
+    private function transformRecordData(array $record): array
+    {
+        // Parse dates
+        if (isset($record['game_date']) && !empty($record['game_date'])) {
+            try {
+                // Try multiple date formats
+                $formats = [
+                    'Y-m-d H:i:s',
+                    'Y-m-d',
+                    'm/d/Y',
+                    'd/m/Y',
+                    'm-d-Y',
+                    'd-m-Y',
+                    'Y/m/d',
+                    'm/d/Y H:i:s',
+                    'm/d/Y H:i',
+                ];
+                
+                $parsed = false;
+                foreach ($formats as $format) {
+                    try {
+                        $date = \Carbon\Carbon::createFromFormat($format, trim($record['game_date']));
+                        $record['game_date'] = $date->format('Y-m-d H:i:s');
+                        $parsed = true;
+                        break;
+                    } catch (\Exception $e) {
+                        continue;
+                    }
+                }
+                
+                if (!$parsed) {
+                    // Last resort - let Carbon try to parse it
+                    $record['game_date'] = \Carbon\Carbon::parse($record['game_date'])->format('Y-m-d H:i:s');
+                }
+            } catch (\Exception $e) {
+                // Keep original value if parse fails
+            }
+        }
+        
+        // Parse placed_at date
+        if (isset($record['placed_at']) && !empty($record['placed_at'])) {
+            try {
+                $record['placed_at'] = \Carbon\Carbon::parse($record['placed_at'])->format('Y-m-d H:i:s');
+            } catch (\Exception $e) {
+                // Keep original value if parse fails
+            }
+        }
+        
+        // Parse numeric values
+        if (isset($record['odds'])) {
+            $record['odds'] = $this->parseNumeric($record['odds']);
+        }
+        
+        if (isset($record['stake'])) {
+            $record['stake'] = $this->parseMonetary($record['stake']);
+        }
+        
+        // Normalize status
+        if (isset($record['status'])) {
+            $record['status'] = $this->normalizeStatus($record['status']);
+        }
+        
+        // Trim all string values
+        foreach ($record as $key => $value) {
+            if (is_string($value)) {
+                $record[$key] = trim($value);
+            }
+        }
+        
+        return $record;
+    }
+    
+    private function parseNumeric($value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        
+        // Handle American odds
+        if (is_string($value) && (str_starts_with($value, '+') || str_starts_with($value, '-'))) {
+            return $this->convertAmericanToDecimal($value);
+        }
+        
+        // Remove non-numeric characters except decimal point
+        $cleaned = preg_replace('/[^0-9.-]/', '', $value);
+        return is_numeric($cleaned) ? (float) $cleaned : null;
+    }
+    
+    private function parseMonetary($value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        
+        // Remove currency symbols and thousands separators
+        $cleaned = preg_replace('/[^0-9.-]/', '', $value);
+        return is_numeric($cleaned) ? (float) $cleaned : null;
+    }
+    
+    private function convertAmericanToDecimal(string $americanOdds): float
+    {
+        $odds = (int) $americanOdds;
+        
+        if ($odds > 0) {
+            return ($odds / 100) + 1;
+        } else {
+            return (100 / abs($odds)) + 1;
+        }
+    }
+    
+    private function normalizeStatus(?string $status): string
+    {
+        if (!$status) {
+            return 'pending';
+        }
+        
+        $status = strtolower(trim($status));
+        
+        $statusMap = [
+            'win' => 'won',
+            'won' => 'won',
+            'w' => 'won',
+            'loss' => 'lost',
+            'lost' => 'lost',
+            'lose' => 'lost',
+            'l' => 'lost',
+            'push' => 'push',
+            'p' => 'push',
+            'void' => 'void',
+            'v' => 'void',
+            'cashout' => 'cashout',
+            'cash out' => 'cashout',
+            'pending' => 'pending',
+            'open' => 'pending',
+            'active' => 'pending',
+        ];
+        
+        return $statusMap[$status] ?? 'pending';
+    }
+
     private function validateRecord(array $record): array
     {
         $rules = [
@@ -192,8 +363,12 @@ class BetImportService
             'selection' => 'required|string|max:255',
             'odds' => 'required|numeric|min:1.01',
             'stake' => 'required|numeric|min:0.01',
-            'game_date' => 'required|date',
-            'status' => 'nullable|in:pending,won,lost,void,cashout',
+            'game_date' => 'required|string', // Changed from 'date' to 'string' for more flexible parsing
+            'status' => 'nullable|in:pending,won,lost,void,cashout,push',
+            'description' => 'nullable|string|max:500',
+            'placed_at' => 'nullable|string',
+            'league' => 'nullable|string|max:255',
+            'referrer' => 'nullable|string|max:255',
         ];
 
         $validator = Validator::make($record, $rules);
