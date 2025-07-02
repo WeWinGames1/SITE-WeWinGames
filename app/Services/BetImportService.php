@@ -164,7 +164,7 @@ class BetImportService
                 'team_one_logo' => $homeTeam->logo ?? null,
                 'team_two' => $record['away_team'],
                 'team_two_logo' => $awayTeam->logo ?? null,
-                'tips' => $record['selection'],
+                'tips' => $record['wager_name'] ?? $record['selection'] ?? '',
                 'betting_date' => $record['game_date'],
                 'wager_odds' => (float) $record['odds'],
                 'wager_amount' => (float) $record['stake'],
@@ -360,7 +360,8 @@ class BetImportService
             'away_team' => 'required|string|max:255',
             'operator' => 'required|string|max:255',
             'bet_type' => 'required|string|max:50',
-            'selection' => 'required|string|max:255',
+            'selection' => 'required_without:wager_name|string|max:255',
+            'wager_name' => 'required_without:selection|string|max:255',
             'odds' => 'required|numeric|min:1.01',
             'stake' => 'required|numeric|min:0.01',
             'game_date' => 'required|string', // Changed from 'date' to 'string' for more flexible parsing
