@@ -384,6 +384,14 @@ function logout() {
     color: #6c757d !important;
 }
 
+.admin-main-content :deep(.text-muted) {
+    color: #6c757d !important;
+}
+
+.admin-main-content :deep(.small.text-muted) {
+    color: #6c757d !important;
+}
+
 .admin-main-content :deep(.bg-dark) {
     background-color: #f8f9fa !important;
 }
@@ -409,6 +417,57 @@ function logout() {
 .admin-main-content :deep(.h4),
 .admin-main-content :deep(.h5),
 .admin-main-content :deep(.h6) {
+    color: #212529 !important;
+}
+
+/* Form labels and text should be dark in admin area */
+.admin-main-content :deep(.form-label) {
+    color: #212529 !important;
+}
+
+.admin-main-content :deep(.form-text) {
+    color: #6c757d !important;
+}
+
+.admin-main-content :deep(.text-dark) {
+    color: #212529 !important;
+}
+
+/* Ensure form controls have proper styling */
+.admin-main-content :deep(.form-control),
+.admin-main-content :deep(.form-select),
+.admin-main-content :deep(textarea) {
+    background-color: #ffffff !important;
+    border-color: #ced4da !important;
+    color: #212529 !important;
+}
+
+.admin-main-content :deep(.form-control:focus),
+.admin-main-content :deep(.form-select:focus),
+.admin-main-content :deep(textarea:focus) {
+    background-color: #ffffff !important;
+    border-color: #86b7fe !important;
+    color: #212529 !important;
+}
+
+.admin-main-content :deep(.form-control::placeholder) {
+    color: #6c757d !important;
+}
+
+/* Modal styling in admin area */
+.admin-main-content :deep(.modal-content) {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+}
+
+.admin-main-content :deep(.modal-header),
+.admin-main-content :deep(.modal-body),
+.admin-main-content :deep(.modal-footer) {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+}
+
+.admin-main-content :deep(.modal-title) {
     color: #212529 !important;
 }
 
@@ -709,6 +768,10 @@ main {
 
 .admin-main-content :deep(.text-muted) {
     color: #6c757d !important;
+}
+
+.admin-main-content :deep(.text-secondary) {
+    color: #495057 !important;
 }
 
 /* Responsive adjustments */

@@ -407,23 +407,23 @@ function goToPage(page: number) {
                     </small>
                   </td>
                   <td>
-                    <div class="d-flex gap-1 justify-content-end">
+                    <div class="btn-group btn-group-sm" role="group">
                       <button
-                        class="btn btn-sm btn-outline-primary"
+                        class="btn btn-outline-primary"
                         @click="openGrantModal(customer)"
                         title="Manage subscription"
                       >
                         <i class="bi bi-gift"></i>
                       </button>
                       <button
-                        class="btn btn-sm btn-outline-warning"
+                        class="btn btn-outline-warning"
                         @click="impersonateUser(customer)"
                         title="Impersonate user"
                       >
                         <i class="bi bi-person-badge"></i>
                       </button>
                       <button
-                        class="btn btn-sm btn-outline-secondary"
+                        class="btn btn-outline-secondary"
                         @click="sendPasswordReset(customer)"
                         title="Send password reset"
                       >

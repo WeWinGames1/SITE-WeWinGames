@@ -764,16 +764,18 @@ function formatCurrency(amount: number | null | undefined): string {
                                             </div>
                                         </td>
                                         <td class="text-center">
-                                            <div class="d-flex justify-content-center gap-1">
+                                            <div class="btn-group btn-group-sm" role="group">
                                                 <Link
                                                     :href="route('admin.bets.edit', bet.id)"
-                                                    class="btn btn-outline-primary btn-sm"
+                                                    class="btn btn-outline-primary"
+                                                    title="Edit"
                                                 >
                                                     <PencilIcon style="width: 1rem; height: 1rem;" />
                                                 </Link>
                                                 <button
                                                     @click="deleteBet(bet)"
-                                                    class="btn btn-outline-danger btn-sm"
+                                                    class="btn btn-outline-danger"
+                                                    title="Delete"
                                                 >
                                                     <TrashIcon style="width: 1rem; height: 1rem;" />
                                                 </button>

@@ -285,7 +285,7 @@ function formatDate(date: string | null): string {
                                         <small class="text-muted">{{ post.slug }}</small>
                                         <div v-if="post.tags.length > 0" class="mt-1">
                                             <span v-for="tag in post.tags.slice(0, 3)" :key="tag" 
-                                                  class="badge bg-light text-dark me-1">
+                                                  class="badge bg-secondary me-1">
                                                 <i class="bi bi-tag"></i> {{ tag }}
                                             </span>
                                             <span v-if="post.tags.length > 3" class="text-muted small">
@@ -313,7 +313,7 @@ function formatDate(date: string | null): string {
                                     </small>
                                 </td>
                                 <td>
-                                    <span class="badge bg-light text-dark">
+                                    <span class="badge bg-secondary">
                                         <i class="bi bi-eye"></i> {{ post.views_count }}
                                     </span>
                                 </td>

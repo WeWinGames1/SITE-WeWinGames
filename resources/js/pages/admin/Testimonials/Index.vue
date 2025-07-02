@@ -162,17 +162,17 @@ function getStarArray(rating: number) {
                                         </button>
                                     </td>
                                     <td>
-                                        <div class="d-flex gap-2 justify-content-center">
+                                        <div class="btn-group btn-group-sm" role="group">
                                             <Link 
                                                 :href="route('admin.testimonials.edit', testimonial.id)" 
-                                                class="btn btn-sm btn-outline-primary"
+                                                class="btn btn-outline-primary"
                                                 title="Edit testimonial"
                                             >
                                                 <i class="bi bi-pencil"></i>
                                             </Link>
                                             <button 
                                                 @click="deleteTestimonial(testimonial.id)" 
-                                                class="btn btn-sm btn-outline-danger"
+                                                class="btn btn-outline-danger"
                                                 title="Delete testimonial"
                                             >
                                                 <i class="bi bi-trash"></i>

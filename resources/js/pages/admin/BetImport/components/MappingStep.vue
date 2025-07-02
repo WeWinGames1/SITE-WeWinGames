@@ -2,7 +2,7 @@
   <div>
     <h2 class="h3 mb-4">Map CSV Columns</h2>
     
-    <p class="mb-4">
+    <p class="mb-4 text-dark">
       Map your CSV columns to the corresponding bet fields. We've detected some mappings automatically, but please review and adjust as needed.
     </p>
 

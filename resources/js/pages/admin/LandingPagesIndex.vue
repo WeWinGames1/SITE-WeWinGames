@@ -92,17 +92,17 @@ function closeQR() {
                                         </span>
                                     </td>
                                     <td>
-                                        <div class="d-flex gap-2 justify-content-center">
+                                        <div class="btn-group btn-group-sm" role="group">
                                             <Link 
                                                 :href="route('admin.landing-pages.edit', page.id)" 
-                                                class="btn btn-sm btn-outline-primary"
+                                                class="btn btn-outline-primary"
                                                 title="Edit page"
                                             >
                                                 <i class="bi bi-pencil"></i>
                                             </Link>
                                             <a
                                                 :href="`/landing/${page.slug}`"
-                                                class="btn btn-sm btn-outline-success"
+                                                class="btn btn-outline-success"
                                                 target="_blank"
                                                 rel="noopener"
                                                 title="View page"
@@ -111,14 +111,14 @@ function closeQR() {
                                             </a>
                                             <button 
                                                 @click="openQR(page)" 
-                                                class="btn btn-sm btn-outline-info"
+                                                class="btn btn-outline-info"
                                                 title="Generate QR code"
                                             >
                                                 <i class="bi bi-qr-code"></i>
                                             </button>
                                             <button 
                                                 @click="deletePage(page.id)" 
-                                                class="btn btn-sm btn-outline-danger"
+                                                class="btn btn-outline-danger"
                                                 title="Delete page"
                                             >
                                                 <i class="bi bi-trash"></i>

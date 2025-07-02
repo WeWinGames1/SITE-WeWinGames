@@ -243,7 +243,7 @@ function insertVariable(variable: string) {
                                 <hr class="my-3">
                                 <p class="small text-muted mb-0">
                                     <strong>Default variables:</strong><br>
-                                    <code>{{app_name}}</code>, <code>{{app_url}}</code>
+                                    <code>app_name</code>, <code>app_url</code>
                                 </p>
                             </div>
                         </div>
@@ -261,7 +261,7 @@ function insertVariable(variable: string) {
                                         class="form-check-input" 
                                         id="is_active"
                                     />
-                                    <label class="form-check-label" for="is_active">
+                                    <label class="form-check-label text-dark" for="is_active">
                                         Template is active
                                     </label>
                                 </div>

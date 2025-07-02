@@ -141,7 +141,7 @@ function impersonateUser() {
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h1 class="h2 mb-1 text-dark">Ticket #{{ ticket.ticket_number }}</h1>
-                            <p class="text-muted mb-0">{{ ticket.subject }}</p>
+                            <p class="text-dark mb-0">{{ ticket.subject }}</p>
                         </div>
                         <a href="/admin/support-tickets" class="btn btn-outline-secondary">
                             <i class="bi bi-arrow-left me-1"></i> Back to Tickets
@@ -159,8 +159,8 @@ function impersonateUser() {
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <strong>{{ ticket.user ? ticket.user.name : ticket.guest_name }}</strong>
-                                    <span class="text-muted ms-2">{{ ticket.user ? ticket.user.email : ticket.guest_email }}</span>
-                                    <span class="text-muted ms-2">{{ formatDate(ticket.created_at) }}</span>
+                                    <span class="text-secondary ms-2">{{ ticket.user ? ticket.user.email : ticket.guest_email }}</span>
+                                    <span class="text-secondary ms-2">{{ formatDate(ticket.created_at) }}</span>
                                     <span v-if="ticket.is_guest_submission" class="badge bg-info ms-2">Guest</span>
                                 </div>
                                 <div>
@@ -188,7 +188,7 @@ function impersonateUser() {
                                     <strong>{{ reply.user?.name || 'Unknown User' }}</strong>
                                     <span v-if="reply.user?.is_admin" class="badge bg-info ms-2">Support Team</span>
                                     <span v-if="reply.is_internal" class="badge bg-warning ms-2">Internal Note</span>
-                                    <span class="text-muted ms-2">{{ formatDate(reply.created_at) }}</span>
+                                    <span class="text-secondary ms-2">{{ formatDate(reply.created_at) }}</span>
                                 </div>
                             </div>
                         </div>
@@ -224,7 +224,7 @@ function impersonateUser() {
                                         class="form-check-input" 
                                         id="internalNote"
                                     />
-                                    <label class="form-check-label" for="internalNote">
+                                    <label class="form-check-label text-dark" for="internalNote">
                                         Internal note (not visible to customer)
                                     </label>
                                 </div>
@@ -302,19 +302,19 @@ function impersonateUser() {
                             <!-- Category -->
                             <div class="mb-3">
                                 <label class="form-label small text-dark fw-medium">Category</label>
-                                <div>{{ ticket.category?.name || 'Uncategorized' }}</div>
+                                <div class="text-dark">{{ ticket.category?.name || 'Uncategorized' }}</div>
                             </div>
 
                             <!-- Created -->
                             <div class="mb-3">
                                 <label class="form-label small text-dark fw-medium">Created</label>
-                                <div>{{ formatDate(ticket.created_at) }}</div>
+                                <div class="text-dark">{{ formatDate(ticket.created_at) }}</div>
                             </div>
 
                             <!-- Updated -->
                             <div>
                                 <label class="form-label small text-dark fw-medium">Last Updated</label>
-                                <div>{{ formatDate(ticket.updated_at) }}</div>
+                                <div class="text-dark">{{ formatDate(ticket.updated_at) }}</div>
                             </div>
                         </div>
                     </div>
@@ -348,5 +348,6 @@ function impersonateUser() {
 .ticket-content {
     white-space: pre-wrap;
     word-wrap: break-word;
+    color: #212529; /* Bootstrap's text-dark color */
 }
 </style>

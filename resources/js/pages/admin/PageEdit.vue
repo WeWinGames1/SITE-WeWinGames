@@ -101,7 +101,7 @@ function updateSourceCode(event: Event) {
                     Back to Pages
                 </Link>
                 <h1 class="h2 fw-bold text-dark">{{ page ? 'Edit Page' : 'Create New Page' }}</h1>
-                <p class="text-muted small">
+                <p class="text-secondary small">
                     {{ page ? 'Edit this content page' : 'Create a new content page for your website' }}
                 </p>
             </div>
@@ -137,7 +137,7 @@ function updateSourceCode(event: Event) {
                                 <label for="slug" class="form-label text-dark fw-medium">
                                     URL Slug <span class="text-danger">*</span>
                                 </label>
-                                <p class="text-muted small mb-2">The URL path for this page (e.g., /pages/your-page-slug)</p>
+                                <p class="text-secondary small mb-2">The URL path for this page (e.g., /pages/your-page-slug)</p>
                                 <input 
                                     v-model="form.slug" 
                                     id="slug" 
@@ -147,7 +147,7 @@ function updateSourceCode(event: Event) {
                                     pattern="[a-z0-9-]+"
                                     required
                                 />
-                                <div class="text-muted small mt-1">Only lowercase letters, numbers, and hyphens allowed</div>
+                                <div class="text-secondary small mt-1">Only lowercase letters, numbers, and hyphens allowed</div>
                                 <div v-if="form.errors.slug" class="invalid-feedback d-block">
                                     {{ form.errors.slug }}
                                 </div>
@@ -273,6 +273,7 @@ function updateSourceCode(event: Event) {
 
                     <!-- Sidebar -->
                     <div class="col-lg-4">
+                        <div class="sticky-top" style="top: 1rem;">
                         <!-- Publish Settings -->
                         <div class="card mb-4">
                             <div class="card-header">
@@ -286,7 +287,7 @@ function updateSourceCode(event: Event) {
                                         type="checkbox"
                                         class="form-check-input"
                                     />
-                                    <label for="published" class="form-check-label">
+                                    <label for="published" class="form-check-label text-dark">
                                         Published
                                     </label>
                                 </div>
@@ -319,7 +320,7 @@ function updateSourceCode(event: Event) {
                                     accept="image/*"
                                     class="form-control"
                                 />
-                                <div class="text-muted small mt-1">Optional header image for the page</div>
+                                <div class="text-secondary small mt-1">Optional header image for the page</div>
                             </div>
                         </div>
 
@@ -338,6 +339,7 @@ function updateSourceCode(event: Event) {
                                     View Page
                                 </a>
                             </div>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -384,5 +386,31 @@ function updateSourceCode(event: Event) {
     color: #adb5bd;
     pointer-events: none;
     height: 0;
+}
+
+/* Fix file input styling for better visibility */
+input[type="file"].form-control {
+    color: #495057 !important;
+}
+
+input[type="file"].form-control::file-selector-button {
+    color: #495057 !important;
+    background-color: #e9ecef !important;
+    border: 1px solid #ced4da !important;
+}
+
+input[type="file"].form-control:hover::file-selector-button {
+    background-color: #dde0e3 !important;
+}
+
+/* Ensure better contrast for secondary text */
+.text-secondary {
+    color: #495057 !important;
+}
+
+/* Better contrast for form check labels in admin */
+.form-check-label.text-dark {
+    color: #212529 !important;
+    font-weight: 500;
 }
 </style>

@@ -109,7 +109,7 @@ function updateSourceCode(event: Event) {
                     Back to Landing Pages
                 </Link>
                 <h1 class="h2 fw-bold text-dark">{{ page ? 'Edit Landing Page' : 'Create New Landing Page' }}</h1>
-                <p class="text-muted small">
+                <p class="text-secondary small">
                     {{ page ? 'Edit this marketing landing page' : 'Create a new landing page for marketing campaigns' }}
                 </p>
             </div>
@@ -145,7 +145,7 @@ function updateSourceCode(event: Event) {
                                 <label for="slug" class="form-label text-dark fw-medium">
                                     URL Slug <span class="text-danger">*</span>
                                 </label>
-                                <p class="text-muted small mb-2">The URL path for this landing page (e.g., /landing/your-campaign-slug)</p>
+                                <p class="text-secondary small mb-2">The URL path for this landing page (e.g., /landing/your-campaign-slug)</p>
                                 <input 
                                     v-model="form.slug" 
                                     id="slug" 
@@ -155,7 +155,7 @@ function updateSourceCode(event: Event) {
                                     pattern="[a-z0-9-]+"
                                     required
                                 />
-                                <div class="text-muted small mt-1">Only lowercase letters, numbers, and hyphens allowed</div>
+                                <div class="text-secondary small mt-1">Only lowercase letters, numbers, and hyphens allowed</div>
                                 <div v-if="form.errors.slug" class="invalid-feedback d-block">
                                     {{ form.errors.slug }}
                                 </div>
@@ -281,6 +281,7 @@ function updateSourceCode(event: Event) {
 
                     <!-- Sidebar -->
                     <div class="col-lg-4">
+                        <div class="sticky-top" style="top: 1rem;">
                         <!-- Publish Settings -->
                         <div class="card mb-4">
                             <div class="card-header">
@@ -294,7 +295,7 @@ function updateSourceCode(event: Event) {
                                         type="checkbox"
                                         class="form-check-input"
                                     />
-                                    <label for="published" class="form-check-label">
+                                    <label for="published" class="form-check-label text-dark">
                                         Published
                                     </label>
                                 </div>
@@ -327,7 +328,7 @@ function updateSourceCode(event: Event) {
                                     accept="image/*"
                                     class="form-control"
                                 />
-                                <div class="text-muted small mt-1">Hero image for the landing page</div>
+                                <div class="text-secondary small mt-1">Hero image for the landing page</div>
                             </div>
                         </div>
 
@@ -346,7 +347,7 @@ function updateSourceCode(event: Event) {
                                         foreground="black"
                                         class="mx-auto"
                                     />
-                                    <p class="text-muted small mt-2">QR Code for easy sharing</p>
+                                    <p class="text-secondary small mt-2">QR Code for easy sharing</p>
                                 </div>
 
                                 <!-- Actions -->
@@ -377,7 +378,7 @@ function updateSourceCode(event: Event) {
                                 <h5 class="card-title mb-0">Marketing Tips</h5>
                             </div>
                             <div class="card-body">
-                                <ul class="list-unstyled small text-muted mb-0">
+                                <ul class="list-unstyled small text-secondary mb-0">
                                     <li class="mb-1"><i class="bi bi-check-circle text-success me-1"></i> Keep headlines clear and benefit-focused</li>
                                     <li class="mb-1"><i class="bi bi-check-circle text-success me-1"></i> Add strong call-to-action buttons</li>
                                     <li class="mb-1"><i class="bi bi-check-circle text-success me-1"></i> Use high-quality hero images</li>
@@ -385,6 +386,7 @@ function updateSourceCode(event: Event) {
                                     <li><i class="bi bi-check-circle text-success me-1"></i> Keep forms short and simple</li>
                                 </ul>
                             </div>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -431,5 +433,31 @@ function updateSourceCode(event: Event) {
     color: #adb5bd;
     pointer-events: none;
     height: 0;
+}
+
+/* Fix file input styling for better visibility */
+input[type="file"].form-control {
+    color: #495057 !important;
+}
+
+input[type="file"].form-control::file-selector-button {
+    color: #495057 !important;
+    background-color: #e9ecef !important;
+    border: 1px solid #ced4da !important;
+}
+
+input[type="file"].form-control:hover::file-selector-button {
+    background-color: #dde0e3 !important;
+}
+
+/* Ensure better contrast for secondary text */
+.text-secondary {
+    color: #495057 !important;
+}
+
+/* Better contrast for form check labels in admin */
+.form-check-label.text-dark {
+    color: #212529 !important;
+    font-weight: 500;
 }
 </style>

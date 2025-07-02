@@ -399,32 +399,37 @@ function getTierBadgeClass(tier: string) {
                                             <span v-else class="text-muted">Not connected</span>
                                         </td>
                                         <td>
-                                            <div class="d-flex flex-wrap gap-1">
+                                            <div class="btn-group btn-group-sm" role="group">
                                                 <button @click="editProduct(product)" 
-                                                        class="btn btn-sm btn-outline-primary">
+                                                        class="btn btn-outline-primary"
+                                                        title="Edit">
                                                     Edit
                                                 </button>
                                                 
                                                 <template v-if="!product.is_connected">
                                                     <button @click="openConnectModal(product)" 
-                                                            class="btn btn-sm btn-outline-success">
+                                                            class="btn btn-outline-success"
+                                                            title="Connect to Stripe">
                                                         Connect
                                                     </button>
                                                     <button @click="createInStripe(product)" 
-                                                            class="btn btn-sm btn-outline-purple">
+                                                            class="btn btn-outline-purple"
+                                                            title="Create in Stripe">
                                                         Create
                                                     </button>
                                                 </template>
                                                 <template v-else>
                                                     <button @click="disconnectFromStripe(product)" 
-                                                            class="btn btn-sm btn-outline-warning">
+                                                            class="btn btn-outline-warning"
+                                                            title="Disconnect from Stripe">
                                                         Disconnect
                                                     </button>
                                                 </template>
                                                 
                                                 <button v-if="!product.is_connected" 
                                                         @click="deleteProduct(product)" 
-                                                        class="btn btn-sm btn-outline-danger">
+                                                        class="btn btn-outline-danger"
+                                                        title="Delete">
                                                     Delete
                                                 </button>
                                             </div>

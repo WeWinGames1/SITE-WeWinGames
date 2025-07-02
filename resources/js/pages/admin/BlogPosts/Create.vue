@@ -439,6 +439,7 @@ function updateSourceCode(event: Event) {
                     
                     <!-- Sidebar -->
                     <div class="col-lg-4">
+                        <div class="sticky-top" style="top: 1rem;">
                         <!-- Publish Settings -->
                         <div class="card mb-4">
                             <div class="card-header">
@@ -452,7 +453,7 @@ function updateSourceCode(event: Event) {
                                         type="checkbox"
                                         class="form-check-input"
                                     />
-                                    <label for="is_published" class="form-check-label">
+                                    <label for="is_published" class="form-check-label text-dark">
                                         Published
                                     </label>
                                 </div>
@@ -630,6 +631,7 @@ function updateSourceCode(event: Event) {
                                     />
                                 </div>
                             </div>
+                        </div>
                         </div>
                     </div>
                 </div>

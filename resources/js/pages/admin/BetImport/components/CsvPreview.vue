@@ -1,55 +1,54 @@
 <template>
-  <div class="bg-white rounded-lg shadow">
-    <div class="px-4 py-3 border-b border-gray-200">
-      <h3 class="text-lg font-medium text-gray-900">Data Preview</h3>
-      <p class="mt-1 text-sm text-gray-500">
+  <div class="card">
+    <div class="card-header">
+      <h3 class="h5 mb-1">Data Preview</h3>
+      <p class="text-dark mb-0">
         Showing {{ Math.min(5, rows.length) }} of {{ rows.length }} rows
       </p>
     </div>
     
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+    <div class="table-responsive">
+      <table class="table table-striped table-hover">
+        <thead class="table-light">
           <tr>
-            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th class="text-uppercase small">
               Row
             </th>
             <th 
               v-for="(mapping, index) in mappings" 
               :key="index"
-              class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              class="text-uppercase small"
             >
               <div>
-                <div class="font-semibold">{{ mapping.field || 'Unmapped' }}</div>
-                <div class="font-normal text-gray-400">{{ headers[index] }}</div>
+                <div class="fw-bold">{{ mapping.field || 'Unmapped' }}</div>
+                <div class="fw-normal text-muted">{{ headers[index] }}</div>
               </div>
             </th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
+        <tbody>
           <tr 
             v-for="(row, rowIndex) in previewRows" 
             :key="rowIndex"
-            :class="{ 'bg-red-50': rowValidationErrors[rowIndex]?.length > 0 }"
+            :class="{ 'table-danger': rowValidationErrors[rowIndex]?.length > 0 }"
           >
-            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+            <td class="text-nowrap">
               {{ rowIndex + 2 }}
               <div v-if="rowValidationErrors[rowIndex]?.length > 0" class="mt-1">
-                <ExclamationCircleIcon class="h-4 w-4 text-red-500" />
+                <i class="bi bi-exclamation-circle-fill text-danger"></i>
               </div>
             </td>
             <td 
               v-for="(mapping, colIndex) in mappings" 
               :key="colIndex"
-              class="px-3 py-2 text-sm"
               :class="getCellClass(rowIndex, colIndex)"
             >
-              <div class="max-w-xs truncate" :title="row[colIndex]">
+              <div class="text-truncate" style="max-width: 200px;" :title="row[colIndex]">
                 {{ formatCellValue(row[colIndex], mapping.field) }}
               </div>
               <div 
                 v-if="getCellErrors(rowIndex, colIndex).length > 0"
-                class="mt-1 text-xs text-red-600"
+                class="mt-1 small text-danger"
               >
                 {{ getCellErrors(rowIndex, colIndex)[0] }}
               </div>
@@ -60,22 +59,22 @@
     </div>
     
     <!-- Validation Summary -->
-    <div v-if="validationSummary" class="px-4 py-3 border-t border-gray-200">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-          <div class="flex items-center text-sm">
-            <CheckCircleIcon class="h-5 w-5 text-green-500 mr-1" />
-            <span class="text-gray-700">{{ validationSummary.valid }} valid</span>
+    <div v-if="validationSummary" class="card-footer">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex gap-3">
+          <div class="d-flex align-items-center">
+            <i class="bi bi-check-circle-fill text-success me-1"></i>
+            <span class="text-dark">{{ validationSummary.valid }} valid</span>
           </div>
-          <div class="flex items-center text-sm">
-            <XCircleIcon class="h-5 w-5 text-red-500 mr-1" />
-            <span class="text-gray-700">{{ validationSummary.invalid }} invalid</span>
+          <div class="d-flex align-items-center">
+            <i class="bi bi-x-circle-fill text-danger me-1"></i>
+            <span class="text-dark">{{ validationSummary.invalid }} invalid</span>
           </div>
         </div>
         <button
           v-if="validationSummary.invalid > 0"
           @click="showErrorDetails = !showErrorDetails"
-          class="text-sm text-indigo-600 hover:text-indigo-900"
+          class="btn btn-link btn-sm p-0"
         >
           {{ showErrorDetails ? 'Hide' : 'Show' }} error details
         </button>
@@ -85,25 +84,25 @@
     <!-- Error Details -->
     <div 
       v-if="showErrorDetails && validationSummary?.errors.length > 0" 
-      class="px-4 py-3 border-t border-gray-200 bg-red-50"
+      class="card-footer bg-danger-subtle"
     >
-      <h4 class="text-sm font-medium text-red-900 mb-2">Validation Errors</h4>
-      <div class="max-h-60 overflow-y-auto">
+      <h4 class="h6 text-danger mb-2">Validation Errors</h4>
+      <div style="max-height: 15rem; overflow-y: auto;">
         <div 
           v-for="(error, index) in validationSummary.errors.slice(0, 10)" 
           :key="index"
-          class="text-sm text-red-700 mb-2"
+          class="mb-2"
         >
-          <span class="font-medium">Row {{ error.row }}:</span>
-          <ul class="ml-4 mt-1">
-            <li v-for="(err, errIndex) in error.errors" :key="errIndex">
+          <span class="fw-bold text-dark">Row {{ error.row }}:</span>
+          <ul class="ms-4 mt-1">
+            <li v-for="(err, errIndex) in error.errors" :key="errIndex" class="text-dark">
               {{ err.field }}: {{ err.message }}
             </li>
           </ul>
         </div>
         <div 
           v-if="validationSummary.errors.length > 10" 
-          class="text-sm text-red-700 italic"
+          class="fst-italic text-dark"
         >
           And {{ validationSummary.errors.length - 10 }} more errors...
         </div>
@@ -114,7 +113,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { CheckCircleIcon, XCircleIcon, ExclamationCircleIcon } from '@heroicons/vue/24/outline'
+// Icons removed - using Bootstrap Icons instead
 import { validateBet, transformBetData, getValidationSummary } from '@/utils/betValidation'
 import type { ValidationError } from '@/utils/betValidation'
 
@@ -194,10 +193,10 @@ const getCellClass = (rowIndex: number, colIndex: number) => {
   const mapping = props.mappings[colIndex]
   
   return {
-    'text-gray-900': !hasError && mapping.field,
-    'text-gray-400': !mapping.field,
-    'text-red-600': hasError,
-    'bg-red-100': hasError
+    'text-dark': !hasError && mapping.field,
+    'text-muted': !mapping.field,
+    'text-danger': hasError,
+    'bg-danger-subtle': hasError
   }
 }
 
