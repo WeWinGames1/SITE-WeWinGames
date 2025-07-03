@@ -8,22 +8,38 @@
     
     <!-- Additional Help Text -->
     <div class="alert alert-light border mb-4">
-      <h6 class="alert-heading"><i class="bi bi-lightbulb me-2"></i>Mapping Tips</h6>
+      <h6 class="alert-heading"><i class="bi bi-lightbulb me-2"></i>Column Mapping Guide</h6>
       <ul class="mb-0 small">
-        <li><strong>Selection/Pick:</strong> Look for columns like "Wager Name", "Pick", "Bet", or similar that contain your specific bet (e.g., "Chiefs -3.5", "Over 220.5")</li>
-        <li><strong>Bet Type:</strong> Look for columns like "Wager Type", "Market", or "Type" that describe the bet category (Spread, Moneyline, etc.)</li>
-        <li><strong>Game Date:</strong> Can be mapped from "Date", "Month", or similar date columns</li>
-        <li><strong>Operator:</strong> May be in columns like "Code", "Book", "Site", or "Sportsbook"</li>
+        <li><strong>Sport:</strong> The sport being bet on (e.g., Baseball, Combat Sports, Golf)</li>
+        <li><strong>League:</strong> The league or event name (e.g., MLB, UFC, PGA)</li>
+        <li><strong>Month:</strong> Calendar month the bet is placed or settles</li>
+        <li><strong>Date:</strong> Date of the event or bet (MM/DD/YYYY)</li>
+        <li><strong>Game:</strong> The specific matchup or contest (e.g., Yankees @ Red Sox, Dustin Poirier vs. Islam Makhachev)</li>
+        <li><strong>Bet Type:</strong> General type of bet (Moneyline, Spread, Player Prop, etc)</li>
+        <li><strong>Wager Type:</strong> Specific betting style (Straight, Outright, Each Way, Parlay)</li>
+        <li><strong>Wager Name:</strong> Detailed description of the bet (e.g., "Chicago Cubs (S Imanaga) ML," "Ilia Topuria to win by KO")</li>
+        <li><strong>odds:</strong> American odds (e.g., -120, +150)</li>
+        <li><strong>level:</strong> Subscription or confidence level (Bronze, Silver, Gold, Platinum)</li>
+        <li><strong>code:</strong> Unique/internal code for tracking bet source, system, or capper (e.g., BB, TPP, Golf Brad)</li>
+        <li><strong>Status:</strong> Outcome of the bet ("Won", "Lost", "Placed", "Pending")</li>
+        <li><strong>ROI(net):</strong> Net Return on Investment as % of the stake</li>
+        <li><strong>Wager:</strong> Dollar amount staked on the bet</li>
+        <li><strong>Profits:</strong> Net gain or loss (USD) for the bet (can be negative)</li>
+        <li><strong>Winning Amount:</strong> Total returned if the bet wins (Wager + Profits; $0 if lost)</li>
       </ul>
     </div>
     
     <!-- Special Game Column Notice -->
     <div v-if="gameColumnName" class="alert alert-info mb-4">
       <h5 class="alert-heading"><i class="bi bi-info-circle me-2"></i>{{ gameColumnName }} Column Detected</h5>
-      <p class="mb-0">
-        We detected a "{{ gameColumnName }}" column that appears to contain both teams in format like "Away Team @ Home Team". 
-        This column has been automatically mapped to both the home_team and away_team fields. We'll extract the teams for you during import.
+      <p class="mb-2">
+        The "{{ gameColumnName }}" column contains the matchup information. We'll automatically parse teams from formats like:
       </p>
+      <ul class="mb-0 small">
+        <li><strong>Team Sports:</strong> "Yankees @ Red Sox" (Away @ Home)</li>
+        <li><strong>Combat Sports:</strong> "Dustin Poirier vs. Islam Makhachev"</li>
+        <li><strong>Individual Sports:</strong> Just the player name (e.g., "Tiger Woods")</li>
+      </ul>
     </div>
 
     <!-- Column Mappings -->
@@ -169,7 +185,7 @@ const gameColumnName = computed(() => {
   // Otherwise look for a game-like column in the headers
   const gameColumn = props.csvHeaders.find(header => {
     const normalized = header.toLowerCase().trim()
-    return ['game', 'games', 'match', 'matchup', 'fixture', 'event'].includes(normalized)
+    return ['game', 'games', 'match', 'matchup', 'fixture', 'event', 'contest'].includes(normalized)
   })
   
   return gameColumn || null
@@ -178,12 +194,6 @@ const gameColumnName = computed(() => {
 onMounted(() => {
   // Initialize with detected mappings
   mappings.value = { ...props.detectedMappings }
-  
-  // If game column is mapped, also map it to home_team and away_team
-  if (mappings.value.game && !mappings.value.home_team && !mappings.value.away_team) {
-    mappings.value.home_team = mappings.value.game
-    mappings.value.away_team = mappings.value.game
-  }
   
   // Ensure all required fields are initialized
   Object.keys(props.columnRequirements.required).forEach(field => {
@@ -220,7 +230,7 @@ const validationErrors = computed(() => {
     }
   })
   
-  // Check for duplicate mappings (but allow game column to be mapped to both team fields)
+  // Check for duplicate mappings
   const usedColumns = Object.entries(mappings.value)
     .filter(([field, value]) => value)
     .map(([field, value]) => ({ field, value }))
@@ -232,12 +242,7 @@ const validationErrors = computed(() => {
   }, {} as Record<string, string[]>)
   
   Object.entries(columnCounts).forEach(([column, fields]) => {
-    // Allow a column to be mapped to both home_team and away_team
-    const isTeamMapping = fields.length === 2 && 
-      fields.includes('home_team') && 
-      fields.includes('away_team')
-    
-    if (fields.length > 1 && !isTeamMapping) {
+    if (fields.length > 1) {
       errors.push(`Column "${column}" is mapped to multiple fields: ${fields.join(', ')}`)
     }
   })
@@ -251,18 +256,29 @@ const isValid = computed(() => validationErrors.value.length === 0)
 const formatFieldName = (field: string): string => {
   const nameMap: Record<string, string> = {
     'sport': 'Sport',
+    'league': 'League',
+    'month': 'Month',
+    'date': 'Date',
+    'game': 'Game',
     'home_team': 'Home Team',
     'away_team': 'Away Team',
-    'game_date': 'Game Date',
     'bet_type': 'Bet Type',
+    'wager_type': 'Wager Type',
+    'wager_name': 'Wager Name',
+    'odds': 'odds',
+    'level': 'level',
+    'code': 'code',
+    'status': 'Status',
+    'roi': 'ROI(net)',
+    'wager': 'Wager',
+    'profits': 'Profits',
+    'winning_amount': 'Winning Amount',
+    'game_date': 'Game Date',
     'selection': 'Selection/Pick',
-    'odds': 'Odds',
     'stake': 'Stake/Wager Amount',
     'operator': 'Sportsbook/Operator',
-    'status': 'Bet Status',
     'description': 'Notes/Description',
     'placed_at': 'Date Placed',
-    'league': 'League/Competition',
     'referrer': 'Referrer/Source'
   }
   return nameMap[field] || field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
@@ -275,12 +291,7 @@ const confirmMappings = () => {
       .filter(([_, value]) => value)
       .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
     
-    // If both home_team and away_team are mapped to the same column, also include 'game' mapping
-    if (confirmedMappings.home_team && 
-        confirmedMappings.away_team && 
-        confirmedMappings.home_team === confirmedMappings.away_team) {
-      confirmedMappings.game = confirmedMappings.home_team
-    }
+    // Don't create duplicate mappings
     
     emit('mappings-confirmed', confirmedMappings)
   }

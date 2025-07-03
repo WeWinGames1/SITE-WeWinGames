@@ -123,7 +123,7 @@ class BetImportService
                 ['slug' => \Str::slug($record['sport'])]
             );
 
-            // Get teams - home team is required, away team is optional
+            // Get teams - should already be parsed in transformRecordData
             $homeTeamName = $record['home_team'] ?? null;
             $awayTeamName = $record['away_team'] ?? null;
             
@@ -329,8 +329,24 @@ class BetImportService
 
     private function transformRecordData(array $record): array
     {
+        // Always parse teams from game column when present
+        if (isset($record['game']) && !empty($record['game'])) {
+            $teams = $this->parseGameColumn($record['game']);
+            if ($teams) {
+                $record['home_team'] = $teams['home'];
+                $record['away_team'] = $teams['away'];
+            } else {
+                // For individual sports like Golf, the entire game field is the player name
+                $record['home_team'] = $record['game'];
+                $record['away_team'] = null;
+            }
+        }
+        
+        // Handle both 'date' and 'game_date' fields from CSV
+        $dateField = isset($record['date']) ? 'date' : (isset($record['game_date']) ? 'game_date' : null);
+        
         // Parse dates
-        if (isset($record['game_date']) && !empty($record['game_date'])) {
+        if ($dateField && isset($record[$dateField]) && !empty($record[$dateField])) {
             try {
                 // Try multiple date formats
                 $formats = [
@@ -348,7 +364,7 @@ class BetImportService
                 $parsed = false;
                 foreach ($formats as $format) {
                     try {
-                        $date = \Carbon\Carbon::createFromFormat($format, trim($record['game_date']));
+                        $date = \Carbon\Carbon::createFromFormat($format, trim($record[$dateField]));
                         $record['game_date'] = $date->format('Y-m-d H:i:s');
                         $parsed = true;
                         break;
@@ -359,7 +375,7 @@ class BetImportService
                 
                 if (!$parsed) {
                     // Last resort - let Carbon try to parse it
-                    $record['game_date'] = \Carbon\Carbon::parse($record['game_date'])->format('Y-m-d H:i:s');
+                    $record['game_date'] = \Carbon\Carbon::parse($record[$dateField])->format('Y-m-d H:i:s');
                 }
             } catch (\Exception $e) {
                 // Keep original value if parse fails
@@ -387,6 +403,11 @@ class BetImportService
         // Normalize status
         if (isset($record['status'])) {
             $record['status'] = $this->normalizeStatus($record['status']);
+        }
+        
+        // Handle wager vs stake field naming
+        if (isset($record['wager']) && !isset($record['stake'])) {
+            $record['stake'] = $this->parseMonetary($record['wager']);
         }
         
         // Trim all string values
@@ -474,9 +495,16 @@ class BetImportService
         if (str_contains($game, '@')) {
             $parts = explode('@', $game);
             if (count($parts) === 2) {
+                // Clean up team names - remove game numbers like (Game 2)
+                $away = trim($parts[0]);
+                $home = trim($parts[1]);
+                
+                // Remove game indicators from home team
+                $home = preg_replace('/\s*\(Game \d+\)\s*/', '', $home);
+                
                 return [
-                    'away' => trim($parts[0]),
-                    'home' => trim($parts[1]),
+                    'away' => $away,
+                    'home' => $home,
                 ];
             }
         }
@@ -503,18 +531,25 @@ class BetImportService
     {
         $rules = [
             'sport' => 'required|string|max:255',
-            'home_team' => 'required|string|max:255',
-            'away_team' => 'nullable|string|max:255',  // Optional for individual sports
+            'league' => 'required|string|max:255',
+            'month' => 'required|string|max:50',
             'bet_type' => 'required|string|max:50',
             'wager_name' => 'required|string|max:255',
             'odds' => 'required|numeric',
             'stake' => 'required|numeric|min:0.01',
             'game_date' => 'required|string', // Changed from 'date' to 'string' for more flexible parsing
-            'status' => 'nullable|in:pending,won,lost,void,cashout,push,placed',
-            'league' => 'nullable|string|max:255',
-            'wager_type' => 'nullable|string|max:50',
-            'level' => 'nullable|string|max:50',
-            'code' => 'nullable|string|max:255',
+            'level' => 'required|string|max:50',
+            'code' => 'required|string|max:255',
+            'status' => 'required|string|max:50',
+            'roi' => 'nullable|numeric',
+            'wager' => 'required|numeric|min:0.01',
+            'profits' => 'nullable|numeric',
+            'winning_amount' => 'nullable|numeric|min:0',
+            // Game is required - we'll parse teams from it during import
+            'game' => 'required|string|max:500',
+            'home_team' => 'required|string|max:255',  // Required - parsed from game
+            'away_team' => 'nullable|string|max:255',  // Optional for individual sports
+            'wager_type' => 'required|string|max:50',
             'operator' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:500',
             'placed_at' => 'nullable|string',

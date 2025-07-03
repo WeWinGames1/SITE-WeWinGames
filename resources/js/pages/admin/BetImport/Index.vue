@@ -60,6 +60,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { router } from '@inertiajs/vue3'
+import axios from 'axios'
 import AdminLayout from '@/layouts/AdminLayout.vue'
 import ImportProgress from './components/ImportProgress.vue'
 import UploadStep from './components/UploadStep.vue'
@@ -107,60 +108,43 @@ const handleMappingsConfirmed = async (mappings: Record<string, string>) => {
   columnMappings.value = mappings
   
   try {
-    const response = await fetch('/admin/bets/import/validate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-      },
-      body: JSON.stringify({
-        file_id: fileId.value,
-        mappings: mappings
-      })
+    const { data } = await axios.post('/admin/bets/import/validate', {
+      file_id: fileId.value,
+      mappings: mappings
     })
-
-    const result = await response.json()
     
-    if (result.success) {
-      validationResult.value = result
+    if (data.success) {
+      validationResult.value = data
       currentStep.value = 3
     } else {
-      showToast('error', result.message || 'Validation failed')
+      showToast('error', data.message || 'Validation failed')
     }
-  } catch (error) {
-    showToast('error', 'Failed to validate import')
-    // console.error(error)
+  } catch (error: any) {
+    showToast('error', error.response?.data?.message || 'Failed to validate import')
+    console.error('Validation error:', error)
   }
 }
 
 const handleImportConfirmed = async (skipErrors: boolean) => {
   try {
-    const response = await fetch('/admin/bets/import/process', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-      },
-      body: JSON.stringify({
-        file_id: fileId.value,
-        mappings: columnMappings.value,
-        skip_errors: skipErrors
-      })
+    const { data } = await axios.post('/admin/bets/import/process', {
+      file_id: fileId.value,
+      mappings: columnMappings.value,
+      skip_errors: skipErrors
     })
 
-    const result = await response.json()
     
-    if (result.success) {
-      importId.value = result.import_id
+    if (data.success) {
+      importId.value = data.import_id
       
-      if (result.queued) {
+      if (data.queued) {
         // Show progress tracking for queued imports
-        showToast('info', result.message || 'Import queued for processing')
+        showToast('info', data.message || 'Import queued for processing')
         currentStep.value = 4
       } else {
         // For immediate imports, show quick success and redirect
-        const successCount = result.result?.successCount?.bets || 0
-        const errorCount = result.result?.errors?.length || 0
+        const successCount = data.result?.successCount?.bets || 0
+        const errorCount = data.result?.errors?.length || 0
         showToast('success', `Import completed: ${successCount} successful, ${errorCount} errors`)
         
         // Show import step briefly for consistency
@@ -172,11 +156,11 @@ const handleImportConfirmed = async (skipErrors: boolean) => {
         }, 2000)
       }
     } else {
-      showToast('error', result.message || 'Import failed')
+      showToast('error', data.message || 'Import failed')
     }
-  } catch (error) {
-    showToast('error', 'Failed to start import')
-    // console.error(error)
+  } catch (error: any) {
+    showToast('error', error.response?.data?.message || 'Failed to start import')
+    console.error('Import error:', error)
   }
 }
 
