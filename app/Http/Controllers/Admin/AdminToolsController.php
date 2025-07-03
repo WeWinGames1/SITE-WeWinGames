@@ -115,9 +115,9 @@ class AdminToolsController extends Controller
 
         $callback = function() use ($bets) {
             $handle = fopen('php://output', 'w');
-            // CSV header matching the import format (16 columns)
+            // CSV header matching the import format (17 columns - now with separate Home/Away)
             fputcsv($handle, [
-                'Sport', 'League', 'Month', 'Date', 'Game/Player', 'Bet Type', 
+                'Sport', 'League', 'Month', 'Date', 'Home Team', 'Away Team', 'Bet Type', 
                 'Wager Type', 'Wager Name', 'odds', 'level', 'code', 'Status', 
                 'ROI(net)', 'Wager', 'Profits', 'Winning Amount'
             ]);
@@ -127,10 +127,6 @@ class AdminToolsController extends Controller
                 $bettingDate = $bet->betting_date ? \Carbon\Carbon::parse($bet->betting_date) : null;
                 $month = $bettingDate ? $bettingDate->format('F') : '';
                 $date = $bettingDate ? $bettingDate->format('Y-m-d') : '';
-                
-                // Format teams/game
-                $gamePlayer = $bet->matches ?: ($bet->team_one && $bet->team_two ? 
-                    "{$bet->team_one} @ {$bet->team_two}" : '');
                 
                 // Format ROI as percentage
                 $roi = $bet->roi ? number_format($bet->roi, 2) . '%' : '0.00%';
@@ -143,15 +139,16 @@ class AdminToolsController extends Controller
                 fputcsv($handle, [
                     $bet->sports ?? '',                    // Sport
                     $bet->league ?? '',                    // League
-                    $month,                                 // Month
+                    $bet->month ?? $month,                 // Month (use stored month or calculated)
                     $date,                                  // Date
-                    $gamePlayer,                            // Game/Player
+                    $bet->team_one ?? '',                  // Home Team
+                    $bet->team_two ?? '',                  // Away Team
                     $bet->markets ?? '',                   // Bet Type
-                    '',                                     // Wager Type (not in current data)
+                    $bet->wager_type ?? '',                // Wager Type
                     $bet->tips ?? '',                      // Wager Name
-                    $bet->wager_odds ?? '',                // odds
-                    $bet->membership ?? 'Bronze',          // level
-                    $bet->referrer ?? '',                  // code
+                    $bet->wager_odds ?? '',                // odds (American format)
+                    $bet->level ?? $bet->membership ?? 'Bronze',  // level
+                    $bet->code ?? $bet->referrer ?? '',   // code
                     ucfirst($bet->status ?? 'Pending'),   // Status
                     $roi,                                   // ROI(net)
                     $wager,                                 // Wager

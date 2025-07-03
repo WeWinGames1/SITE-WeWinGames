@@ -123,67 +123,182 @@ class BetImportService
                 ['slug' => \Str::slug($record['sport'])]
             );
 
-            // Get or create teams
-            $homeTeam = Team::firstOrCreate(
-                ['name' => $record['home_team'], 'sport_id' => $sport->id],
-                ['slug' => \Str::slug($record['home_team'])]
-            );
+            // Get teams - home team is required, away team is optional
+            $homeTeamName = $record['home_team'] ?? null;
+            $awayTeamName = $record['away_team'] ?? null;
             
-            $awayTeam = Team::firstOrCreate(
-                ['name' => $record['away_team'], 'sport_id' => $sport->id],
-                ['slug' => \Str::slug($record['away_team'])]
-            );
+            // Get or create teams
+            $homeTeam = null;
+            $awayTeam = null;
+            $game = null;
+            
+            if ($homeTeamName) {
+                $homeTeam = Team::firstOrCreate(
+                    ['name' => $homeTeamName, 'sport_id' => $sport->id],
+                    ['slug' => \Str::slug($homeTeamName)]
+                );
+                
+                // Only create away team if provided (not required for individual sports)
+                if ($awayTeamName) {
+                    $awayTeam = Team::firstOrCreate(
+                        ['name' => $awayTeamName, 'sport_id' => $sport->id],
+                        ['slug' => \Str::slug($awayTeamName)]
+                    );
 
-            // Get or create operator
-            $operator = Operator::firstOrCreate(
-                ['name' => $record['operator']],
-                ['slug' => \Str::slug($record['operator'])]
-            );
+                    // Create or update game only if we have both teams
+                    $game = Game::updateOrCreate(
+                        [
+                            'home_team_id' => $homeTeam->id,
+                            'away_team_id' => $awayTeam->id,
+                            'game_date' => $record['game_date'],
+                        ],
+                        [
+                            'sport_id' => $sport->id,
+                            'status' => $record['game_status'] ?? 'scheduled',
+                        ]
+                    );
+                    $this->successCount['games']++;
+                }
+            }
 
-            // Create or update game
-            $game = Game::updateOrCreate(
-                [
-                    'home_team_id' => $homeTeam->id,
-                    'away_team_id' => $awayTeam->id,
-                    'game_date' => $record['game_date'],
-                ],
-                [
-                    'sport_id' => $sport->id,
-                    'status' => $record['game_status'] ?? 'scheduled',
-                ]
-            );
-            $this->successCount['games']++;
+            // Get or create operator if provided
+            $operator = null;
+            if (!empty($record['operator'])) {
+                $operator = Operator::firstOrCreate(
+                    ['name' => $record['operator']],
+                    ['slug' => \Str::slug($record['operator'])]
+                );
+            }
 
             // Create bet using the correct field names
+            // Format matches field based on sport type and available teams
+            $matchesField = '';
+            if ($awayTeamName && $homeTeamName) {
+                // Team sports - format as "Away @ Home" or "Fighter1 vs Fighter2"
+                $isCombatSport = in_array(strtolower($record['sport']), ['ufc', 'mma', 'boxing', 'combat sports']);
+                $matchesField = $isCombatSport ? 
+                    "{$awayTeamName} vs {$homeTeamName}" : 
+                    "{$awayTeamName} @ {$homeTeamName}";
+            } elseif ($homeTeamName) {
+                // Individual sports - just the player name
+                $matchesField = $homeTeamName;
+            }
+            
             $betData = [
                 'sports' => $record['sport'],
                 'league' => $record['league'] ?? null,
-                'matches' => $game->home_team->name . ' vs ' . $game->away_team->name,
+                'month' => $record['month'] ?? null,
+                'matches' => $matchesField,
                 'markets' => $record['bet_type'],
-                'team_one' => $record['home_team'],
-                'team_one_logo' => $homeTeam->logo ?? null,
-                'team_two' => $record['away_team'],
-                'team_two_logo' => $awayTeam->logo ?? null,
+                'wager_type' => $record['wager_type'] ?? null,
+                'team_one' => $homeTeamName ?? '',
+                'team_one_logo' => $homeTeam ? $homeTeam->logo : null,
+                'team_two' => $awayTeamName ?? '',
+                'team_two_logo' => $awayTeam ? $awayTeam->logo : null,
                 'tips' => $record['wager_name'] ?? $record['selection'] ?? '',
                 'betting_date' => $record['game_date'],
                 'wager_odds' => (float) $record['odds'],
                 'wager_amount' => (float) $record['stake'],
                 'status' => $record['status'] ?? 'pending',
-                'referrer' => $record['referrer'] ?? null,
+                'membership' => $record['level'] ?? $record['membership'] ?? 'Bronze',
+                'level' => $record['level'] ?? null,
+                'code' => $record['code'] ?? null,
+                'referrer' => $record['referrer'] ?? $record['code'] ?? null,
             ];
 
-            // Calculate winning and profit amounts if bet is settled
-            if (in_array($betData['status'], ['won', 'lost'])) {
+            // Calculate winning and profit amounts based on American odds
+            if (in_array($betData['status'], ['won', 'lost', 'placed'])) {
+                // Check if this is an Each-Way bet
+                $isEachWay = isset($betData['wager_type']) && 
+                    strtolower($betData['wager_type']) === 'each way';
+                
                 if ($betData['status'] === 'won') {
-                    $betData['winning_amount'] = $betData['wager_amount'] * $betData['wager_odds'];
-                    $betData['profit_amount'] = $betData['winning_amount'] - $betData['wager_amount'];
+                    // Check if we have pre-calculated values from CSV
+                    if (!empty($record['winning_amount'])) {
+                        $betData['winning_amount'] = (float) $record['winning_amount'];
+                        $betData['profit_amount'] = !empty($record['profit']) ? (float) $record['profit'] : 
+                            ($betData['winning_amount'] - $betData['wager_amount']);
+                    } else {
+                        // Calculate based on American odds
+                        $odds = $betData['wager_odds'];
+                        $stake = $betData['wager_amount'];
+                        
+                        if ($isEachWay) {
+                            // Each-Way bet: Split stake in half
+                            $winStake = $stake / 2;
+                            $placeStake = $stake / 2;
+                            
+                            // Calculate win part
+                            if ($odds > 0) {
+                                $winProfit = $winStake * ($odds / 100);
+                            } else {
+                                $winProfit = $winStake * (100 / abs($odds));
+                            }
+                            
+                            // Calculate place part (typically 1/4 or 1/5 of odds)
+                            // Using place_fraction if available, default to 1/5
+                            $placeFraction = !empty($record['place_fraction']) ? 
+                                (float) $record['place_fraction'] : 0.2;
+                            
+                            $placeOdds = $odds > 0 ? 
+                                ($odds * $placeFraction) : 
+                                -abs(100 / (abs($odds) * $placeFraction));
+                                
+                            if ($placeOdds > 0) {
+                                $placeProfit = $placeStake * ($placeOdds / 100);
+                            } else {
+                                $placeProfit = $placeStake * (100 / abs($placeOdds));
+                            }
+                            
+                            $betData['profit_amount'] = $winProfit + $placeProfit;
+                            $betData['winning_amount'] = $stake + $betData['profit_amount'];
+                        } else {
+                            // Regular bet
+                            if ($odds > 0) {
+                                // Positive American odds (+150)
+                                $profit = $stake * ($odds / 100);
+                            } else {
+                                // Negative American odds (-120)
+                                $profit = $stake * (100 / abs($odds));
+                            }
+                            
+                            $betData['profit_amount'] = $profit;
+                            $betData['winning_amount'] = $stake + $profit;
+                        }
+                    }
+                } elseif ($betData['status'] === 'placed' && $isEachWay) {
+                    // Each-Way bet that placed but didn't win
+                    // Only the place part pays out
+                    $stake = $betData['wager_amount'];
+                    $placeStake = $stake / 2;
+                    $winStake = $stake / 2;
+                    
+                    // Calculate place part payout
+                    $placeFraction = !empty($record['place_fraction']) ? 
+                        (float) $record['place_fraction'] : 0.2;
+                    
+                    $odds = $betData['wager_odds'];
+                    $placeOdds = $odds > 0 ? 
+                        ($odds * $placeFraction) : 
+                        -abs(100 / (abs($odds) * $placeFraction));
+                        
+                    if ($placeOdds > 0) {
+                        $placeProfit = $placeStake * ($placeOdds / 100);
+                    } else {
+                        $placeProfit = $placeStake * (100 / abs($placeOdds));
+                    }
+                    
+                    // Lost the win part, won the place part
+                    $betData['profit_amount'] = $placeProfit - $winStake;
+                    $betData['winning_amount'] = $placeStake + $placeProfit;
                 } else {
+                    // Lost bet
                     $betData['winning_amount'] = 0;
                     $betData['profit_amount'] = -$betData['wager_amount'];
                 }
             } else {
-                $betData['winning_amount'] = 0;
-                $betData['profit_amount'] = 0;
+                $betData['winning_amount'] = !empty($record['winning_amount']) ? (float) $record['winning_amount'] : 0;
+                $betData['profit_amount'] = !empty($record['profit']) ? (float) $record['profit'] : 0;
             }
 
             // Calculate ROI
@@ -290,9 +405,10 @@ class BetImportService
             return null;
         }
         
-        // Handle American odds
+        // Keep American odds as-is (don't convert to decimal)
         if (is_string($value) && (str_starts_with($value, '+') || str_starts_with($value, '-'))) {
-            return $this->convertAmericanToDecimal($value);
+            $cleaned = preg_replace('/[^0-9+-]/', '', $value);
+            return is_numeric($cleaned) ? (float) $cleaned : null;
         }
         
         // Remove non-numeric characters except decimal point
@@ -351,24 +467,57 @@ class BetImportService
         
         return $statusMap[$status] ?? 'pending';
     }
+    
+    private function parseGameColumn(string $game): ?array
+    {
+        // Handle @ separator (most common in sports betting)
+        if (str_contains($game, '@')) {
+            $parts = explode('@', $game);
+            if (count($parts) === 2) {
+                return [
+                    'away' => trim($parts[0]),
+                    'home' => trim($parts[1]),
+                ];
+            }
+        }
+        
+        // Try other common separators
+        $separators = [' vs ', ' v ', ' - ', ' at ', ' vs. '];
+        
+        foreach ($separators as $separator) {
+            if (str_contains($game, $separator)) {
+                $parts = explode($separator, $game);
+                if (count($parts) === 2) {
+                    return [
+                        'away' => trim($parts[0]),
+                        'home' => trim($parts[1]),
+                    ];
+                }
+            }
+        }
+        
+        return null;
+    }
 
     private function validateRecord(array $record): array
     {
         $rules = [
             'sport' => 'required|string|max:255',
             'home_team' => 'required|string|max:255',
-            'away_team' => 'required|string|max:255',
-            'operator' => 'required|string|max:255',
+            'away_team' => 'nullable|string|max:255',  // Optional for individual sports
             'bet_type' => 'required|string|max:50',
-            'selection' => 'required_without:wager_name|string|max:255',
-            'wager_name' => 'required_without:selection|string|max:255',
-            'odds' => 'required|numeric|min:1.01',
+            'wager_name' => 'required|string|max:255',
+            'odds' => 'required|numeric',
             'stake' => 'required|numeric|min:0.01',
             'game_date' => 'required|string', // Changed from 'date' to 'string' for more flexible parsing
-            'status' => 'nullable|in:pending,won,lost,void,cashout,push',
+            'status' => 'nullable|in:pending,won,lost,void,cashout,push,placed',
+            'league' => 'nullable|string|max:255',
+            'wager_type' => 'nullable|string|max:50',
+            'level' => 'nullable|string|max:50',
+            'code' => 'nullable|string|max:255',
+            'operator' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:500',
             'placed_at' => 'nullable|string',
-            'league' => 'nullable|string|max:255',
             'referrer' => 'nullable|string|max:255',
         ];
 

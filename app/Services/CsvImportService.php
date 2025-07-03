@@ -58,21 +58,24 @@ class CsvImportService
         $mappings = [];
         $commonMappings = [
             'sport' => ['sport', 'sports', 'sport_name', 'category', 'sport_type'],
-            'home_team' => ['home_team', 'home', 'team_1', 'team1', 'host', 'hometeam', 'home team'],
-            'away_team' => ['away_team', 'away', 'team_2', 'team2', 'visitor', 'awayteam', 'away team', 'visiting_team'],
-            'game_date' => ['game_date', 'date', 'match_date', 'event_date', 'betting_date', 'gamedate', 'game date', 'kickoff', 'month'],
-            'bet_type' => ['bet_type', 'bettype', 'bet type', 'wager_type', 'wager type', 'type', 'market', 'markets', 'bet_market'],
-            'selection' => ['selection', 'pick', 'bet', 'tip', 'tips', 'choice', 'team', 'side', 'prediction'],
-            'wager_name' => ['wager_name', 'wager name', 'wager'],
-            'odds' => ['odds', 'price', 'decimal_odds', 'wager_odds', 'line', 'betting_odds'],
-            'stake' => ['stake', 'wager_amount', 'wager amount', 'amount', 'bet_amount', 'risk', 'unit', 'units', 'wagered'],
-            'status' => ['status', 'result', 'outcome', 'bet_status', 'win_loss', 'win/loss', 'settled'],
-            'operator' => ['operator', 'code', 'bookmaker', 'sportsbook', 'book', 'bookie', 'betting_site', 'site'],
-            'description' => ['description', 'notes', 'comment', 'remarks', 'desc', 'details', 'info', 'level'],
-            'placed_at' => ['placed_at', 'placed', 'bet_date', 'bet_time', 'placed_date', 'placedat', 'placed at', 'wagered_at'],
             'league' => ['league', 'competition', 'tournament', 'division', 'conference', 'comp', 'championship'],
-            'referrer' => ['referrer', 'referer', 'source', 'ref', 'affiliate', 'tracking', 'campaign'],
-            'profit' => ['profit', 'profits', 'pnl', 'p&l', 'return', 'win_amount', 'winning_amount', 'winning amount', 'net', 'roi(net)', 'roi'],
+            'month' => ['month', 'month_name'],
+            'date' => ['date', 'game_date', 'match_date', 'event_date', 'betting_date', 'gamedate', 'game date', 'kickoff'],
+            'home_team' => ['home_team', 'home team', 'home', 'team_1', 'team1', 'host', 'hometeam', 'player', 'golfer', 'fighter'],
+            'away_team' => ['away_team', 'away team', 'away', 'team_2', 'team2', 'visitor', 'awayteam', 'visiting_team', 'opponent'],
+            'bet_type' => ['bet_type', 'bettype', 'bet type', 'type', 'market', 'markets', 'bet_market'],
+            'wager_type' => ['wager_type', 'wager type', 'wagertype', 'wagering_type'],
+            'wager_name' => ['wager_name', 'wager name', 'wager', 'selection', 'pick', 'bet', 'tip', 'tips', 'choice', 'team', 'side', 'prediction'],
+            'odds' => ['odds', 'price', 'decimal_odds', 'wager_odds', 'line', 'betting_odds'],
+            'level' => ['level', 'tier', 'membership', 'subscription_level', 'plan'],
+            'code' => ['code', 'referrer_code', 'source_code', 'tracking_code', 'affiliate_code'],
+            'status' => ['status', 'result', 'outcome', 'bet_status', 'win_loss', 'win/loss', 'settled'],
+            'roi' => ['roi', 'roi(net)', 'roi_net', 'return_on_investment', 'net_roi'],
+            'wager' => ['wager', 'stake', 'wager_amount', 'wager amount', 'amount', 'bet_amount', 'risk', 'unit', 'units', 'wagered'],
+            'profits' => ['profits', 'profit', 'pnl', 'p&l', 'return', 'net', 'profit_amount'],
+            'winning_amount' => ['winning_amount', 'winning amount', 'winningamount', 'total_return', 'payout'],
+            'operator' => ['operator', 'bookmaker', 'sportsbook', 'book', 'bookie', 'betting_site', 'site'],
+            'placed_at' => ['placed_at', 'placed', 'bet_date', 'bet_time', 'placed_date', 'placedat', 'placed at', 'wagered_at'],
         ];
         
         // First pass: exact matches only (to avoid incorrect fuzzy matches)
@@ -88,24 +91,10 @@ class CsvImportService
             }
         }
         
-        // Second pass: check for "game" column and fuzzy matches for unmapped fields
-        $gameColumn = null;
-        
+        // Second pass: fuzzy matches for unmapped fields
         foreach ($headers as $header) {
             $normalized = strtolower(trim($header));
             $normalized = str_replace(['_', '-'], ' ', $normalized);
-            
-            // Check if this is a "game" column
-            if (in_array($normalized, ['game', 'games', 'match', 'matchup', 'fixture', 'event'])) {
-                $gameColumn = $header;
-                // Map it to both home_team and away_team if they're not already mapped
-                if (!isset($mappings['home_team']) && !isset($mappings['away_team'])) {
-                    $mappings['game'] = $header;
-                    $mappings['home_team'] = $header;
-                    $mappings['away_team'] = $header;
-                }
-                continue;
-            }
             
             // Only do fuzzy matching for fields that aren't already mapped
             foreach ($commonMappings as $field => $variations) {
@@ -205,19 +194,8 @@ class CsvImportService
         
         foreach ($this->columnMappings as $field => $csvColumn) {
             if (isset($record[$csvColumn])) {
-                // Special handling for "game" field that contains both teams
-                if ($field === 'game') {
-                    $gameValue = $this->cleanValue($record[$csvColumn]);
-                    if ($gameValue) {
-                        $teams = $this->parseGameColumn($gameValue);
-                        if ($teams) {
-                            $mapped['away_team'] = $teams['away'];
-                            $mapped['home_team'] = $teams['home'];
-                        }
-                    }
-                } else {
-                    $mapped[$field] = $this->cleanValue($record[$csvColumn]);
-                }
+                $value = $this->cleanValue($record[$csvColumn]);
+                $mapped[$field] = $value;
             }
         }
         
@@ -242,8 +220,10 @@ class CsvImportService
      */
     private function transformData(array $data): array
     {
-        // Parse dates
-        if (isset($data['game_date']) && !empty($data['game_date'])) {
+        // Parse dates - handle both 'date' and 'game_date' fields
+        $dateField = isset($data['date']) ? 'date' : (isset($data['game_date']) ? 'game_date' : null);
+        
+        if ($dateField && !empty($data[$dateField])) {
             try {
                 // Try multiple date formats
                 $formats = [
@@ -261,7 +241,7 @@ class CsvImportService
                 $parsed = false;
                 foreach ($formats as $format) {
                     try {
-                        $date = \Carbon\Carbon::createFromFormat($format, $data['game_date']);
+                        $date = \Carbon\Carbon::createFromFormat($format, $data[$dateField]);
                         $data['game_date'] = $date->format('Y-m-d H:i:s');
                         $parsed = true;
                         break;
@@ -272,7 +252,7 @@ class CsvImportService
                 
                 if (!$parsed) {
                     // Last resort - let Carbon try to parse it
-                    $data['game_date'] = \Carbon\Carbon::parse($data['game_date'])->format('Y-m-d H:i:s');
+                    $data['game_date'] = \Carbon\Carbon::parse($data[$dateField])->format('Y-m-d H:i:s');
                 }
             } catch (\Exception $e) {
                 // Keep original value if parse fails
@@ -293,12 +273,33 @@ class CsvImportService
             $data['odds'] = $this->parseNumeric($data['odds']);
         }
         
-        if (isset($data['stake'])) {
+        // Handle both 'wager' and 'stake' fields for backward compatibility
+        if (isset($data['wager'])) {
+            $data['stake'] = $this->parseMonetary($data['wager']);
+        } elseif (isset($data['stake'])) {
             $data['stake'] = $this->parseMonetary($data['stake']);
         }
         
-        if (isset($data['profit'])) {
+        // Handle profit/profits fields
+        if (isset($data['profits'])) {
+            $data['profit'] = $this->parseMonetary($data['profits']);
+        } elseif (isset($data['profit'])) {
             $data['profit'] = $this->parseMonetary($data['profit']);
+        }
+        
+        // Parse winning amount
+        if (isset($data['winning_amount'])) {
+            $data['winning_amount'] = $this->parseMonetary($data['winning_amount']);
+        }
+        
+        // Parse ROI if provided as percentage
+        if (isset($data['roi'])) {
+            $roiValue = $data['roi'];
+            if (is_string($roiValue) && str_ends_with($roiValue, '%')) {
+                $data['roi'] = (float) str_replace('%', '', $roiValue);
+            } else {
+                $data['roi'] = $this->parseNumeric($roiValue);
+            }
         }
         
         // Normalize status
@@ -327,7 +328,7 @@ class CsvImportService
     /**
      * Parse numeric value
      */
-    private function parseNumeric($value): ?float
+    private function parseNumeric($value, $keepAmericanOdds = false): ?float
     {
         if ($value === null || $value === '') {
             return null;
@@ -335,7 +336,13 @@ class CsvImportService
         
         // Handle American odds
         if (is_string($value) && (str_starts_with($value, '+') || str_starts_with($value, '-'))) {
-            return $this->convertAmericanToDecimal($value);
+            if ($keepAmericanOdds) {
+                // Keep American odds as-is
+                $cleaned = preg_replace('/[^0-9+-]/', '', $value);
+                return is_numeric($cleaned) ? (float) $cleaned : null;
+            } else {
+                return $this->convertAmericanToDecimal($value);
+            }
         }
         
         // Remove non-numeric characters except decimal point
@@ -397,6 +404,9 @@ class CsvImportService
             'pending' => 'pending',
             'open' => 'pending',
             'active' => 'pending',
+            'placed' => 'pending',  // For E/W bets that placed but didn't win
+            'cashout' => 'cashout',
+            'cash out' => 'cashout',
         ];
         
         return $statusMap[$status] ?? 'pending';
@@ -512,20 +522,24 @@ class CsvImportService
         return [
             'sport' => 'required|string|max:255',
             'home_team' => 'required|string|max:255',
-            'away_team' => 'required|string|max:255',
+            'away_team' => 'nullable|string|max:255',
             'game_date' => 'required|string', // Changed from 'date' to 'string' for more flexible parsing
             'bet_type' => 'required|string|max:50',
-            'selection' => 'required_without:wager_name|string|max:255',
-            'wager_name' => 'required_without:selection|string|max:255',
-            'odds' => 'required|numeric|min:1.01|max:1000',
+            'wager_name' => 'required|string|max:255',
+            'odds' => 'required|numeric',
             'stake' => 'required|numeric|min:0.01|max:100000',
+            'status' => 'nullable|in:pending,won,lost,void,push,placed,cashout',
+            'league' => 'nullable|string|max:255',
+            'wager_type' => 'nullable|string|max:50',
+            'level' => 'nullable|string|max:50',
+            'code' => 'nullable|string|max:255',
+            'roi' => 'nullable|numeric',
+            'profit' => 'nullable|numeric',
+            'winning_amount' => 'nullable|numeric',
+            'month' => 'nullable|string|max:50',
             'operator' => 'nullable|string|max:255',
-            'status' => 'nullable|in:pending,won,lost,void,push',
             'description' => 'nullable|string|max:500',
             'placed_at' => 'nullable|string',
-            'league' => 'nullable|string|max:255',
-            'referrer' => 'nullable|string|max:255',
-            'profit' => 'nullable|numeric',
         ];
     }
     
@@ -546,23 +560,26 @@ class CsvImportService
     {
         return [
             'required' => [
-                'sport' => 'The sport being bet on (e.g., NFL, NBA, MLB)',
-                'home_team' => 'The home team name. Can be extracted from a "Game" column if it contains both teams',
-                'away_team' => 'The away/visiting team name. Can be extracted from a "Game" column if it contains both teams',
-                'game_date' => 'Date when the game is played. Accepts various formats like YYYY-MM-DD, MM/DD/YYYY, etc.',
-                'bet_type' => 'The type of bet placed (e.g., Spread, Moneyline, Over/Under, Prop)',
-                'selection OR wager_name' => 'Your specific bet selection/pick (e.g., "Chiefs -3.5", "Over 220.5", "Team A ML"). Use either "selection" or "wager_name" column',
-                'odds' => 'The betting odds in decimal format (e.g., 1.91, 2.50). American odds (+150, -110) will be converted',
-                'stake' => 'The amount of money wagered on this bet',
+                'Sport' => 'The sport being bet on (e.g., Baseball, Combat Sports, Golf)',
+                'League' => 'The league or event name (e.g., MLB, UFC, PGA)',
+                'Month' => 'Calendar month the bet is placed or settles',
+                'Date' => 'Date of the event or bet (MM/DD/YYYY)',
+                'Home Team' => 'The home team or player (e.g., Red Sox, Tiger Woods). For individual sports, this is the player name',
+                'Away Team' => 'The away/visiting team (e.g., Yankees). Optional for individual sports like Golf',
+                'Bet Type' => 'General type of bet (Moneyline, Spread, Player Prop, etc)',
+                'Wager Type' => 'Specific betting style (Straight, Outright, Each Way, Parlay)',
+                'Wager Name' => 'Detailed description of the bet (e.g., "Chicago Cubs (S Imanaga) ML," "Ilia Topuria to win by KO")',
+                'odds' => 'American odds (e.g., -120, +150)',
+                'level' => 'Subscription or confidence level (Bronze, Silver, Gold, Platinum)',
+                'code' => 'Unique/internal code for tracking bet source, system, or capper (e.g., BB, TPP, Golf Brad)',
+                'Status' => 'Outcome of the bet ("Won", "Lost", "Placed", "Pending")',
+                'ROI(net)' => 'Net Return on Investment as % of the stake',
+                'Wager' => 'Dollar amount staked on the bet',
+                'Profits' => 'Net gain or loss (USD) for the bet (can be negative)',
+                'Winning Amount' => 'Total returned if the bet wins (Wager + Profits; $0 if lost)',
             ],
             'optional' => [
-                'operator' => 'The sportsbook or betting site where the bet was placed (e.g., DraftKings, FanDuel)',
-                'status' => 'Current status of the bet: pending (not settled), won, lost, void, or push',
-                'description' => 'Any additional notes, analysis, or details about the bet',
-                'placed_at' => 'The exact date/time when the bet was placed (if different from game date)',
-                'league' => 'The league or competition (e.g., Premier League, Champions League, Eastern Conference)',
-                'referrer' => 'Source or tipster who recommended this bet (for tracking purposes)',
-                'profit' => 'The profit/loss amount from this bet (will be calculated if not provided)',
+                // Keep empty as all 16 columns are part of the standard format
             ],
         ];
     }
