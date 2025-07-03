@@ -185,8 +185,8 @@ class AdminRateLimit
             $message = "Too many login attempts. Please wait {$seconds} seconds before trying again.";
         }
         
-        // For JSON requests (API/AJAX)
-        if (request()->expectsJson()) {
+        // For JSON/Inertia requests (API/AJAX)
+        if (request()->expectsJson() || request()->header('X-Inertia')) {
             return response()->json([
                 'message' => $message,
                 'retry_after' => $seconds,
@@ -196,6 +196,7 @@ class AdminRateLimit
                 'Retry-After' => $seconds,
                 'X-RateLimit-Limit' => $maxAttempts,
                 'X-RateLimit-Remaining' => 0,
+                'X-Inertia' => true,
             ]);
         }
         

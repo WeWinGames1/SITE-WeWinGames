@@ -34,15 +34,7 @@ class BetManagementController extends Controller
         
         // Build optimized query with eager loading
         $query = Bet::query()
-            ->select(['bets.*'])
-            ->with([
-                'user:id,name,email',
-                'sport:id,name',
-                'operator:id,name',
-                'game' => function ($query) {
-                    $query->select(['id', 'sport_id', 'team1', 'team2', 'event_time']);
-                }
-            ]);
+            ->select(['bets.*']);
         
         // Apply filters using trait
         $this->applyFilters($query, $request);
@@ -70,7 +62,7 @@ class BetManagementController extends Controller
                 'status', 'sport_id', 'operator_id', 'user_id', 
                 'date_from', 'date_to', 'search', 'bet_type', 
                 'is_featured', 'profit_status',
-                'sort', 'direction', 'per_page'
+                'sort_by', 'sort_direction', 'per_page'
             ]),
             'stats' => $stats,
             'sports' => $filterOptions['sports'],
@@ -90,14 +82,17 @@ class BetManagementController extends Controller
             $query->where('status', $request->status);
         }
         
+        // Sport filter by name
         if ($request->filled('sport_id')) {
-            $query->where('sport_id', $request->sport_id);
+            $query->where('sports', $request->sport_id);
         }
         
-        if ($request->filled('operator_id')) {
-            $query->where('operator_id', $request->operator_id);
+        // League filter
+        if ($request->filled('league')) {
+            $query->where('league', $request->league);
         }
         
+        // User filter
         if ($request->filled('user_id')) {
             $query->where('user_id', $request->user_id);
         }
@@ -117,9 +112,9 @@ class BetManagementController extends Controller
         // Profit status filter
         if ($request->filled('profit_status')) {
             match($request->profit_status) {
-                'profit' => $query->where('profit', '>', 0),
-                'loss' => $query->where('profit', '<', 0),
-                'breakeven' => $query->where('profit', 0),
+                'profit' => $query->where('profit_amount', '>', 0),
+                'loss' => $query->where('profit_amount', '<', 0),
+                'breakeven' => $query->where('profit_amount', 0),
                 default => null
             };
         }
@@ -127,14 +122,16 @@ class BetManagementController extends Controller
         // Search filter using trait with SQL injection protection
         if ($request->filled('search')) {
             $searchFields = [
-                'selection', 
-                'description', 
-                'actual_result', 
-                'bet_type',
-                'user.name',
-                'user.email',
-                'sport.name',
-                'operator.name'
+                'sports',
+                'league',
+                'matches',
+                'markets',
+                'team_one',
+                'team_two',
+                'tips',
+                'wager_type',
+                'membership',
+                'status'
             ];
             $this->applySearchFilter($query, $request, $searchFields);
         }
@@ -155,10 +152,12 @@ class BetManagementController extends Controller
             SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as pending_count,
             SUM(CASE WHEN status = "won" THEN 1 ELSE 0 END) as won_count,
             SUM(CASE WHEN status = "lost" THEN 1 ELSE 0 END) as lost_count,
-            SUM(wager_amount) as total_stake,
-            SUM(CASE WHEN status = "won" THEN profit_amount ELSE 0 END) as total_profit,
-            SUM(CASE WHEN status = "lost" THEN ABS(profit_amount) ELSE 0 END) as total_loss,
-            AVG(wager_odds) as avg_odds
+            SUM(CASE WHEN status = "push" THEN 1 ELSE 0 END) as push_count,
+            SUM(CASE WHEN status = "void" THEN 1 ELSE 0 END) as void_count,
+            COALESCE(SUM(wager_amount), 0) as total_stake,
+            COALESCE(SUM(CASE WHEN status = "won" THEN profit_amount ELSE 0 END), 0) as total_profit,
+            COALESCE(SUM(CASE WHEN status = "lost" THEN ABS(profit_amount) ELSE 0 END), 0) as total_loss,
+            COALESCE(AVG(wager_odds), 0) as avg_odds
         ')->first();
         
         // Calculate derived stats
@@ -259,30 +258,55 @@ class BetManagementController extends Controller
     }
     
     /**
+     * Show the form for editing the specified bet.
+     */
+    public function edit(Bet $bet)
+    {
+        // Get filter options for dropdowns
+        $sports = Sport::orderBy('name')->get(['id', 'name']);
+        $operators = Operator::orderBy('name')->get(['id', 'name']);
+        $users = User::orderBy('name')->get(['id', 'name', 'email']);
+        
+        // Load the bet with only existing relationships
+        $bet->load(['user']);
+        
+        return Inertia::render('admin/Bets/Edit', [
+            'bet' => $bet->toArray(), // Convert to array to ensure all fields are included
+            'sports' => $sports,
+            'operators' => $operators,
+            'users' => $users,
+        ]);
+    }
+    
+    /**
      * Update the specified bet.
      */
     public function update(Request $request, Bet $bet)
     {
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'sport_id' => 'required|exists:sports,id',
-            'operator_id' => 'required|exists:operators,id',
-            'game_id' => 'nullable|exists:games,id',
-            'selection' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'bet_type' => 'required|in:single,parlay,prop',
-            'stake' => 'required|numeric|min:0',
-            'odds' => 'required|numeric',
-            'game_at' => 'required|date',
+            'user_id' => 'nullable|exists:users,id',
+            'sports' => 'required|string|max:255',
+            'league' => 'nullable|string|max:255', 
+            'month' => 'nullable|string|max:50',
+            'matches' => 'nullable|string|max:500',
+            'markets' => 'nullable|string|max:255',
+            'wager_type' => 'nullable|string|max:50',
+            'team_one' => 'nullable|string|max:255',
+            'team_two' => 'nullable|string|max:255',
+            'tips' => 'nullable|string|max:500',
+            'betting_date' => 'required|date',
+            'wager_odds' => 'required|numeric',
+            'wager_amount' => 'required|numeric|min:0',
+            'winning_amount' => 'nullable|numeric|min:0',
+            'profit_amount' => 'nullable|numeric',
+            'roi' => 'nullable|numeric',
             'status' => 'required|in:pending,won,lost,void,push',
-            'actual_result' => 'nullable|string',
-            'is_featured' => 'boolean',
             'membership' => 'required|in:bronze,silver,gold,platinum',
+            'level' => 'nullable|string|max:50',
+            'code' => 'nullable|string|max:255',
+            'referrer' => 'nullable|string|max:255',
+            'place_fraction' => 'nullable|numeric|between:0,1',
         ]);
-        
-        // Recalculate potential win and profit
-        $validated['potential_win'] = $this->calculatePotentialWin($validated['stake'], $validated['odds']);
-        $validated['profit'] = $this->calculateProfit($validated);
         
         $bet->update($validated);
         
@@ -296,6 +320,25 @@ class BetManagementController extends Controller
             
         return redirect()->route('admin.bets.index')
             ->with('success', 'Bet updated successfully.');
+    }
+    
+    /**
+     * Remove the specified bet from storage.
+     */
+    public function destroy(Bet $bet)
+    {
+        $bet->delete();
+        
+        // Clear related caches
+        SimpleCacheService::invalidateRelated('bet');
+        
+        activity()
+            ->causedBy(Auth::user())
+            ->performedOn($bet)
+            ->log('Deleted bet');
+        
+        return redirect()->route('admin.bets.index')
+            ->with('success', 'Bet deleted successfully.');
     }
     
     /**

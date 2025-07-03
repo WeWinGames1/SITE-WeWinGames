@@ -108,6 +108,14 @@ const handleMappingsConfirmed = async (mappings: Record<string, string>) => {
   columnMappings.value = mappings
   
   try {
+    // Refresh CSRF token first
+    try {
+      const tokenResponse = await axios.get('/csrf-token')
+      axios.defaults.headers.common['X-CSRF-TOKEN'] = tokenResponse.data.token
+    } catch (e) {
+      console.warn('Could not refresh CSRF token')
+    }
+    
     const { data } = await axios.post('/admin/bets/import/validate', {
       file_id: fileId.value,
       mappings: mappings
@@ -120,13 +128,25 @@ const handleMappingsConfirmed = async (mappings: Record<string, string>) => {
       showToast('error', data.message || 'Validation failed')
     }
   } catch (error: any) {
-    showToast('error', error.response?.data?.message || 'Failed to validate import')
+    if (error.response?.status === 419) {
+      showToast('error', 'Session expired. Please refresh the page and try again.')
+    } else {
+      showToast('error', error.response?.data?.message || 'Failed to validate import')
+    }
     console.error('Validation error:', error)
   }
 }
 
 const handleImportConfirmed = async (skipErrors: boolean) => {
   try {
+    // Refresh CSRF token first
+    try {
+      const tokenResponse = await axios.get('/csrf-token')
+      axios.defaults.headers.common['X-CSRF-TOKEN'] = tokenResponse.data.token
+    } catch (e) {
+      console.warn('Could not refresh CSRF token')
+    }
+    
     const { data } = await axios.post('/admin/bets/import/process', {
       file_id: fileId.value,
       mappings: columnMappings.value,

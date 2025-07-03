@@ -127,6 +127,19 @@ class BetImportService
             $homeTeamName = $record['home_team'] ?? null;
             $awayTeamName = $record['away_team'] ?? null;
             
+            // Format matches field based on sport type and available teams first
+            $matchesField = '';
+            if ($awayTeamName && $homeTeamName) {
+                // Team sports - format as "Away @ Home" or "Fighter1 vs Fighter2"
+                $isCombatSport = in_array(strtolower($record['sport']), ['ufc', 'mma', 'boxing', 'combat sports']);
+                $matchesField = $isCombatSport ? 
+                    "{$awayTeamName} vs {$homeTeamName}" : 
+                    "{$awayTeamName} @ {$homeTeamName}";
+            } elseif ($homeTeamName) {
+                // Individual sports - just the player name
+                $matchesField = $homeTeamName;
+            }
+
             // Get or create teams
             $homeTeam = null;
             $awayTeam = null;
@@ -145,19 +158,9 @@ class BetImportService
                         ['slug' => \Str::slug($awayTeamName)]
                     );
 
-                    // Create or update game only if we have both teams
-                    $game = Game::updateOrCreate(
-                        [
-                            'home_team_id' => $homeTeam->id,
-                            'away_team_id' => $awayTeam->id,
-                            'game_date' => $record['game_date'],
-                        ],
-                        [
-                            'sport_id' => $sport->id,
-                            'status' => $record['game_status'] ?? 'scheduled',
-                        ]
-                    );
-                    $this->successCount['games']++;
+                    // Skip game creation for now due to required fields
+                    // $game = Game::create([...]);
+                    // $this->successCount['games']++;
                 }
             }
 
@@ -171,18 +174,7 @@ class BetImportService
             }
 
             // Create bet using the correct field names
-            // Format matches field based on sport type and available teams
-            $matchesField = '';
-            if ($awayTeamName && $homeTeamName) {
-                // Team sports - format as "Away @ Home" or "Fighter1 vs Fighter2"
-                $isCombatSport = in_array(strtolower($record['sport']), ['ufc', 'mma', 'boxing', 'combat sports']);
-                $matchesField = $isCombatSport ? 
-                    "{$awayTeamName} vs {$homeTeamName}" : 
-                    "{$awayTeamName} @ {$homeTeamName}";
-            } elseif ($homeTeamName) {
-                // Individual sports - just the player name
-                $matchesField = $homeTeamName;
-            }
+            
             
             $betData = [
                 'sports' => $record['sport'],
@@ -198,12 +190,13 @@ class BetImportService
                 'tips' => $record['wager_name'] ?? $record['selection'] ?? '',
                 'betting_date' => $record['game_date'],
                 'wager_odds' => (float) $record['odds'],
-                'wager_amount' => (float) $record['stake'],
+                'wager_amount' => (float) ($record['wager_amount'] ?? $record['stake'] ?? 0),
                 'status' => $record['status'] ?? 'pending',
                 'membership' => $record['level'] ?? $record['membership'] ?? 'Bronze',
                 'level' => $record['level'] ?? null,
                 'code' => $record['code'] ?? null,
                 'referrer' => $record['referrer'] ?? $record['code'] ?? null,
+                'user_id' => $record['user_id'] ?? null,
             ];
 
             // Calculate winning and profit amounts based on American odds
@@ -329,6 +322,7 @@ class BetImportService
 
     private function transformRecordData(array $record): array
     {
+        
         // Always parse teams from game column when present
         if (isset($record['game']) && !empty($record['game'])) {
             $teams = $this->parseGameColumn($record['game']);
@@ -405,9 +399,12 @@ class BetImportService
             $record['status'] = $this->normalizeStatus($record['status']);
         }
         
-        // Handle wager vs stake field naming
-        if (isset($record['wager']) && !isset($record['stake'])) {
-            $record['stake'] = $this->parseMonetary($record['wager']);
+        // Handle wager vs stake field naming - map both to wager_amount for database
+        if (isset($record['wager'])) {
+            $record['wager_amount'] = $this->parseMonetary($record['wager']);
+            $record['stake'] = $record['wager_amount']; // Keep for compatibility
+        } elseif (isset($record['stake'])) {
+            $record['wager_amount'] = $this->parseMonetary($record['stake']);
         }
         
         // Trim all string values
@@ -416,6 +413,7 @@ class BetImportService
                 $record[$key] = trim($value);
             }
         }
+        
         
         return $record;
     }
@@ -531,25 +529,24 @@ class BetImportService
     {
         $rules = [
             'sport' => 'required|string|max:255',
-            'league' => 'required|string|max:255',
-            'month' => 'required|string|max:50',
+            'league' => 'nullable|string|max:255',
+            'month' => 'nullable|string|max:50',
             'bet_type' => 'required|string|max:50',
             'wager_name' => 'required|string|max:255',
-            'odds' => 'required|numeric',
-            'stake' => 'required|numeric|min:0.01',
+            'odds' => ['required', 'numeric', 'between:-10000,10000'], // Allow negative odds
+            'wager_amount' => 'required|numeric|min:0.01',
             'game_date' => 'required|string', // Changed from 'date' to 'string' for more flexible parsing
-            'level' => 'required|string|max:50',
-            'code' => 'required|string|max:255',
+            'level' => 'nullable|string|max:50',
+            'code' => 'nullable|string|max:255',
             'status' => 'required|string|max:50',
             'roi' => 'nullable|numeric',
-            'wager' => 'required|numeric|min:0.01',
             'profits' => 'nullable|numeric',
             'winning_amount' => 'nullable|numeric|min:0',
             // Game is required - we'll parse teams from it during import
             'game' => 'required|string|max:500',
             'home_team' => 'required|string|max:255',  // Required - parsed from game
             'away_team' => 'nullable|string|max:255',  // Optional for individual sports
-            'wager_type' => 'required|string|max:50',
+            'wager_type' => 'nullable|string|max:50',
             'operator' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:500',
             'placed_at' => 'nullable|string',
@@ -605,8 +602,11 @@ class BetImportService
      */
     public function importSingleBet(array $record, int $userId): void
     {
+        // Set user_id in the record for processing
+        $record['user_id'] = $userId;
+        
         // Process the record using existing method
-        $this->processRecord($record, $userId, 1);
+        $this->processRecord($record, 1);
         
         // Check if there were errors
         if (!empty($this->errors)) {

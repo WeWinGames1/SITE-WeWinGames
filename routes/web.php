@@ -135,6 +135,11 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
     Route::get('/template', [BetImportWizardController::class, 'downloadTemplate'])->name('template');
     Route::get('/error-report', [BetImportWizardController::class, 'downloadErrorReport'])->name('error-report');
 });
+
+// CSRF token refresh route
+Route::get('/csrf-token', function () {
+    return response()->json(['token' => csrf_token()]);
+})->name('csrf-token');
 // Admin tools routes
 Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit:export'])->prefix('admin')->name('admin.')->group(function () {
     Route::post('/notify-all', [AdminToolsController::class, 'notifyAll'])->name('notify-all');

@@ -45,6 +45,7 @@
           <button
             @click="activeTab = 'valid'"
             :class="['nav-link', activeTab === 'valid' ? 'active' : '']"
+            :style="activeTab === 'valid' ? 'color: #495057; background-color: #fff; border-color: #dee2e6 #dee2e6 #fff;' : 'color: #495057;'"
           >
             Valid Rows ({{ summary.valid }})
           </button>
@@ -53,6 +54,7 @@
           <button
             @click="activeTab = 'invalid'"
             :class="['nav-link', activeTab === 'invalid' ? 'active' : '']"
+            :style="activeTab === 'invalid' ? 'color: #495057; background-color: #fff; border-color: #dee2e6 #dee2e6 #fff;' : 'color: #495057;'"
           >
             Invalid Rows ({{ summary.invalid }})
           </button>
@@ -71,13 +73,19 @@
             <tr>
               <th>Row</th>
               <th>Sport</th>
+              <th>League</th>
               <th>Teams</th>
               <th>Date</th>
-              <th>Type</th>
-              <th>Selection</th>
+              <th>Bet Type</th>
+              <th>Wager Type</th>
+              <th>Wager Name</th>
               <th>Odds</th>
-              <th>Stake</th>
+              <th>Level</th>
+              <th>Code</th>
+              <th>Wager</th>
               <th>Status</th>
+              <th>ROI</th>
+              <th>Profits</th>
               <th>Warnings</th>
             </tr>
           </thead>
@@ -85,20 +93,26 @@
             <tr v-for="row in validRows" :key="row.row">
               <td>{{ row.row }}</td>
               <td>{{ row.data.sport }}</td>
+              <td>{{ row.data.league || '-' }}</td>
               <td>
-                <div class="small">{{ row.data.away_team }}</div>
-                <div class="small">@ {{ row.data.home_team }}</div>
+                <div class="small">{{ row.data.away_team || row.data.home_team }}</div>
+                <div v-if="row.data.away_team" class="small">@ {{ row.data.home_team }}</div>
               </td>
               <td>{{ formatDate(row.data.game_date) }}</td>
               <td>{{ row.data.bet_type }}</td>
-              <td>{{ row.data.selection }}</td>
+              <td>{{ row.data.wager_type || '-' }}</td>
+              <td>{{ row.data.wager_name || '-' }}</td>
               <td>{{ row.data.odds }}</td>
-              <td>${{ row.data.stake }}</td>
+              <td>{{ row.data.level }}</td>
+              <td>{{ row.data.code }}</td>
+              <td>${{ row.data.wager || row.data.stake }}</td>
               <td>
                 <span :class="getStatusClass(row.data.status)" class="badge">
                   {{ row.data.status }}
                 </span>
               </td>
+              <td>{{ row.data.roi ? row.data.roi + '%' : '-' }}</td>
+              <td>{{ row.data.profits ? '$' + row.data.profits : '-' }}</td>
               <td class="text-warning">
                 <div v-for="warning in row.warnings" :key="warning" class="small">
                   ⚠️ {{ warning }}
@@ -240,3 +254,23 @@ const confirmImport = () => {
   emit('import-confirmed', skipErrors.value)
 }
 </script>
+
+<style scoped>
+/* Fix Bootstrap tab styling in admin panel */
+.nav-tabs .nav-link {
+  color: #495057;
+  background-color: transparent;
+  border: 1px solid transparent;
+}
+
+.nav-tabs .nav-link:hover {
+  border-color: #e9ecef #e9ecef #dee2e6;
+  color: #495057;
+}
+
+.nav-tabs .nav-link.active {
+  color: #495057 !important;
+  background-color: #fff !important;
+  border-color: #dee2e6 #dee2e6 #fff !important;
+}
+</style>

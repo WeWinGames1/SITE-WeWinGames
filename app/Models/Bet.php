@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Bet extends Model
 {
     protected $fillable = [
+        'user_id',
         'sports',
         'league',
         'month',

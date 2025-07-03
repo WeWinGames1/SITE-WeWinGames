@@ -60,6 +60,34 @@ router.on('navigate', () => {
     trackPageView();
 });
 
+// Handle Inertia errors globally
+router.on('error', (event) => {
+    const status = event.detail.response?.status;
+    
+    if (status === 429) {
+        // Rate limit error
+        const data = event.detail.response?.data;
+        const message = data?.message || 'Too many requests. Please try again later.';
+        const retryAfter = data?.retry_after || 60;
+        
+        // Show a nice alert or toast
+        alert(`${message}\n\nYou can try again in ${retryAfter} seconds.`);
+        
+        // Prevent the default error modal
+        event.preventDefault();
+    } else if (status === 500) {
+        // Server error
+        const error = event.detail.response?.data?.error;
+        const message = event.detail.response?.data?.message || 'An error occurred while processing your request.';
+        
+        // Show error message
+        alert(`Server Error: ${message}`);
+        
+        // Prevent the default error modal
+        event.preventDefault();
+    }
+});
+
 if ('serviceWorker' in navigator) {
     console.log('Service Worker is supported');
   window.addEventListener('load', () => {

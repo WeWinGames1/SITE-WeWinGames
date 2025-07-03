@@ -23,36 +23,30 @@ import {
 
 interface Bet {
     id: number;
-    user?: {
-        id: number;
-        name: string;
-        email: string;
-    };
-    sport?: {
-        id: number;
-        name: string;
-    };
-    game?: {
-        id: number;
-        home_team: string;
-        away_team: string;
-    };
-    operator?: {
-        id: number;
-        name: string;
-    };
-    selection: string;
-    description?: string;
-    bet_type: string;
-    odds: number | null;
-    stake: number;
-    potential_win: number;
-    game_at: string;
-    status: 'pending' | 'won' | 'lost' | 'push' | 'cancelled';
-    actual_result?: string;
-    profit?: number;
-    is_featured: boolean;
-    confidence?: number;
+    sports: string;
+    league?: string;
+    month?: string;
+    matches?: string;
+    markets?: string;
+    wager_type?: string;
+    team_one?: string;
+    team_one_logo?: string;
+    team_two?: string;
+    team_two_logo?: string;
+    tips?: string;
+    betting_date: string;
+    wager_odds: number | string;
+    membership: string;
+    level?: string;
+    code?: string;
+    roi?: number;
+    wager_amount: number;
+    winning_amount?: number;
+    profit_amount?: number;
+    status: string;
+    referrer?: string;
+    place_fraction?: number;
+    user_id?: number;
     created_at: string;
     updated_at: string;
 }
@@ -98,8 +92,8 @@ interface Props {
         is_featured?: boolean;
         min_confidence?: number;
         profit_status?: string;
-        sort?: string;
-        direction?: string;
+        sort_by?: string;
+        sort_direction?: string;
         per_page?: number;
     };
     sports?: Sport[] | null;
@@ -124,8 +118,8 @@ const filterForm = useForm({
     is_featured: props.filters.is_featured || '',
     min_confidence: props.filters.min_confidence || '',
     profit_status: props.filters.profit_status || '',
-    sort: props.filters.sort || 'game_at',
-    direction: props.filters.direction || 'desc',
+    sort_by: props.filters.sort_by || 'betting_date',
+    sort_direction: props.filters.sort_direction || 'desc',
     per_page: props.filters.per_page || 25,
 });
 
@@ -156,18 +150,18 @@ const applyFilters = () => {
 
 // Sort functionality
 const sortBy = (field: string) => {
-    if (filterForm.sort === field) {
-        filterForm.direction = filterForm.direction === 'asc' ? 'desc' : 'asc';
+    if (filterForm.sort_by === field) {
+        filterForm.sort_direction = filterForm.sort_direction === 'asc' ? 'desc' : 'asc';
     } else {
-        filterForm.sort = field;
-        filterForm.direction = 'desc';
+        filterForm.sort_by = field;
+        filterForm.sort_direction = 'desc';
     }
     applyFilters();
 };
 
 const getSortIcon = (field: string) => {
-    if (filterForm.sort !== field) return ArrowsUpDownIcon;
-    return filterForm.direction === 'asc' ? ChevronUpIcon : ChevronDownIcon;
+    if (filterForm.sort_by !== field) return ArrowsUpDownIcon;
+    return filterForm.sort_direction === 'asc' ? ChevronUpIcon : ChevronDownIcon;
 };
 
 // Watch for non-search filter changes
@@ -296,14 +290,20 @@ function formatDate(date: string): string {
     });
 }
 
-function formatOdds(odds: number | null | undefined): string {
+function formatOdds(odds: number | string | null | undefined): string {
     if (odds === null || odds === undefined) {
         return 'N/A';
     }
-    if (odds > 0) {
-        return `+${odds}`;
+    // If it's already a string with + or -, return as-is
+    if (typeof odds === 'string' && (odds.startsWith('+') || odds.startsWith('-'))) {
+        return odds;
     }
-    return odds.toString();
+    // Convert to number for comparison
+    const numOdds = typeof odds === 'string' ? parseFloat(odds) : odds;
+    if (numOdds > 0) {
+        return `+${numOdds}`;
+    }
+    return numOdds.toString();
 }
 
 function formatCurrency(amount: number | null | undefined): string {
@@ -663,24 +663,24 @@ function formatCurrency(amount: number | null | undefined): string {
                                                 />
                                             </div>
                                         </th>
-                                        <th>User / Selection</th>
-                                        <th>Sport / Game</th>
+                                        <th>Teams / Membership</th>
+                                        <th>Sport / League</th>
                                         <th>
                                             Type / 
-                                            <button @click="sortBy('odds')" class="btn btn-link p-0 text-muted text-decoration-none">
+                                            <button @click="sortBy('wager_odds')" class="btn btn-link p-0 text-muted text-decoration-none">
                                                 Odds
-                                                <component :is="getSortIcon('odds')" style="width: 0.75rem; height: 0.75rem;" class="ms-1" />
+                                                <component :is="getSortIcon('wager_odds')" style="width: 0.75rem; height: 0.75rem;" class="ms-1" />
                                             </button>
                                         </th>
                                         <th>
-                                            <button @click="sortBy('stake')" class="btn btn-link p-0 text-muted text-decoration-none">
+                                            <button @click="sortBy('wager_amount')" class="btn btn-link p-0 text-muted text-decoration-none">
                                                 Stake
-                                                <component :is="getSortIcon('stake')" style="width: 0.75rem; height: 0.75rem;" class="ms-1" />
+                                                <component :is="getSortIcon('wager_amount')" style="width: 0.75rem; height: 0.75rem;" class="ms-1" />
                                             </button>
                                             / 
-                                            <button @click="sortBy('potential_win')" class="btn btn-link p-0 text-muted text-decoration-none">
+                                            <button @click="sortBy('winning_amount')" class="btn btn-link p-0 text-muted text-decoration-none">
                                                 Win
-                                                <component :is="getSortIcon('potential_win')" style="width: 0.75rem; height: 0.75rem;" class="ms-1" />
+                                                <component :is="getSortIcon('winning_amount')" style="width: 0.75rem; height: 0.75rem;" class="ms-1" />
                                             </button>
                                         </th>
                                         <th>
@@ -690,9 +690,9 @@ function formatCurrency(amount: number | null | undefined): string {
                                             </button>
                                         </th>
                                         <th>
-                                            <button @click="sortBy('game_at')" class="btn btn-link p-0 text-muted text-decoration-none">
+                                            <button @click="sortBy('betting_date')" class="btn btn-link p-0 text-muted text-decoration-none">
                                                 Game Date
-                                                <component :is="getSortIcon('game_at')" style="width: 0.75rem; height: 0.75rem;" class="ms-1" />
+                                                <component :is="getSortIcon('betting_date')" style="width: 0.75rem; height: 0.75rem;" class="ms-1" />
                                             </button>
                                         </th>
                                         <th class="text-center" style="width: 100px;">Actions</th>
@@ -712,42 +712,31 @@ function formatCurrency(amount: number | null | undefined): string {
                                         </td>
                                         <td>
                                             <div>
-                                                <div class="fw-medium">{{ bet.user?.name || 'Unknown User' }}</div>
-                                                <div class="text-muted small">{{ bet.user?.email || '' }}</div>
-                                                <div class="mt-1">{{ bet.selection }}</div>
-                                                <div v-if="bet.is_featured" class="mt-1">
-                                                    <span class="badge bg-warning text-dark">
-                                                        <TrophyIcon style="width: 0.75rem; height: 0.75rem;" class="me-1" />
-                                                        Featured
-                                                    </span>
-                                                </div>
+                                                <div class="fw-medium">{{ bet.team_one || bet.tips || 'N/A' }}</div>
+                                                <div v-if="bet.team_two" class="text-muted small">vs {{ bet.team_two }}</div>
+                                                <div class="mt-1 text-muted small">{{ bet.membership || 'All' }}</div>
                                             </div>
                                         </td>
                                         <td>
                                             <div>
-                                                <div class="fw-medium">{{ bet.sport?.name || 'Unknown Sport' }}</div>
-                                                <div v-if="bet.game" class="text-muted small">
-                                                    {{ bet.game.away_team }} @ {{ bet.game.home_team }}
-                                                </div>
-                                                <div class="text-muted small">{{ bet.operator?.name || 'Unknown Operator' }}</div>
+                                                <div class="fw-medium">{{ bet.sports || 'N/A' }}</div>
+                                                <div v-if="bet.league" class="text-muted small">{{ bet.league }}</div>
+                                                <div v-if="bet.markets" class="text-muted small">{{ bet.markets }}</div>
                                             </div>
                                         </td>
                                         <td>
                                             <div>
-                                                <div>{{ bet.bet_type }}</div>
-                                                <div class="fw-medium">{{ formatOdds(bet.odds) }}</div>
-                                                <div v-if="bet.confidence" class="mt-1 d-flex align-items-center">
-                                                    <ChartBarIcon style="width: 0.75rem; height: 0.75rem;" class="text-muted me-1" />
-                                                    <span class="text-muted small">{{ bet.confidence }}/10</span>
-                                                </div>
+                                                <div>{{ bet.wager_type || bet.markets || 'N/A' }}</div>
+                                                <div class="fw-medium">{{ formatOdds(bet.wager_odds) }}</div>
+                                                <div v-if="bet.level" class="text-muted small">Level: {{ bet.level }}</div>
                                             </div>
                                         </td>
                                         <td>
                                             <div>
-                                                <div>{{ formatCurrency(bet.stake) }}</div>
-                                                <div class="text-muted small">Win: {{ formatCurrency(bet.potential_win) }}</div>
-                                                <div v-if="bet.profit !== null" class="fw-medium" :class="(bet.profit || 0) >= 0 ? 'text-success' : 'text-danger'">
-                                                    {{ (bet.profit || 0) >= 0 ? '+' : '' }}{{ formatCurrency(bet.profit) }}
+                                                <div>{{ formatCurrency(bet.wager_amount) }}</div>
+                                                <div class="text-muted small">Win: {{ formatCurrency(bet.winning_amount) }}</div>
+                                                <div v-if="bet.profit_amount !== null" class="fw-medium" :class="(bet.profit_amount || 0) >= 0 ? 'text-success' : 'text-danger'">
+                                                    {{ (bet.profit_amount || 0) >= 0 ? '+' : '' }}{{ formatCurrency(bet.profit_amount) }}
                                                 </div>
                                             </div>
                                         </td>
@@ -760,7 +749,7 @@ function formatCurrency(amount: number | null | undefined): string {
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <CalendarIcon style="width: 1rem; height: 1rem;" class="text-muted me-1" />
-                                                <span class="small">{{ formatDate(bet.game_at) }}</span>
+                                                <span class="small">{{ formatDate(bet.betting_date) }}</span>
                                             </div>
                                         </td>
                                         <td class="text-center">
