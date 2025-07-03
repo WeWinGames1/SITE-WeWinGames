@@ -38,10 +38,33 @@ const props = defineProps<{
     thisMonthWinLoss?: number,
     testimonials?: any[],
 }>(); // Get ROI data by subscription level
-const isGold = auth?.user?.data?.subscriptions[0]?.type === 'gold'; // Check if user is subscribed to Gold level
-const isSilver = auth?.user?.data?.subscriptions[0]?.type === 'silver';
-const isPlatinum = auth?.user?.data?.subscriptions[0]?.type === 'platinum';
-const isDefault = auth?.user?.data?.subscriptions[0]?.type === 'default';
+// Get user's subscription type - handle ambassador/gifted/override users
+const getUserSubscriptionType = () => {
+    if (!auth?.user?.data) return 'free';
+    const user = auth.user.data;
+    
+    // Check for override fields first (ambassador, gifted, override)
+    if (user.ambassador || user.gifted || user.override) {
+        return 'platinum'; // These users get platinum access
+    }
+    
+    // Check active subscription
+    const activeSubscription = user.subscriptions?.find(sub => sub.stripe_status === 'active');
+    if (activeSubscription?.type) {
+        return activeSubscription.type.toLowerCase();
+    }
+    
+    return 'free';
+};
+
+const userSubscriptionType = getUserSubscriptionType();
+const isAdmin = auth?.isAdmin || false;
+
+// Legacy variables for backward compatibility
+const isGold = userSubscriptionType === 'gold';
+const isSilver = userSubscriptionType === 'silver';
+const isPlatinum = userSubscriptionType === 'platinum';
+const isDefault = userSubscriptionType === 'free';
 
 const bronzeBets = bets.filter((bet) => bet.membership === 'bronze');
 
@@ -133,49 +156,34 @@ const plans = [
 
 const silverBets = bets.filter((bet) => bet.membership === 'silver');
 
-// Get covered bets (for non-authenticated or free users)
-const coveredBets = computed(() => {
-  // Non-bronze bets (silver, gold, platinum)
-  const nonBronzeBets = bets.filter(bet => bet.membership !== 'bronze');
-  
-  // If user is not authenticated, all non-bronze bets are covered
-  if (!auth.user) return nonBronzeBets;
-  
-  // If user is default/bronze, all non-bronze bets are covered
-  if (isDefault) return nonBronzeBets;
-  
-  // If user is silver, gold and platinum bets are covered
-  if (isSilver) return nonBronzeBets.filter(bet => bet.membership === 'gold' || bet.membership === 'platinum');
-  
-  // If user is gold, only platinum bets are covered
-  if (isGold) return nonBronzeBets.filter(bet => bet.membership === 'platinum');
-  
-  // If user is platinum, no bets are covered
-  if (isPlatinum) return [];
-  
-  // Default case: all non-bronze bets are covered
-  return nonBronzeBets;
-});
+// Determine which bets can be viewed based on subscription
+const canViewBet = (bet) => {
+    if (isAdmin) return true;
+    
+    const betLevel = bet.membership?.toLowerCase() || 'bronze';
+    
+    switch (userSubscriptionType) {
+        case 'free':
+            return betLevel === 'bronze';
+        case 'silver':
+            return betLevel === 'bronze' || betLevel === 'silver';
+        case 'gold':
+            return betLevel === 'bronze' || betLevel === 'silver' || betLevel === 'gold';
+        case 'platinum':
+            return true; // Can view all bets
+        default:
+            return betLevel === 'bronze';
+    }
+};
 
 // Get viewable bets
 const viewableBets = computed(() => {
-  // If not authenticated, only show bronze bets
-  if (!auth.user) return bronzeBets;
-  
-  // If default tier, only show bronze bets
-  if (isDefault) return bronzeBets;
-  
-  // If silver, show bronze and silver bets
-  if (isSilver) return bets.filter(bet => bet.membership === 'bronze' || bet.membership === 'silver');
-  
-  // If gold, show bronze, silver, and gold bets
-  if (isGold) return bets.filter(bet => bet.membership !== 'platinum');
-  
-  // If platinum, show all bets
-  if (isPlatinum) return bets;
-  
-  // Default case: only show bronze bets
-  return bronzeBets;
+    return bets.filter(bet => canViewBet(bet));
+});
+
+// Get covered bets (ones that require upgrade)
+const coveredBets = computed(() => {
+    return bets.filter(bet => !canViewBet(bet));
 });
 
 // Function to hide specific links on mount
@@ -212,20 +220,58 @@ function seeMorePicks() {
     // For example, navigate to a picks page:
     window.location.href = '/picks';
 }
+// Helper function to categorize bets by date
+const categorizeBet = (bet) => {
+    const betDate = new Date(bet.betting_date || bet.game_at);
+    const today = new Date();
+    const endOfWeek = new Date();
+    endOfWeek.setDate(today.getDate() + (7 - today.getDay())); // Next Sunday
+    
+    // Check if it's golf and within this week
+    const isGolf = (bet.sports || bet.sport || '').toLowerCase().includes('golf');
+    
+    if (betDate.toDateString() === today.toDateString()) {
+        return { category: 'daily', priority: 1 };
+    } else if (isGolf && betDate <= endOfWeek) {
+        return { category: 'weekly_golf', priority: 2 };
+    } else {
+        return { category: 'futures', priority: 3 };
+    }
+};
+
 const allGroupedBets = computed(() => {
-  // Get all non-bronze bets first, then bronze bets last
+  // Combine viewable and covered bets with proper marking
+  const viewableWithFlag = viewableBets.value.map(bet => ({ ...bet, isCovered: false }));
+  const coveredWithFlag = coveredBets.value.map(bet => ({ ...bet, isCovered: true }));
   
-  // Merge, bronze last so it overwrites by id
-  const all = [...(viewableBets.value || []), ...(coveredBets.value || [])].filter(
-    (bet, idx, arr) => arr.findIndex(b => b.id === bet.id) === idx
-  );
+  // Merge all bets
+  const all = [...viewableWithFlag, ...coveredWithFlag];
   
   // Filter by selected sport
   const filtered = selectedSport.value === 'all' 
     ? all 
     : all.filter(bet => (bet.sports || bet.sport) === selectedSport.value);
   
-  return filtered.reduce((acc, bet) => {
+  // Sort bets by priority
+  const sorted = filtered.sort((a, b) => {
+    const catA = categorizeBet(a);
+    const catB = categorizeBet(b);
+    
+    // First sort by priority
+    if (catA.priority !== catB.priority) {
+        return catA.priority - catB.priority;
+    }
+    
+    // Then by membership level (bronze first for free picks)
+    const membershipOrder = { 'bronze': 1, 'silver': 2, 'gold': 3, 'platinum': 4 };
+    const memA = membershipOrder[a.membership?.toLowerCase()] || 5;
+    const memB = membershipOrder[b.membership?.toLowerCase()] || 5;
+    
+    return memA - memB;
+  });
+  
+  // Group by sport
+  return sorted.reduce((acc, bet) => {
     const sport = bet.sports || bet.sport || 'Football';
     if (!acc[sport]) acc[sport] = [];
     acc[sport].push(bet);

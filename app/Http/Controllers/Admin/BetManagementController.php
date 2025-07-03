@@ -208,12 +208,23 @@ class BetManagementController extends Controller
         // Get filter options for dropdowns
         $sports = Sport::orderBy('name')->get(['id', 'name']);
         $operators = Operator::orderBy('name')->get(['id', 'name']);
-        $users = User::orderBy('name')->get(['id', 'name', 'email']);
+        $games = []; // Empty array since we'll use team text fields instead
+        
+        // Define bet types
+        $betTypes = [
+            'moneyline' => 'Moneyline',
+            'spread' => 'Point Spread',
+            'total' => 'Over/Under (Total)',
+            'prop' => 'Prop Bet',
+            'parlay' => 'Parlay',
+            'futures' => 'Futures',
+        ];
         
         return Inertia::render('admin/Bets/Create', [
             'sports' => $sports,
             'operators' => $operators,
-            'users' => $users,
+            'games' => $games,
+            'betTypes' => $betTypes,
         ]);
     }
     
@@ -223,25 +234,46 @@ class BetManagementController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
             'sport_id' => 'required|exists:sports,id',
             'operator_id' => 'required|exists:operators,id',
-            'game_id' => 'nullable|exists:games,id',
+            'team_one' => 'required|string|max:255',
+            'team_two' => 'required|string|max:255',
             'selection' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'bet_type' => 'required|in:single,parlay,prop',
+            'bet_type' => 'required|in:moneyline,spread,total,prop,parlay,futures',
             'stake' => 'required|numeric|min:0',
             'odds' => 'required|numeric',
             'game_at' => 'required|date',
             'status' => 'required|in:pending,won,lost,void,push',
             'is_featured' => 'boolean',
             'membership' => 'required|in:bronze,silver,gold,platinum',
+            'referrer' => 'nullable|string|max:255',
         ]);
+        
+        // Set the user_id to the authenticated admin
+        $validated['user_id'] = Auth::id();
         
         // Calculate potential win and profit
         $validated['potential_win'] = $this->calculatePotentialWin($validated['stake'], $validated['odds']);
         $validated['profit'] = $this->calculateProfit($validated);
         $validated['betting_date'] = now();
+        
+        // Map sport_id to sports field
+        $sport = Sport::find($validated['sport_id']);
+        $validated['sports'] = $sport ? $sport->name : '';
+        
+        // Map other fields
+        $validated['wager_amount'] = $validated['stake'];
+        $validated['wager_odds'] = $validated['odds'];
+        $validated['tips'] = $validated['selection'];
+        
+        // Remove fields that don't exist in bets table
+        unset($validated['sport_id']);
+        unset($validated['operator_id']);
+        unset($validated['stake']);
+        unset($validated['odds']);
+        unset($validated['selection']);
+        unset($validated['game_at']);
         
         $bet = Bet::create($validated);
         

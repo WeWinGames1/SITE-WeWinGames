@@ -3,6 +3,7 @@ import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, useForm, usePage, router } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 import { debounce } from 'lodash';
+import { route } from 'ziggy-js';
 
 interface Customer {
   id: number;

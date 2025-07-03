@@ -26,32 +26,56 @@ const sportIcons = {
     'Ultimate Fighting Championship': '🥊'
 };
 
-const isGold = auth?.user?.data?.subscriptions[0]?.type === 'gold';
-const isSilver = auth?.user?.data?.subscriptions[0]?.type === 'silver';
-const isPlatinum = auth?.user?.data?.subscriptions[0]?.type === 'platinum';
-const isDefault = auth?.user?.data?.subscriptions[0]?.type === 'default';
-const roiData = page.props.roiData || {};
-const bronzeBets = bets.filter((bet) => bet.membership === 'bronze' || auth.isAdmin);
+// Get user's subscription type - handle ambassador/gifted/override users
+const getUserSubscriptionType = () => {
+    if (!auth?.user?.data) return 'free';
+    const user = auth.user.data;
+    
+    // Check for override fields first (ambassador, gifted, override)
+    if (user.ambassador || user.gifted || user.override) {
+        return 'platinum'; // These users get platinum access
+    }
+    
+    // Check active subscription
+    const activeSubscription = user.subscriptions?.find(sub => sub.stripe_status === 'active');
+    if (activeSubscription?.type) {
+        return activeSubscription.type.toLowerCase();
+    }
+    
+    return 'free';
+};
+
+const userSubscriptionType = getUserSubscriptionType();
+const isAdmin = auth?.isAdmin || false;
+
+// Determine which bets can be viewed based on subscription
+const canViewBet = (bet) => {
+    if (isAdmin) return true;
+    
+    const betLevel = bet.membership?.toLowerCase() || 'bronze';
+    
+    switch (userSubscriptionType) {
+        case 'free':
+            return betLevel === 'bronze';
+        case 'silver':
+            return betLevel === 'bronze' || betLevel === 'silver';
+        case 'gold':
+            return betLevel === 'bronze' || betLevel === 'silver' || betLevel === 'gold';
+        case 'platinum':
+            return true; // Can view all bets
+        default:
+            return betLevel === 'bronze';
+    }
+};
+
+// Split bets into viewable and covered
+const viewableBets = bets
+    .filter(bet => canViewBet(bet))
+    .map(bet => ({ ...bet, isCovered: false }));
 
 const coveredBets = bets
-  .filter(bet => { 
-    if (auth.isAdmin) return true;
-    if (bet.membership.toLowerCase() === 'bronze') return false;
-    if (bet.membership.toLowerCase() === 'gold') return !isGold && !isPlatinum && !isDefault ;
-    if (bet.membership.toLowerCase() === 'silver') return !isSilver && !isGold && !isPlatinum && !isDefault;
-    if (bet.membership.toLowerCase() === 'platinum') return !isPlatinum && !isDefault;
-  })
-  .map(bet => ({ ...bet, isCovered: true }));
-
-const viewableBets = bets
-  .filter(bet => { 
-    if (auth.isAdmin) return true;
-    if (bet.membership.toLowerCase() === 'bronze') return true;
-    if (bet.membership.toLowerCase() === 'gold') return isGold || isPlatinum || isDefault;
-    if (bet.membership.toLowerCase() === 'silver') return isSilver || isGold || isPlatinum || isDefault;
-    if (bet.membership.toLowerCase() === 'platinum') return isPlatinum || isDefault;
-  })
-  .map(bet => ({ ...bet, isCovered: false }));
+    .filter(bet => !canViewBet(bet))
+    .map(bet => ({ ...bet, isCovered: true }));
 // Group bets by sport
 const groupedBets = computed(() => {
   return viewableBets.reduce((acc, bet) => {
@@ -69,11 +93,28 @@ const coveredGroupedBets = computed(() => {
   }, {});
 });
 
+// Helper function to categorize bets by date
+const categorizeBet = (bet) => {
+    const betDate = new Date(bet.betting_date || bet.game_at);
+    const today = new Date();
+    const endOfWeek = new Date();
+    endOfWeek.setDate(today.getDate() + (7 - today.getDay())); // Next Sunday
+    
+    // Check if it's golf and within this week
+    const isGolf = (bet.sports || '').toLowerCase().includes('golf');
+    
+    if (betDate.toDateString() === today.toDateString()) {
+        return { category: 'daily', priority: 1 };
+    } else if (isGolf && betDate <= endOfWeek) {
+        return { category: 'weekly_golf', priority: 2 };
+    } else {
+        return { category: 'futures', priority: 3 };
+    }
+};
+
 // Combine all bets for grouping
 const allGroupedBets = computed(() => {
-  // Get all non-bronze bets first, then bronze bets last
-  
-  // Merge, bronze last so it overwrites by id
+  // Merge all bets
   const all = [...viewableBets, ...coveredBets].filter(
     (bet, idx, arr) => arr.findIndex(b => b.id === bet.id) === idx
   );
@@ -83,7 +124,26 @@ const allGroupedBets = computed(() => {
     ? all 
     : all.filter(bet => bet.sports === selectedSport.value);
   
-  return filtered.reduce((acc, bet) => {
+  // Sort bets by priority
+  const sorted = filtered.sort((a, b) => {
+    const catA = categorizeBet(a);
+    const catB = categorizeBet(b);
+    
+    // First sort by priority
+    if (catA.priority !== catB.priority) {
+        return catA.priority - catB.priority;
+    }
+    
+    // Then by membership level (bronze first for free picks)
+    const membershipOrder = { 'bronze': 1, 'silver': 2, 'gold': 3, 'platinum': 4 };
+    const memA = membershipOrder[a.membership?.toLowerCase()] || 5;
+    const memB = membershipOrder[b.membership?.toLowerCase()] || 5;
+    
+    return memA - memB;
+  });
+  
+  // Group by sport
+  return sorted.reduce((acc, bet) => {
     if (!acc[bet.sports]) acc[bet.sports] = [];
     acc[bet.sports].push(bet);
     return acc;
@@ -110,9 +170,7 @@ const formatBetDate = (date: string) => {
     if (!date) return 'TBD';
     return new Date(date).toLocaleDateString('en-US', { 
         day: 'numeric',
-        month: 'short',
-        hour: 'numeric',
-        minute: '2-digit'
+        month: 'short'
     });
 };
 
@@ -165,99 +223,13 @@ const getMembershipBadgeStyle = (membership: string) => {
             <!-- Picks Grid Section -->
             <section class="py-4">
                 <div class="container">
-                    <!-- Picks Grid -->
-                    <div class="row g-3">
-                        <div 
-                            v-for="bet in displayBets" 
-                            :key="bet.id"
-                            class="col-12 col-md-6 col-lg-4"
-                        >
-                            <div class="card h-100" style="background-color: #1a2332; border: 2px solid #2e4057;">
-                                <!-- Card Header -->
-                                <div class="card-header d-flex align-items-center justify-content-between py-3" style="background-color: #0d1829; border-bottom: 1px solid #2e4057;">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span v-if="bet.sports === 'Football'" class="fs-5">🏈</span>
-                                        <span class="text-white fw-semibold">{{ bet.sports }}</span>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-3 text-secondary small">
-                                        <span>{{ bet.league || 'Premier League' }}</span>
-                                        <span>Date: {{ formatBetDate(bet.betting_date) }}</span>
-                                    </div>
-                                </div>
-                                
-                                <!-- Card Body -->
-                                <div class="card-body">
-                                    <!-- Teams -->
-                                    <div class="text-center py-4">
-                                        <div class="d-flex align-items-center justify-content-center gap-4">
-                                            <div class="text-center">
-                                                <img 
-                                                    :src="bet.team_one_logo || '/images/team-placeholder.svg'"
-                                                    :alt="bet.team_one"
-                                                    class="mb-2"
-                                                    style="height: 60px; width: auto;"
-                                                    onerror="this.src='/images/team-placeholder.svg'"
-                                                >
-                                                <div class="text-white fw-medium">{{ bet.team_one }}</div>
-                                            </div>
-                                            <div class="text-white fs-4 fw-bold">VS</div>
-                                            <div class="text-center">
-                                                <img 
-                                                    :src="bet.team_two_logo || '/images/team-placeholder.svg'"
-                                                    :alt="bet.team_two"
-                                                    class="mb-2"
-                                                    style="height: 60px; width: auto;"
-                                                    onerror="this.src='/images/team-placeholder.svg'"
-                                                >
-                                                <div class="text-white fw-medium">{{ bet.team_two }}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Game Level Badge -->
-                                    <div class="text-center mb-3">
-                                        <span 
-                                            class="badge px-4 py-2"
-                                            :class="getMembershipBadgeStyle(bet.membership)"
-                                        >
-                                            Game Level: {{ bet.membership.toUpperCase() }}
-                                        </span>
-                                    </div>
-                                    
-                                    <!-- Betting Pick -->
-                                    <div v-if="!bet.isCovered" class="text-center">
-                                        <button class="btn btn-warning btn-lg w-100 fw-bold text-dark">
-                                            {{ bet.tips || 'View Pick' }}
-                                        </button>
-                                    </div>
-                                    <div v-else class="text-center">
-                                        <button class="btn btn-secondary btn-lg w-100" disabled>
-                                            <i class="bi bi-lock-fill me-2"></i>
-                                            Upgrade to View
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="text-center mb-5">
+                        <h2 class="display-4 fw-bold text-white mb-4">Today's Picks</h2>
+                        <p class="fs-5 text-gray-light mb-5">Expert analysis and betting recommendations</p>
                     </div>
                     
-                    <!-- Pagination -->
-                    <div class="d-flex justify-content-center align-items-center mt-5">
-                        <button class="btn btn-outline-light me-3">
-                            <i class="bi bi-chevron-left"></i>
-                        </button>
-                        <span class="text-white mx-3">1 / 6</span>
-                        <button class="btn btn-outline-light ms-3">
-                            <i class="bi bi-chevron-right"></i>
-                        </button>
-                    </div>
-                    
-                    <!-- Empty State -->
-                    <div v-if="displayBets.length === 0" class="text-center py-5">
-                        <i class="bi bi-inbox text-secondary display-1 mb-3"></i>
-                        <h5 class="text-white">No picks available</h5>
-                        <p class="text-secondary">Check back later for new betting picks</p>
-                    </div>
+                    <!-- Use the same GroupedBetCards component as home page -->
+                    <GroupedBetCards :grouped-bets="allGroupedBets" />
                 </div>
             </section>
         </div>

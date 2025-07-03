@@ -3,12 +3,6 @@ import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
 
-interface User {
-    id: number;
-    name: string;
-    email: string;
-}
-
 interface Sport {
     id: number;
     name: string;
@@ -34,7 +28,6 @@ interface Operator {
 }
 
 interface Props {
-    users: User[];
     sports: Sport[];
     games: Game[];
     operators: Operator[];
@@ -44,9 +37,9 @@ interface Props {
 const props = defineProps<Props>();
 
 const form = useForm({
-    user_id: '',
     sport_id: '',
-    game_id: '',
+    team_one: '',
+    team_two: '',
     operator_id: '',
     selection: '',
     description: '',
@@ -60,6 +53,8 @@ const form = useForm({
     profit: 0,
     is_featured: false,
     confidence: 5,
+    membership: 'bronze',
+    referrer: '',
 });
 
 // Filtered games based on selected sport
@@ -149,27 +144,6 @@ function formatGameOption(game: Game): string {
                         <h2 class="h5 fw-medium text-dark mb-3">Basic Information</h2>
                         
                         <div class="row g-3">
-                            <!-- User -->
-                            <div class="col-md-6">
-                                <label for="user_id" class="form-label text-dark fw-medium">
-                                    User <span class="text-danger">*</span>
-                                </label>
-                                <select
-                                    id="user_id"
-                                    v-model="form.user_id"
-                                    class="form-select"
-                                    required
-                                >
-                                    <option value="">Select a user...</option>
-                                    <option v-for="user in users" :key="user.id" :value="user.id">
-                                        {{ user.name }} ({{ user.email }})
-                                    </option>
-                                </select>
-                                <div v-if="form.errors.user_id" class="invalid-feedback d-block">
-                                    {{ form.errors.user_id }}
-                                </div>
-                            </div>
-
                             <!-- Sport -->
                             <div class="col-md-6">
                                 <label for="sport_id" class="form-label text-dark fw-medium">
@@ -191,22 +165,39 @@ function formatGameOption(game: Game): string {
                                 </div>
                             </div>
 
-                            <!-- Game -->
+                            <!-- Home Team -->
                             <div class="col-md-6">
-                                <label for="game_id" class="form-label text-dark fw-medium">Game</label>
-                                <select
-                                    id="game_id"
-                                    v-model="form.game_id"
-                                    :disabled="!form.sport_id"
-                                    class="form-select"
-                                >
-                                    <option value="">Select a game (optional)...</option>
-                                    <option v-for="game in filteredGames" :key="game.id" :value="game.id">
-                                        {{ formatGameOption(game) }}
-                                    </option>
-                                </select>
-                                <div v-if="form.errors.game_id" class="invalid-feedback d-block">
-                                    {{ form.errors.game_id }}
+                                <label for="team_one" class="form-label text-dark fw-medium">
+                                    Home Team <span class="text-danger">*</span>
+                                </label>
+                                <input
+                                    id="team_one"
+                                    v-model="form.team_one"
+                                    type="text"
+                                    class="form-control"
+                                    placeholder="e.g., Los Angeles Lakers"
+                                    required
+                                />
+                                <div v-if="form.errors.team_one" class="invalid-feedback d-block">
+                                    {{ form.errors.team_one }}
+                                </div>
+                            </div>
+
+                            <!-- Away Team -->
+                            <div class="col-md-6">
+                                <label for="team_two" class="form-label text-dark fw-medium">
+                                    Away Team <span class="text-danger">*</span>
+                                </label>
+                                <input
+                                    id="team_two"
+                                    v-model="form.team_two"
+                                    type="text"
+                                    class="form-control"
+                                    placeholder="e.g., Boston Celtics"
+                                    required
+                                />
+                                <div v-if="form.errors.team_two" class="invalid-feedback d-block">
+                                    {{ form.errors.team_two }}
                                 </div>
                             </div>
 
@@ -433,7 +424,7 @@ function formatGameOption(game: Game): string {
                             </div>
 
                             <!-- Confidence -->
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label for="confidence" class="form-label text-dark fw-medium">Confidence (1-10)</label>
                                 <input
                                     id="confidence"
@@ -449,8 +440,29 @@ function formatGameOption(game: Game): string {
                                 </div>
                             </div>
 
+                            <!-- Membership Level -->
+                            <div class="col-md-4">
+                                <label for="membership" class="form-label text-dark fw-medium">
+                                    Membership Level <span class="text-danger">*</span>
+                                </label>
+                                <select
+                                    id="membership"
+                                    v-model="form.membership"
+                                    class="form-select"
+                                    required
+                                >
+                                    <option value="bronze">Bronze (Free)</option>
+                                    <option value="silver">Silver</option>
+                                    <option value="gold">Gold</option>
+                                    <option value="platinum">Platinum</option>
+                                </select>
+                                <div v-if="form.errors.membership" class="invalid-feedback d-block">
+                                    {{ form.errors.membership }}
+                                </div>
+                            </div>
+
                             <!-- Featured -->
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-check mt-4">
                                     <input
                                         id="is_featured"
@@ -464,6 +476,21 @@ function formatGameOption(game: Game): string {
                                 </div>
                                 <div v-if="form.errors.is_featured" class="invalid-feedback d-block">
                                     {{ form.errors.is_featured }}
+                                </div>
+                            </div>
+
+                            <!-- Referrer -->
+                            <div class="col-md-12">
+                                <label for="referrer" class="form-label text-dark fw-medium">Referrer (optional)</label>
+                                <input
+                                    id="referrer"
+                                    v-model="form.referrer"
+                                    type="text"
+                                    class="form-control"
+                                    placeholder="e.g., Twitter, Instagram, Email Campaign, etc."
+                                />
+                                <div v-if="form.errors.referrer" class="invalid-feedback d-block">
+                                    {{ form.errors.referrer }}
                                 </div>
                             </div>
                         </div>

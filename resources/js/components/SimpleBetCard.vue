@@ -67,15 +67,12 @@ const props = defineProps({
 });
 
 const formatDate = (date: string) => {
-    if (!date) return '21 May, 19:00';
+    if (!date) return '21 May';
     const d = new Date(date);
     return d.toLocaleDateString('en-US', { 
         day: 'numeric',
-        month: 'short',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-    }).replace(',', ', ');
+        month: 'short'
+    });
 };
 
 const formatBetTip = (bet: any) => {

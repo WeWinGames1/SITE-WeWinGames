@@ -73,7 +73,7 @@ const subscriptionBadge = computed(() => {
                 <div class="container">
                     <div class="row g-4 mb-5">
                         <!-- Win Rate Card -->
-                        <div class="col-md-6 col-lg-3">
+                        <div class="col-12 col-sm-6 col-lg-3">
                             <div class="card h-100" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
                                 <div class="card-body p-4">
                                     <div class="d-flex align-items-center justify-content-between mb-3">
@@ -89,7 +89,7 @@ const subscriptionBadge = computed(() => {
                         </div>
 
                         <!-- Total Picks Card -->
-                        <div class="col-md-6 col-lg-3">
+                        <div class="col-12 col-sm-6 col-lg-3">
                             <div class="card h-100" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
                                 <div class="card-body p-4">
                                     <div class="d-flex align-items-center justify-content-between mb-3">
@@ -105,7 +105,7 @@ const subscriptionBadge = computed(() => {
                         </div>
 
                         <!-- Profit Card -->
-                        <div class="col-md-6 col-lg-3">
+                        <div class="col-12 col-sm-6 col-lg-3">
                             <div class="card h-100" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
                                 <div class="card-body p-4">
                                     <div class="d-flex align-items-center justify-content-between mb-3">
@@ -121,7 +121,7 @@ const subscriptionBadge = computed(() => {
                         </div>
 
                         <!-- Today's Picks Card -->
-                        <div class="col-md-6 col-lg-3">
+                        <div class="col-12 col-sm-6 col-lg-3">
                             <div class="card h-100" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
                                 <div class="card-body p-4">
                                     <div class="d-flex align-items-center justify-content-between mb-3">
@@ -142,7 +142,7 @@ const subscriptionBadge = computed(() => {
                         <div class="col-12">
                             <h2 class="h4 fw-bold text-white mb-4">Quick Actions</h2>
                         </div>
-                        <div class="col-md-6 col-lg-3">
+                        <div class="col-12 col-sm-6 col-lg-3">
                             <Link href="/todays-bets" class="card h-100 text-decoration-none" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
                                 <div class="card-body p-4 text-center">
                                     <i class="bi bi-lightning-charge text-purple fs-1 mb-3"></i>
@@ -151,7 +151,7 @@ const subscriptionBadge = computed(() => {
                                 </div>
                             </Link>
                         </div>
-                        <div class="col-md-6 col-lg-3">
+                        <div class="col-12 col-sm-6 col-lg-3">
                             <Link href="/betting-results" class="card h-100 text-decoration-none" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
                                 <div class="card-body p-4 text-center">
                                     <i class="bi bi-trophy text-warning fs-1 mb-3"></i>
@@ -160,7 +160,7 @@ const subscriptionBadge = computed(() => {
                                 </div>
                             </Link>
                         </div>
-                        <div class="col-md-6 col-lg-3">
+                        <div class="col-12 col-sm-6 col-lg-3">
                             <Link href="/settings/billing" class="card h-100 text-decoration-none" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
                                 <div class="card-body p-4 text-center">
                                     <i class="bi bi-credit-card text-info fs-1 mb-3"></i>
@@ -169,7 +169,7 @@ const subscriptionBadge = computed(() => {
                                 </div>
                             </Link>
                         </div>
-                        <div class="col-md-6 col-lg-3">
+                        <div class="col-12 col-sm-6 col-lg-3">
                             <Link href="/support/tickets" class="card h-100 text-decoration-none" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
                                 <div class="card-body p-4 text-center">
                                     <i class="bi bi-headset text-success fs-1 mb-3"></i>
