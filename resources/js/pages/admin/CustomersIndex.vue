@@ -11,6 +11,7 @@ interface Customer {
   email: string;
   created_at: string;
   status: 'active' | 'disabled' | 'pending';
+  stripe_id?: string;
   pm_type?: string;
   pm_last_four?: string;
   subscriptions: Array<{
@@ -59,6 +60,12 @@ interface Props {
 const props = defineProps<Props>();
 const page = usePage();
 const stripePrices = page.props.stripePrices || {};
+
+// Determine Stripe mode from configuration
+const stripeMode = computed(() => {
+  const stripeKey = page.props.stripeKey || '';
+  return stripeKey.includes('pk_test_') ? 'test' : 'live';
+});
 
 // Filter state
 const filters = ref({
@@ -679,11 +686,16 @@ function getCustomerBadgeClass(status: string) {
                         </li>
                         <li><hr class="dropdown-divider"></li>
                         <li><h6 class="dropdown-header">Billing</h6></li>
-                        <li>
-                          <button class="dropdown-item" @click="router.visit(route('billing.portal', { redirect: route('admin.customers.index') }))">
+                        <li v-if="customer.stripe_id">
+                          <a 
+                            :href="`https://dashboard.stripe.com/${stripeMode}/customers/${customer.stripe_id}`"
+                            target="_blank"
+                            class="dropdown-item"
+                          >
                             <i class="bi bi-credit-card me-2"></i>
                             View in Stripe
-                          </button>
+                            <i class="bi bi-box-arrow-up-right ms-1 small"></i>
+                          </a>
                         </li>
                       </ul>
                     </div>

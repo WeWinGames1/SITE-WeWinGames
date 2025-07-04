@@ -94,9 +94,9 @@ function insertVariable(variable: string) {
                 <div class="col">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h1 class="h2 mb-1 text-dark">Edit Email Template</h1>
+                            <h1 class="h2 mb-1 text-dark">Edit : {{ template.name }}</h1>
                             <p class="text-muted mb-0">
-                                {{ template.name }} - {{ template.description }}
+                                {{ template.description }}
                             </p>
                         </div>
                         <Link 

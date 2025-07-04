@@ -54,6 +54,7 @@ class HandleInertiaRequests extends Middleware
                 'isImpersonating' => session()->has('impersonator_id'),
                 'impersonatorId' => session()->get('impersonator_id'),
             ],
+            'stripeKey' => config('cashier.key'),
         ];
 
         // Include bets only if the user is an admin
