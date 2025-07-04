@@ -47,8 +47,17 @@ Route::get('dashboard', [CustomerDashboardController::class, 'index'])
 
 // Admin dashboard uses a different route (admin.dashboard)
 Route::get('/bet/{bet}', [BetController::class, 'authenticatedShow'])->middleware(['auth', 'verified'])->name('bet.show');
-Route::get('/subscription-checkout', [RegisteredUserController::class, 'newSubscription'])
+// Subscription checkout routes
+Route::get('/subscription-checkout', [\App\Http\Controllers\SubscriptionController::class, 'checkout'])
     ->name('subscription.checkout')
+    ->middleware(['auth', 'verified']);
+    
+Route::post('/subscription-process', [\App\Http\Controllers\SubscriptionController::class, 'process'])
+    ->name('subscription.process')
+    ->middleware(['auth', 'verified']);
+    
+Route::post('/validate-coupon', [\App\Http\Controllers\SubscriptionController::class, 'validateCoupon'])
+    ->name('subscription.validate-coupon')
     ->middleware(['auth', 'verified']);
 
 // Subscription management routes
@@ -226,6 +235,8 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
     Route::post('/{stripeProduct}/connect', [StripeProductController::class, 'connectToStripe'])->name('connect');
     Route::post('/{stripeProduct}/create-in-stripe', [StripeProductController::class, 'createInStripe'])->name('create-in-stripe');
     Route::post('/{stripeProduct}/disconnect', [StripeProductController::class, 'disconnectFromStripe'])->name('disconnect');
+    Route::post('/{stripeProduct}/create-price-version', [StripeProductController::class, 'createPriceVersion'])->name('create-price-version');
+    Route::get('/price-history', [StripeProductController::class, 'priceHistory'])->name('price-history');
 });
 
 // Subscription Dashboard Routes

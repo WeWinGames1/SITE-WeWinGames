@@ -100,7 +100,16 @@ class User extends Authenticatable implements MustVerifyEmail
         if ($this->subscribed()) {
             $subscription = $this->subscription();
             if ($subscription && $subscription->stripe_price) {
-                // Get the price to tier mapping from config
+                // First try to get from StripeProduct table (more reliable)
+                $stripeProduct = \App\Models\StripeProduct::where('stripe_price_id', $subscription->stripe_price)
+                    ->where('is_active', true)
+                    ->first();
+                    
+                if ($stripeProduct) {
+                    return $stripeProduct->tier;
+                }
+                
+                // Fallback to config
                 $priceToTier = config('stripe.price_to_tier');
                 if (isset($priceToTier[$subscription->stripe_price])) {
                     return $priceToTier[$subscription->stripe_price]['tier'];

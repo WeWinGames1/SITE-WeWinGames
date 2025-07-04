@@ -85,19 +85,22 @@ const sportIcons = {
     'Ultimate Fighting Championship': 'bi-person-arms-up',
     'all': 'bi-grid-3x3-gap-fill'
 };
-const silver_monthly = page.props.env.SILVER_MONTHLY;
-const silver_weekly = page.props.env.SILVER_WEEKLY;
-const gold_weekly = page.props.env.GOLD_WEEKLY;
-const platinum_weekly = page.props.env.PLATINUM_WEEKLY;
-const silver_daily = page.props.env.SILVER_DAILY;
-const gold_daily = page.props.env.GOLD_DAILY;
-const platinum_daily = page.props.env.PLATINUM_DAILY;
-const gold_monthly = page.props.env.GOLD_MONTHLY;
-const platinum_monthly = page.props.env.PLATINUM_MONTHLY;
+// Use the dynamic Stripe prices from shared props
+const stripePrices = page.props.stripePrices || {};
+const silver_monthly = stripePrices.silver_monthly;
+const silver_weekly = stripePrices.silver_weekly;
+const silver_daily = stripePrices.silver_daily;
+const gold_monthly = stripePrices.gold_monthly;
+const gold_weekly = stripePrices.gold_weekly;
+const gold_daily = stripePrices.gold_daily;
+const platinum_monthly = stripePrices.platinum_monthly;
+const platinum_weekly = stripePrices.platinum_weekly;
+const platinum_daily = stripePrices.platinum_daily;
 const plans = [
   {
     name: 'Silver',
-    price: '$60',
+    price: '$45',
+    monthlyPrice: '$45',
     duration: '30 days',
     features: [
       'Over 5 picks a day',
@@ -109,13 +112,14 @@ const plans = [
     monthlyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: silver_monthly }),
     weeklyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: silver_weekly }),
     dailyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: silver_daily }),
-    weeklyPrice: '20',
+    weeklyPrice: '17',
     dailyPrice: '5',
     highlight: false,
   },
   {
     name: 'Gold',
-    price: '$110',
+    price: '$65',
+    monthlyPrice: '$65',
     duration: '30 days',
     features: [
       'All Silver features +',
@@ -128,13 +132,14 @@ const plans = [
     monthlyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: gold_monthly }),
     weeklyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: gold_weekly }),
     dailyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: gold_daily }),
-    weeklyPrice: '39',
-    dailyPrice: '10',
+    weeklyPrice: '29',
+    dailyPrice: '8',
     highlight: true,
   },
   {
     name: 'Platinum',
-    price: '$149',
+    price: '$80',
+    monthlyPrice: '$80',
     duration: '30 days',
     features: [
       'All Silver & Gold features +',

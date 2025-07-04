@@ -28,11 +28,11 @@ class CustomerDashboardController extends Controller
         $recentWins = $this->betService->getRecentWinningBets(5);
         
         // Get user's subscription tier
-        $subscription = $user->subscriptions()->active()->first();
-        $subscriptionTier = $subscription ? $subscription->type : 'free';
+        $subscriptionTier = $user->getCurrentTier() ?? 'free';
+        $hasActiveSubscription = $user->hasActiveSubscription();
         
         return Inertia::render('CustomerDashboard', [
-            'subscriptionTier' => $subscriptionTier,
+            'subscriptionTier' => strtolower($subscriptionTier),
             'todaysBetsCount' => count($todaysBets),
             'recentWins' => $recentWins,
             'monthlyStats' => [
@@ -40,7 +40,7 @@ class CustomerDashboardController extends Controller
                 'totalPicks' => 124,
                 'profitPercentage' => 18.5,
             ],
-            'hasActiveSubscription' => $subscription !== null,
+            'hasActiveSubscription' => $hasActiveSubscription,
         ]);
     }
 }

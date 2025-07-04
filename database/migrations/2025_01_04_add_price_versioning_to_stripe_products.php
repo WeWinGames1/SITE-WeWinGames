@@ -1,0 +1,63 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('stripe_products', function (Blueprint $table) {
+            $table->boolean('is_current')->default(true)->after('is_active');
+            $table->string('version')->nullable()->after('is_current');
+            $table->decimal('legacy_price', 8, 2)->nullable()->after('version');
+            $table->timestamp('superseded_at')->nullable()->after('legacy_price');
+            $table->string('superseded_by_product_id')->nullable()->after('superseded_at');
+            
+            // Add index for faster lookups
+            $table->index(['tier', 'billing_period', 'is_current']);
+            $table->index('superseded_by_product_id');
+        });
+        
+        // Create a table to track price migrations
+        Schema::create('stripe_price_migrations', function (Blueprint $table) {
+            $table->id();
+            $table->string('old_stripe_price_id');
+            $table->string('new_stripe_price_id');
+            $table->string('tier');
+            $table->string('billing_period');
+            $table->decimal('old_price', 8, 2);
+            $table->decimal('new_price', 8, 2);
+            $table->text('notes')->nullable();
+            $table->timestamp('effective_date');
+            $table->timestamps();
+            
+            $table->index(['old_stripe_price_id', 'new_stripe_price_id']);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('stripe_products', function (Blueprint $table) {
+            $table->dropIndex(['tier', 'billing_period', 'is_current']);
+            $table->dropIndex(['superseded_by_product_id']);
+            
+            $table->dropColumn([
+                'is_current',
+                'version',
+                'legacy_price',
+                'superseded_at',
+                'superseded_by_product_id'
+            ]);
+        });
+        
+        Schema::dropIfExists('stripe_price_migrations');
+    }
+};

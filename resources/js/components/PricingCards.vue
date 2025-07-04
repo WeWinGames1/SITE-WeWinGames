@@ -1,30 +1,68 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+
 interface CurrentPlan {
     tier: string;
     period: string;
     price_id: string;
 }
 
+interface Plan {
+    name: string;
+    price: string;
+    monthlyPrice: string;
+    weeklyPrice: string;
+    dailyPrice: string;
+    duration: string;
+    features: string[];
+    monthlyLink: string;
+    weeklyLink: string;
+    dailyLink: string;
+    highlight?: boolean;
+    isCurrentPlan?: boolean;
+}
+
 defineProps<{
-  plans: Array<{
-    name: string,
-    price: string,
-    duration: string,
-    features: string[],
-    monthlyLink: string,
-    weeklyLink?: string,
-    dailyLink?: string,
-    weeklyPrice?: string,
-    dailyPrice?: string,
-    highlight?: boolean,
-    isCurrentPlan?: boolean,
-  }>,
+  plans: Array<Plan>,
   currentPlan?: CurrentPlan | null
 }>();
+
+const selectedPeriod = ref<'monthly' | 'weekly' | 'daily'>('monthly');
 </script>
 
 <template>
-  <div class="row g-3 justify-content-center">
+  <div>
+    <!-- Billing Period Selector -->
+    <div class="text-center mb-4">
+      <div class="btn-group" role="group" aria-label="Billing period">
+        <button 
+          type="button" 
+          class="btn" 
+          :class="selectedPeriod === 'monthly' ? 'btn-primary' : 'btn-outline-primary'"
+          @click="selectedPeriod = 'monthly'"
+        >
+          Monthly
+        </button>
+        <button 
+          type="button" 
+          class="btn" 
+          :class="selectedPeriod === 'weekly' ? 'btn-primary' : 'btn-outline-primary'"
+          @click="selectedPeriod = 'weekly'"
+        >
+          Weekly
+        </button>
+        <button 
+          type="button" 
+          class="btn" 
+          :class="selectedPeriod === 'daily' ? 'btn-primary' : 'btn-outline-primary'"
+          @click="selectedPeriod = 'daily'"
+        >
+          Daily
+        </button>
+      </div>
+    </div>
+    
+    <div class="row g-3 justify-content-center">
     <div
       v-for="plan in plans"
       :key="plan.name"
@@ -42,6 +80,14 @@ defineProps<{
           <span class="badge bg-success px-3 py-2">Current Plan</span>
         </div>
         
+        <!-- Platinum First Month Special -->
+        <div v-else-if="plan.name === 'Platinum' && selectedPeriod === 'monthly'" class="position-absolute top-0 start-50 translate-middle">
+          <span class="badge bg-warning text-dark px-3 py-2">
+            <i class="bi bi-star-fill me-1"></i>
+            $10 First Month
+          </span>
+        </div>
+        
         <div class="card-body d-flex flex-column p-4">
           <!-- Plan Header -->
           <div class="mb-3 text-center">
@@ -54,12 +100,26 @@ defineProps<{
           <!-- Pricing -->
           <div class="mb-3">
             <div class="d-flex align-items-baseline mb-2 justify-content-center">
-              <span class="display-5 fw-bold">{{ plan.price }}</span>
-              <span class="text-muted ms-2">/ month</span>
+              <span class="display-5 fw-bold">
+                {{ selectedPeriod === 'monthly' ? plan.monthlyPrice : 
+                   selectedPeriod === 'weekly' ? '$' + plan.weeklyPrice : 
+                   '$' + plan.dailyPrice }}
+              </span>
+              <span class="text-muted ms-2">/ {{ selectedPeriod === 'monthly' ? 'month' : selectedPeriod === 'weekly' ? 'week' : 'day' }}</span>
             </div>
-            <div class="d-flex flex-wrap gap-3 text-muted small justify-content-center">
-              <span><i class="bi bi-check text-success"></i> Weekly: ${{ plan.weeklyPrice }}</span>
-              <span><i class="bi bi-check text-success"></i> Daily: ${{ plan.dailyPrice }}</span>
+            <div class="text-center text-muted small">
+              <span v-if="selectedPeriod === 'monthly' && plan.name === 'Platinum'" class="text-warning fw-bold">
+                <i class="bi bi-star-fill"></i> Special: $10 first month, then $80/month
+              </span>
+              <span v-else-if="selectedPeriod === 'monthly'">
+                Also available weekly & daily
+              </span>
+              <span v-else-if="selectedPeriod === 'weekly'">
+                ${{ plan.monthlyPrice }}/month • ${{ plan.dailyPrice }}/day
+              </span>
+              <span v-else>
+                ${{ plan.monthlyPrice }}/month • ${{ plan.weeklyPrice }}/week
+              </span>
             </div>
           </div>
           
@@ -75,7 +135,9 @@ defineProps<{
           <div class="mt-auto">
             <a
               v-if="!plan.isCurrentPlan"
-              :href="plan.monthlyLink"
+              :href="selectedPeriod === 'monthly' ? plan.monthlyLink : 
+                     selectedPeriod === 'weekly' ? plan.weeklyLink : 
+                     plan.dailyLink"
               class="btn w-100 py-2 mb-2"
               :class="plan.highlight ? 'btn-primary' : 'btn-outline-primary'"
             >
@@ -87,17 +149,10 @@ defineProps<{
               <span class="fw-semibold">Your Current Plan</span>
             </div>
             
-            <!-- Additional Billing Options -->
-            <div class="text-center">
-              <small class="text-muted">
-                Also available: 
-                <a :href="plan.weeklyLink" class="text-primary text-decoration-none">Weekly</a> • 
-                <a :href="plan.dailyLink" class="text-primary text-decoration-none">Daily</a>
-              </small>
-            </div>
           </div>
         </div>
       </div>
+    </div>
     </div>
   </div>
 </template>

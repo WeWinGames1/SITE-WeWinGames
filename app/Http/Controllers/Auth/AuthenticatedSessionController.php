@@ -32,14 +32,17 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+        
+        // Ensure CSRF token is refreshed
+        $request->session()->put('_token', csrf_token());
 
         // If user is admin, go to admin dashboard
         if (Auth::user()->hasRole('admin')) {
-            return redirect()->intended(route('admin.dashboard', absolute: false));
+            return redirect()->intended(route('admin.dashboard'));
         }
 
         // Otherwise, redirect customers to their dashboard
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect()->intended(route('dashboard'));
     }
 
     /**

@@ -44,15 +44,18 @@ const props = defineProps<Props>();
 
 const page = usePage();
 const subscriptions = page.props.subscriptions || [];
-const silver_monthly = page.props.env.SILVER_MONTHLY;
-const silver_weekly = page.props.env.SILVER_WEEKLY;
-const gold_weekly = page.props.env.GOLD_WEEKLY;
-const platinum_weekly = page.props.env.PLATINUM_WEEKLY;
-const silver_daily = page.props.env.SILVER_DAILY;
-const gold_daily = page.props.env.GOLD_DAILY;
-const platinum_daily = page.props.env.PLATINUM_DAILY;
-const gold_monthly = page.props.env.GOLD_MONTHLY;
-const platinum_monthly = page.props.env.PLATINUM_MONTHLY;
+
+// Use the dynamic Stripe prices from shared props
+const stripePrices = page.props.stripePrices || {};
+const silver_monthly = stripePrices.silver_monthly;
+const silver_weekly = stripePrices.silver_weekly;
+const silver_daily = stripePrices.silver_daily;
+const gold_monthly = stripePrices.gold_monthly;
+const gold_weekly = stripePrices.gold_weekly;
+const gold_daily = stripePrices.gold_daily;
+const platinum_monthly = stripePrices.platinum_monthly;
+const platinum_weekly = stripePrices.platinum_weekly;
+const platinum_daily = stripePrices.platinum_daily;
 
 // Check if a plan matches the current subscription
 const isPlanActive = (planName: string, planPeriod: string) => {
@@ -64,7 +67,8 @@ const isPlanActive = (planName: string, planPeriod: string) => {
 const plans = computed(() => [
   {
     name: 'Silver',
-    price: '$60',
+    price: '$45',
+    monthlyPrice: '$45',
     duration: '30 days',
     features: [
       'Over 5 picks a day',
@@ -76,14 +80,15 @@ const plans = computed(() => [
     monthlyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: silver_monthly }),
     weeklyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: silver_weekly }),
     dailyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: silver_daily }),
-    weeklyPrice: '20',
+    weeklyPrice: '17',
     dailyPrice: '5',
     highlight: false,
     isCurrentPlan: isPlanActive('Silver', 'monthly'),
   },
   {
     name: 'Gold',
-    price: '$110',
+    price: '$65',
+    monthlyPrice: '$65',
     duration: '30 days',
     features: [
       'All Silver features +',
@@ -96,14 +101,15 @@ const plans = computed(() => [
     monthlyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: gold_monthly }),
     weeklyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: gold_weekly }),
     dailyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: gold_daily }),
-    weeklyPrice: '39',
-    dailyPrice: '10',
+    weeklyPrice: '29',
+    dailyPrice: '8',
     highlight: true,
     isCurrentPlan: isPlanActive('Gold', 'monthly'),
   },
   {
     name: 'Platinum',
-    price: '$149',
+    price: '$80',
+    monthlyPrice: '$80',
     duration: '30 days',
     features: [
       'All Silver & Gold features +',
@@ -125,6 +131,19 @@ const plans = computed(() => [
 
 const handleBillingPortal = () => {
     window.location.href = route('billing.portal');
+};
+
+const setDefaultPaymentMethod = (paymentMethodId: string) => {
+    if (confirm('Set this as your default payment method?')) {
+        router.post(route('billing.set-default-payment-method'), {
+            payment_method_id: paymentMethodId
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                router.reload({ only: ['paymentMethods'] });
+            }
+        });
+    }
 };
 
 // Check if we're returning from Stripe and refresh the page
@@ -241,24 +260,36 @@ onMounted(() => {
                             </div>
                             <div v-else class="row">
                                 <div v-for="method in paymentMethods" :key="method.id" class="col-md-6 mb-3">
-                                    <div class="card h-100">
+                                    <div class="card h-100" :class="{ 'border-success': method.is_default }">
                                         <div class="list-group list-group-flush">
-                                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                                <div class="d-flex align-items-center">
-                                                    <i :class="[method.brand === 'Stripe Link' ? 'bi-link-45deg' : 'bi-credit-card-fill', 'bi text-primary me-3']" style="font-size: 1.5rem;"></i>
-                                                    <div>
-                                                        <p class="mb-0">
-                                                            <strong>{{ method.brand }}</strong> 
-                                                            <span v-if="method.brand === 'Stripe Link'">{{ method.last4 }}</span>
-                                                            <span v-else>ending in {{ method.last4 }}</span>
-                                                        </p>
-                                                        <small v-if="method.exp_month && method.exp_year">Expires {{ method.exp_month }}/{{ method.exp_year }}</small>
-                                                        <small v-else-if="method.brand === 'Stripe Link'">Quick checkout</small>
+                                            <div class="list-group-item">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div class="d-flex align-items-center">
+                                                        <i :class="[method.brand === 'Stripe Link' ? 'bi-link-45deg' : 'bi-credit-card-fill', 'bi text-primary me-3']" style="font-size: 1.5rem;"></i>
+                                                        <div>
+                                                            <p class="mb-0">
+                                                                <strong>{{ method.brand }}</strong> 
+                                                                <span v-if="method.brand === 'Stripe Link'">{{ method.last4 }}</span>
+                                                                <span v-else>ending in {{ method.last4 }}</span>
+                                                            </p>
+                                                            <small v-if="method.exp_month && method.exp_year">Expires {{ method.exp_month }}/{{ method.exp_year }}</small>
+                                                            <small v-else-if="method.brand === 'Stripe Link'">Quick checkout</small>
+                                                        </div>
                                                     </div>
+                                                    <span v-if="method.is_default" class="badge bg-success">Default</span>
                                                 </div>
-                                                <div class="text-end">
-                                                    <span v-if="method.is_default" class="badge bg-success me-2">Default</span>
+                                                <div class="mt-3 d-flex gap-2 justify-content-end">
+                                                    <button 
+                                                        v-if="!method.is_default" 
+                                                        @click="setDefaultPaymentMethod(method.id)"
+                                                        class="btn btn-sm btn-primary"
+                                                        title="Set as default payment method"
+                                                    >
+                                                        <i class="bi bi-check-circle me-1"></i>
+                                                        Set as Default
+                                                    </button>
                                                     <button @click="handleBillingPortal" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="bi bi-gear me-1"></i>
                                                         Manage
                                                     </button>
                                                 </div>
@@ -270,9 +301,9 @@ onMounted(() => {
                                 <div class="col-md-6 mb-3">
                                     <div class="card h-100 border-dashed bg-light">
                                         <div class="card-body d-flex align-items-center justify-content-center">
-                                            <button @click="handleBillingPortal" class="btn btn-link text-decoration-none">
-                                                <i class="bi bi-plus-circle" style="font-size: 2rem;"></i>
-                                                <p class="mb-0 mt-2">Add Payment Method</p>
+                                            <button @click="handleBillingPortal" class="btn btn-link text-decoration-none text-dark">
+                                                <i class="bi bi-plus-circle text-primary" style="font-size: 2rem;"></i>
+                                                <p class="mb-0 mt-2 text-dark">Add Payment Method</p>
                                             </button>
                                         </div>
                                     </div>
@@ -347,3 +378,21 @@ onMounted(() => {
         </div>
     </CustomerLayout>
 </template>
+
+<style scoped>
+.border-dashed {
+    border: 2px dashed #dee2e6 !important;
+}
+
+.btn-link:hover {
+    text-decoration: none !important;
+}
+
+.card.h-100 {
+    transition: all 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+</style>

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Services\StripePriceVersioningService;
 
 class BillingController extends Controller
 {
@@ -84,11 +85,11 @@ class BillingController extends Controller
                 $invoices = $user->invoices()->take(10)->map(function ($invoice) {
                     return [
                         'id' => $invoice->id,
-                        'number' => $invoice->number,
+                        'number' => $invoice->number ?? 'N/A',
                         'date' => $invoice->date()->toFormattedDateString(),
                         'total' => $invoice->total(),
-                        'status' => $invoice->status,
-                        'pdf' => $invoice->invoicePdf(),
+                        'status' => $invoice->status ?? 'paid',
+                        'pdf' => $invoice->invoice_pdf ?? '#',
                     ];
                 });
             } catch (\Exception $e) {
@@ -127,19 +128,29 @@ class BillingController extends Controller
         }
     }
     /**
-     * Update the user's password.
+     * Set a payment method as default
      */
-    public function update(Request $request): RedirectResponse
+    public function setDefaultPaymentMethod(Request $request): RedirectResponse
     {
-        // $validated = $request->validate([
-        //     'current_password' => ['required', 'current_password'],
-        //     'password' => ['required', Password::defaults(), 'confirmed'],
-        // ]);
-
-        // $request->user()->update([
-        //     'password' => Hash::make($validated['password']),
-        // ]);
-
-        return back();
+        $request->validate([
+            'payment_method_id' => 'required|string',
+        ]);
+        
+        try {
+            $user = $request->user();
+            
+            if (!$user->hasStripeId()) {
+                return back()->with('error', 'No Stripe customer found.');
+            }
+            
+            // Update the default payment method
+            $user->updateDefaultPaymentMethod($request->payment_method_id);
+            
+            return back()->with('success', 'Default payment method updated successfully.');
+            
+        } catch (\Exception $e) {
+            \Log::error('Failed to set default payment method: ' . $e->getMessage());
+            return back()->with('error', 'Failed to update default payment method. Please try again.');
+        }
     }
 }

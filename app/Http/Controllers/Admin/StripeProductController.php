@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\StripeProduct;
 use App\Services\StripeService;
+use App\Services\StripePriceVersioningService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +29,10 @@ class StripeProductController extends Controller
      */
     public function index()
     {
-        $products = StripeProduct::ordered()->get();
+        // Only show current products by default
+        $products = StripeProduct::where('is_current', true)
+            ->ordered()
+            ->get();
         
         return Inertia::render('admin/StripeProducts/Index', [
             'products' => $products->map(function ($product) {
@@ -42,6 +46,9 @@ class StripeProductController extends Controller
                     'stripe_product_id' => $product->stripe_product_id,
                     'stripe_price_id' => $product->stripe_price_id,
                     'is_active' => $product->is_active,
+                    'is_current' => $product->is_current ?? true,
+                    'version' => $product->version,
+                    'legacy_price' => $product->legacy_price,
                     'is_connected' => $product->isConnectedToStripe(),
                     'features' => $product->features ?? [],
                     'badge_text' => $product->badge_text,
@@ -346,5 +353,67 @@ class StripeProductController extends Controller
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Failed to delete product: ' . $e->getMessage()]);
         }
+    }
+    
+    /**
+     * Create a new price version for a product
+     */
+    public function createPriceVersion(Request $request, StripeProduct $stripeProduct)
+    {
+        try {
+            if (!$this->stripeService) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Stripe API is not configured.',
+                ], 500);
+            }
+            
+            $validated = $request->validate([
+                'new_price' => 'required|numeric|min:0',
+                'version' => 'nullable|string',
+                'notes' => 'nullable|string',
+                'effective_date' => 'nullable|date',
+            ]);
+            
+            $versioningService = new StripePriceVersioningService();
+            $newProduct = $versioningService->createPriceVersion($stripeProduct, $validated);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'New price version created successfully.',
+                'product' => [
+                    'id' => $newProduct->id,
+                    'price' => $newProduct->price,
+                    'version' => $newProduct->version,
+                    'stripe_price_id' => $newProduct->stripe_price_id,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to create price version: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+    
+    /**
+     * Get price history for a product
+     */
+    public function priceHistory(Request $request)
+    {
+        $validated = $request->validate([
+            'tier' => 'required|string',
+            'billing_period' => 'required|string',
+        ]);
+        
+        $history = StripePriceVersioningService::getPriceHistory(
+            $validated['tier'],
+            $validated['billing_period']
+        );
+        
+        return response()->json([
+            'success' => true,
+            'history' => $history,
+        ]);
     }
 }

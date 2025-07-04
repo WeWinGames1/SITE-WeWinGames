@@ -18,6 +18,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('settings/billing', [BillingController::class, 'edit'])->name('billing.edit');
     Route::put('settings/billing', [BillingController::class, 'update'])->name('billing.update');
+    Route::post('settings/billing/set-default-payment-method', [BillingController::class, 'setDefaultPaymentMethod'])->name('billing.set-default-payment-method');
     Route::get('settings/billing-portal', [BillingController::class, 'billing_portal'])->name('billing.portal');
     Route::get('settings/appearance', [AppearanceController::class, 'show'])->name('appearance');
 });
