@@ -19,6 +19,7 @@ class BillingController extends Controller
     {
         $user = $request->user();
         
+        
         // Get active subscription with more details
         $activeSubscription = $user->subscription('default');
         $currentPlan = null;
@@ -43,18 +44,36 @@ class BillingController extends Controller
         $paymentMethods = [];
         if ($user->hasStripeId()) {
             try {
-                $paymentMethods = $user->paymentMethods()->map(function ($pm) {
-                    return [
-                        'id' => $pm->id,
-                        'brand' => $pm->card->brand,
-                        'last4' => $pm->card->last4,
-                        'exp_month' => $pm->card->exp_month,
-                        'exp_year' => $pm->card->exp_year,
-                        'is_default' => $pm->id === optional($user->defaultPaymentMethod())->id,
-                    ];
-                });
+                // Fetch ALL payment methods from Stripe (including all types)
+                $stripe = new \Stripe\StripeClient(config('cashier.secret'));
+                $stripeMethods = $stripe->paymentMethods->all([
+                    'customer' => $user->stripe_id,
+                    'limit' => 100
+                ]);
+                
+                foreach ($stripeMethods->data as $pm) {
+                    if ($pm->type === 'card') {
+                        $paymentMethods[] = [
+                            'id' => $pm->id,
+                            'brand' => ucfirst($pm->card->brand),
+                            'last4' => $pm->card->last4,
+                            'exp_month' => $pm->card->exp_month,
+                            'exp_year' => $pm->card->exp_year,
+                            'is_default' => $pm->id === optional($user->defaultPaymentMethod())->id,
+                        ];
+                    } elseif ($pm->type === 'link') {
+                        $paymentMethods[] = [
+                            'id' => $pm->id,
+                            'brand' => 'Stripe Link',
+                            'last4' => isset($pm->link->email) ? '...' . substr($pm->link->email, -4) : 'Link',
+                            'exp_month' => null,
+                            'exp_year' => null,
+                            'is_default' => $pm->id === optional($user->defaultPaymentMethod())->id,
+                        ];
+                    }
+                }
             } catch (\Exception $e) {
-                // Handle error silently
+                \Log::error('Failed to fetch payment methods: ' . $e->getMessage());
             }
         }
         
@@ -101,7 +120,7 @@ class BillingController extends Controller
                 $user->createAsStripeCustomer();
             }
             
-            return $user->redirectToBillingPortal(route('billing.edit'));
+            return $user->redirectToBillingPortal(route('billing.edit') . '?from=stripe');
         } catch (\Exception $e) {
             return redirect()->route('billing.edit')
                 ->with('error', 'Unable to access billing portal. Please contact support.');

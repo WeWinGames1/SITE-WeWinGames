@@ -30,7 +30,8 @@ const statusClasses = {
     open: 'bg-info',
     pending: 'bg-warning',
     resolved: 'bg-success',
-    closed: 'bg-secondary'
+    closed: 'bg-secondary',
+    'user-requests-close': 'bg-warning'
 };
 
 const priorityClasses = {
@@ -49,6 +50,18 @@ function formatDate(date: string) {
         hour: '2-digit',
         minute: '2-digit'
     });
+}
+
+// Format status display name
+function formatStatus(status: string) {
+    const statusLabels: Record<string, string> = {
+        'open': 'Open',
+        'pending': 'Pending',
+        'resolved': 'Resolved',
+        'closed': 'Closed',
+        'user-requests-close': 'Awaiting Closure'
+    };
+    return statusLabels[status] || status;
 }
 
 // View ticket
@@ -118,7 +131,7 @@ function viewTicket(ticketId: number) {
                                             <td>{{ ticket.category.name }}</td>
                                             <td>
                                                 <span :class="`badge ${statusClasses[ticket.status]}`">
-                                                    {{ ticket.status }}
+                                                    {{ formatStatus(ticket.status) }}
                                                 </span>
                                             </td>
                                             <td>

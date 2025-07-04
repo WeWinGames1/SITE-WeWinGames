@@ -45,7 +45,8 @@ const statusClasses = {
     open: 'bg-info',
     pending: 'bg-warning',
     resolved: 'bg-success',
-    closed: 'bg-secondary'
+    closed: 'bg-secondary',
+    'user-requests-close': 'bg-warning'
 };
 
 const priorityClasses = {
@@ -66,6 +67,18 @@ function formatDate(date: string) {
     });
 }
 
+// Format status display name
+function formatStatus(status: string) {
+    const statusLabels: Record<string, string> = {
+        'open': 'Open',
+        'pending': 'Pending',
+        'resolved': 'Resolved',
+        'closed': 'Closed',
+        'user-requests-close': 'Awaiting Closure'
+    };
+    return statusLabels[status] || status;
+}
+
 // Submit reply
 function submitReply() {
     replyForm.post(`/support/tickets/${ticket.value.id}/replies`, {
@@ -76,10 +89,10 @@ function submitReply() {
     });
 }
 
-// Close ticket
-function closeTicket() {
-    if (confirm('Are you sure you want to close this ticket?')) {
-        router.put(`/support/tickets/${ticket.value.id}/close`);
+// Request to close ticket
+function requestCloseTicket() {
+    if (confirm('Are you sure you want to request closure of this ticket?')) {
+        router.put(`/support/tickets/${ticket.value.id}/request-close`);
     }
 }
 
@@ -104,14 +117,14 @@ function reopenTicket() {
                         </div>
                         <div>
                             <button 
-                                v-if="ticket.status !== 'closed'" 
-                                @click="closeTicket"
+                                v-if="ticket.status !== 'closed' && ticket.status !== 'user-requests-close'" 
+                                @click="requestCloseTicket"
                                 class="btn btn-outline-secondary me-2"
                             >
-                                <i class="bi bi-x-circle me-1"></i> Close Ticket
+                                <i class="bi bi-x-circle me-1"></i> Request to Close
                             </button>
                             <button 
-                                v-else
+                                v-else-if="ticket.status === 'closed'"
                                 @click="reopenTicket"
                                 class="btn btn-outline-primary"
                             >
@@ -131,7 +144,7 @@ function reopenTicket() {
                                     <small class="text-muted">Status</small>
                                     <div>
                                         <span :class="`badge ${statusClasses[ticket.status]}`">
-                                            {{ ticket.status }}
+                                            {{ formatStatus(ticket.status) }}
                                         </span>
                                     </div>
                                 </div>
@@ -188,7 +201,7 @@ function reopenTicket() {
                     </div>
 
                     <!-- Reply Form -->
-                    <div v-if="ticket.status !== 'closed'" class="card">
+                    <div v-if="ticket.status !== 'closed' && ticket.status !== 'user-requests-close'" class="card">
                         <div class="card-header">
                             <h5 class="mb-0">Add Reply</h5>
                         </div>
@@ -221,7 +234,12 @@ function reopenTicket() {
                         </div>
                     </div>
 
-                    <div v-else class="alert alert-info">
+                    <div v-else-if="ticket.status === 'user-requests-close'" class="alert alert-warning">
+                        <i class="bi bi-clock-history me-2"></i>
+                        You have requested to close this ticket. Our support team will review and close it soon.
+                    </div>
+                    
+                    <div v-else-if="ticket.status === 'closed'" class="alert alert-info">
                         <i class="bi bi-info-circle me-2"></i>
                         This ticket is closed. Please reopen it if you need further assistance.
                     </div>

@@ -93,6 +93,18 @@ class SupportTicketController extends Controller
         return redirect()->back()->with('success', 'Reply added successfully.');
     }
 
+    public function requestClose(SupportTicket $ticket)
+    {
+        // Ensure user can only request to close their own tickets
+        if ($ticket->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $ticket->update(['status' => 'user-requests-close']);
+
+        return redirect()->back()->with('success', 'Your request to close this ticket has been submitted. Our support team will review it shortly.');
+    }
+
     public function close(SupportTicket $ticket)
     {
         // Ensure user can only close their own tickets

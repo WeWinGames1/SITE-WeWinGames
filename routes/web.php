@@ -70,6 +70,7 @@ Route::middleware(['auth', 'verified'])->prefix('support')->name('support.')->gr
     Route::post('/tickets', [SupportTicketController::class, 'store'])->name('tickets.store');
     Route::get('/tickets/{ticket}', [SupportTicketController::class, 'show'])->name('tickets.show');
     Route::post('/tickets/{ticket}/replies', [SupportTicketController::class, 'reply'])->name('tickets.reply');
+    Route::put('/tickets/{ticket}/request-close', [SupportTicketController::class, 'requestClose'])->name('tickets.request-close');
     Route::put('/tickets/{ticket}/close', [SupportTicketController::class, 'close'])->name('tickets.close');
     Route::put('/tickets/{ticket}/reopen', [SupportTicketController::class, 'reopen'])->name('tickets.reopen');
 });
@@ -276,6 +277,12 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/blog-posts')-
     Route::post('/upload-image', [BlogPostController::class, 'uploadImage'])->name('upload-image');
     Route::get('/statistics', [BlogPostController::class, 'statistics'])->name('statistics');
 });
+
+// Stripe Webhook - Laravel Cashier
+Route::post(
+    'stripe/webhook',
+    '\Laravel\Cashier\Http\Controllers\WebhookController@handleWebhook'
+)->name('cashier.webhook');
 
 
 

@@ -2,7 +2,7 @@
 import { Head, Link, usePage, router } from '@inertiajs/vue3';
 import CustomerLayout from '@/layouts/CustomerLayout.vue';
 import PricingCards from '@/components/PricingCards.vue';
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 
 interface PaymentMethod {
     id: string;
@@ -124,8 +124,24 @@ const plans = computed(() => [
 ]);
 
 const handleBillingPortal = () => {
-    router.get(route('billing.portal'));
+    window.location.href = route('billing.portal');
 };
+
+// Check if we're returning from Stripe and refresh the page
+onMounted(() => {
+    // Check if there's a session success parameter or if we're returning from Stripe
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('from') && urlParams.get('from') === 'stripe') {
+        // Remove the parameter from URL
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+        
+        // Force a page reload to get fresh data from server
+        setTimeout(() => {
+            router.reload({ only: ['paymentMethods', 'currentPlan', 'invoices'] });
+        }, 100);
+    }
+});
 </script>
 
 <template>
@@ -206,13 +222,13 @@ const handleBillingPortal = () => {
 
                     <!-- Payment Methods -->
                     <div class="card mb-4 shadow-sm">
-                        <div class="card-header d-flex justify-content-between align-items-center">
+                        <div class="card-header d-flex justify-content-between align-items-start">
                             <div>
                                 <h5 class="mb-0">Payment Methods</h5>
                                 <p class="mb-0 small">Cards on file for automatic billing</p>
                             </div>
-                            <button @click="handleBillingPortal" class="btn btn-sm btn-primary">
-                                <i class="bi bi-plus-circle me-1"></i> Add Card
+                            <button @click="router.reload()" class="btn btn-sm btn-outline-secondary" title="Refresh payment methods">
+                                <i class="bi bi-arrow-clockwise"></i>
                             </button>
                         </div>
                         <div class="card-body">
@@ -223,23 +239,42 @@ const handleBillingPortal = () => {
                                     Add Payment Method
                                 </button>
                             </div>
-                            <div v-else class="list-group list-group-flush">
-                                <div v-for="method in paymentMethods" :key="method.id" 
-                                     class="list-group-item d-flex justify-content-between align-items-center px-0">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-credit-card-fill text-primary me-3" style="font-size: 1.5rem;"></i>
-                                        <div>
-                                            <p class="mb-0">
-                                                <strong>{{ method.brand }}</strong> ending in {{ method.last4 }}
-                                            </p>
-                                            <small>Expires {{ method.exp_month }}/{{ method.exp_year }}</small>
+                            <div v-else class="row">
+                                <div v-for="method in paymentMethods" :key="method.id" class="col-md-6 mb-3">
+                                    <div class="card h-100">
+                                        <div class="list-group list-group-flush">
+                                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                <div class="d-flex align-items-center">
+                                                    <i :class="[method.brand === 'Stripe Link' ? 'bi-link-45deg' : 'bi-credit-card-fill', 'bi text-primary me-3']" style="font-size: 1.5rem;"></i>
+                                                    <div>
+                                                        <p class="mb-0">
+                                                            <strong>{{ method.brand }}</strong> 
+                                                            <span v-if="method.brand === 'Stripe Link'">{{ method.last4 }}</span>
+                                                            <span v-else>ending in {{ method.last4 }}</span>
+                                                        </p>
+                                                        <small v-if="method.exp_month && method.exp_year">Expires {{ method.exp_month }}/{{ method.exp_year }}</small>
+                                                        <small v-else-if="method.brand === 'Stripe Link'">Quick checkout</small>
+                                                    </div>
+                                                </div>
+                                                <div class="text-end">
+                                                    <span v-if="method.is_default" class="badge bg-success me-2">Default</span>
+                                                    <button @click="handleBillingPortal" class="btn btn-sm btn-outline-secondary">
+                                                        Manage
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div>
-                                        <span v-if="method.is_default" class="badge bg-success me-2">Default</span>
-                                        <button @click="handleBillingPortal" class="btn btn-sm btn-outline-secondary">
-                                            Manage
-                                        </button>
+                                </div>
+                                <!-- Add Payment Method Card -->
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100 border-dashed bg-light">
+                                        <div class="card-body d-flex align-items-center justify-content-center">
+                                            <button @click="handleBillingPortal" class="btn btn-link text-decoration-none">
+                                                <i class="bi bi-plus-circle" style="font-size: 2rem;"></i>
+                                                <p class="mb-0 mt-2">Add Payment Method</p>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
