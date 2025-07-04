@@ -31,22 +31,31 @@ class CustomerController extends Controller
             });
         }
         
-        // Status filter
+        // User Status filter
         if ($status = $request->get('status')) {
-            if ($status === 'no_subscription') {
+            $query->where('status', $status);
+        }
+        
+        // Subscription Status filter
+        if ($subscriptionStatus = $request->get('subscription_status')) {
+            if ($subscriptionStatus === 'no_subscription') {
                 $query->doesntHave('subscriptions');
             } else {
-                $query->whereHas('subscriptions', function (Builder $q) use ($status) {
-                    $q->where('stripe_status', $status);
+                $query->whereHas('subscriptions', function (Builder $q) use ($subscriptionStatus) {
+                    $q->where('stripe_status', $subscriptionStatus);
                 });
             }
         }
         
-        // Tier filter (Silver, Gold, Platinum)
+        // Tier filter (Free, Silver, Gold, Platinum)
         if ($tier = $request->get('tier')) {
-            $query->whereHas('subscriptions', function (Builder $q) use ($tier) {
-                $q->where('stripe_price', 'like', '%' . strtolower($tier) . '%');
-            });
+            if ($tier === 'free') {
+                $query->doesntHave('subscriptions');
+            } else {
+                $query->whereHas('subscriptions', function (Builder $q) use ($tier) {
+                    $q->where('stripe_price', 'like', '%' . strtolower($tier) . '%');
+                });
+            }
         }
         
         // Date range filter
@@ -74,13 +83,55 @@ class CustomerController extends Controller
         $perPage = $request->get('per_page', 25);
         $customers = $query->paginate($perPage)->withQueryString();
         
-        // Add payment method details to each customer
+        // Add payment method details and subscription info to each customer
         $customers->getCollection()->transform(function ($customer) {
             $paymentMethod = $customer->defaultPaymentMethod();
             if ($paymentMethod) {
                 $customer->pm_type = $paymentMethod->card->brand;
                 $customer->pm_last_four = $paymentMethod->card->last4;
             }
+            
+            // Add tier and interval information
+            if ($customer->subscriptions->isNotEmpty() && $customer->subscriptions->first()->stripe_price) {
+                $subscription = $customer->subscriptions->first();
+                $priceId = $subscription->stripe_price;
+                
+                // Sync subscription dates if missing
+                if (!$subscription->current_period_end && $subscription->stripe_status === 'active' && !str_starts_with($subscription->stripe_id, 'manual_')) {
+                    try {
+                        $stripe = new \Stripe\StripeClient(config('cashier.secret'));
+                        $stripeSubscription = $stripe->subscriptions->retrieve($subscription->stripe_id);
+                        
+                        $subscription->current_period_start = $stripeSubscription->current_period_start ? 
+                            date('Y-m-d H:i:s', $stripeSubscription->current_period_start) : null;
+                        $subscription->current_period_end = $stripeSubscription->current_period_end ? 
+                            date('Y-m-d H:i:s', $stripeSubscription->current_period_end) : null;
+                        
+                        $subscription->save();
+                    } catch (\Exception $e) {
+                        // Log but don't fail
+                        \Log::warning('Failed to sync subscription dates', ['subscription_id' => $subscription->id, 'error' => $e->getMessage()]);
+                    }
+                }
+                
+                // Try to get from StripeProduct table first
+                $stripeProduct = \App\Models\StripeProduct::where('stripe_price_id', $priceId)
+                    ->where('is_active', true)
+                    ->first();
+                    
+                if ($stripeProduct) {
+                    $customer->tier = $stripeProduct->tier;
+                    $customer->interval = ucfirst($stripeProduct->billing_period);
+                } else {
+                    // Fallback to parsing the price ID
+                    $priceToTier = config('stripe.price_to_tier');
+                    if (isset($priceToTier[$priceId])) {
+                        $customer->tier = $priceToTier[$priceId]['tier'];
+                        $customer->interval = ucfirst($priceToTier[$priceId]['period']);
+                    }
+                }
+            }
+            
             return $customer;
         });
         
@@ -114,7 +165,7 @@ class CustomerController extends Controller
         
         return Inertia::render('admin/CustomersIndex', [
             'customers' => $customers,
-            'filters' => $request->only(['search', 'status', 'tier', 'start_date', 'end_date', 'sort', 'direction', 'per_page']),
+            'filters' => $request->only(['search', 'status', 'subscription_status', 'tier', 'start_date', 'end_date', 'sort', 'direction', 'per_page']),
             'stats' => $stats,
         ]);
     }
@@ -126,7 +177,28 @@ class CustomerController extends Controller
             'subscription_price' => 'nullable|string',
             'subscription_status' => 'nullable|string',
             'trial_days' => 'nullable|integer|min:0',
+            'status' => 'nullable|in:active,disabled,pending',
         ]);
+        
+        // Handle user status change
+        if (isset($data['status'])) {
+            $user->update(['status' => $data['status']]);
+            
+            // Log the status change
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($user)
+                ->withProperties([
+                    'old_status' => $user->getOriginal('status'),
+                    'new_status' => $data['status'],
+                ])
+                ->log('Admin changed user status');
+            
+            // If just updating status, return early
+            if (!isset($data['action_type'])) {
+                return back()->with('success', 'User status updated successfully!');
+            }
+        }
         
         // Default to manual if action_type not provided
         $data['action_type'] = $data['action_type'] ?? 'manual';
@@ -301,26 +373,52 @@ class CustomerController extends Controller
         
         $customers = $query->get();
         
-        $csv = "ID,Name,Email,Status,Plan,Trial Ends,Created At\n";
+        $csv = "ID,Name,Email,Status,Plan,Interval,Next Renewal,Created At\n";
         
         foreach ($customers as $customer) {
             $subscription = $customer->subscriptions->first();
             $status = $subscription ? $subscription->stripe_status : 'No Subscription';
-            $plan = $subscription && $subscription->price ? 
-                str_replace('_', ' ', ucfirst(str_replace(['price_', '_monthly', '_weekly', '_daily'], '', $subscription->price))) : 
-                '-';
-            $trialEnds = $subscription && $subscription->trial_ends_at ? 
-                $subscription->trial_ends_at->format('Y-m-d') : 
-                '-';
+            
+            // Get tier and interval
+            $tier = '-';
+            $interval = '-';
+            $nextRenewal = '-';
+            
+            if ($subscription && $subscription->stripe_price) {
+                $priceId = $subscription->stripe_price;
+                
+                // Try to get from StripeProduct table first
+                $stripeProduct = \App\Models\StripeProduct::where('stripe_price_id', $priceId)
+                    ->where('is_active', true)
+                    ->first();
+                    
+                if ($stripeProduct) {
+                    $tier = $stripeProduct->tier;
+                    $interval = ucfirst($stripeProduct->billing_period);
+                } else {
+                    // Fallback to config
+                    $priceToTier = config('stripe.price_to_tier');
+                    if (isset($priceToTier[$priceId])) {
+                        $tier = $priceToTier[$priceId]['tier'];
+                        $interval = ucfirst($priceToTier[$priceId]['period']);
+                    }
+                }
+                
+                // Get next renewal date
+                if ($subscription->current_period_end) {
+                    $nextRenewal = \Carbon\Carbon::parse($subscription->current_period_end)->format('Y-m-d');
+                }
+            }
             
             $csv .= sprintf(
-                "%d,%s,%s,%s,%s,%s,%s\n",
+                "%d,\"%s\",\"%s\",%s,%s,%s,%s,%s\n",
                 $customer->id,
-                $customer->name,
-                $customer->email,
+                str_replace('"', '""', $customer->name),
+                str_replace('"', '""', $customer->email),
                 $status,
-                $plan,
-                $trialEnds,
+                $tier,
+                $interval,
+                $nextRenewal,
                 $customer->created_at->format('Y-m-d H:i:s')
             );
         }
@@ -364,5 +462,50 @@ class CustomerController extends Controller
         $user->sendEmailVerificationNotification();
         
         return back()->with('success', 'Customer account created successfully! A welcome email has been sent to ' . $user->email);
+    }
+    
+    /**
+     * Cancel a customer's subscription
+     */
+    public function cancelSubscription(Request $request, User $user)
+    {
+        $immediately = $request->boolean('immediately', false);
+        
+        $subscription = $user->subscription('default');
+        
+        if (!$subscription) {
+            return back()->with('error', 'No active subscription found.');
+        }
+        
+        try {
+            if ($immediately) {
+                $subscription->cancelNow();
+                $message = 'Subscription cancelled immediately.';
+            } else {
+                $subscription->cancel();
+                $message = 'Subscription will be cancelled at the end of the billing period.';
+            }
+            
+            // Log the action
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($user)
+                ->withProperties([
+                    'subscription_id' => $subscription->stripe_id,
+                    'cancelled_immediately' => $immediately,
+                    'ends_at' => $subscription->ends_at?->toDateTimeString(),
+                ])
+                ->log('Admin cancelled customer subscription');
+            
+            return back()->with('success', $message);
+            
+        } catch (\Exception $e) {
+            \Log::error('Subscription cancellation failed', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+            
+            return back()->with('error', 'Failed to cancel subscription. Please try again.');
+        }
     }
 }

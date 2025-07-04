@@ -113,7 +113,6 @@ const navigation: NavItem[] = [
         icon: 'bi-people',
         children: [
             { name: 'Customers', href: route('admin.customers.index'), icon: 'bi-person' },
-            { name: 'Subscriptions', href: route('admin.subscriptions.index'), icon: 'bi-credit-card' },
             { name: 'Admin Users', href: route('admin.admins.index'), icon: 'bi-shield-check' },
         ],
     },

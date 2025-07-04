@@ -10,14 +10,22 @@ interface Customer {
   name: string;
   email: string;
   created_at: string;
+  status: 'active' | 'disabled' | 'pending';
   pm_type?: string;
   pm_last_four?: string;
   subscriptions: Array<{
     stripe_status: string;
     price: string;
+    stripe_price: string;
     trial_ends_at: string | null;
     current_period_end?: string;
+    ends_at?: string | null;
   }>;
+  tier?: string;
+  interval?: string;
+  is_ambassador?: boolean;
+  is_gifted?: boolean;
+  admin_override?: boolean;
 }
 
 interface Props {
@@ -56,6 +64,7 @@ const stripePrices = page.props.stripePrices || {};
 const filters = ref({
   search: props.filters.search || '',
   status: props.filters.status || '',
+  subscription_status: props.filters.subscription_status || '',
   tier: props.filters.tier || '',
   start_date: props.filters.start_date || '',
   end_date: props.filters.end_date || '',
@@ -202,7 +211,23 @@ function grantSubscription() {
 
 function impersonateUser(user: Customer) {
   if (confirm(`Impersonate ${user.name}?`)) {
-    router.post(route('admin.customers.impersonate', user.id));
+    // Create a form to properly handle CSRF
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = route('admin.customers.impersonate', user.id);
+    
+    // Add CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    if (csrfToken) {
+      const tokenInput = document.createElement('input');
+      tokenInput.type = 'hidden';
+      tokenInput.name = '_token';
+      tokenInput.value = csrfToken;
+      form.appendChild(tokenInput);
+    }
+    
+    document.body.appendChild(form);
+    form.submit();
   }
 }
 
@@ -223,6 +248,7 @@ function clearFilters() {
   filters.value = {
     search: '',
     status: '',
+    subscription_status: '',
     tier: '',
     start_date: '',
     end_date: '',
@@ -291,14 +317,14 @@ function updatePlanPreview() {
   // Price calculation (you may need to adjust these based on your actual pricing)
   const prices = {
     'silver_daily': '5.00',
-    'silver_weekly': '20.00',
-    'silver_monthly': '60.00',
-    'gold_daily': '10.00',
-    'gold_weekly': '39.00',
-    'gold_monthly': '110.00',
+    'silver_weekly': '17.00',
+    'silver_monthly': '45.00',
+    'gold_daily': '8.00',
+    'gold_weekly': '29.00',
+    'gold_monthly': '65.00',
     'platinum_daily': '12.00',
     'platinum_weekly': '49.00',
-    'platinum_monthly': '149.00'
+    'platinum_monthly': '80.00'
   };
   
   planPreview.value = {
@@ -308,6 +334,45 @@ function updatePlanPreview() {
     tier: tier,
     nextBilling: nextBilling.toLocaleDateString()
   };
+}
+
+function toggleUserStatus(user: Customer) {
+  const newStatus = user.status === 'active' ? 'disabled' : 'active';
+  const action = newStatus === 'disabled' ? 'disable' : 'enable';
+  
+  if (confirm(`Are you sure you want to ${action} ${user.name}?`)) {
+    router.put(route('admin.customers.update', user.id), {
+      status: newStatus
+    }, {
+      preserveScroll: true,
+      onSuccess: () => {
+        router.reload({ only: ['customers'] });
+      }
+    });
+  }
+}
+
+function cancelSubscription(user: Customer, immediately = false) {
+  const message = immediately 
+    ? 'Cancel this subscription immediately? The user will lose access right away.'
+    : 'Cancel this subscription at the end of the billing period?';
+    
+  if (confirm(message)) {
+    router.post(route('admin.customers.cancel-subscription', user.id), {
+      immediately
+    }, {
+      preserveScroll: true
+    });
+  }
+}
+
+function getCustomerBadgeClass(status: string) {
+  switch (status) {
+    case 'active': return 'bg-success';
+    case 'disabled': return 'bg-danger';
+    case 'pending': return 'bg-warning';
+    default: return 'bg-secondary';
+  }
 }
 </script>
 
@@ -398,9 +463,18 @@ function updatePlanPreview() {
               </div>
             </div>
             <div class="col-md-2">
-              <label class="form-label">Status</label>
+              <label class="form-label">User Status</label>
               <select v-model="filters.status" class="form-select">
-                <option value="">All Statuses</option>
+                <option value="">All User Status</option>
+                <option value="active">Active</option>
+                <option value="disabled">Disabled</option>
+                <option value="pending">Pending</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Subscription</label>
+              <select v-model="filters.subscription_status" class="form-select">
+                <option value="">All Subscriptions</option>
                 <option value="active">Active</option>
                 <option value="canceled">Canceled</option>
                 <option value="past_due">Past Due</option>
@@ -412,6 +486,7 @@ function updatePlanPreview() {
               <label class="form-label">Tier</label>
               <select v-model="filters.tier" class="form-select">
                 <option value="">All Tiers</option>
+                <option value="free">Free</option>
                 <option value="silver">Silver</option>
                 <option value="gold">Gold</option>
                 <option value="platinum">Platinum</option>
@@ -460,8 +535,10 @@ function updatePlanPreview() {
                     <i :class="getSortIcon('email')" class="bi ms-1 small"></i>
                   </th>
                   <th>Status</th>
+                  <th>Subscription</th>
                   <th>Plan</th>
-                  <th>Trial</th>
+                  <th>Interval</th>
+                  <th>Renewal</th>
                   <th @click="toggleSort('created_at')" role="button" class="user-select-none">
                     Joined
                     <i :class="getSortIcon('created_at')" class="bi ms-1 small"></i>
@@ -475,7 +552,25 @@ function updatePlanPreview() {
                     <div class="fw-medium">{{ customer.name }}</div>
                     <div class="text-muted small">ID: {{ customer.id }}</div>
                   </td>
-                  <td>{{ customer.email }}</td>
+                  <td>
+                    <div>{{ customer.email }}</div>
+                    <div v-if="customer.is_ambassador || customer.is_gifted || customer.admin_override" class="mt-1">
+                      <span v-if="customer.is_ambassador" class="badge bg-primary me-1" style="font-size: 0.7rem;">
+                        Ambassador
+                      </span>
+                      <span v-if="customer.is_gifted" class="badge bg-success me-1" style="font-size: 0.7rem;">
+                        Gifted
+                      </span>
+                      <span v-if="customer.admin_override" class="badge bg-purple me-1" style="font-size: 0.7rem;">
+                        Override
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <span :class="['badge', getCustomerBadgeClass(customer.status)]">
+                      {{ customer.status }}
+                    </span>
+                  </td>
                   <td>
                     <div v-if="customer.subscriptions && customer.subscriptions.length">
                       <span 
@@ -487,17 +582,62 @@ function updatePlanPreview() {
                     <span v-else class="text-muted">No subscription</span>
                   </td>
                   <td>
-                    <div v-if="customer.subscriptions && customer.subscriptions.length && customer.subscriptions[0].price">
-                      <span class="badge bg-info">
-                        {{ Object.keys(stripePrices).find(key => stripePrices[key] === customer.subscriptions[0].price)?.replace('_', ' ').toUpperCase() || 'Custom' }}
+                    <div class="dropdown dropup">
+                      <button 
+                        v-if="customer.tier"
+                        class="btn btn-sm btn-link text-decoration-none p-0" 
+                        type="button" 
+                        :id="`planDropdown${customer.id}`"
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false"
+                      >
+                        <span class="badge bg-info">
+                          {{ customer.tier }}
+                          <i class="bi bi-chevron-down ms-1"></i>
+                        </span>
+                      </button>
+                      <button 
+                        v-else
+                        class="btn btn-sm btn-link text-decoration-none text-muted p-0" 
+                        type="button" 
+                        :id="`planDropdown${customer.id}`"
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false"
+                      >
+                        FREE
+                        <i class="bi bi-chevron-down ms-1"></i>
+                      </button>
+                      <ul class="dropdown-menu" :aria-labelledby="`planDropdown${customer.id}`">
+                        <li><h6 class="dropdown-header">Subscription Actions</h6></li>
+                        <li>
+                          <button class="dropdown-item" @click="openGrantModal(customer)">
+                            <i class="bi bi-gift me-2"></i>Grant/Update Subscription
+                          </button>
+                        </li>
+                        <li v-if="customer.subscriptions && customer.subscriptions.length">
+                          <button class="dropdown-item text-warning" @click="cancelSubscription(customer)">
+                            <i class="bi bi-x-circle me-2"></i>Cancel at Period End
+                          </button>
+                        </li>
+                        <li v-if="customer.subscriptions && customer.subscriptions.length">
+                          <button class="dropdown-item text-danger" @click="cancelSubscription(customer, true)">
+                            <i class="bi bi-x-circle-fill me-2"></i>Cancel Immediately
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                  </td>
+                  <td>
+                    <div v-if="customer.interval">
+                      <span class="badge bg-secondary">
+                        {{ customer.interval }}
                       </span>
                     </div>
                     <span v-else class="text-muted">-</span>
                   </td>
                   <td>
-                    <div v-if="customer.subscriptions && customer.subscriptions.length && customer.subscriptions[0].trial_ends_at">
-                      <i class="bi bi-clock text-warning me-1"></i>
-                      <small>{{ new Date(customer.subscriptions[0].trial_ends_at).toLocaleDateString() }}</small>
+                    <div v-if="customer.subscriptions && customer.subscriptions.length && customer.subscriptions[0].current_period_end">
+                      <small>{{ new Date(customer.subscriptions[0].current_period_end).toLocaleDateString() }}</small>
                     </div>
                     <span v-else class="text-muted">-</span>
                   </td>
@@ -507,28 +647,45 @@ function updatePlanPreview() {
                     </small>
                   </td>
                   <td>
-                    <div class="btn-group btn-group-sm" role="group">
-                      <button
-                        class="btn btn-outline-primary"
-                        @click="openGrantModal(customer)"
-                        title="Manage subscription"
+                    <div class="dropdown dropup">
+                      <button 
+                        class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                        type="button" 
+                        :id="`actionDropdown${customer.id}`"
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false"
                       >
-                        <i class="bi bi-gift"></i>
+                        <i class="bi bi-three-dots-vertical"></i>
                       </button>
-                      <button
-                        class="btn btn-outline-warning"
-                        @click="impersonateUser(customer)"
-                        title="Impersonate user"
-                      >
-                        <i class="bi bi-person-badge"></i>
-                      </button>
-                      <button
-                        class="btn btn-outline-secondary"
-                        @click="sendPasswordReset(customer)"
-                        title="Send password reset"
-                      >
-                        <i class="bi bi-key"></i>
-                      </button>
+                      <ul class="dropdown-menu dropdown-menu-end" :aria-labelledby="`actionDropdown${customer.id}`">
+                        <li><h6 class="dropdown-header">User Actions</h6></li>
+                        <li>
+                          <button class="dropdown-item" @click="toggleUserStatus(customer)">
+                            <i :class="['bi me-2', customer.status === 'active' ? 'bi-x-circle text-danger' : 'bi-check-circle text-success']"></i>
+                            {{ customer.status === 'active' ? 'Disable User' : 'Enable User' }}
+                          </button>
+                        </li>
+                        <li>
+                          <button class="dropdown-item" @click="impersonateUser(customer)">
+                            <i class="bi bi-person-badge me-2 text-warning"></i>
+                            Impersonate User
+                          </button>
+                        </li>
+                        <li>
+                          <button class="dropdown-item" @click="sendPasswordReset(customer)">
+                            <i class="bi bi-key me-2"></i>
+                            Send Password Reset
+                          </button>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><h6 class="dropdown-header">Billing</h6></li>
+                        <li>
+                          <button class="dropdown-item" @click="router.visit(route('billing.portal', { redirect: route('admin.customers.index') }))">
+                            <i class="bi bi-credit-card me-2"></i>
+                            View in Stripe
+                          </button>
+                        </li>
+                      </ul>
                     </div>
                   </td>
                 </tr>
@@ -786,3 +943,25 @@ function updatePlanPreview() {
     ></div>
   </AdminLayout>
 </template>
+
+<style scoped>
+/* Fix dropdown menus being hidden behind table */
+.dropdown-menu {
+  z-index: 1050 !important;
+}
+
+/* Ensure table doesn't overflow and hide dropdowns */
+.table-responsive {
+  overflow: visible !important;
+}
+
+/* Fix for dropup menus at bottom of table */
+.dropup .dropdown-menu {
+  margin-bottom: 0.5rem;
+}
+
+/* Ensure dropdown buttons are properly styled */
+.dropdown-toggle::after {
+  margin-left: 0.255em;
+}
+</style>

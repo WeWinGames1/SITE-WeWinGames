@@ -46,6 +46,9 @@ class ImpersonationController extends Controller
         // Login as the user
         Auth::login($user);
         
+        // Regenerate session to prevent session fixation attacks
+        request()->session()->regenerate();
+        
         return redirect('/dashboard')->with('success', "You are now impersonating {$user->name}");
     }
     

@@ -194,6 +194,7 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
     Route::put('/{user}', [CustomerController::class, 'update'])->name('update');
     Route::post('/{user}/impersonate', [\App\Http\Controllers\Admin\ImpersonationController::class, 'start'])->name('impersonate');
     Route::post('/{user}/password-reset', [CustomerController::class, 'sendPasswordReset'])->name('password-reset');
+    Route::post('/{user}/cancel-subscription', [CustomerController::class, 'cancelSubscription'])->name('cancel-subscription');
     Route::get('/export', [CustomerController::class, 'export'])->name('export')->middleware('admin.rate_limit:export');
 });
 
@@ -218,9 +219,7 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
 });
 Route::get('/landing/{slug}', [PageShowController::class, 'showLandingPage'])->name('landing.show');
 
-// Public Blog Routes
-Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
-Route::get('/blog/{post:slug}', [BlogController::class, 'show'])->name('blog.show');
+// Blog routes are defined in routes/blog.php and loaded via bootstrap/app.php
 
 // Stripe Product Management Routes
 Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin/stripe-products')->name('admin.stripe-products.')->group(function () {
@@ -239,13 +238,7 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
     Route::get('/price-history', [StripeProductController::class, 'priceHistory'])->name('price-history');
 });
 
-// Subscription Dashboard Routes
-Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin/subscriptions')->name('admin.subscriptions.')->group(function () {
-    Route::get('/', [SubscriptionDashboardController::class, 'index'])->name('index');
-    Route::post('/export', [SubscriptionDashboardController::class, 'export'])->name('export');
-    Route::post('/grant', [SubscriptionDashboardController::class, 'grantSubscription'])->name('grant');
-    Route::post('/{user}/cancel', [SubscriptionDashboardController::class, 'cancelSubscription'])->name('cancel');
-});
+// Subscription Dashboard Routes - Merged into Customers
 
 // Discount Code Management Routes
 Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/discounts')->name('admin.discounts.')->group(function () {

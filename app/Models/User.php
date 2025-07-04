@@ -24,6 +24,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
+        'status',
         'notification_preferences',
         'registration_ip',
         'registration_user_agent',
@@ -73,6 +74,11 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function hasActiveSubscription(): bool
     {
+        // Check if user is disabled
+        if ($this->status === 'disabled') {
+            return false;
+        }
+        
         // Check for admin override first
         if ($this->is_ambassador || $this->is_gifted || $this->admin_override) {
             // If there's an expiry date, check if it's still valid
