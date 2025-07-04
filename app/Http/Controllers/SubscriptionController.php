@@ -53,21 +53,46 @@ class SubscriptionController extends Controller
         if ($user->hasStripeId()) {
             try {
                 $stripe = new \Stripe\StripeClient(config('cashier.secret'));
+                // Fetch ALL payment methods (including Link)
                 $stripeMethods = $stripe->paymentMethods->all([
                     'customer' => $user->stripe_id,
-                    'type' => 'card',
                     'limit' => 100
                 ]);
                 
                 foreach ($stripeMethods->data as $pm) {
-                    $paymentMethods[] = [
-                        'id' => $pm->id,
-                        'brand' => ucfirst($pm->card->brand),
-                        'last4' => $pm->card->last4,
-                        'exp_month' => $pm->card->exp_month,
-                        'exp_year' => $pm->card->exp_year,
-                        'is_default' => $pm->id === optional($user->defaultPaymentMethod())->id,
-                    ];
+                    if ($pm->type === 'card') {
+                        $paymentMethods[] = [
+                            'id' => $pm->id,
+                            'brand' => ucfirst($pm->card->brand),
+                            'last4' => $pm->card->last4,
+                            'exp_month' => $pm->card->exp_month,
+                            'exp_year' => $pm->card->exp_year,
+                            'is_default' => $pm->id === optional($user->defaultPaymentMethod())->id,
+                        ];
+                    } elseif ($pm->type === 'link') {
+                        // Link payment methods
+                        $displayInfo = 'Link';
+                        
+                        if (isset($pm->link->email)) {
+                            $email = $pm->link->email;
+                            $parts = explode('@', $email);
+                            if (count($parts) == 2) {
+                                $username = $parts[0];
+                                $domain = $parts[1];
+                                $maskedUsername = substr($username, 0, 2) . '***';
+                                $displayInfo = $maskedUsername . '@' . $domain;
+                            }
+                        }
+                        
+                        $paymentMethods[] = [
+                            'id' => $pm->id,
+                            'brand' => 'Stripe Link',
+                            'last4' => $displayInfo,
+                            'exp_month' => null,
+                            'exp_year' => null,
+                            'is_default' => $pm->id === optional($user->defaultPaymentMethod())->id,
+                        ];
+                    }
                 }
             } catch (\Exception $e) {
                 \Log::error('Failed to fetch payment methods: ' . $e->getMessage());
@@ -99,8 +124,8 @@ class SubscriptionController extends Controller
         $user = Auth::user();
         
         try {
-            // Get price ID from session or request
-            $priceId = session('checkout_price_id', $request->price_id);
+            // Get price ID from request (it should be passed from the checkout form)
+            $priceId = $request->price_id;
             
             // Create or get the subscription
             $subscription = $user->newSubscription('default', $priceId);

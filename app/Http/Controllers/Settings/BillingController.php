@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Models\StripeProduct;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -24,20 +25,39 @@ class BillingController extends Controller
         // Get active subscription with more details
         $activeSubscription = $user->subscription('default');
         $currentPlan = null;
-        $stripePrices = config('stripe.price_to_tier', []);
         
         if ($activeSubscription && $activeSubscription->active()) {
             $priceId = $activeSubscription->stripe_price;
-            if (isset($stripePrices[$priceId])) {
+            
+            // First try to get from StripeProduct table
+            $stripeProduct = StripeProduct::where('stripe_price_id', $priceId)
+                ->where('is_active', true)
+                ->first();
+                
+            if ($stripeProduct) {
                 $currentPlan = [
-                    'tier' => $stripePrices[$priceId]['tier'],
-                    'period' => $stripePrices[$priceId]['period'],
+                    'tier' => $stripeProduct->tier,
+                    'period' => $stripeProduct->billing_period,
                     'price_id' => $priceId,
                     'status' => $activeSubscription->stripe_status,
                     'ends_at' => $activeSubscription->ends_at,
                     'trial_ends_at' => $activeSubscription->trial_ends_at,
-                    'current_period_end' => $activeSubscription->currentPeriodEnd(),
+                    'current_period_end' => $activeSubscription->current_period_end ?? $activeSubscription->created_at->addMonth(),
                 ];
+            } else {
+                // Fallback to config
+                $stripePrices = config('stripe.price_to_tier', []);
+                if (isset($stripePrices[$priceId])) {
+                    $currentPlan = [
+                        'tier' => $stripePrices[$priceId]['tier'],
+                        'period' => $stripePrices[$priceId]['period'],
+                        'price_id' => $priceId,
+                        'status' => $activeSubscription->stripe_status,
+                        'ends_at' => $activeSubscription->ends_at,
+                        'trial_ends_at' => $activeSubscription->trial_ends_at,
+                        'current_period_end' => $activeSubscription->current_period_end ?? $activeSubscription->created_at->addMonth(),
+                    ];
+                }
             }
         }
         
@@ -63,10 +83,28 @@ class BillingController extends Controller
                             'is_default' => $pm->id === optional($user->defaultPaymentMethod())->id,
                         ];
                     } elseif ($pm->type === 'link') {
+                        // Link payment methods store card details differently
+                        // Try to extract meaningful display information
+                        $displayInfo = 'Link';
+                        
+                        // Link payment methods might have email associated
+                        if (isset($pm->link->email)) {
+                            // Use masked email for display
+                            $email = $pm->link->email;
+                            $parts = explode('@', $email);
+                            if (count($parts) == 2) {
+                                $username = $parts[0];
+                                $domain = $parts[1];
+                                // Mask the username part
+                                $maskedUsername = substr($username, 0, 2) . '***';
+                                $displayInfo = $maskedUsername . '@' . $domain;
+                            }
+                        }
+                        
                         $paymentMethods[] = [
                             'id' => $pm->id,
                             'brand' => 'Stripe Link',
-                            'last4' => isset($pm->link->email) ? '...' . substr($pm->link->email, -4) : 'Link',
+                            'last4' => $displayInfo,
                             'exp_month' => null,
                             'exp_year' => null,
                             'is_default' => $pm->id === optional($user->defaultPaymentMethod())->id,
