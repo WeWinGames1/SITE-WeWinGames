@@ -13,6 +13,7 @@ import ProfitsByYearChart from '@/components/ProfitsByYearChart.vue';
 const props = defineProps<{
     roiData: Record<string, number>,
     sportProfitRoiData: Array<{ sport: string, profit: number, roi: number, monthly?: number }>,
+    lastYear?: number,
     lastYearProfit?: number,
     lastYearROI?: number,
     lastYearWinLoss?: number,
@@ -60,7 +61,7 @@ function formatMoney(val: number | undefined) {
                                 <div class="card-body p-4">
                                     <h3 class="h5 fw-bold text-white mb-3">This Year ({{ props.thisYear || new Date().getFullYear() }})</h3>
                                     <div class="h3 fw-bold text-primary mb-2">
-                                        ${{ formatMoney(props.thisYearProfit + 20) }}
+                                        ${{ formatMoney(props.thisYearProfit) }}
                                     </div>
                                     <div class="small text-gray-light">
                                         ROI: <span class="fw-bold text-white">{{ Math.round(props.thisYearROI ?? 0,2) }}%</span>
@@ -79,8 +80,8 @@ function formatMoney(val: number | undefined) {
                                     <div class="h3 fw-bold text-primary mb-2">
                                         ${{ formatMoney(props.lastYearProfit) }}
                                     </div>
-                                    <div class="small text-gray-light">ROI: <span class="fw-bold text-white">{{ Math.round(15) }}%</span></div>
-                                    <div class="small text-gray-light">Win/Loss: <span class="fw-bold text-white">{{ Math.round(47) }}%</span></div>
+                                    <div class="small text-gray-light">ROI: <span class="fw-bold text-white">{{ Math.round(props.lastYearROI ?? 0) }}%</span></div>
+                                    <div class="small text-gray-light">Win/Loss: <span class="fw-bold text-white">{{ Math.round(props.lastYearWinLoss ?? 0) }}%</span></div>
                                 </div>
                             </div>
                         </div>

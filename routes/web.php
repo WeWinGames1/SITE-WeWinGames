@@ -51,6 +51,13 @@ Route::get('/subscription-checkout', [RegisteredUserController::class, 'newSubsc
     ->name('subscription.checkout')
     ->middleware(['auth', 'verified']);
 
+// Subscription management routes
+Route::middleware(['auth', 'verified'])->prefix('subscription')->name('subscription.')->group(function () {
+    Route::post('/switch', [\App\Http\Controllers\SubscriptionController::class, 'switchPlan'])->name('switch');
+    Route::post('/cancel', [\App\Http\Controllers\SubscriptionController::class, 'cancel'])->name('cancel');
+    Route::post('/resume', [\App\Http\Controllers\SubscriptionController::class, 'resume'])->name('resume');
+});
+
 
 // Public Support Route (for both guests and authenticated users)
 Route::get('/support', [SupportTicketController::class, 'publicCreate'])->name('support.public');

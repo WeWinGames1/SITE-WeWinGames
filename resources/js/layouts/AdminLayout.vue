@@ -364,6 +364,11 @@ function logout() {
 .admin-main-content {
     background-color: #f8f9fa;
     min-height: calc(100vh - 56px);
+    /* Override CSS variables for light theme */
+    --bs-body-color: #212529;
+    --bs-body-bg: #ffffff;
+    --bs-secondary-color: #6c757d;
+    --bs-text-muted: #6c757d;
 }
 
 /* Override Bootstrap dark theme for admin area */
@@ -654,6 +659,11 @@ main {
 .admin-main-content {
     background-color: #f8f9fa;
     min-height: calc(100vh - 56px);
+    /* Override CSS variables for light theme */
+    --bs-body-color: #212529;
+    --bs-body-bg: #ffffff;
+    --bs-secondary-color: #6c757d;
+    --bs-text-muted: #6c757d;
 }
 
 /* Override Bootstrap dark theme for admin area */

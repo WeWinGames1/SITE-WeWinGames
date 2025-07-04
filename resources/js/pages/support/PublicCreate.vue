@@ -27,6 +27,14 @@ const form = useForm({
 const submit = () => {
     form.post(route('support.public.store'));
 };
+
+const scrollToFAQ = (e: Event) => {
+    e.preventDefault();
+    const faqSection = document.getElementById('faqAccordion');
+    if (faqSection) {
+        faqSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+};
 </script>
 
 <template>
@@ -209,7 +217,11 @@ const submit = () => {
                                         <div class="p-4 rounded" style="background-color: rgba(255, 255, 255, 0.05);">
                                             <i class="bi bi-envelope text-warning fs-2 mb-3 d-block"></i>
                                             <h5 class="text-white mb-2">Email</h5>
-                                            <p class="text-white-50 small mb-0">support@wewingames.com</p>
+                                            <p class="text-white-50 small mb-0">
+                                                <a href="mailto:support@wewingames.com" class="text-white-50 text-decoration-none">
+                                                    support@wewingames.com
+                                                </a>
+                                            </p>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
@@ -224,7 +236,7 @@ const submit = () => {
                                             <i class="bi bi-question-circle text-warning fs-2 mb-3 d-block"></i>
                                             <h5 class="text-white mb-2">FAQ</h5>
                                             <p class="small mb-0">
-                                                <a href="#faq" class="text-warning text-decoration-none">View common questions</a>
+                                                <a href="#faq" @click="scrollToFAQ" class="text-warning text-decoration-none">View common questions</a>
                                             </p>
                                         </div>
                                     </div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, usePage, useForm } from '@inertiajs/vue3';
-import { onMounted, watch } from 'vue';
+import { onMounted, watch, ref } from 'vue';
 import CustomerLayout from '@/layouts/CustomerLayout.vue';
 import InputError from '@/components/InputError.vue';
 import axios from 'axios';
@@ -23,6 +23,18 @@ const form = useForm({
         email: user.notification_preferences?.email || false,
         push: user.notification_preferences?.push || false,
     },
+});
+
+// Account deletion form
+const deleteForm = useForm({
+    nameConfirmation: '',
+});
+
+const deleteButtonDisabled = ref(true);
+
+// Watch for name confirmation changes
+watch(() => deleteForm.nameConfirmation, (newVal) => {
+    deleteButtonDisabled.value = newVal !== user.name;
 });
 
 const subscribe = async () => {
@@ -213,10 +225,10 @@ watch(
                 <div class="card mt-4 border-danger">
                     <div class="card-header bg-danger bg-opacity-10">
                         <h5 class="mb-0 text-danger">Delete Account</h5>
-                        <p class="text-muted mb-0 small">Permanently delete your account and all of your data</p>
+                        <p class="mb-0 small">Permanently delete your account and all of your data</p>
                     </div>
                     <div class="card-body">
-                        <p class="text-muted">
+                        <p>
                             Once your account is deleted, all of its resources and data will be permanently deleted. 
                             Before deleting your account, please download any data or information that you wish to retain.
                         </p>
@@ -230,14 +242,37 @@ watch(
 
         <!-- Delete Account Modal -->
         <div class="modal fade" id="deleteAccountModal" tabindex="-1">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Delete Account</h5>
+                    <div class="modal-header bg-danger bg-opacity-10">
+                        <h5 class="modal-title text-danger">Delete Account</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Warning:</strong> This action cannot be undone!
+                        </div>
+                        
+                        <p class="mb-3">
+                            Are you sure you want to delete your account? All of your data will be permanently deleted.
+                        </p>
+                        
+                        <p class="mb-2">
+                            To confirm, please type your full name.
+                        </p>
+                        
+                        <input
+                            v-model="deleteForm.nameConfirmation"
+                            type="text"
+                            class="form-control"
+                            :class="{ 'is-invalid': deleteForm.nameConfirmation && deleteForm.nameConfirmation !== user.name }"
+                            placeholder="Type your full name to confirm"
+                        />
+                        <div class="invalid-feedback" v-if="deleteForm.nameConfirmation && deleteForm.nameConfirmation !== user.name">
+                            Name doesn't match. Please type your full name exactly as shown above.
+                        </div>
+                        <InputError class="mt-2" :message="deleteForm.errors.nameConfirmation" />
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -246,9 +281,12 @@ watch(
                             method="delete"
                             as="button"
                             class="btn btn-danger"
+                            :class="{ 'disabled': deleteButtonDisabled }"
+                            :disabled="deleteButtonDisabled"
                             preserve-scroll
                         >
-                            Delete Account
+                            <i class="bi bi-trash me-2"></i>
+                            Delete Account Permanently
                         </Link>
                     </div>
                 </div>

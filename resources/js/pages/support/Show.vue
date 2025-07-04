@@ -160,7 +160,7 @@ function reopenTicket() {
                         <div class="card-header bg-light">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <strong>{{ ticket.user.name }}</strong>
+                                    <strong class="text-dark">{{ ticket.user.name }}</strong>
                                     <span class="text-muted ms-2">{{ formatDate(ticket.created_at) }}</span>
                                 </div>
                                 <span class="badge bg-primary">Original Message</span>
@@ -176,7 +176,7 @@ function reopenTicket() {
                         <div class="card-header" :class="reply.user.is_admin ? 'bg-info bg-opacity-10' : 'bg-light'">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <strong>{{ reply.user.name }}</strong>
+                                    <strong class="text-dark">{{ reply.user.name }}</strong>
                                     <span v-if="reply.user.is_admin" class="badge bg-info ms-2">Support Team</span>
                                     <span class="text-muted ms-2">{{ formatDate(reply.created_at) }}</span>
                                 </div>

@@ -174,11 +174,73 @@ h6, .h6 { font-weight: var(--bs-font-weight-medium); }
   border-radius: var(--bs-border-radius-lg);
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  color: var(--bs-body-color);
 }
 
 .card:hover {
   transform: translateY(-2px);
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Ensure text visibility in cards */
+.card .card-header,
+.card .card-body,
+.card .card-footer {
+  color: var(--bs-body-color);
+}
+
+.card h1, .card h2, .card h3, .card h4, .card h5, .card h6,
+.card .h1, .card .h2, .card .h3, .card .h4, .card .h5, .card .h6 {
+  color: var(--bs-body-color);
+}
+
+.card .form-label,
+.card .form-check-label {
+  color: var(--bs-body-color);
+}
+
+.card p {
+  color: var(--bs-body-color);
+}
+
+/* Override text-muted for better visibility on dark backgrounds */
+.text-muted {
+  color: #9CA3AF !important; /* Light gray for visibility */
+  --bs-text-opacity: 1;
+}
+
+/* Nav pills in dark theme */
+.nav-pills .nav-link {
+  color: var(--bs-body-color);
+}
+
+.nav-pills .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.nav-pills .nav-link.active {
+  background-color: var(--bs-primary);
+  color: white;
+}
+
+/* Table styles for dark theme */
+.table {
+  color: var(--bs-body-color);
+}
+
+.table th {
+  color: var(--bs-body-color);
+  border-color: var(--bs-card-border);
+}
+
+.table td {
+  color: var(--bs-body-color);
+  border-color: var(--bs-card-border);
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--bs-body-color);
 }
 
 /* Button enhancements */

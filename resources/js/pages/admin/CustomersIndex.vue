@@ -673,15 +673,15 @@ function updatePlanPreview() {
               <!-- Plan Preview -->
               <div v-if="planPreview" class="card bg-light mb-3">
                 <div class="card-body">
-                  <h6 class="card-title text-dark">Plan Preview</h6>
+                  <h6 class="card-title">Plan Preview</h6>
                   <div class="row">
                     <div class="col-md-6">
-                      <p class="mb-1 text-dark"><strong>Plan:</strong> {{ planPreview.name }}</p>
-                      <p class="mb-1 text-dark"><strong>Price:</strong> ${{ planPreview.price }} / {{ planPreview.interval }}</p>
+                      <p class="mb-1"><strong>Plan:</strong> {{ planPreview.name }}</p>
+                      <p class="mb-1"><strong>Price:</strong> ${{ planPreview.price }} / {{ planPreview.interval }}</p>
                     </div>
                     <div class="col-md-6">
-                      <p class="mb-1 text-dark"><strong>Tier Access:</strong> {{ planPreview.tier }}</p>
-                      <p class="mb-1 text-dark"><strong>Next Billing:</strong> {{ planPreview.nextBilling }}</p>
+                      <p class="mb-1"><strong>Tier Access:</strong> {{ planPreview.tier }}</p>
+                      <p class="mb-1"><strong>Next Billing:</strong> {{ planPreview.nextBilling }}</p>
                     </div>
                   </div>
                 </div>
