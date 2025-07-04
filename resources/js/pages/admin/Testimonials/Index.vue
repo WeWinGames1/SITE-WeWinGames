@@ -52,11 +52,11 @@ function getStarArray(rating: number) {
     <AdminLayout>
         <Head title="Testimonials" />
         
-        <div class="container-fluid">
+        <div class="container-fluid p-4">
             <!-- Page Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h1 class="h3 mb-0 text-gray-800">Testimonials</h1>
+                    <h1 class="h2 mb-0">Testimonials</h1>
                     <p class="text-muted mb-0">Manage customer reviews and testimonials</p>
                 </div>
                 <Link 
@@ -69,7 +69,7 @@ function getStarArray(rating: number) {
             </div>
 
             <!-- Testimonials Table -->
-            <div class="card shadow-sm">
+            <div class="card mb-4">
                 <div class="card-body">
                     <div v-if="props.testimonials.data.length === 0" class="text-center py-5">
                         <i class="bi bi-chat-quote display-1 text-muted mb-3 d-block"></i>

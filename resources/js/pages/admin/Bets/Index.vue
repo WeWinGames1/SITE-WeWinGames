@@ -321,35 +321,29 @@ function formatCurrency(amount: number | null | undefined): string {
     <AdminLayout>
         <Head title="Bet Management" />
         
-        <div class="container-fluid">
+        <div class="container-fluid p-4">
             <!-- Header -->
-            <div class="row mb-4">
-                <div class="col">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h1 class="h2 mb-1 text-dark">Bet Management</h1>
-                            <p class="text-muted mb-0">
-                                Manage all betting picks and predictions
-                            </p>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <button
-                                @click="exportBets"
-                                type="button"
-                                class="btn btn-outline-secondary"
-                                style="padding: 0.375rem 0.75rem;"
-                            >
-                                <i class="bi bi-download me-2"></i>Export
-                            </button>
-                            <Link
-                                :href="route('admin.bets.create')"
-                                class="btn btn-primary"
-                                style="padding: 0.375rem 0.75rem;"
-                            >
-                                <i class="bi bi-plus-circle me-2"></i>Add Bet
-                            </Link>
-                        </div>
-                    </div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-0">Bet Management</h1>
+                    <p class="text-muted mb-0">
+                        Manage all betting picks and predictions
+                    </p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button
+                        @click="exportBets"
+                        type="button"
+                        class="btn btn-outline-secondary"
+                    >
+                        <i class="bi bi-download me-2"></i>Export
+                    </button>
+                    <Link
+                        :href="route('admin.bets.create')"
+                        class="btn btn-primary"
+                    >
+                        <i class="bi bi-plus-circle me-2"></i>Add Bet
+                    </Link>
                 </div>
             </div>
 

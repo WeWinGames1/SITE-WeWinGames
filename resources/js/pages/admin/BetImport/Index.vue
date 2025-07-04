@@ -1,10 +1,9 @@
 <template>
   <AdminLayout title="Import Bets">
-    <div class="container-fluid">
-      <div class="row mb-4">
-        <div class="col-12">
-          <h1 class="h2 mb-0">CSV Bet Import Wizard</h1>
-        </div>
+    <div class="container-fluid p-4">
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2 mb-0">CSV Bet Import Wizard</h1>
       </div>
 
       <!-- Progress Steps -->
@@ -15,7 +14,7 @@
       </div>
 
       <!-- Step Content -->
-      <div class="card">
+      <div class="card mb-4">
         <div class="card-body">
           <!-- Step 1: Upload -->
           <UploadStep

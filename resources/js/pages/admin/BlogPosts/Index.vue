@@ -122,20 +122,20 @@ function formatDate(date: string | null): string {
     <AdminLayout>
         <Head title="Blog Posts" />
         
-        <div class="container-fluid">
+        <div class="container-fluid p-4">
             <!-- Page Header -->
-            <div class="row mb-4">
-                <div class="col">
-                    <h1 class="h3 mb-1">Blog Post Management</h1>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-0">Blog Post Management</h1>
                     <p class="text-muted">Create, edit, and manage your blog content</p>
                 </div>
-                <div class="col-auto">
-                    <button type="button" class="btn btn-outline-primary me-2" @click="loadStats">
-                        <i class="bi bi-bar-chart-line"></i>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-primary" @click="loadStats">
+                        <i class="bi bi-bar-chart-line me-2"></i>
                         {{ showStats ? 'Hide' : 'Show' }} Statistics
                     </button>
                     <Link :href="route('admin.blog-posts.create')" class="btn btn-primary">
-                        <i class="bi bi-plus-lg"></i>
+                        <i class="bi bi-plus-lg me-2"></i>
                         New Post
                     </Link>
                 </div>
@@ -263,7 +263,7 @@ function formatDate(date: string | null): string {
             </div>
             
             <!-- Posts Table -->
-            <div class="card">
+            <div class="card mb-4">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
                         <thead>

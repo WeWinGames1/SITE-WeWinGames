@@ -27,30 +27,26 @@ function closeQR() {
     <AdminLayout>
         <Head title="Landing Pages" />
         
-        <div class="container-fluid">
+        <div class="container-fluid p-4">
             <!-- Header -->
-            <div class="row mb-4">
-                <div class="col">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h1 class="h2 mb-1 text-dark">Landing Pages</h1>
-                            <p class="text-muted mb-0">
-                                Manage your marketing and landing pages
-                            </p>
-                        </div>
-                        <Link 
-                            :href="route('admin.landing-pages.create')" 
-                            class="btn btn-primary"
-                        >
-                            <i class="bi bi-plus-circle me-1"></i>
-                            Create New Page
-                        </Link>
-                    </div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-0">Landing Pages</h1>
+                    <p class="text-muted mb-0">
+                        Manage your marketing and landing pages
+                    </p>
                 </div>
+                <Link 
+                    :href="route('admin.landing-pages.create')" 
+                    class="btn btn-primary"
+                >
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Create New Page
+                </Link>
             </div>
 
             <!-- Pages Table -->
-            <div class="card shadow-sm">
+            <div class="card mb-4">
                 <div class="card-body">
                     <div v-if="props.pages.length === 0" class="text-center py-5">
                         <i class="bi bi-file-earmark-text display-1 text-muted mb-3 d-block"></i>
