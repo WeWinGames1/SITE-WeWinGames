@@ -6,15 +6,17 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         {{-- Google Tag Manager --}}
-        @if(config('google.tag_manager.container_id'))
-            <!-- Google Tag Manager -->
-            <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','{{ config('google.tag_manager.container_id') }}');</script>
-            <!-- End Google Tag Manager -->
-        @endif
+        @production
+            @if(config('google.tag_manager.container_id'))
+                <!-- Google Tag Manager -->
+                <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+                new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+                j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+                'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+                })(window,document,'script','dataLayer','{{ config('google.tag_manager.container_id') }}');</script>
+                <!-- End Google Tag Manager -->
+            @endif
+        @endproduction
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>
@@ -79,16 +81,18 @@
         @endif
         
         {{-- Google Analytics --}}
-        @if(config('google.analytics.tag_id'))
-            <!-- Google tag (gtag.js) -->
-            <script async src="https://www.googletagmanager.com/gtag/js?id={{ config('google.analytics.tag_id') }}"></script>
-            <script>
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '{{ config('google.analytics.tag_id') }}');
-            </script>
-        @endif
+        @production
+            @if(config('google.analytics.tag_id'))
+                <!-- Google tag (gtag.js) -->
+                <script async src="https://www.googletagmanager.com/gtag/js?id={{ config('google.analytics.tag_id') }}"></script>
+                <script>
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('js', new Date());
+                    gtag('config', '{{ config('google.analytics.tag_id') }}');
+                </script>
+            @endif
+        @endproduction
         
         @routes
         @vite(['resources/js/app.ts', 'resources/css/app.css'])
@@ -96,12 +100,14 @@
     </head>
     <body class="font-sans antialiased">
         {{-- Google Tag Manager (noscript) --}}
-        @if(config('google.tag_manager.container_id'))
-            <!-- Google Tag Manager (noscript) -->
-            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ config('google.tag_manager.container_id') }}"
-            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-            <!-- End Google Tag Manager (noscript) -->
-        @endif
+        @production
+            @if(config('google.tag_manager.container_id'))
+                <!-- Google Tag Manager (noscript) -->
+                <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ config('google.tag_manager.container_id') }}"
+                height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+                <!-- End Google Tag Manager (noscript) -->
+            @endif
+        @endproduction
         
         @if(session()->has('impersonator_id'))
             <div class="bg-warning text-dark">

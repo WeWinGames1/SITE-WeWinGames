@@ -74,6 +74,16 @@ class CustomerController extends Controller
         $perPage = $request->get('per_page', 25);
         $customers = $query->paginate($perPage)->withQueryString();
         
+        // Add payment method details to each customer
+        $customers->getCollection()->transform(function ($customer) {
+            $paymentMethod = $customer->defaultPaymentMethod();
+            if ($paymentMethod) {
+                $customer->pm_type = $paymentMethod->card->brand;
+                $customer->pm_last_four = $paymentMethod->card->last4;
+            }
+            return $customer;
+        });
+        
         // Get statistics with a single optimized query
         $stats = SimpleCacheService::rememberQuery(
             SimpleCacheService::KEY_CUSTOMER_STATS,
@@ -112,58 +122,120 @@ class CustomerController extends Controller
     public function update(Request $request, User $user)
     {
         $data = $request->validate([
+            'action_type' => 'nullable|in:create,update,cancel,manual',
             'subscription_price' => 'nullable|string',
-            'subscription_status' => 'required|string',
+            'subscription_status' => 'nullable|string',
             'trial_days' => 'nullable|integer|min:0',
         ]);
+        
+        // Default to manual if action_type not provided
+        $data['action_type'] = $data['action_type'] ?? 'manual';
 
         // Log admin action
         activity()
             ->causedBy(auth()->user())
             ->performedOn($user)
             ->withProperties([
+                'action_type' => $data['action_type'],
                 'subscription_price' => $data['subscription_price'] ?? null,
-                'subscription_status' => $data['subscription_status'],
+                'subscription_status' => $data['subscription_status'] ?? null,
                 'trial_days' => $data['trial_days'] ?? null,
                 'previous_status' => $user->subscriptions()->latest()->first()?->stripe_status,
+                'has_payment_method' => $user->hasPaymentMethod(),
             ])
             ->log('Admin updated customer subscription');
 
-        // Grant trial if requested (do this first)
-        if (!empty($data['trial_days'])) {
-            $trialUntil = now()->addDays($data['trial_days']);
-            if ($user->hasPaymentMethod()) {
-                // If user has a payment method and an active subscription, set trial on subscription
-                $subscription = $user->subscriptions()->active()->first();
-                if ($subscription) {
-                    $subscription->trialUntil($trialUntil);
-                }
-            } else {
-                // Otherwise, update the user's trial_ends_at property
-                $user->trial_ends_at = $trialUntil;
-                $user->save();
+        try {
+            switch ($data['action_type']) {
+                case 'create':
+                    if (!$data['subscription_price']) {
+                        return back()->withErrors(['subscription_price' => 'Plan is required for creating subscription']);
+                    }
+                    
+                    // Cancel any existing subscription
+                    $current = $user->subscriptions()->active()->first();
+                    if ($current) {
+                        $current->cancelNow();
+                    }
+                    
+                    // Create new subscription
+                    $builder = $user->newSubscription('default', $data['subscription_price']);
+                    
+                    // Add trial if specified
+                    if (!empty($data['trial_days'])) {
+                        $builder->trialDays($data['trial_days']);
+                    }
+                    
+                    // Create subscription (will handle cases with/without payment method)
+                    if ($user->hasPaymentMethod()) {
+                        $builder->create();
+                    } else {
+                        // Create incomplete subscription that requires payment method
+                        $builder->createWithoutPaymentMethod();
+                    }
+                    
+                    return back()->with('success', 'Subscription created successfully!' . 
+                        (!$user->hasPaymentMethod() ? ' Customer will need to add a payment method to activate billing.' : ''));
+                    
+                case 'update':
+                    if (!$data['subscription_price']) {
+                        return back()->withErrors(['subscription_price' => 'Plan is required for updating subscription']);
+                    }
+                    
+                    $subscription = $user->subscriptions()->active()->first();
+                    if (!$subscription) {
+                        return back()->withErrors(['subscription' => 'No active subscription found to update']);
+                    }
+                    
+                    // Swap to new plan
+                    $subscription->swap($data['subscription_price']);
+                    
+                    return back()->with('success', 'Subscription plan updated! Changes will take effect at the next billing cycle.');
+                    
+                case 'cancel':
+                    $subscription = $user->subscriptions()->active()->first();
+                    if (!$subscription) {
+                        return back()->withErrors(['subscription' => 'No active subscription found to cancel']);
+                    }
+                    
+                    // Cancel at period end (graceful cancellation)
+                    $subscription->cancel();
+                    
+                    return back()->with('success', 'Subscription cancelled! Access will continue until ' . 
+                        $subscription->ends_at->format('F j, Y'));
+                    
+                case 'manual':
+                    if (!$data['subscription_price']) {
+                        return back()->withErrors(['subscription_price' => 'Plan is required for manual override']);
+                    }
+                    
+                    // Cancel any existing Stripe subscription
+                    $current = $user->subscriptions()->active()->first();
+                    if ($current) {
+                        $current->cancelNow();
+                    }
+                    
+                    // Create manual subscription record
+                    \DB::table('subscriptions')->insert([
+                        'user_id' => $user->id,
+                        'type' => 'default',
+                        'stripe_id' => 'manual_' . uniqid(),
+                        'stripe_status' => 'active',
+                        'stripe_price' => $data['subscription_price'],
+                        'quantity' => 1,
+                        'trial_ends_at' => !empty($data['trial_days']) ? now()->addDays($data['trial_days']) : null,
+                        'ends_at' => null,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                    
+                    return back()->with('success', 'Manual subscription override applied! No automatic billing will occur.');
             }
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Failed to update subscription: ' . $e->getMessage()]);
         }
 
-        // Assign a new subscription if a price is provided
-        if (!empty($data['subscription_price']) && empty($data['trial_days'])) {
-            // Cancel current subscription if exists
-            $current = $user->subscriptions()->active()->first();
-            if ($current) {
-                $current->cancelNow();
-            }
-            // Create new subscription
-            $user->newSubscription('default', $data['subscription_price'])->create();
-        }
-
-        // Update status if needed
-        $subscription = $user->subscriptions()->latest()->first();
-        if ($subscription) {
-            $subscription->stripe_status = $data['subscription_status'];
-            $subscription->save();
-        }
-
-        return back()->with('success', 'Subscription updated!');
+        return back()->with('error', 'Invalid action type');
     }
 
     /**

@@ -9,9 +9,15 @@ declare global {
 export function useGoogleTagManager() {
     const page = usePage();
     const containerId = page.props.env?.GOOGLE_TAG_MANAGER_ID;
+    const isProduction = page.props.env?.APP_ENV === 'production';
+    const isEnabled = !!containerId && isProduction;
 
     const pushToDataLayer = (data: Record<string, any>) => {
-        if (typeof window !== 'undefined' && window.dataLayer && containerId) {
+        if (!isEnabled) {
+            console.log('[GTM Debug] Data layer push:', data);
+            return;
+        }
+        if (typeof window !== 'undefined' && window.dataLayer) {
             window.dataLayer.push(data);
         }
     };
@@ -55,6 +61,6 @@ export function useGoogleTagManager() {
         trackEcommerce,
         trackUserData,
         trackPageView,
-        isEnabled: !!containerId,
+        isEnabled,
     };
 }

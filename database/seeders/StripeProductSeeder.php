@@ -118,7 +118,7 @@ class StripeProductSeeder extends Seeder
                 'name' => 'Platinum Weekly',
                 'tier' => 'Platinum',
                 'billing_period' => 'weekly',
-                'price' => 55.00,
+                'price' => 49.00,
                 'features' => [
                     'Access to all picks',
                     'Instant notifications',
@@ -132,7 +132,7 @@ class StripeProductSeeder extends Seeder
                 'name' => 'Platinum Daily',
                 'tier' => 'Platinum',
                 'billing_period' => 'daily',
-                'price' => 15.00,
+                'price' => 12.00,
                 'features' => [
                     'Access to all picks',
                     'Instant notifications',

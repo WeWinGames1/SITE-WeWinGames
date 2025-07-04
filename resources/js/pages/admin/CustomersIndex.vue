@@ -10,10 +10,13 @@ interface Customer {
   name: string;
   email: string;
   created_at: string;
+  pm_type?: string;
+  pm_last_four?: string;
   subscriptions: Array<{
     stripe_status: string;
     price: string;
     trial_ends_at: string | null;
+    current_period_end?: string;
   }>;
 }
 
@@ -64,10 +67,18 @@ const filters = ref({
 // Modal state
 const showGrantModal = ref(false);
 const selectedCustomer = ref<Customer | null>(null);
+const planPreview = ref<{
+  name: string;
+  price: string;
+  interval: string;
+  tier: string;
+  nextBilling: string;
+} | null>(null);
 const grantForm = useForm({
   subscription_price: '',
   subscription_status: 'active',
-  trial_days: ''
+  trial_days: '',
+  action_type: 'create'
 });
 
 // Apply filters with debounce for search
@@ -139,15 +150,37 @@ function getSubscriptionBadgeClass(status: string) {
 function openGrantModal(customer: Customer) {
   selectedCustomer.value = customer;
   showGrantModal.value = true;
+  planPreview.value = null;
+  
+  // Reset form to defaults
+  grantForm.subscription_price = '';
+  grantForm.subscription_status = 'active';
+  grantForm.trial_days = '';
+  grantForm.action_type = 'create';
   
   // Pre-fill form if customer has subscription
   if (customer.subscriptions && customer.subscriptions.length > 0) {
     const sub = customer.subscriptions[0];
-    grantForm.subscription_price = sub.price || '';
+    // Only set price if it matches our known prices
+    const matchingPriceKey = Object.keys(stripePrices).find(key => stripePrices[key] === sub.price);
+    if (matchingPriceKey) {
+      grantForm.subscription_price = sub.price;
+      grantForm.action_type = 'update';
+    } else {
+      // Custom subscription - don't pre-fill price
+      grantForm.subscription_price = '';
+      grantForm.action_type = 'manual';
+    }
     grantForm.subscription_status = sub.stripe_status || 'active';
   } else {
-    grantForm.reset();
     grantForm.subscription_status = 'active';
+    grantForm.action_type = 'create';
+    grantForm.subscription_price = '';
+  }
+  
+  // Update preview if we have a price
+  if (grantForm.subscription_price) {
+    updatePlanPreview();
   }
 }
 
@@ -159,6 +192,10 @@ function grantSubscription() {
     onSuccess: () => {
       showGrantModal.value = false;
       grantForm.reset();
+      grantForm.clearErrors();
+    },
+    onError: (errors) => {
+      console.error('Subscription update errors:', errors);
     }
   });
 }
@@ -209,6 +246,68 @@ function goToPage(page: number) {
     preserveState: true,
     preserveScroll: true,
   });
+}
+
+function getCurrentPlanName(customer: Customer): string {
+  if (!customer.subscriptions || customer.subscriptions.length === 0) {
+    return 'No subscription';
+  }
+  
+  const priceId = customer.subscriptions[0].price;
+  const planKey = Object.keys(stripePrices).find(key => stripePrices[key] === priceId);
+  
+  if (!planKey) return 'Custom';
+  
+  return planKey.replace('_', ' ').toUpperCase();
+}
+
+function updatePlanPreview() {
+  if (!grantForm.subscription_price) {
+    planPreview.value = null;
+    return;
+  }
+  
+  const planKey = Object.keys(stripePrices).find(key => stripePrices[key] === grantForm.subscription_price);
+  if (!planKey) return;
+  
+  const parts = planKey.split('_');
+  const tier = parts[0].toUpperCase();
+  const interval = parts[1].toLowerCase();
+  
+  // Calculate next billing date
+  let nextBilling = new Date();
+  switch (interval) {
+    case 'daily':
+      nextBilling.setDate(nextBilling.getDate() + 1);
+      break;
+    case 'weekly':
+      nextBilling.setDate(nextBilling.getDate() + 7);
+      break;
+    case 'monthly':
+      nextBilling.setMonth(nextBilling.getMonth() + 1);
+      break;
+  }
+  
+  // Price calculation (you may need to adjust these based on your actual pricing)
+  const prices = {
+    'silver_daily': '5.00',
+    'silver_weekly': '20.00',
+    'silver_monthly': '60.00',
+    'gold_daily': '10.00',
+    'gold_weekly': '39.00',
+    'gold_monthly': '110.00',
+    'platinum_daily': '12.00',
+    'platinum_weekly': '49.00',
+    'platinum_monthly': '149.00'
+  };
+  
+  planPreview.value = {
+    name: `${tier} ${interval.charAt(0).toUpperCase() + interval.slice(1)}`,
+    price: prices[planKey] || '0.00',
+    interval: interval,
+    tier: tier,
+    nextBilling: nextBilling.toLocaleDateString()
+  };
 }
 </script>
 
@@ -497,7 +596,7 @@ function goToPage(page: number) {
       :style="{ display: showGrantModal ? 'block' : 'none' }"
       tabindex="-1"
     >
-      <div class="modal-dialog">
+      <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">
@@ -514,9 +613,53 @@ function goToPage(page: number) {
           </div>
           <form @submit.prevent="grantSubscription">
             <div class="modal-body">
+              <!-- Current Subscription Info -->
+              <div v-if="selectedCustomer?.subscriptions?.length > 0" class="alert alert-info mb-4">
+                <h6 class="alert-heading mb-3">Current Subscription</h6>
+                <div class="row small">
+                  <div class="col-md-6">
+                    <p class="mb-1"><strong>Plan:</strong> {{ getCurrentPlanName(selectedCustomer) }}</p>
+                    <p class="mb-1"><strong>Status:</strong> 
+                      <span :class="['badge', getSubscriptionBadgeClass(selectedCustomer.subscriptions[0].stripe_status)]">
+                        {{ selectedCustomer.subscriptions[0].stripe_status }}
+                      </span>
+                    </p>
+                  </div>
+                  <div class="col-md-6">
+                    <p class="mb-1"><strong>Next Billing:</strong> 
+                      {{ selectedCustomer.subscriptions[0].current_period_end 
+                         ? new Date(selectedCustomer.subscriptions[0].current_period_end).toLocaleDateString() 
+                         : 'N/A' }}
+                    </p>
+                    <p class="mb-1"><strong>Payment Method:</strong> 
+                      <span v-if="selectedCustomer.pm_type" class="text-success">
+                        <i class="bi bi-credit-card"></i> {{ selectedCustomer.pm_type }} ending in {{ selectedCustomer.pm_last_four }}
+                      </span>
+                      <span v-else class="text-danger">
+                        <i class="bi bi-exclamation-circle"></i> No payment method
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="alert alert-warning mb-4">
+                <i class="bi bi-info-circle me-2"></i>
+                This customer has no active subscription
+              </div>
+
+              <!-- Payment Method Warning -->
+              <div v-if="!selectedCustomer?.pm_type" class="alert alert-danger mb-4">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <strong>Warning:</strong> This customer has no payment method on file. 
+                They will need to add a payment method before they can be automatically billed.
+              </div>
+
+              <!-- New Subscription Settings -->
+              <h6 class="mb-3">New Subscription Settings</h6>
+              
               <div class="mb-3">
                 <label class="form-label">Subscription Plan</label>
-                <select v-model="grantForm.subscription_price" class="form-select" required>
+                <select v-model="grantForm.subscription_price" class="form-select" :required="grantForm.action_type !== 'cancel'" @change="updatePlanPreview">
                   <option value="">-- Select Plan --</option>
                   <option v-for="(price, key) in stripePrices" :key="key" :value="price">
                     {{ key.replace('_', ' ').toUpperCase() }}
@@ -526,21 +669,49 @@ function goToPage(page: number) {
                   {{ grantForm.errors.subscription_price }}
                 </div>
               </div>
-              
-              <div class="mb-3">
-                <label class="form-label">Status</label>
-                <select v-model="grantForm.subscription_status" class="form-select" required>
-                  <option value="active">Active</option>
-                  <option value="canceled">Canceled</option>
-                  <option value="past_due">Past Due</option>
-                  <option value="unpaid">Unpaid</option>
-                </select>
-                <div v-if="grantForm.errors.subscription_status" class="invalid-feedback d-block">
-                  {{ grantForm.errors.subscription_status }}
+
+              <!-- Plan Preview -->
+              <div v-if="planPreview" class="card bg-light mb-3">
+                <div class="card-body">
+                  <h6 class="card-title text-dark">Plan Preview</h6>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <p class="mb-1 text-dark"><strong>Plan:</strong> {{ planPreview.name }}</p>
+                      <p class="mb-1 text-dark"><strong>Price:</strong> ${{ planPreview.price }} / {{ planPreview.interval }}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <p class="mb-1 text-dark"><strong>Tier Access:</strong> {{ planPreview.tier }}</p>
+                      <p class="mb-1 text-dark"><strong>Next Billing:</strong> {{ planPreview.nextBilling }}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
               
               <div class="mb-3">
+                <label class="form-label">Action Type</label>
+                <select v-model="grantForm.action_type" class="form-select" required>
+                  <option value="create">Create New Subscription</option>
+                  <option value="update" v-if="selectedCustomer?.subscriptions?.length > 0">Update Existing Subscription</option>
+                  <option value="cancel" v-if="selectedCustomer?.subscriptions?.length > 0">Cancel Subscription</option>
+                  <option value="manual">Manual Override (No Billing)</option>
+                </select>
+                <div class="form-text">
+                  <span v-if="grantForm.action_type === 'create'">
+                    Creates a new subscription. If payment method exists, billing will start immediately.
+                  </span>
+                  <span v-else-if="grantForm.action_type === 'update'">
+                    Updates the existing subscription plan. Changes take effect at next billing cycle.
+                  </span>
+                  <span v-else-if="grantForm.action_type === 'cancel'">
+                    Cancels the subscription at the end of the current billing period.
+                  </span>
+                  <span v-else-if="grantForm.action_type === 'manual'">
+                    Grants access without creating a Stripe subscription. No automatic billing.
+                  </span>
+                </div>
+              </div>
+              
+              <div v-if="grantForm.action_type !== 'cancel'" class="mb-3">
                 <label class="form-label">Trial Days (optional)</label>
                 <input
                   v-model="grantForm.trial_days"
@@ -549,10 +720,35 @@ function goToPage(page: number) {
                   class="form-control"
                   placeholder="Leave empty for no trial"
                 />
-                <div class="form-text">Add trial days to the subscription</div>
+                <div class="form-text">Add trial days to delay the first payment</div>
                 <div v-if="grantForm.errors.trial_days" class="invalid-feedback d-block">
                   {{ grantForm.errors.trial_days }}
                 </div>
+              </div>
+
+              <!-- Summary -->
+              <div v-if="grantForm.action_type && grantForm.subscription_price" class="alert alert-warning mt-4">
+                <h6 class="alert-heading">Summary of Changes</h6>
+                <ul class="mb-0 small">
+                  <li v-if="grantForm.action_type === 'create'">
+                    A new {{ planPreview?.name }} subscription will be created
+                  </li>
+                  <li v-if="grantForm.action_type === 'update'">
+                    Subscription will change to {{ planPreview?.name }} at next billing cycle
+                  </li>
+                  <li v-if="grantForm.action_type === 'cancel'">
+                    Subscription will be cancelled at the end of the current period
+                  </li>
+                  <li v-if="grantForm.action_type === 'manual'">
+                    Customer will have {{ planPreview?.tier }} access without automatic billing
+                  </li>
+                  <li v-if="grantForm.trial_days && grantForm.action_type !== 'cancel'">
+                    {{ grantForm.trial_days }} day trial will be applied
+                  </li>
+                  <li v-if="!selectedCustomer?.pm_type && grantForm.action_type !== 'manual'">
+                    <strong class="text-danger">No automatic billing will occur until payment method is added</strong>
+                  </li>
+                </ul>
               </div>
             </div>
             <div class="modal-footer">
@@ -567,15 +763,15 @@ function goToPage(page: number) {
               <button 
                 type="submit" 
                 class="btn btn-primary"
-                :disabled="grantForm.processing"
+                :disabled="grantForm.processing || !grantForm.action_type"
               >
                 <span v-if="grantForm.processing">
                   <span class="spinner-border spinner-border-sm me-2"></span>
-                  Saving...
+                  Processing...
                 </span>
                 <span v-else>
                   <i class="bi bi-check-circle me-2"></i>
-                  Save Changes
+                  Confirm Changes
                 </span>
               </button>
             </div>

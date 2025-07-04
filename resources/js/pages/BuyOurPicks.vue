@@ -67,8 +67,8 @@ const plans = [
     monthlyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: platinum_monthly }),
     weeklyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: platinum_weekly }),
     dailyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: platinum_daily }),
-    weeklyPrice: '55',
-    dailyPrice: '15',
+    weeklyPrice: '49',
+    dailyPrice: '12',
     highlight: false,
   },
 ];
