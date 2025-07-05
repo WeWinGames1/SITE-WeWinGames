@@ -41,9 +41,13 @@ class AdminSecurityHeaders
             "object-src 'none'",
             "base-uri 'self'",
             "form-action 'self'",
-            "frame-ancestors 'none'",
-            "upgrade-insecure-requests"
+            "frame-ancestors 'none'"
         ];
+        
+        // Only add upgrade-insecure-requests in production
+        if (app()->environment('production')) {
+            $csp[] = "upgrade-insecure-requests";
+        }
         
         $response->headers->set('Content-Security-Policy', implode('; ', $csp));
         

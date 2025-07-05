@@ -78,7 +78,7 @@ class SecurityHeaders
 
         // Common CSP directives - skip font-src if already set in local
         $commonCsp = [
-            !app()->environment('local') ? "font-src 'self' https://fonts.gstatic.com https://fonts.bunny.net data:" : null,
+            !app()->environment('local') ? "font-src 'self' https://fonts.gstatic.com https://fonts.bunny.net https://cdnjs.cloudflare.com data:" : null,
             "img-src 'self' data: https: blob:",
             "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
             "object-src 'none'",

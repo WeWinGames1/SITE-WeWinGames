@@ -258,6 +258,21 @@ php artisan db:seed --class=ProductionSeeder
 
 # Or for development (includes sample data):
 php artisan db:seed
+
+# Email configuration
+# To disable email sending (logs emails instead), set:
+MAIL_MAILER=log
+# Emails will be written to: storage/logs/laravel.log
+
+# To enable email sending, set:
+MAIL_MAILER=smtp
+# And configure your SMTP credentials
+
+# Available mail drivers:
+# - log: Write emails to log file (for development/testing)
+# - smtp: Send via SMTP server
+# - sendmail: Use server's sendmail
+# - array: Store in memory (for testing)
 ```
 
 ### Server Requirements
@@ -479,6 +494,11 @@ Before creating a new migration:
 2. **Database errors**: Ensure migrations are run and seeded
 3. **Permission denied**: Check file permissions and ownership
 4. **Redis connection**: Verify Redis is running in Docker
+5. **419 CSRF Token Error**: 
+   - Clear all caches: `php artisan optimize:clear`
+   - Clear browser cookies for the domain
+   - Ensure session configuration is correct in `.env`
+   - Check that `SESSION_DOMAIN` matches your domain
 
 ### Debug Mode
 Enable debug mode in `.env`:
@@ -833,6 +853,13 @@ npm run format
    - Slimmer DraftKings promotional section
    - Horizontal layout for better space utilization
    - Improved responsive design
+
+4. **Under Construction Mode**:
+   - When enabled, only `/login` is accessible to non-admin users
+   - Registration (`/register`) is blocked during maintenance
+   - Password reset routes remain accessible
+   - Admin users can access all pages normally
+   - Rich text editor for maintenance message
 
 ### Technical Improvements
 

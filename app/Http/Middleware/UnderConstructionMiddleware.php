@@ -23,8 +23,18 @@ class UnderConstructionMiddleware
             return $next($request);
         }
 
-        // Skip for authentication routes
-        if ($request->is('login') || $request->is('logout') || $request->is('register')) {
+        // Only allow login and logout routes (not register)
+        if ($request->is('login') || $request->is('logout')) {
+            return $next($request);
+        }
+        
+        // Also allow password reset routes
+        if ($request->is('forgot-password') || $request->is('reset-password') || $request->is('reset-password/*')) {
+            return $next($request);
+        }
+        
+        // Allow API routes and assets
+        if ($request->is('api/*') || $request->is('sanctum/*') || $request->is('broadcasting/*')) {
             return $next($request);
         }
 

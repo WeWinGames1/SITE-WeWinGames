@@ -461,11 +461,12 @@ class CustomerController extends Controller
         
         // Send welcome email if mail is configured
         try {
-            if (config('mail.mailers.smtp.username') !== 'your_postmark_username') {
+            if (config('mail.default') === 'log') {
+                \Log::info('Welcome email for ' . $user->email . ' logged instead of sent (mail disabled)');
+                $message = 'Customer account created successfully! (Email notifications are currently disabled)';
+            } else {
                 $user->sendEmailVerificationNotification();
                 $message = 'Customer account created successfully! A welcome email has been sent to ' . $user->email;
-            } else {
-                $message = 'Customer account created successfully! Email verification was skipped (mail not configured).';
             }
         } catch (\Exception $e) {
             // If email fails, still consider the user created successfully

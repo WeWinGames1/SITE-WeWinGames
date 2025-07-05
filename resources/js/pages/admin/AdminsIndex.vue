@@ -49,6 +49,12 @@ function addAdmin() {
             onSuccess: () => {
                 closeAddModal();
             },
+            onError: (errors) => {
+                if (errors.response?.status === 419) {
+                    alert('Your session has expired. Please refresh the page and try again.');
+                    window.location.reload();
+                }
+            }
         });
     }
 }

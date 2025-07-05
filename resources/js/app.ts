@@ -64,7 +64,18 @@ router.on('navigate', () => {
 router.on('error', (event) => {
     const status = event.detail.response?.status;
     
-    if (status === 429) {
+    if (status === 419) {
+        // CSRF token mismatch
+        alert('Your session has expired. The page will refresh to restore your session.');
+        
+        // Prevent the default error modal
+        event.preventDefault();
+        
+        // Reload the page to get a fresh CSRF token
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+    } else if (status === 429) {
         // Rate limit error
         const data = event.detail.response?.data;
         const message = data?.message || 'Too many requests. Please try again later.';

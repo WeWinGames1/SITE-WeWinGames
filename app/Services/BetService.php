@@ -319,7 +319,7 @@ class BetService
     {
         $profits = DB::table('bets')
             ->whereIn('status', ['won', 'lost'])
-            ->selectRaw("strftime('%Y', betting_date) as year, SUM(profit_amount) as total_profit")
+            ->selectRaw("YEAR(betting_date) as year, SUM(profit_amount) as total_profit")
             ->groupBy('year')
             ->orderBy('year', 'desc')
             ->get();
@@ -339,7 +339,7 @@ class BetService
     {
         $yearlyStats = DB::table('bets')
             ->whereIn('status', ['won', 'lost'])
-            ->selectRaw("strftime('%Y', betting_date) as year, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit")
+            ->selectRaw("YEAR(betting_date) as year, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit")
             ->groupBy('year')
             ->orderBy('year', 'desc')
             ->get();
@@ -476,7 +476,7 @@ class BetService
     {
         $monthlyProfits = DB::table('bets')
             ->whereIn('status', ['won', 'lost'])
-            ->selectRaw("strftime('%Y', betting_date) as year, strftime('%m', betting_date) as month, SUM(profit_amount) as total_profit")
+            ->selectRaw("YEAR(betting_date) as year, MONTH(betting_date) as month, SUM(profit_amount) as total_profit")
             ->groupBy('year', 'month')
             ->get();
 
@@ -620,7 +620,7 @@ class BetService
     {
         $yearlyStats = DB::table('bets')
             ->whereIn('status', ['won', 'lost'])
-            ->selectRaw("strftime('%Y', betting_date) as year, COUNT(*) as total_bets, SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) as wins, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit")
+            ->selectRaw("YEAR(betting_date) as year, COUNT(*) as total_bets, SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) as wins, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit")
             ->groupBy('year')
             ->orderBy('year', 'desc')
             ->get();
@@ -658,7 +658,7 @@ class BetService
     {
         $monthlyStats = DB::table('bets')
             ->whereIn('status', ['won', 'lost'])
-            ->selectRaw("strftime('%Y', betting_date) as year, strftime('%m', betting_date) as month, COUNT(*) as total_bets, SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) as wins, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit")
+            ->selectRaw("YEAR(betting_date) as year, MONTH(betting_date) as month, COUNT(*) as total_bets, SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) as wins, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit")
             ->groupBy('year', 'month')
             ->orderBy('year', 'desc')
             ->orderBy('month', 'desc')

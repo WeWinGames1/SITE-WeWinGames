@@ -158,7 +158,14 @@ abstract class BaseRepository implements BaseRepositoryInterface
 
     protected function clearCache(): void
     {
-        Cache::tags([$this->model->getTable()])->flush();
+        // Check if cache driver supports tagging
+        if (in_array(config('cache.default'), ['redis', 'memcached', 'dynamodb', 'octane'])) {
+            Cache::tags([$this->model->getTable()])->flush();
+        } else {
+            // For file/array cache drivers, flush all cache
+            // This is less efficient but ensures cache is cleared
+            Cache::flush();
+        }
     }
 
     public function disableCache(): self
