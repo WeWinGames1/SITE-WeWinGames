@@ -80,11 +80,11 @@ const selectedPeriod = ref<'monthly' | 'weekly' | 'daily'>('monthly');
           <span class="badge bg-success px-3 py-2">Current Plan</span>
         </div>
         
-        <!-- Platinum First Month Special -->
-        <div v-else-if="plan.name === 'Platinum' && selectedPeriod === 'monthly'" class="position-absolute top-0 start-50 translate-middle">
+        <!-- 50% Off First Month Special for All Plans -->
+        <div v-else-if="selectedPeriod === 'monthly'" class="position-absolute top-0 start-50 translate-middle">
           <span class="badge bg-warning text-dark px-3 py-2">
             <i class="bi bi-star-fill me-1"></i>
-            $10 First Month
+            50% Off First Month
           </span>
         </div>
         
@@ -108,11 +108,11 @@ const selectedPeriod = ref<'monthly' | 'weekly' | 'daily'>('monthly');
               <span class="text-muted ms-2">/ {{ selectedPeriod === 'monthly' ? 'month' : selectedPeriod === 'weekly' ? 'week' : 'day' }}</span>
             </div>
             <div class="text-center text-muted small">
-              <span v-if="selectedPeriod === 'monthly' && plan.name === 'Platinum'" class="text-warning fw-bold">
-                <i class="bi bi-star-fill"></i> Special: $10 first month, then $80/month
-              </span>
-              <span v-else-if="selectedPeriod === 'monthly'">
-                Also available weekly & daily
+              <span v-if="selectedPeriod === 'monthly'" class="text-warning fw-bold">
+                <i class="bi bi-star-fill"></i> 
+                <template v-if="plan.name === 'Platinum'">Special: $40 first month, then $80/month</template>
+                <template v-else-if="plan.name === 'Gold'">Special: $32.50 first month, then $65/month</template>
+                <template v-else-if="plan.name === 'Silver'">Special: $22.50 first month, then $45/month</template>
               </span>
               <span v-else-if="selectedPeriod === 'weekly'">
                 ${{ plan.monthlyPrice }}/month • ${{ plan.dailyPrice }}/day

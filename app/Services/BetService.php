@@ -318,19 +318,19 @@ class BetService
      */
     public function getProfitByYear(): array
     {
-        $profits = DB::table('bets')
-            ->whereIn('status', ['won', 'lost'])
-            ->selectRaw("YEAR(betting_date) as year, SUM(profit_amount) as total_profit")
-            ->groupBy('year')
-            ->orderBy('year', 'desc')
+        // Get all bets and group by year in PHP for database compatibility
+        $bets = Bet::whereIn('status', ['won', 'lost'])
+            ->select('betting_date', 'profit_amount')
             ->get();
 
-        $result = [];
-        foreach ($profits as $profit) {
-            $result[$profit->year] = round($profit->total_profit, 2);
-        }
+        // Group by year using Carbon
+        $yearlyProfits = $bets->groupBy(function ($bet) {
+            return Carbon::parse($bet->betting_date)->year;
+        })->map(function ($yearBets) {
+            return round($yearBets->sum('profit_amount'), 2);
+        })->sortKeysDesc();
 
-        return $result;
+        return $yearlyProfits->toArray();
     }
 
     /**
@@ -338,22 +338,31 @@ class BetService
      */
     public function getROIByYear(): array
     {
-        $yearlyStats = DB::table('bets')
-            ->whereIn('status', ['won', 'lost'])
-            ->selectRaw("YEAR(betting_date) as year, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit")
-            ->groupBy('year')
-            ->orderBy('year', 'desc')
+        // Get all bets and group by year in PHP for database compatibility
+        $bets = Bet::whereIn('status', ['won', 'lost'])
+            ->select('betting_date', 'wager_amount', 'profit_amount')
             ->get();
 
+        // Group by year
+        $yearlyGroups = $bets->groupBy(function ($bet) {
+            return Carbon::parse($bet->betting_date)->year;
+        });
+
         $result = [];
-        foreach ($yearlyStats as $stat) {
-            if ($stat->total_stake > 0) {
-                $result[$stat->year] = round(($stat->total_profit / $stat->total_stake) * 100, 2);
+        foreach ($yearlyGroups as $year => $yearBets) {
+            $totalStake = $yearBets->sum('wager_amount');
+            $totalProfit = $yearBets->sum('profit_amount');
+            
+            if ($totalStake > 0) {
+                $result[$year] = round(($totalProfit / $totalStake) * 100, 2);
             } else {
-                $result[$stat->year] = 0.0;
+                $result[$year] = 0.0;
             }
         }
 
+        // Sort by year descending
+        krsort($result);
+        
         return $result;
     }
 
@@ -626,36 +635,47 @@ class BetService
      */
     public function getProfitAndROIByYear(): array
     {
-        $yearlyStats = DB::table('bets')
-            ->whereIn('status', ['won', 'lost'])
-            ->selectRaw("YEAR(betting_date) as year, COUNT(*) as total_bets, SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) as wins, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit")
-            ->groupBy('year')
-            ->orderBy('year', 'desc')
+        // Get all bets and process in PHP for database compatibility
+        $bets = Bet::whereIn('status', ['won', 'lost'])
+            ->select('betting_date', 'status', 'wager_amount', 'profit_amount')
             ->get();
 
+        // Group by year
+        $yearlyGroups = $bets->groupBy(function ($bet) {
+            return Carbon::parse($bet->betting_date)->year;
+        });
+
         $result = [];
-        foreach ($yearlyStats as $stat) {
+        foreach ($yearlyGroups as $year => $yearBets) {
+            $totalBets = $yearBets->count();
+            $wins = $yearBets->where('status', 'won')->count();
+            $totalStake = $yearBets->sum('wager_amount');
+            $totalProfit = $yearBets->sum('profit_amount');
+            
             $roi = 0.0;
             $winRate = 0.0;
             
-            if ($stat->total_stake > 0) {
-                $roi = round(($stat->total_profit / $stat->total_stake) * 100, 2);
+            if ($totalStake > 0) {
+                $roi = round(($totalProfit / $totalStake) * 100, 2);
             }
             
-            if ($stat->total_bets > 0) {
-                $winRate = round(($stat->wins / $stat->total_bets) * 100, 2);
+            if ($totalBets > 0) {
+                $winRate = round(($wins / $totalBets) * 100, 2);
             }
             
-            $result[$stat->year] = [
-                'total_bets' => $stat->total_bets,
-                'wins' => $stat->wins,
+            $result[$year] = [
+                'total_bets' => $totalBets,
+                'wins' => $wins,
                 'win_rate' => $winRate,
-                'total_stake' => round($stat->total_stake, 2),
-                'total_profit' => round($stat->total_profit, 2),
+                'total_stake' => round($totalStake, 2),
+                'total_profit' => round($totalProfit, 2),
                 'roi' => $roi
             ];
         }
 
+        // Sort by year descending
+        krsort($result);
+        
         return $result;
     }
 

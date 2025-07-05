@@ -117,16 +117,16 @@ onMounted(async () => {
         await initializeCardElement();
     }
     
-    // Check for automatic Platinum discount
+    // Check for automatic discounts
     const urlParams = new URLSearchParams(window.location.search);
     const discountCode = urlParams.get('discountCode');
     
     if (discountCode) {
         form.coupon = discountCode;
         await validateCoupon();
-    } else if (props.plan.name === 'Platinum' && props.plan.period === 'monthly') {
-        // Auto-apply first month discount for Platinum
-        form.coupon = 'PLATINUM10FIRST';
+    } else if (props.plan.period === 'monthly') {
+        // Auto-apply 50% off first month discount for all monthly plans
+        form.coupon = 'FIRSTMONTH50';
         await validateCoupon();
     }
 });

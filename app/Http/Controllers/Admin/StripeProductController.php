@@ -111,7 +111,43 @@ class StripeProductController extends Controller
         ]);
 
         try {
+            // Check if price has changed and product is connected to Stripe
+            $priceChanged = $stripeProduct->price != $validated['price'];
+            $isConnected = $stripeProduct->stripe_product_id && $stripeProduct->stripe_price_id;
+
+            // Update local record
             $stripeProduct->update($validated);
+
+            // If price changed and product is connected to Stripe, create a new price
+            if ($priceChanged && $isConnected && $this->stripeService) {
+                try {
+                    // Create new price in Stripe (prices are immutable, so we create a new one)
+                    $priceData = [
+                        'product_id' => $stripeProduct->stripe_product_id,
+                        'unit_amount' => (int)($validated['price'] * 100), // Convert to cents
+                        'currency' => 'usd',
+                        'recurring' => [
+                            'interval' => $this->billingPeriodToInterval($stripeProduct->billing_period),
+                            'interval_count' => 1,
+                        ],
+                    ];
+                    
+                    $newPrice = $this->stripeService->createPrice($priceData);
+
+                    // Update the stripe_price_id with the new price
+                    $stripeProduct->update(['stripe_price_id' => $newPrice['id']]);
+
+                    // Optionally, deactivate the old price in Stripe
+                    // $this->stripeService->deactivatePrice($oldPriceId);
+
+                    return redirect()->route('admin.stripe-products.index')
+                        ->with('success', 'Product and Stripe price updated successfully. New price created in Stripe.');
+                } catch (\Exception $e) {
+                    // If Stripe update fails, revert local changes
+                    $stripeProduct->update(['price' => $stripeProduct->getOriginal('price')]);
+                    return back()->withErrors(['error' => 'Failed to update Stripe price: ' . $e->getMessage()]);
+                }
+            }
 
             return redirect()->route('admin.stripe-products.index')
                 ->with('success', 'Product configuration updated successfully.');
@@ -415,5 +451,20 @@ class StripeProductController extends Controller
             'success' => true,
             'history' => $history,
         ]);
+    }
+
+    /**
+     * Convert billing period to Stripe interval
+     */
+    private function billingPeriodToInterval(string $billingPeriod): string
+    {
+        $map = [
+            'daily' => 'day',
+            'weekly' => 'week',
+            'monthly' => 'month',
+            'yearly' => 'year',
+        ];
+
+        return $map[$billingPeriod] ?? 'month';
     }
 }
