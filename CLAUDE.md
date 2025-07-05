@@ -209,6 +209,18 @@ export PATH="/opt/nvm/versions/node/v22.17.0/bin:$PATH"
 # Install dependencies
 npm install
 
+# If you get "EMFILE: too many open files" error:
+# Option 1: Clear cache and retry
+npm cache clean --force
+npm install
+
+# Option 2: If ulimit is restricted, use temporary cache
+npm install --prefer-offline false --cache /tmp/npm-cache --maxsockets 1
+
+# Option 3: Increase file limit and reduce concurrency (if allowed)
+ulimit -n 4096
+npm install --maxsockets 3
+
 # Build frontend assets
 npm run build
 
@@ -219,6 +231,33 @@ php artisan view:cache
 
 # Run migrations
 php artisan migrate --force
+
+# If you get MySQL key length error (1071), the fix is already in AppServiceProvider.php
+# It sets Schema::defaultStringLength(191) to handle older MySQL versions
+
+# If migrations fail due to table order issues, you may need to:
+# Option 1: Run fresh migrations (WARNING: deletes all data)
+php artisan migrate:fresh --force
+
+# Option 2: Check migration status and run missing ones
+php artisan migrate:status
+php artisan migrate --force
+
+# Note: Some migrations have been fixed for MySQL compatibility:
+# - Shortened constraint names to fit within 64 character limit
+# - Fixed in: discount_redemptions and stripe_price_migrations tables
+# - Reordered migrations to ensure foreign keys exist before indexes
+# - Performance indexes migration moved to run after foreign keys migration
+
+# Seed the database with essential data
+# For production (includes admin user and essential data only):
+php artisan db:seed --class=ProductionSeeder
+
+# Set admin password in .env before seeding:
+# ADMIN_PASSWORD="YourSecurePassword123!"
+
+# Or for development (includes sample data):
+php artisan db:seed
 ```
 
 ### Server Requirements
@@ -287,6 +326,145 @@ php artisan migrate --force
 3. Set up relationships in model
 4. Create policy for authorization
 5. Add routes and controller logic
+
+## Migration Best Practices & Common Issues
+
+### ❌ BAD Migration Patterns (Avoid These)
+
+1. **Long Auto-Generated Index Names**
+   ```php
+   // BAD - generates name longer than MySQL's 64 character limit
+   $table->unique(['discount_code_id', 'user_id', 'subscription_id']);
+   // Generated name: discount_redemptions_discount_code_id_user_id_subscription_id_unique (68 chars)
+   
+   // GOOD - use custom short name
+   $table->unique(['discount_code_id', 'user_id', 'subscription_id'], 'disc_redemptions_unique');
+   ```
+
+2. **Composite Indexes on String Columns**
+   ```php
+   // BAD - exceeds MySQL key length limit (1000 bytes)
+   $table->index(['old_stripe_price_id', 'new_stripe_price_id']);
+   
+   // GOOD - create separate indexes
+   $table->index('old_stripe_price_id', 'old_price_idx');
+   $table->index('new_stripe_price_id', 'new_price_idx');
+   ```
+
+3. **Incorrect Migration Order**
+   ```php
+   // BAD - adding indexes before columns exist
+   // 2025_06_30_add_indexes.php tries to index 'user_id' 
+   // but 2025_07_02_add_foreign_keys.php creates the column
+   
+   // GOOD - ensure migrations run in correct order
+   // Use proper date prefixes: YYYY_MM_DD_HHMMSS
+   ```
+
+4. **Missing Column Existence Checks**
+   ```php
+   // BAD - will fail if column already exists
+   $table->string('status');
+   
+   // GOOD - check before adding
+   if (!Schema::hasColumn('bets', 'status')) {
+       $table->string('status')->default('Pending');
+   }
+   ```
+
+5. **Empty Down Methods**
+   ```php
+   // BAD - can't rollback
+   public function down(): void
+   {
+       // Empty!
+   }
+   
+   // GOOD - proper rollback logic
+   public function down(): void
+   {
+       Schema::table('bets', function (Blueprint $table) {
+           $table->dropColumn(['status', 'amount', 'odds']);
+       });
+   }
+   ```
+
+6. **Raw SQL for Enum Changes**
+   ```php
+   // BAD - not portable across databases
+   DB::statement("ALTER TABLE stripe_products MODIFY COLUMN billing_period ENUM('daily','weekly','monthly','yearly')");
+   
+   // GOOD - use Laravel's change() method
+   $table->enum('billing_period', ['daily', 'weekly', 'monthly', 'yearly'])->change();
+   ```
+
+### ✅ GOOD Migration Patterns
+
+1. **Always Name Your Indexes**
+   ```php
+   // Composite indexes
+   $table->index(['tier', 'billing_period', 'is_current'], 'tier_period_idx');
+   
+   // Unique constraints
+   $table->unique(['email', 'provider'], 'email_provider_unique');
+   ```
+
+2. **Check Column/Table Existence**
+   ```php
+   // Before adding columns
+   if (!Schema::hasColumn('users', 'avatar')) {
+       $table->string('avatar')->nullable();
+   }
+   
+   // Before creating tables
+   if (!Schema::hasTable('settings')) {
+       Schema::create('settings', function (Blueprint $table) {
+           // ...
+       });
+   }
+   ```
+
+3. **Proper Foreign Key Handling**
+   ```php
+   // In up()
+   $table->foreignId('user_id')->constrained()->onDelete('cascade');
+   
+   // In down()
+   $table->dropForeign(['user_id']);
+   $table->dropColumn('user_id');
+   ```
+
+4. **MySQL Compatibility Settings**
+   ```php
+   // In AppServiceProvider::boot()
+   Schema::defaultStringLength(191); // For older MySQL versions
+   ```
+
+5. **Migration Naming Convention**
+   ```
+   YYYY_MM_DD_HHMMSS_descriptive_name.php
+   2025_01_05_143022_create_products_table.php
+   2025_01_05_143523_add_status_to_products_table.php
+   ```
+
+### Migration Checklist
+
+Before creating a new migration:
+- [ ] Use descriptive names that explain what the migration does
+- [ ] Check if similar columns/indexes already exist
+- [ ] Name all indexes and keep names under 64 characters
+- [ ] Add column existence checks for safety
+- [ ] Write proper down() method for rollbacks
+- [ ] Test on both MySQL and SQLite (if supporting both)
+- [ ] Consider the order - will required tables/columns exist?
+- [ ] For string indexes, consider separate indexes vs composite
+- [ ] Use Laravel methods instead of raw SQL when possible
+
+### Common MySQL Limits
+- Index name: 64 characters max
+- Key length: 1000 bytes max (affects composite indexes on strings)
+- Table name: 64 characters max
+- Column name: 64 characters max
 
 ### Adding a New Admin Feature
 1. Create controller in `app/Http/Controllers/Admin`
@@ -674,6 +852,11 @@ npm run format
    - Fixed missing closing braces in cache callback
    - Corrected undefined variable references
    - Fixed MRR calculation variable names
+
+4. **CDN Migration**:
+   - Migrated from JSDelivr to cdnjs.cloudflare.com for better Cloudflare integration
+   - Updated all CDN references in templates and security headers
+   - Maintained unpkg.com for specific packages where appropriate
 
 ### Development Workflow
 

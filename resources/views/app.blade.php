@@ -57,10 +57,6 @@
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
         <link rel="manifest" href="/manifest.json">
         <meta name="theme-color" content="#4f46e5">
-        <!-- Elfsight Google Reviews | Untitled Google Reviews -->
-        @production
-            <script defer src="https://go.metabet.io/js/global.js?siteID=wewingames"></script>
-        @endproduction
         
         {{-- Cloudflare Turnstile --}}
         @if(config('services.turnstile.enabled'))

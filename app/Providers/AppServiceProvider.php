@@ -9,6 +9,7 @@ use App\Services\CacheService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,6 +29,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Fix for MySQL key length issue
+        Schema::defaultStringLength(191);
+        
         // Configure Inertia shared data
         Inertia::share([
             'env' => [

@@ -18,8 +18,8 @@ return new class extends Migration
             $table->timestamp('superseded_at')->nullable()->after('legacy_price');
             $table->string('superseded_by_product_id')->nullable()->after('superseded_at');
             
-            // Add index for faster lookups
-            $table->index(['tier', 'billing_period', 'is_current']);
+            // Add index for faster lookups with short name
+            $table->index(['tier', 'billing_period', 'is_current'], 'tier_period_current_idx');
             $table->index('superseded_by_product_id');
         });
         
@@ -36,7 +36,9 @@ return new class extends Migration
             $table->timestamp('effective_date');
             $table->timestamps();
             
-            $table->index(['old_stripe_price_id', 'new_stripe_price_id']);
+            // Create separate indexes to avoid key length issues
+            $table->index('old_stripe_price_id', 'old_price_idx');
+            $table->index('new_stripe_price_id', 'new_price_idx');
         });
     }
 

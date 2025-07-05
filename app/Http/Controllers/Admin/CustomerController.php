@@ -449,19 +449,31 @@ class CustomerController extends Controller
         ]);
         
         // Log the action
-        activity()
-            ->causedBy(auth()->user())
-            ->performedOn($user)
-            ->withProperties([
-                'created_by' => auth()->user()->email,
-                'user_email' => $user->email,
-            ])
-            ->log('Admin created new customer account');
+        // TODO: Add activity logging when spatie/laravel-activitylog is installed
+        // activity()
+        //     ->causedBy(auth()->user())
+        //     ->performedOn($user)
+        //     ->withProperties([
+        //         'created_by' => auth()->user()->email,
+        //         'user_email' => $user->email,
+        //     ])
+        //     ->log('Admin created new customer account');
         
-        // Send welcome email
-        $user->sendEmailVerificationNotification();
+        // Send welcome email if mail is configured
+        try {
+            if (config('mail.mailers.smtp.username') !== 'your_postmark_username') {
+                $user->sendEmailVerificationNotification();
+                $message = 'Customer account created successfully! A welcome email has been sent to ' . $user->email;
+            } else {
+                $message = 'Customer account created successfully! Email verification was skipped (mail not configured).';
+            }
+        } catch (\Exception $e) {
+            // If email fails, still consider the user created successfully
+            \Log::warning('Failed to send welcome email to new customer: ' . $e->getMessage());
+            $message = 'Customer account created successfully! However, the welcome email could not be sent.';
+        }
         
-        return back()->with('success', 'Customer account created successfully! A welcome email has been sent to ' . $user->email);
+        return back()->with('success', $message);
     }
     
     /**

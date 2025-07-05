@@ -21,7 +21,7 @@ return new class extends Migration
             $table->timestamps();
             
             // Prevent duplicate redemptions
-            $table->unique(['discount_code_id', 'user_id', 'subscription_id']);
+            $table->unique(['discount_code_id', 'user_id', 'subscription_id'], 'disc_redemptions_unique');
             
             // Indexes
             $table->index('user_id');

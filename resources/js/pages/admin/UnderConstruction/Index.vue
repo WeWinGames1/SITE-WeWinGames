@@ -64,19 +64,16 @@
 
                                 <div class="mb-3">
                                     <label for="blurb" class="form-label">Message</label>
-                                    <textarea
+                                    <Editor
                                         v-model="form.blurb"
-                                        class="form-control"
-                                        id="blurb"
-                                        rows="3"
-                                        placeholder="Enter the message to display on the under construction page..."
-                                        :class="{ 'is-invalid': form.errors.blurb }"
-                                    ></textarea>
-                                    <div v-if="form.errors.blurb" class="invalid-feedback">
+                                        api-key="no-api-key"
+                                        :init="editorConfig"
+                                    />
+                                    <div v-if="form.errors.blurb" class="invalid-feedback d-block">
                                         {{ form.errors.blurb }}
                                     </div>
                                     <div class="form-text">
-                                        You can use HTML tags to format your message.
+                                        Format your message using the rich text editor above.
                                     </div>
                                 </div>
 
@@ -90,6 +87,16 @@
                                     </button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Preview</h5>
+                            <p class="card-text text-muted">This is how your message will appear to visitors:</p>
+                            <div class="border rounded p-3 bg-light">
+                                <div v-html="form.blurb"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -128,6 +135,7 @@
 import { ref } from 'vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
+import Editor from '@tinymce/tinymce-vue';
 
 interface UnderConstructionSetting {
     id?: number;
@@ -142,6 +150,21 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const editorConfig = {
+    height: 300,
+    menubar: false,
+    plugins: [
+        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+        'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
+    ],
+    toolbar: 'undo redo | blocks | ' +
+        'bold italic forecolor | alignleft aligncenter ' +
+        'alignright alignjustify | bullist numlist outdent indent | ' +
+        'removeformat | help',
+    content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px }'
+};
 
 const formatDateForInput = (dateString: string | null): string => {
     if (!dateString) return '';
@@ -158,7 +181,7 @@ const form = useForm({
     is_enabled: props.settings?.is_enabled || false,
     start_date: formatDateForInput(props.settings?.start_date || null),
     end_date: formatDateForInput(props.settings?.end_date || null),
-    blurb: props.settings?.blurb || '<p>We are currently updating our website. Please check back soon!</p>',
+    blurb: props.settings?.blurb || '<p>We\'re making some exciting improvements to our website! We\'ll be back online shortly. Thank you for your patience – see you soon! ✨</p>',
 });
 
 const submit = () => {

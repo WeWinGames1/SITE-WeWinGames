@@ -390,9 +390,14 @@ function getCustomerBadgeClass(status: string) {
       <!-- Header -->
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h2 mb-0">Customer Management</h1>
-        <button class="btn btn-primary" @click="exportCustomers">
-          <i class="bi bi-download me-2"></i>Export CSV
-        </button>
+        <div class="d-flex gap-2">
+          <a :href="route('admin.customers.create')" class="btn btn-success">
+            <i class="bi bi-person-plus me-2"></i>Create Customer
+          </a>
+          <button class="btn btn-primary" @click="exportCustomers">
+            <i class="bi bi-download me-2"></i>Export CSV
+          </button>
+        </div>
       </div>
       
       <!-- Stats Cards -->

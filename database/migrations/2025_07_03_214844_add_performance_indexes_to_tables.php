@@ -117,14 +117,14 @@ return new class extends Migration
                 if (!$indexExists('posts', 'slug')) {
                     $table->index('slug');
                 }
-                if (!$indexExists('posts', 'status')) {
-                    $table->index('status');
+                if (!$indexExists('posts', 'is_published')) {
+                    $table->index('is_published');
                 }
                 if (!$indexExists('posts', 'published_at')) {
                     $table->index('published_at');
                 }
-                if (!$indexExists('posts', ['status', 'published_at'])) {
-                    $table->index(['status', 'published_at']);
+                if (!$indexExists('posts', ['is_published', 'published_at'])) {
+                    $table->index(['is_published', 'published_at']);
                 }
             });
         }
@@ -194,9 +194,9 @@ return new class extends Migration
         // Drop indexes from posts table
         if (Schema::hasTable('posts')) {
             $dropIndexIfExists('posts', 'slug');
-            $dropIndexIfExists('posts', 'status');
+            $dropIndexIfExists('posts', 'is_published');
             $dropIndexIfExists('posts', 'published_at');
-            $dropIndexIfExists('posts', ['status', 'published_at']);
+            $dropIndexIfExists('posts', ['is_published', 'published_at']);
         }
     }
 };

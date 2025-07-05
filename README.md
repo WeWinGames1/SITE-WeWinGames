@@ -130,6 +130,34 @@ After seeding, you can login with:
 - **Admin**: admin@wewingames.test / password
 - **Subscriber**: subscriber@wewingames.test / password
 
+## Migration Best Practices
+
+When creating new migrations, follow these guidelines to avoid common issues:
+
+### Key Rules:
+1. **Always name your indexes** - Auto-generated names can exceed MySQL's 64-character limit
+2. **Check column existence** before adding/modifying columns
+3. **Write proper rollback logic** in the down() method
+4. **Consider migration order** - ensure dependencies exist first
+5. **Avoid composite indexes on string columns** - they can exceed key length limits
+
+### Quick Reference:
+```php
+// GOOD: Named index under 64 chars
+$table->unique(['user_id', 'product_id'], 'user_product_unique');
+
+// GOOD: Check before adding
+if (!Schema::hasColumn('users', 'avatar')) {
+    $table->string('avatar')->nullable();
+}
+
+// GOOD: Separate indexes for strings
+$table->index('email', 'email_idx');
+$table->index('username', 'username_idx');
+```
+
+See CLAUDE.md for comprehensive migration patterns and examples.
+
 ## Development Commands
 
 ```bash
