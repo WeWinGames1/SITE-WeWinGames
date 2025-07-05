@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\BlogPostController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\BetManagementController;
+use App\Http\Controllers\Admin\UnderConstructionController;
 use App\Http\Controllers\BettingEducationController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\BetController;
@@ -135,6 +136,10 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
     // System Settings (TODO)
     // Route::get('settings', [Admin\SettingsController::class, 'index'])->name('settings.index');
     // Route::post('settings', [Admin\SettingsController::class, 'update'])->name('settings.update');
+    
+    // Under Construction Settings
+    Route::get('under-construction', [UnderConstructionController::class, 'index'])->name('under-construction.index');
+    Route::post('under-construction', [UnderConstructionController::class, 'update'])->name('under-construction.update');
     
     // Testimonial Management
     Route::resource('testimonials', \App\Http\Controllers\Admin\TestimonialController::class);

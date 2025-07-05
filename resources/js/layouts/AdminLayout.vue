@@ -155,11 +155,15 @@ const navigation: NavItem[] = [
             // { name: 'Send Notification', href: '#', icon: 'bi-send' }, // TODO: Implement notification sending
         ],
     },
-    // {
-    //     name: 'Settings',
-    //     href: '#',
-    //     icon: 'bi-gear',
-    // }, // TODO: Implement
+    {
+        name: 'Settings',
+        href: '#',
+        icon: 'bi-gear',
+        children: [
+            { name: 'Under Construction', href: route('admin.under-construction.index'), icon: 'bi-cone-striped' },
+            // { name: 'General Settings', href: '#', icon: 'bi-sliders' }, // TODO: Implement
+        ],
+    },
 ];
 
 function isActiveRoute(href: string): boolean {

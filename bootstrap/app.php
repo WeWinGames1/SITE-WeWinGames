@@ -8,6 +8,7 @@ use App\Http\Middleware\CacheHeaders;
 use App\Http\Middleware\LogApiRequests;
 use App\Http\Middleware\AdminSecurityHeaders;
 use App\Http\Middleware\AdminRateLimit;
+use App\Http\Middleware\UnderConstructionMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -41,6 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->statefulApi();
         $middleware->web(append: [
             HandleAppearance::class,
+            UnderConstructionMiddleware::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
