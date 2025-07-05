@@ -40,6 +40,11 @@ class DiscountCode extends Model
         'valid_until' => 'datetime',
     ];
 
+    protected $appends = [
+        'percent_off',
+        'amount_off',
+    ];
+
     /**
      * Get the user who created the discount code
      */
@@ -54,6 +59,14 @@ class DiscountCode extends Model
     public function redemptions(): HasMany
     {
         return $this->hasMany(DiscountRedemption::class);
+    }
+
+    /**
+     * Alias for redemptions() for backward compatibility
+     */
+    public function couponUsages(): HasMany
+    {
+        return $this->redemptions();
     }
 
     /**
@@ -133,6 +146,22 @@ class DiscountCode extends Model
         }
 
         return '$' . number_format($this->discount_amount, 2);
+    }
+
+    /**
+     * Get percent_off attribute for compatibility
+     */
+    public function getPercentOffAttribute(): ?float
+    {
+        return $this->discount_type === 'percentage' ? $this->discount_amount : null;
+    }
+
+    /**
+     * Get amount_off attribute for compatibility (in cents)
+     */
+    public function getAmountOffAttribute(): ?int
+    {
+        return $this->discount_type === 'fixed' ? ($this->discount_amount * 100) : null;
     }
 
     /**

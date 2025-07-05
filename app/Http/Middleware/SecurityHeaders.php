@@ -71,7 +71,7 @@ class SecurityHeaders
             $csp[] = "font-src * data:";
             $csp[] = "connect-src *";
         } else {
-            $csp[] = "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://unpkg.com https://www.googletagmanager.com https://www.google-analytics.com https://challenges.cloudflare.com";
+            $csp[] = "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdnjs.cloudflare.com https://unpkg.com https://www.googletagmanager.com https://www.google-analytics.com https://challenges.cloudflare.com";
             $csp[] = "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.bunny.net https://cdnjs.cloudflare.com";
             $csp[] = "connect-src 'self' https://api.stripe.com https://www.google-analytics.com https://region1.google-analytics.com wss://localhost:* ws://localhost:*";
         }

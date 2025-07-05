@@ -36,7 +36,9 @@
       "Bash(php artisan:*)",
       "Bash(chmod:*)",
       "Bash(find:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(composer:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

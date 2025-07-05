@@ -132,32 +132,41 @@ class SubscriptionController extends Controller
             
             // Apply coupon if provided
             if ($request->filled('coupon')) {
-                if ($request->coupon === 'PLATINUM10FIRST') {
-                    // For the special Platinum first month discount
-                    // Create a one-time coupon in Stripe
-                    $stripe = new \Stripe\StripeClient(config('cashier.secret'));
-                    $coupon = $stripe->coupons->create([
-                        'amount_off' => 7000, // $70 off in cents
-                        'currency' => 'usd',
-                        'duration' => 'once',
-                        'name' => 'Platinum First Month - $10',
-                    ]);
-                    
-                    $subscription->withCoupon($coupon->id);
-                } else {
+                {
                     // Check database for other discount codes
                     $discountCode = DiscountCode::where('code', $request->coupon)
                         ->active()
                         ->first();
                         
-                    if ($discountCode) {
+                    if ($discountCode && $discountCode->isValid() && $discountCode->canBeUsedBy($user)) {
+                        // If no Stripe coupon ID exists, create one
+                        if (!$discountCode->stripe_coupon_id) {
+                            $stripe = new \Stripe\StripeClient(config('cashier.secret'));
+                            $couponData = [
+                                'duration' => 'once',
+                                'currency' => 'usd',
+                            ];
+                            
+                            if ($discountCode->discount_type === 'percentage') {
+                                $couponData['percent_off'] = $discountCode->discount_amount;
+                            } else {
+                                $couponData['amount_off'] = $discountCode->discount_amount * 100; // Convert to cents
+                            }
+                            
+                            $stripeCoupon = $stripe->coupons->create($couponData);
+                            $discountCode->update(['stripe_coupon_id' => $stripeCoupon->id]);
+                        }
+                        
                         $subscription->withCoupon($discountCode->stripe_coupon_id);
                         
                         // Track coupon usage
-                        $discountCode->couponUsages()->create([
+                        $discountCode->redemptions()->create([
                             'user_id' => $user->id,
                             'subscription_id' => null, // Will be updated after subscription is created
                         ]);
+                        
+                        // Increment usage count
+                        $discountCode->incrementUsage();
                     }
                 }
             }
@@ -185,22 +194,7 @@ class SubscriptionController extends Controller
             'code' => 'required|string',
         ]);
         
-        // Special handling for PLATINUM10FIRST code
-        if ($request->code === 'PLATINUM10FIRST') {
-            // Check if this is a new customer (no previous subscriptions)
-            $user = $request->user();
-            if ($user->subscriptions()->count() > 0) {
-                return response()->json(['valid' => false, 'message' => 'This code is only for first-time subscribers']);
-            }
-            
-            return response()->json([
-                'valid' => true,
-                'discount' => [
-                    'percent_off' => null,
-                    'amount_off' => 7000, // $70 off (making it $10 for first month)
-                ],
-            ]);
-        }
+        $user = $request->user();
         
         // Check database for other discount codes
         $discountCode = DiscountCode::where('code', $request->code)
@@ -211,14 +205,14 @@ class SubscriptionController extends Controller
             return response()->json(['valid' => false]);
         }
         
-        // Check usage limits
-        if ($discountCode->hasReachedLimit()) {
-            return response()->json(['valid' => false]);
+        // Check if code is valid
+        if (!$discountCode->isValid()) {
+            return response()->json(['valid' => false, 'message' => 'This discount code is no longer valid']);
         }
         
-        // Check per-customer limit
-        if ($discountCode->hasReachedCustomerLimit($request->user())) {
-            return response()->json(['valid' => false]);
+        // Check if user can use this code
+        if (!$discountCode->canBeUsedBy($user)) {
+            return response()->json(['valid' => false, 'message' => 'You have already used this discount code']);
         }
         
         return response()->json([
