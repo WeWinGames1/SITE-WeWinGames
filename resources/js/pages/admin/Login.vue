@@ -21,6 +21,10 @@ const submit = () => {
         onFinish: () => {
             form.reset('password');
         },
+        onError: (errors) => {
+            // The global error handler in app.ts will handle 419 errors
+            console.error('Login error:', errors);
+        },
     });
 };
 

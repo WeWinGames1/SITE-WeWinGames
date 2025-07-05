@@ -198,8 +198,10 @@ function logout() {
         >
             <div class="p-3 border-bottom border-secondary">
                 <div class="d-flex align-items-center">
-                    <img src="/images/logo.png" alt="WeWinGames" style="height: 40px; width: auto;" />
-                    <span class="ms-3 fs-5 fw-bold text-white">Admin Portal</span>
+                    <a href="/" class="d-flex align-items-center text-decoration-none">
+                        <img src="/images/logo.png" alt="WeWinGames" style="height: 40px; width: auto;" />
+                        <span class="ms-3 fs-5 fw-bold text-white">Admin Portal</span>
+                    </a>
                 </div>
             </div>
 

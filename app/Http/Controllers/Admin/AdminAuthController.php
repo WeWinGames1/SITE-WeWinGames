@@ -20,6 +20,11 @@ class AdminAuthController extends Controller
      */
     public function create(): Response
     {
+        // Ensure session is started
+        if (!session()->isStarted()) {
+            session()->start();
+        }
+        
         return Inertia::render('admin/Login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),

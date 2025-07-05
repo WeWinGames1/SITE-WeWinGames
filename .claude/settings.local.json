@@ -33,7 +33,10 @@
       "Bash(cp:*)",
       "Bash(mv:*)",
       "Bash(php artisan tinker:*)",
-      "Bash(php artisan:*)"
+      "Bash(php artisan:*)",
+      "Bash(chmod:*)",
+      "Bash(find:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": []
   }

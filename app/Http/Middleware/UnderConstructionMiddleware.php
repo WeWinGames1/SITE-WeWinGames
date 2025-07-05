@@ -28,8 +28,8 @@ class UnderConstructionMiddleware
             return $next($request);
         }
         
-        // Allow API routes and assets
-        if ($request->is('api/*') || $request->is('sanctum/*') || $request->is('broadcasting/*')) {
+        // Allow API routes, assets, and CSRF token refresh
+        if ($request->is('api/*') || $request->is('sanctum/*') || $request->is('broadcasting/*') || $request->is('csrf-token')) {
             return $next($request);
         }
 

@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Repositories\Contracts\BetRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class BetService
 {
@@ -474,20 +475,27 @@ class BetService
      */
     public function getAverageMonthlyProfit(): float
     {
-        $monthlyProfits = DB::table('bets')
-            ->whereIn('status', ['won', 'lost'])
-            ->selectRaw("YEAR(betting_date) as year, MONTH(betting_date) as month, SUM(profit_amount) as total_profit")
-            ->groupBy('year', 'month')
+        // Get all bets and group by month in PHP to avoid SQL complexity
+        $bets = Bet::whereIn('status', ['won', 'lost'])
+            ->select('betting_date', 'profit_amount')
             ->get();
+
+        if ($bets->isEmpty()) {
+            return 0.0;
+        }
+
+        // Group by month using Carbon
+        $monthlyProfits = $bets->groupBy(function ($bet) {
+            return Carbon::parse($bet->betting_date)->format('Y-m');
+        })->map(function ($monthBets) {
+            return $monthBets->sum('profit_amount');
+        });
 
         if ($monthlyProfits->isEmpty()) {
             return 0.0;
         }
 
-        $totalProfit = $monthlyProfits->sum('total_profit');
-        $monthCount = $monthlyProfits->count();
-
-        return round($totalProfit / $monthCount, 2);
+        return round($monthlyProfits->avg(), 2);
     }
 
     /**
@@ -656,42 +664,56 @@ class BetService
      */
     public function getProfitAndROIByMonth(): array
     {
-        $monthlyStats = DB::table('bets')
-            ->whereIn('status', ['won', 'lost'])
-            ->selectRaw("YEAR(betting_date) as year, MONTH(betting_date) as month, COUNT(*) as total_bets, SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) as wins, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit")
-            ->groupBy('year', 'month')
-            ->orderBy('year', 'desc')
-            ->orderBy('month', 'desc')
-            ->limit(24) // Last 24 months
+        // Get bets from the last 24 months
+        $cutoffDate = Carbon::now()->subMonths(24)->startOfMonth();
+        
+        $bets = Bet::whereIn('status', ['won', 'lost'])
+            ->where('betting_date', '>=', $cutoffDate)
+            ->select('betting_date', 'status', 'wager_amount', 'profit_amount')
+            ->orderBy('betting_date', 'desc')
             ->get();
 
+        // Group by month in PHP
+        $monthlyGroups = $bets->groupBy(function ($bet) {
+            return Carbon::parse($bet->betting_date)->format('Y-m');
+        });
+
         $result = [];
-        foreach ($monthlyStats as $stat) {
+        foreach ($monthlyGroups as $monthKey => $monthBets) {
+            $date = Carbon::createFromFormat('Y-m', $monthKey);
+            $wins = $monthBets->where('status', 'won')->count();
+            $totalBets = $monthBets->count();
+            $totalStake = $monthBets->sum('wager_amount');
+            $totalProfit = $monthBets->sum('profit_amount');
+            
             $roi = 0.0;
             $winRate = 0.0;
             
-            if ($stat->total_stake > 0) {
-                $roi = round(($stat->total_profit / $stat->total_stake) * 100, 2);
+            if ($totalStake > 0) {
+                $roi = round(($totalProfit / $totalStake) * 100, 2);
             }
             
-            if ($stat->total_bets > 0) {
-                $winRate = round(($stat->wins / $stat->total_bets) * 100, 2);
+            if ($totalBets > 0) {
+                $winRate = round(($wins / $totalBets) * 100, 2);
             }
             
-            $key = sprintf('%d-%02d', $stat->year, $stat->month);
-            $result[$key] = [
-                'year' => $stat->year,
-                'month' => $stat->month,
-                'total_bets' => $stat->total_bets,
-                'wins' => $stat->wins,
+            $result[$monthKey] = [
+                'year' => $date->year,
+                'month' => $date->month,
+                'total_bets' => $totalBets,
+                'wins' => $wins,
                 'win_rate' => $winRate,
-                'total_stake' => round($stat->total_stake, 2),
-                'total_profit' => round($stat->total_profit, 2),
+                'total_stake' => round($totalStake, 2),
+                'total_profit' => round($totalProfit, 2),
                 'roi' => $roi
             ];
         }
 
-        return $result;
+        // Sort by month descending
+        krsort($result);
+        
+        // Limit to 24 months
+        return array_slice($result, 0, 24, true);
     }
 
     /**
