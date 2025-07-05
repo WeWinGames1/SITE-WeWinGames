@@ -1,7 +1,20 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+
+declare global {
+    interface Window {
+        turnstileConfig?: {
+            enabled: boolean;
+            siteKey: string;
+        };
+        turnstile?: {
+            render: (element: string, options: any) => string;
+            reset: (widgetId: string) => void;
+        };
+    }
+}
 
 interface Category {
     id: number;
@@ -14,6 +27,10 @@ const props = defineProps<{
     isAuthenticated: boolean;
 }>();
 
+const turnstileEnabled = ref(false);
+const turnstileSiteKey = ref('');
+const turnstileWidget = ref<string | null>(null);
+
 const form = useForm({
     first_name: '',
     last_name: '',
@@ -22,10 +39,39 @@ const form = useForm({
     subject: '',
     content: '',
     priority: 'medium',
+    'cf-turnstile-response': '',
+});
+
+onMounted(() => {
+    // Check if Turnstile is enabled from backend config
+    if (window.turnstileConfig) {
+        turnstileEnabled.value = window.turnstileConfig.enabled;
+        turnstileSiteKey.value = window.turnstileConfig.siteKey;
+        
+        if (turnstileEnabled.value && window.turnstile) {
+            // Render Turnstile widget
+            turnstileWidget.value = window.turnstile.render('#cf-turnstile', {
+                sitekey: turnstileSiteKey.value,
+                callback: function(token: string) {
+                    form['cf-turnstile-response'] = token;
+                },
+                'expired-callback': function() {
+                    form['cf-turnstile-response'] = '';
+                },
+            });
+        }
+    }
 });
 
 const submit = () => {
-    form.post(route('support.public.store'));
+    form.post(route('support.public.store'), {
+        onFinish: () => {
+            // Reset Turnstile if enabled
+            if (turnstileEnabled.value && window.turnstile && turnstileWidget.value) {
+                window.turnstile.reset(turnstileWidget.value);
+            }
+        },
+    });
 };
 
 const scrollToFAQ = (e: Event) => {
@@ -194,6 +240,14 @@ const scrollToFAQ = (e: Event) => {
                                             ></textarea>
                                             <div v-if="form.errors.content" class="invalid-feedback">
                                                 {{ form.errors.content }}
+                                            </div>
+                                        </div>
+
+                                        <!-- Cloudflare Turnstile -->
+                                        <div v-if="turnstileEnabled" class="mb-4">
+                                            <div id="cf-turnstile"></div>
+                                            <div v-if="form.errors['cf-turnstile-response']" class="text-danger small mt-1">
+                                                {{ form.errors['cf-turnstile-response'] }}
                                             </div>
                                         </div>
 

@@ -6,6 +6,7 @@ use App\Models\SupportTicket;
 use App\Models\TicketCategory;
 use App\Models\TicketReply;
 use App\Models\User;
+use App\Services\CloudflareService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
@@ -143,7 +144,7 @@ class SupportTicketController extends Controller
     /**
      * Store support ticket from public form
      */
-    public function publicStore(Request $request)
+    public function publicStore(Request $request, CloudflareService $cloudflareService)
     {
         // Different validation rules for guests vs authenticated users
         $rules = [
@@ -160,7 +161,26 @@ class SupportTicketController extends Controller
             $rules['email'] = 'required|email|max:255';
         }
 
+        // Add Turnstile validation if enabled
+        if (config('services.turnstile.enabled')) {
+            $rules['cf-turnstile-response'] = 'required|string';
+        }
+
         $validated = $request->validate($rules);
+
+        // Verify Turnstile if enabled
+        if (config('services.turnstile.enabled')) {
+            $turnstileResult = $cloudflareService->verifyTurnstile(
+                $request->input('cf-turnstile-response'),
+                $request->ip()
+            );
+
+            if (!$turnstileResult['success']) {
+                return back()->withErrors([
+                    'cf-turnstile-response' => 'Security verification failed. Please try again.',
+                ])->withInput();
+            }
+        }
 
         // Check if email belongs to existing user
         $existingUser = null;
