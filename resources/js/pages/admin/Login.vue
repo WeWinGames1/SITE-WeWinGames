@@ -162,34 +162,6 @@ const floatingIcons = [
                     </small>
                 </div>
             </div>
-
-            <!-- Quick Stats -->
-            <div class="row g-3 mt-4 text-center">
-                <div class="col-3">
-                    <div class="stat-card p-3 rounded">
-                        <div class="h4 fw-bold text-white mb-0">24/7</div>
-                        <small class="text-white-50">Uptime</small>
-                    </div>
-                </div>
-                <div class="col-3">
-                    <div class="stat-card p-3 rounded">
-                        <div class="h4 fw-bold text-white mb-0">1.2K</div>
-                        <small class="text-white-50">Users</small>
-                    </div>
-                </div>
-                <div class="col-3">
-                    <div class="stat-card p-3 rounded">
-                        <div class="h4 fw-bold text-white mb-0">$45K</div>
-                        <small class="text-white-50">MRR</small>
-                    </div>
-                </div>
-                <div class="col-3">
-                    <div class="stat-card p-3 rounded">
-                        <div class="h4 fw-bold text-white mb-0">98%</div>
-                        <small class="text-white-50">Satisfaction</small>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </template>
@@ -265,17 +237,6 @@ const floatingIcons = [
 .card-footer {
     background: rgba(0, 0, 0, 0.2);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.stat-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateY(-2px);
 }
 
 .text-white-50 {
