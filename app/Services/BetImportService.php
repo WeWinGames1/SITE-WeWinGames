@@ -18,6 +18,7 @@ class BetImportService
     private array $errors = [];
     private array $successCount = ['bets' => 0, 'games' => 0, 'teams' => 0];
     private array $columnMappings = [];
+    private array $staticValues = [];
 
     public function __construct(
         private BetRepositoryInterface $betRepository
@@ -29,6 +30,14 @@ class BetImportService
     public function setColumnMappings(array $mappings): void
     {
         $this->columnMappings = $mappings;
+    }
+    
+    /**
+     * Set static values for import
+     */
+    public function setStaticValues(array $staticValues): void
+    {
+        $this->staticValues = $staticValues;
     }
 
     public function importFromCsv(string $filePath): array
@@ -100,6 +109,11 @@ class BetImportService
                 }
             }
             $record = $mappedRecord;
+        }
+        
+        // Apply static values (these override any mapped values)
+        foreach ($this->staticValues as $field => $value) {
+            $record[$field] = $value;
         }
         
         // Transform data before validation

@@ -92,6 +92,7 @@ const csvHeaders = ref<string[]>([])
 const detectedMappings = ref<Record<string, string>>({})
 const sampleData = ref<any[]>([])
 const columnMappings = ref<Record<string, string>>({})
+const staticValues = ref<Record<string, string>>({})
 const validationResult = ref<any>(null)
 const importId = ref<string>('')
 
@@ -103,8 +104,9 @@ const handleFileUploaded = async (data: any) => {
   currentStep.value = 2
 }
 
-const handleMappingsConfirmed = async (mappings: Record<string, string>) => {
+const handleMappingsConfirmed = async (mappings: Record<string, string>, staticVals: Record<string, string>) => {
   columnMappings.value = mappings
+  staticValues.value = staticVals
   
   try {
     // Refresh CSRF token first
@@ -117,7 +119,8 @@ const handleMappingsConfirmed = async (mappings: Record<string, string>) => {
     
     const { data } = await axios.post('/admin/bets/import/validate', {
       file_id: fileId.value,
-      mappings: mappings
+      mappings: mappings,
+      static_values: staticVals
     })
     
     if (data.success) {
@@ -149,6 +152,7 @@ const handleImportConfirmed = async (skipErrors: boolean) => {
     const { data } = await axios.post('/admin/bets/import/process', {
       file_id: fileId.value,
       mappings: columnMappings.value,
+      static_values: staticValues.value,
       skip_errors: skipErrors
     })
 

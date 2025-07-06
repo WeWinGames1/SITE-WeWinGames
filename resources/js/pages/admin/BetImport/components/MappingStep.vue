@@ -62,17 +62,38 @@
                   </label>
                 </div>
                 <div class="col-md-8">
-                  <select
-                    :id="`mapping-${field}`"
-                    v-model="mappings[field]"
-                    class="form-select"
-                    :class="{ 'is-invalid': !mappings[field] }"
-                  >
-                    <option value="">-- Select Column --</option>
-                    <option v-for="header in csvHeaders" :key="header" :value="header">
-                      {{ header }}
-                    </option>
-                  </select>
+                  <div class="input-group">
+                    <select
+                      :id="`mapping-${field}`"
+                      v-model="mappings[field]"
+                      class="form-select"
+                      :class="{ 'is-invalid': !mappings[field] && !staticValues[field] }"
+                    >
+                      <option value="">-- Select Column --</option>
+                      <option v-for="header in csvHeaders" :key="header" :value="header">
+                        {{ header }}
+                      </option>
+                    </select>
+                    <button 
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      :class="{ 'active': staticValueModes[field] }"
+                      @click="toggleStaticMode(field)"
+                      :title="staticValueModes[field] ? 'Switch to column mapping' : 'Use static value'"
+                    >
+                      <i class="bi" :class="staticValueModes[field] ? 'bi-x-lg' : 'bi-pencil-square'"></i>
+                    </button>
+                  </div>
+                  <div v-if="staticValueModes[field]" class="mt-2">
+                    <input
+                      type="text"
+                      v-model="staticValues[field]"
+                      class="form-control"
+                      :placeholder="`Enter static value for all ${formatFieldName(field)} entries`"
+                      :class="{ 'is-invalid': staticValueModes[field] && !staticValues[field] }"
+                    />
+                    <small class="text-muted">This value will be used for all rows</small>
+                  </div>
                 </div>
               </div>
             </div>
@@ -97,16 +118,36 @@
                   </label>
                 </div>
                 <div class="col-md-8">
-                  <select
-                    :id="`mapping-${field}`"
-                    v-model="mappings[field]"
-                    class="form-select"
-                  >
-                    <option value="">-- Select Column --</option>
-                    <option v-for="header in csvHeaders" :key="header" :value="header">
-                      {{ header }}
-                    </option>
-                  </select>
+                  <div class="input-group">
+                    <select
+                      :id="`mapping-${field}`"
+                      v-model="mappings[field]"
+                      class="form-select"
+                    >
+                      <option value="">-- Select Column --</option>
+                      <option v-for="header in csvHeaders" :key="header" :value="header">
+                        {{ header }}
+                      </option>
+                    </select>
+                    <button 
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      :class="{ 'active': staticValueModes[field] }"
+                      @click="toggleStaticMode(field)"
+                      :title="staticValueModes[field] ? 'Switch to column mapping' : 'Use static value'"
+                    >
+                      <i class="bi" :class="staticValueModes[field] ? 'bi-x-lg' : 'bi-pencil-square'"></i>
+                    </button>
+                  </div>
+                  <div v-if="staticValueModes[field]" class="mt-2">
+                    <input
+                      type="text"
+                      v-model="staticValues[field]"
+                      class="form-control"
+                      :placeholder="`Enter static value for all ${formatFieldName(field)} entries`"
+                    />
+                    <small class="text-muted">This value will be used for all rows</small>
+                  </div>
                 </div>
               </div>
             </div>
@@ -169,11 +210,13 @@ interface Props {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  'mappings-confirmed': [mappings: Record<string, string>]
+  'mappings-confirmed': [mappings: Record<string, string>, staticValues: Record<string, string>]
   'back': []
 }>()
 
 const mappings = ref<Record<string, string>>({})
+const staticValues = ref<Record<string, string>>({})
+const staticValueModes = ref<Record<string, boolean>>({})
 
 // Get the actual name of the game column if detected
 const gameColumnName = computed(() => {
@@ -220,13 +263,26 @@ const transformedMappings = computed(() => {
   })
 })
 
+// Toggle between column mapping and static value mode
+const toggleStaticMode = (field: string) => {
+  staticValueModes.value[field] = !staticValueModes.value[field]
+  
+  // Clear the mapping when switching to static mode
+  if (staticValueModes.value[field]) {
+    mappings.value[field] = ''
+  } else {
+    // Clear static value when switching back to mapping mode
+    staticValues.value[field] = ''
+  }
+}
+
 const validationErrors = computed(() => {
   const errors: string[] = []
   
-  // Check required fields
+  // Check required fields - must have either mapping or static value
   Object.keys(props.columnRequirements.required).forEach(field => {
-    if (!mappings.value[field]) {
-      errors.push(`${field} is required`)
+    if (!mappings.value[field] && (!staticValueModes.value[field] || !staticValues.value[field])) {
+      errors.push(`${field} is required (must map to a column or provide a static value)`)
     }
   })
   
@@ -291,9 +347,12 @@ const confirmMappings = () => {
       .filter(([_, value]) => value)
       .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
     
-    // Don't create duplicate mappings
+    // Collect static values
+    const confirmedStaticValues = Object.entries(staticValues.value)
+      .filter(([field, value]) => staticValueModes.value[field] && value)
+      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
     
-    emit('mappings-confirmed', confirmedMappings)
+    emit('mappings-confirmed', confirmedMappings, confirmedStaticValues)
   }
 }
 </script>

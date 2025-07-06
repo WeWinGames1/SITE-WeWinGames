@@ -13,6 +13,7 @@ class CsvImportService
     private array $requiredColumns = [];
     private array $optionalColumns = [];
     private array $columnMappings = [];
+    private array $staticValues = [];
     private array $validationRules = [];
     private array $errors = [];
     private array $warnings = [];
@@ -176,9 +177,10 @@ class CsvImportService
     /**
      * Validate CSV data with column mappings
      */
-    public function validateImport(string $filePath, array $columnMappings): array
+    public function validateImport(string $filePath, array $columnMappings, array $staticValues = []): array
     {
         $this->columnMappings = $columnMappings;
+        $this->staticValues = $staticValues;
         $this->errors = [];
         $this->warnings = [];
         
@@ -247,11 +249,17 @@ class CsvImportService
     {
         $mapped = [];
         
+        // First map columns from CSV
         foreach ($this->columnMappings as $field => $csvColumn) {
             if (isset($record[$csvColumn])) {
                 $value = $this->cleanValue($record[$csvColumn]);
                 $mapped[$field] = $value;
             }
+        }
+        
+        // Then apply static values (these override any mapped values)
+        foreach ($this->staticValues as $field => $value) {
+            $mapped[$field] = $value;
         }
         
         // Apply data transformations

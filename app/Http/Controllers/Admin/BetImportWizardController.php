@@ -76,6 +76,7 @@ class BetImportWizardController extends Controller
         $request->validate([
             'file_id' => 'required|string',
             'mappings' => 'required|array',
+            'static_values' => 'nullable|array',
         ]);
 
         try {
@@ -91,13 +92,15 @@ class BetImportWizardController extends Controller
             $fullPath = Storage::disk('local')->path($path);
             $validation = $this->csvImportService->validateImport(
                 $fullPath,
-                $request->input('mappings')
+                $request->input('mappings'),
+                $request->input('static_values', [])
             );
             
             // Store validation results in session
             session([
                 'import_validation' => $validation,
                 'import_mappings' => $request->input('mappings'),
+                'import_static_values' => $request->input('static_values', []),
             ]);
             
             return response()->json($validation);
@@ -117,6 +120,7 @@ class BetImportWizardController extends Controller
         $request->validate([
             'file_id' => 'required|string',
             'mappings' => 'required|array',
+            'static_values' => 'nullable|array',
             'skip_errors' => 'boolean',
         ]);
 
@@ -176,6 +180,7 @@ class BetImportWizardController extends Controller
             } else {
                 // Process immediately for small files
                 $this->betImportService->setColumnMappings($request->input('mappings'));
+                $this->betImportService->setStaticValues($request->input('static_values', []));
                 $result = $this->betImportService->importFromCsv($fullPath);
                 
                 // Store results in cache for consistency
