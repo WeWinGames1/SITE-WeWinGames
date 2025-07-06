@@ -125,6 +125,8 @@ const navigation: NavItem[] = [
             { name: 'Pages', href: route('admin.pages.index'), icon: 'bi-file-earmark-text' },
             { name: 'Landing Pages', href: route('admin.landing-pages.index'), icon: 'bi-window-stack' },
             { name: 'Testimonials', href: route('admin.testimonials.index'), icon: 'bi-chat-quote' },
+            { name: 'FAQs', href: route('admin.faqs.index'), icon: 'bi-question-circle' },
+            { name: 'Resume Submissions', href: route('admin.resume-submissions.index'), icon: 'bi-file-earmark-person' },
         ],
     },
     {

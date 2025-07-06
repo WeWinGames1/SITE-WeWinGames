@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import InputError from '@/components/InputError.vue';
 
@@ -8,6 +8,8 @@ defineProps<{
     status?: string;
 }>();
 
+const page = usePage();
+const isLocal = page.props.env?.APP_ENV === 'local';
 const showPassword = ref(false);
 
 const form = useForm({
@@ -27,6 +29,11 @@ const submit = () => {
         },
     });
 };
+
+function fillAdminCredentials() {
+    form.email = 'admin@wewingames.test';
+    form.password = 'password';
+}
 
 // Animation classes for the floating icons
 const floatingIcons = [
@@ -142,6 +149,19 @@ const floatingIcons = [
                         <!-- Status Message -->
                         <div v-if="status" class="alert alert-success mb-3">
                             {{ status }}
+                        </div>
+
+                        <!-- Demo Account Button for Local Environment -->
+                        <div v-if="isLocal" class="mb-3 p-3 rounded" style="background-color: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107;">
+                            <p class="mb-2 fw-bold text-warning"><i class="bi bi-info-circle me-2"></i>Demo Account</p>
+                            <button 
+                                type="button"
+                                class="btn btn-sm btn-outline-warning w-100"
+                                @click="fillAdminCredentials"
+                            >
+                                <i class="bi bi-person-fill me-2"></i>
+                                <strong>Admin:</strong> admin@wewingames.test
+                            </button>
                         </div>
 
                         <!-- Submit Button -->

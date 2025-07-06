@@ -8,6 +8,8 @@ use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 use App\Http\Resources\UserResource;
 use App\Services\BetService;
+use App\Models\Faq;
+use App\Services\SimpleCacheService;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -81,6 +83,16 @@ class HandleInertiaRequests extends Middleware
                 });
             });
 
+        // Get footer FAQs (limit to 4 for footer display)
+        $footerFaqs = SimpleCacheService::rememberQuery(
+            'footer_faqs',
+            SimpleCacheService::TTL_LONG,
+            fn() => Faq::active()
+                ->ordered()
+                ->limit(4)
+                ->get(['id', 'question', 'answer'])
+        );
+
         return array_merge($sharedData, [
             'stripeProducts' => $stripeProducts,
             'stripePrices' => [
@@ -100,11 +112,14 @@ class HandleInertiaRequests extends Middleware
                 'APP_DEBUG' => config('app.debug'),
                 'GOOGLE_ANALYTICS_TAG_ID' => config('google.analytics.tag_id'),
                 'GOOGLE_TAG_MANAGER_ID' => config('google.tag_manager.container_id'),
+                'TURNSTILE_ENABLED' => config('services.turnstile.enabled'),
+                'TURNSTILE_SITE_KEY' => config('services.turnstile.site_key'),
             ],
             'social' => [
                 'links' => config('social.links'),
                 'icons' => config('social.icons'),
             ],
+            'footerFaqs' => $footerFaqs,
         ]);
     }
 }

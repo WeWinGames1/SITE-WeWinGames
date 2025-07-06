@@ -28,6 +28,8 @@ const dropdownLinks = [
 
 const page = usePage();
 const auth = computed(() => page.props.auth || null);
+const footerFaqs = computed(() => page.props.footerFaqs || []);
+const isOnFaqPage = computed(() => page.url === '/faq');
 // console.log(auth)
 </script>
 
@@ -190,7 +192,7 @@ const auth = computed(() => page.props.auth || null);
             </div>
             
             <!-- FAQ Section -->
-            <section class="py-5 position-relative">
+            <section v-if="!isOnFaqPage" id="faq" class="py-5 position-relative">
                 <div class="container-fluid px-4 px-lg-5">
                     <div class="position-relative">
                         <!-- Trophy positioned to touch the footer links section below -->
@@ -207,60 +209,46 @@ const auth = computed(() => page.props.auth || null);
                         </div>
                         <p class="text-center text-secondary mb-5">Hopefully, Any Queries Are Covered Below, If Not, Please Get In Touch.</p>
                         
-                        <!-- Accordion wrapper with reduced width and right alignment -->
-                        <div class="row justify-content-end">
+                        <!-- Dynamic FAQ Accordion -->
+                        <div v-if="footerFaqs.length > 0" class="row justify-content-end">
                             <div class="col-lg-10">
                                 <div class="accordion accordion-flush" id="faqAccordion" style="background-color: transparent;">
-                                <div class="accordion-item bg-transparent border-0 mb-3">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button bg-transparent text-white p-3" type="button" data-bs-toggle="collapse" data-bs-target="#faq1" style="background-color: rgba(255, 193, 7, 0.1); border: 1px solid #333;">
-                                            Is there a membership or subscription fee to access the betting tips on WeWinGames.com?
-                                        </button>
-                                    </h2>
-                                    <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
-                                        <div class="accordion-body text-white p-3" style="background-color: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 193, 7, 0.3); border-top: none;">
-                                            We give out our basic silver picks free and charge a good value monthly subscription for our premium gold and platinum picks. These range from a total of $100 for gold to $225 for gold & platinum FOR ALL SPORTS. This competes to the US industry-leading sites that charge up to $300-400 a month PER TIPSTER.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item bg-transparent border-0 mb-3">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button collapsed bg-transparent text-white p-3" type="button" data-bs-toggle="collapse" data-bs-target="#faq2" style="background-color: transparent; border: 1px solid #333;">
-                                            What is the difference between silver, gold and platinum bets?
-                                        </button>
-                                    </h2>
-                                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                        <div class="accordion-body text-white p-3" style="background-color: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 193, 7, 0.3); border-top: none;">
-                                            Silver bets are our standard picks, Gold bets offer higher value with better odds, and Platinum bets are our premium selections with the highest potential returns.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item bg-transparent border-0 mb-3">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button collapsed bg-transparent text-white p-3" type="button" data-bs-toggle="collapse" data-bs-target="#faq3" style="background-color: transparent; border: 1px solid #333;">
-                                            Can I rely on the accuracy of the betting tips provided by WeWinGames.com?
-                                        </button>
-                                    </h2>
-                                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                        <div class="accordion-body text-white p-3" style="background-color: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 193, 7, 0.3); border-top: none;">
-                                            Our tips are based on extensive research and analysis. While we maintain a strong track record, remember that sports betting always involves risk.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item bg-transparent border-0">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button collapsed bg-transparent text-white p-3" type="button" data-bs-toggle="collapse" data-bs-target="#faq4" style="background-color: transparent; border: 1px solid #333;">
-                                            How much should I place on each bet?
-                                        </button>
-                                    </h2>
-                                    <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                        <div class="accordion-body text-white p-3" style="background-color: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 193, 7, 0.3); border-top: none;">
-                                            We recommend responsible bankroll management. Never bet more than you can afford to lose, and consider using a fixed percentage of your bankroll per bet.
+                                    <div v-for="(faq, index) in footerFaqs" :key="faq.id" class="accordion-item bg-transparent border-0 mb-3">
+                                        <h2 class="accordion-header">
+                                            <button 
+                                                class="accordion-button bg-transparent text-white p-3" 
+                                                :class="{ 'collapsed': index !== 0 }"
+                                                type="button" 
+                                                data-bs-toggle="collapse" 
+                                                :data-bs-target="`#faq${faq.id}`" 
+                                                :style="index === 0 ? 'background-color: rgba(255, 193, 7, 0.1); border: 1px solid #333;' : 'background-color: transparent; border: 1px solid #333;'"
+                                            >
+                                                {{ faq.question }}
+                                            </button>
+                                        </h2>
+                                        <div 
+                                            :id="`faq${faq.id}`" 
+                                            class="accordion-collapse collapse" 
+                                            :class="{ 'show': index === 0 }"
+                                            data-bs-parent="#faqAccordion"
+                                        >
+                                            <div 
+                                                class="accordion-body text-white p-3" 
+                                                style="background-color: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 193, 7, 0.3); border-top: none;"
+                                                v-html="faq.answer"
+                                            ></div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            </div>
+                        </div>
+                        
+                        <!-- CTA to FAQ Page -->
+                        <div class="text-center mt-4">
+                            <a href="/faq" class="btn btn-warning btn-lg">
+                                <i class="bi bi-question-circle me-2"></i>
+                                View All FAQs
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -316,6 +304,8 @@ const auth = computed(() => page.props.auth || null);
                             <a href="/terms" class="text-secondary text-decoration-none small">Terms</a>
                             <span class="text-secondary">|</span>
                             <a href="/privacy-policy" class="text-secondary text-decoration-none small">Privacy</a>
+                            <span class="text-secondary">|</span>
+                            <a href="/faq" class="text-secondary text-decoration-none small">FAQ</a>
                             <span class="text-secondary">|</span>
                             <a href="/support" class="btn btn-sm btn-outline-secondary">
                                 <i class="bi bi-headset"></i> Support
