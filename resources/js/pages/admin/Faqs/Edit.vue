@@ -1,0 +1,209 @@
+<script setup lang="ts">
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import AdminLayout from '@/layouts/AdminLayout.vue';
+import InputError from '@/components/InputError.vue';
+import { ref } from 'vue';
+
+interface Faq {
+    id: number;
+    question: string;
+    answer: string;
+    category: string | null;
+    is_active: boolean;
+    sort_order: number;
+}
+
+const props = defineProps<{
+    faq: Faq;
+    categories: string[];
+}>();
+
+const showNewCategory = ref(false);
+const newCategory = ref('');
+
+const form = useForm({
+    question: props.faq.question,
+    answer: props.faq.answer,
+    category: props.faq.category || '',
+    is_active: props.faq.is_active,
+    sort_order: props.faq.sort_order
+});
+
+function handleCategoryChange() {
+    if (form.category === '__new__') {
+        showNewCategory.value = true;
+        form.category = '';
+    } else {
+        showNewCategory.value = false;
+        newCategory.value = '';
+    }
+}
+
+function submit() {
+    if (showNewCategory.value && newCategory.value) {
+        form.category = newCategory.value;
+    }
+    
+    form.put(route('admin.faqs.update', props.faq.id));
+}
+</script>
+
+<template>
+    <AdminLayout>
+        <Head title="Edit FAQ" />
+        
+        <div class="container-fluid p-4">
+            <!-- Page Header -->
+            <div class="mb-4">
+                <h1 class="h2 mb-0">Edit FAQ</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <Link :href="route('admin.dashboard')">Dashboard</Link>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <Link :href="route('admin.faqs.index')">FAQs</Link>
+                        </li>
+                        <li class="breadcrumb-item active">Edit</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <!-- Edit Form -->
+            <div class="card">
+                <div class="card-body">
+                    <form @submit.prevent="submit">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <!-- Question -->
+                                <div class="mb-3">
+                                    <label for="question" class="form-label">Question <span class="text-danger">*</span></label>
+                                    <input 
+                                        id="question"
+                                        v-model="form.question"
+                                        type="text" 
+                                        class="form-control"
+                                        :class="{ 'is-invalid': form.errors.question }"
+                                        placeholder="Enter the question"
+                                        required
+                                    >
+                                    <InputError class="mt-2" :message="form.errors.question" />
+                                </div>
+
+                                <!-- Answer -->
+                                <div class="mb-3">
+                                    <label for="answer" class="form-label">Answer <span class="text-danger">*</span></label>
+                                    <textarea 
+                                        id="answer"
+                                        v-model="form.answer"
+                                        class="form-control"
+                                        :class="{ 'is-invalid': form.errors.answer }"
+                                        rows="6"
+                                        placeholder="Enter the answer"
+                                        required
+                                    ></textarea>
+                                    <InputError class="mt-2" :message="form.errors.answer" />
+                                    <small class="form-text text-muted">You can use basic HTML for formatting.</small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <!-- Category -->
+                                <div class="mb-3">
+                                    <label for="category" class="form-label">Category</label>
+                                    <select 
+                                        v-if="!showNewCategory"
+                                        id="category"
+                                        v-model="form.category"
+                                        @change="handleCategoryChange"
+                                        class="form-select"
+                                        :class="{ 'is-invalid': form.errors.category }"
+                                    >
+                                        <option value="">No Category</option>
+                                        <option v-for="category in props.categories" :key="category" :value="category">
+                                            {{ category }}
+                                        </option>
+                                        <option value="__new__">+ Add New Category</option>
+                                    </select>
+                                    <div v-else class="input-group">
+                                        <input 
+                                            v-model="newCategory"
+                                            type="text" 
+                                            class="form-control"
+                                            placeholder="Enter new category"
+                                        >
+                                        <button 
+                                            @click="showNewCategory = false; form.category = props.faq.category || ''"
+                                            type="button" 
+                                            class="btn btn-outline-secondary"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                    <InputError class="mt-2" :message="form.errors.category" />
+                                </div>
+
+                                <!-- Sort Order -->
+                                <div class="mb-3">
+                                    <label for="sort_order" class="form-label">Sort Order</label>
+                                    <input 
+                                        id="sort_order"
+                                        v-model.number="form.sort_order"
+                                        type="number" 
+                                        class="form-control"
+                                        :class="{ 'is-invalid': form.errors.sort_order }"
+                                        min="0"
+                                    >
+                                    <InputError class="mt-2" :message="form.errors.sort_order" />
+                                    <small class="form-text text-muted">Lower numbers appear first.</small>
+                                </div>
+
+                                <!-- Status -->
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input 
+                                            id="is_active"
+                                            v-model="form.is_active"
+                                            type="checkbox" 
+                                            class="form-check-input"
+                                            role="switch"
+                                        >
+                                        <label class="form-check-label" for="is_active">
+                                            Active
+                                        </label>
+                                    </div>
+                                    <small class="form-text text-muted">Only active FAQs are shown to users.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <Link 
+                                :href="route('admin.faqs.index')"
+                                class="btn btn-secondary"
+                            >
+                                <i class="bi bi-arrow-left me-2"></i>
+                                Cancel
+                            </Link>
+                            <button 
+                                type="submit" 
+                                class="btn btn-primary"
+                                :disabled="form.processing"
+                            >
+                                <span v-if="form.processing">
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                    Updating...
+                                </span>
+                                <span v-else>
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    Update FAQ
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </AdminLayout>
+</template>

@@ -73,14 +73,6 @@ const submit = () => {
         },
     });
 };
-
-const scrollToFAQ = (e: Event) => {
-    e.preventDefault();
-    const faqSection = document.getElementById('faqAccordion');
-    if (faqSection) {
-        faqSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-};
 </script>
 
 <template>
@@ -290,7 +282,7 @@ const scrollToFAQ = (e: Event) => {
                                             <i class="bi bi-question-circle text-warning fs-2 mb-3 d-block"></i>
                                             <h5 class="text-white mb-2">FAQ</h5>
                                             <p class="small mb-0">
-                                                <a href="#faq" @click="scrollToFAQ" class="text-warning text-decoration-none">View common questions</a>
+                                                <a href="/faq" class="text-warning text-decoration-none">View common questions</a>
                                             </p>
                                         </div>
                                     </div>

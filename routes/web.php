@@ -39,7 +39,9 @@ Route::get('/betting-results', [BetController::class, 'bettingResults'])->name('
 Route::get('/betting-education', BettingEducationController::class)->name('betting-tips');
 Route::get('/partners-offers', [StaticPageController::class, 'partnerOffers'])->name('partner-offers');
 Route::get('/careers-jobs', [StaticPageController::class, 'careersJobs'])->name('careers-jobs');
+Route::post('/careers/submit-resume', [\App\Http\Controllers\ResumeSubmissionController::class, 'store'])->name('careers.submit-resume');
 Route::get('/about-us', [StaticPageController::class, 'aboutUs'])->name('about-us');
+Route::get('/faq', [\App\Http\Controllers\FaqController::class, 'index'])->name('faq');
 
 // Customer dashboard route
 Route::get('dashboard', [CustomerDashboardController::class, 'index'])
@@ -144,6 +146,27 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
     // Testimonial Management
     Route::resource('testimonials', \App\Http\Controllers\Admin\TestimonialController::class);
     Route::post('testimonials/update-order', [\App\Http\Controllers\Admin\TestimonialController::class, 'updateOrder'])->name('testimonials.update-order');
+    
+    // FAQ Management
+    Route::resource('faqs', \App\Http\Controllers\Admin\FaqController::class);
+    Route::post('faqs/{faq}/toggle', [\App\Http\Controllers\Admin\FaqController::class, 'toggle'])->name('faqs.toggle');
+    Route::post('faqs/update-order', [\App\Http\Controllers\Admin\FaqController::class, 'updateOrder'])->name('faqs.update-order');
+    
+    // Resume Submission Management
+    Route::prefix('resume-submissions')->name('resume-submissions.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ResumeSubmissionController::class, 'index'])->name('index');
+        Route::get('/{resumeSubmission}', [\App\Http\Controllers\Admin\ResumeSubmissionController::class, 'show'])->name('show');
+        Route::put('/{resumeSubmission}/update-status', [\App\Http\Controllers\Admin\ResumeSubmissionController::class, 'updateStatus'])->name('update-status');
+        Route::delete('/{resumeSubmission}', [\App\Http\Controllers\Admin\ResumeSubmissionController::class, 'destroy'])->name('destroy');
+        
+        // Job Position Management
+        Route::prefix('positions')->name('positions.')->group(function () {
+            Route::post('/', [\App\Http\Controllers\Admin\ResumeSubmissionController::class, 'storePosition'])->name('store');
+            Route::put('/{jobPosition}', [\App\Http\Controllers\Admin\ResumeSubmissionController::class, 'updatePosition'])->name('update');
+            Route::post('/{jobPosition}/toggle', [\App\Http\Controllers\Admin\ResumeSubmissionController::class, 'togglePosition'])->name('toggle');
+            Route::delete('/{jobPosition}', [\App\Http\Controllers\Admin\ResumeSubmissionController::class, 'destroyPosition'])->name('destroy');
+        });
+    });
 });
 
 
