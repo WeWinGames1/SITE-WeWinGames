@@ -232,6 +232,8 @@ class CsvImportService
                     'valid' => count($validRows),
                     'invalid' => count($invalidRows),
                     'preview_limit' => 100,
+                    'previewed_rows' => count($validRows) + count($invalidRows),
+                    'is_preview' => $totalRows > 100,
                 ],
             ];
         } catch (\Exception $e) {
@@ -349,12 +351,13 @@ class CsvImportService
             $data['odds'] = $this->parseNumeric($data['odds'], true); // Keep American odds format
         }
         
-        // Handle both 'wager' and 'stake' fields for backward compatibility
+        // Handle wager field
         if (isset($data['wager'])) {
-            $parsedValue = $this->parseMonetary($data['wager']);
-            $data['wager'] = $parsedValue; // Update wager field with parsed value
-            $data['stake'] = $parsedValue; // Also set stake for backward compatibility
-        } elseif (isset($data['stake'])) {
+            $data['wager'] = $this->parseMonetary($data['wager']);
+        }
+        
+        // Only handle stake if it's explicitly provided in the CSV
+        if (isset($data['stake']) && !isset($data['wager'])) {
             $data['stake'] = $this->parseMonetary($data['stake']);
         }
         
@@ -685,7 +688,7 @@ class CsvImportService
             'home_team' => 'required|string|max:255',
             'away_team' => 'nullable|string|max:255',
             // Optional fields
-            'stake' => 'nullable|numeric|min:0.01|max:100000',
+            'stake' => 'nullable|numeric|min:0|max:100000',
             'operator' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:500',
             'placed_at' => 'nullable|string',

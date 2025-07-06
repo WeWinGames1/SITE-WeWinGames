@@ -178,6 +178,7 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
     Route::post('/process', [BetImportWizardController::class, 'import'])->name('process');
     Route::get('/progress', [BetImportWizardController::class, 'progress'])->name('progress');
     Route::get('/template', [BetImportWizardController::class, 'downloadTemplate'])->name('template');
+    Route::post('/clean', [BetImportWizardController::class, 'cleanCsv'])->name('clean');
     Route::get('/error-report', [BetImportWizardController::class, 'downloadErrorReport'])->name('error-report');
 });
 

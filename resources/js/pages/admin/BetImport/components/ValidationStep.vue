@@ -2,12 +2,23 @@
   <div>
     <h2 class="h3 mb-4">Validate & Preview Import</h2>
     
+    <!-- Preview Notice -->
+    <div v-if="summary.is_preview" class="alert alert-info mb-4">
+      <div class="d-flex align-items-start">
+        <i class="bi bi-info-circle-fill me-2 flex-shrink-0"></i>
+        <div>
+          <strong>Preview Mode:</strong> Showing validation results for the first {{ summary.previewed_rows }} rows out of {{ summary.total }} total rows.
+          The actual import will process all rows.
+        </div>
+      </div>
+    </div>
+    
     <!-- Summary -->
     <div class="row mb-4">
       <div class="col-lg-3 col-md-6 mb-3">
         <div class="card">
           <div class="card-body">
-            <dt class="small text-dark">Total Rows</dt>
+            <dt class="small text-dark">Total Rows in File</dt>
             <dd class="h3 mb-0">{{ summary.total }}</dd>
           </div>
         </div>
@@ -15,16 +26,18 @@
       <div class="col-lg-3 col-md-6 mb-3">
         <div class="card bg-success bg-opacity-10 border-success">
           <div class="card-body">
-            <dt class="small text-success">Valid Rows</dt>
+            <dt class="small text-success">{{ summary.is_preview ? 'Valid (Preview)' : 'Valid Rows' }}</dt>
             <dd class="h3 mb-0 text-success">{{ summary.valid }}</dd>
+            <small v-if="summary.is_preview" class="text-muted">First 100 rows only</small>
           </div>
         </div>
       </div>
       <div class="col-lg-3 col-md-6 mb-3">
         <div class="card bg-danger bg-opacity-10 border-danger">
           <div class="card-body">
-            <dt class="small text-danger">Invalid Rows</dt>
+            <dt class="small text-danger">{{ summary.is_preview ? 'Invalid (Preview)' : 'Invalid Rows' }}</dt>
             <dd class="h3 mb-0 text-danger">{{ summary.invalid }}</dd>
+            <small v-if="summary.is_preview" class="text-muted">First 100 rows only</small>
           </div>
         </div>
       </div>
@@ -132,23 +145,49 @@
       <div v-else>
         <div v-for="row in invalidRows" :key="row.row" class="card bg-danger bg-opacity-10 border-danger mb-3">
           <div class="card-body">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-              <h4 class="h6 text-danger">Row {{ row.row }}</h4>
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <h4 class="h5 text-danger mb-0">Row {{ row.row }}</h4>
             </div>
             
-            <!-- Show data -->
-            <div class="row g-2 mb-3">
-              <div v-for="(value, field) in row.data" :key="field" class="col-md-4 col-6">
-                <span class="fw-medium">{{ field }}:</span>
-                <span class="ms-1">{{ value || '-' }}</span>
+            <!-- Show errors as stacked alerts -->
+            <div class="mb-3">
+              <div v-for="(messages, field) in row.errors" :key="field" class="alert alert-danger py-2 mb-2">
+                <div class="d-flex align-items-start">
+                  <i class="bi bi-exclamation-circle-fill me-2 flex-shrink-0"></i>
+                  <div class="w-100">
+                    <strong>{{ formatFieldName(field) }}:</strong>
+                    <!-- Handle different error message formats -->
+                    <template v-if="typeof messages === 'string'">
+                      <span class="ms-1">{{ messages }}</span>
+                    </template>
+                    <template v-else-if="Array.isArray(messages)">
+                      <template v-if="messages.length === 1">
+                        <span class="ms-1">{{ messages[0] }}</span>
+                      </template>
+                      <ul v-else class="mb-0 ps-3 mt-1">
+                        <li v-for="(message, index) in messages" :key="`${field}-msg-${index}`">
+                          {{ typeof message === 'string' ? message : String(message) }}
+                        </li>
+                      </ul>
+                    </template>
+                    <template v-else>
+                      <span class="ms-1">{{ String(messages) }}</span>
+                    </template>
+                  </div>
+                </div>
               </div>
             </div>
             
-            <!-- Show errors -->
-            <div class="mt-3">
-              <div v-for="(messages, field) in row.errors" :key="field" class="small text-danger mb-1">
-                <span class="fw-medium">{{ field }}:</span>
-                <span v-for="message in messages" :key="message" class="ms-1">{{ message }}</span>
+            <!-- Show data in a cleaner format -->
+            <div class="border-top pt-3">
+              <h6 class="text-muted mb-2">Row Data:</h6>
+              <div class="row g-2">
+                <div v-for="(value, field) in row.data" :key="field" class="col-lg-3 col-md-4 col-6">
+                  <div class="small">
+                    <span class="text-muted">{{ formatFieldName(field) }}:</span>
+                    <div class="fw-medium">{{ value || '-' }}</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -186,7 +225,9 @@
         :disabled="summary.valid === 0"
         class="btn btn-primary"
       >
-        <i class="bi bi-upload me-2"></i>Import {{ summary.valid }} {{ summary.valid === 1 ? 'Bet' : 'Bets' }}
+        <i class="bi bi-upload me-2"></i>
+        <span v-if="summary.is_preview">Import All {{ summary.total }} Rows</span>
+        <span v-else>Import {{ summary.valid }} {{ summary.valid === 1 ? 'Bet' : 'Bets' }}</span>
       </button>
     </div>
   </div>
@@ -211,6 +252,9 @@ interface Props {
       total: number
       valid: number
       invalid: number
+      preview_limit?: number
+      previewed_rows?: number
+      is_preview?: boolean
     }
   }
   validationRules: Record<string, string>
@@ -228,7 +272,14 @@ const skipErrors = ref(false)
 
 const validRows = computed(() => props.validationResult?.valid_rows || [])
 const invalidRows = computed(() => props.validationResult?.invalid_rows || [])
-const summary = computed(() => props.validationResult?.summary || { total: 0, valid: 0, invalid: 0 })
+const summary = computed(() => props.validationResult?.summary || { 
+  total: 0, 
+  valid: 0, 
+  invalid: 0,
+  preview_limit: 100,
+  previewed_rows: 0,
+  is_preview: false
+})
 
 const warningCount = computed(() => {
   return validRows.value.reduce((count, row) => count + row.warnings.length, 0)
@@ -252,6 +303,31 @@ const getStatusClass = (status: string) => {
 
 const confirmImport = () => {
   emit('import-confirmed', skipErrors.value)
+}
+
+const formatFieldName = (field: string): string => {
+  const nameMap: Record<string, string> = {
+    'sport': 'Sport',
+    'league': 'League',
+    'month': 'Month',
+    'game_date': 'Game Date',
+    'game': 'Game',
+    'home_team': 'Home Team',
+    'away_team': 'Away Team',
+    'bet_type': 'Bet Type',
+    'wager_type': 'Wager Type',
+    'wager_name': 'Wager Name',
+    'odds': 'Odds',
+    'level': 'Level',
+    'code': 'Code',
+    'status': 'Status',
+    'roi': 'ROI',
+    'wager': 'Wager',
+    'stake': 'Stake',
+    'profits': 'Profits',
+    'winning_amount': 'Winning Amount'
+  }
+  return nameMap[field] || field.charAt(0).toUpperCase() + field.slice(1).replace(/_/g, ' ')
 }
 </script>
 

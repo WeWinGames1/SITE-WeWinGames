@@ -12,10 +12,9 @@ $expectedHeaders = [
     'Date/Time',
     'Betting Date',
     'Matches',
-    'Time',
     'Markets',
     'Wager Type',
-    'Tips',
+    'Wager Name',
     'Wager Odds',
     'Membership',
     'Referrer',
@@ -33,7 +32,7 @@ $columnMapping = [
     'Date' => 'Betting Date',
     'Game' => 'Matches',
     'Bet Type' => 'Markets',
-    'Wager name' => 'Tips',
+    'Wager name' => 'Wager Name',
     'Odds' => 'Wager Odds',
     'Level' => 'Membership',
     'Code' => 'Referrer',
@@ -89,7 +88,6 @@ if ($handle !== FALSE) {
                 $newRow['Month'] = $date->format('M'); // Get 3-letter month abbreviation
                 $newRow['Date/Time'] = $date->format('Y-m-d H:i');
                 $newRow['Betting Date'] = $date->format('Y-m-d');
-                $newRow['Time'] = '00:00'; // Default time since not provided
             } else {
                 continue; // Skip rows with invalid dates
             }
@@ -99,8 +97,8 @@ if ($handle !== FALSE) {
         
         $newRow['Matches'] = $data[$columnIndices['Matches']] ?? '';
         $newRow['Markets'] = $data[$columnIndices['Markets']] ?? '';
-        $newRow['Wager Type'] = 'Straight'; // Default wager type
-        $newRow['Tips'] = $data[$columnIndices['Tips']] ?? '';
+        $newRow['Wager Type'] = ''; // Leave empty when we don't have the value
+        $newRow['Wager Name'] = $data[$columnIndices['Wager Name']] ?? '';
         
         // Convert odds (remove minus sign if present for display)
         $odds = $data[$columnIndices['Wager Odds']] ?? '0';

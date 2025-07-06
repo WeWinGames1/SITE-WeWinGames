@@ -1,0 +1,167 @@
+<?php
+
+// Function to clean a CSV file
+function cleanCSV($inputFile, $outputFile) {
+    // Expected column headers for the import
+    $expectedHeaders = [
+        'Sports',
+        'League',
+        'Month',
+        'Betting Date',
+        'Matches',
+        'Markets',
+        'Wager Type',
+        'Wager Name',
+        'Wager Odds',
+        'Membership',
+        'Referrer',
+        'Status',
+        'ROI %',
+        'Wager Amount',
+        'Winning Amount',
+        'Profit Amount',
+    ];
+
+    // Mapping from old columns to new columns
+    $columnMapping = [
+        'Section' => 'Sports',
+        'Subsection' => 'League',
+        'Date' => 'Betting Date',
+        'Game' => 'Matches',
+        'Bet Type' => 'Markets',
+        'Wager name' => 'Wager Name',
+        'Odds' => 'Wager Odds',
+        'Level' => 'Membership',
+        'Code' => 'Referrer',
+        'Status' => 'Status',
+        'ROI(net)' => 'ROI %',
+        'Profits' => 'Profit Amount',
+        'Winnings' => 'Winning Amount',
+        'Winning Amount' => 'Winning Amount', // Handle both with and without space
+    ];
+
+    // Read the CSV
+    $rows = [];
+    $headers = [];
+    $handle = fopen($inputFile, 'r');
+    if ($handle !== FALSE) {
+        // Read header row
+        $headerRow = fgetcsv($handle);
+        
+        // Find column indices for the data we need
+        $columnIndices = [];
+        foreach ($headerRow as $index => $header) {
+            $header = trim($header);
+            
+            // Special handling for duplicate "Wager" columns
+            if ($header === 'Wager' && !isset($columnIndices['Wager Amount'])) {
+                // Use the first occurrence (index 7)
+                if ($index === 7) {
+                    $columnIndices['Wager Amount'] = $index;
+                }
+            } elseif (isset($columnMapping[$header])) {
+                $columnIndices[$columnMapping[$header]] = $index;
+            }
+        }
+        
+        // Process data rows
+        while (($data = fgetcsv($handle)) !== FALSE) {
+            // Skip empty rows or rows that don't have enough columns
+            if (count($data) < 10 || empty(trim($data[0]))) {
+                continue;
+            }
+            
+            $newRow = [];
+            
+            // Map data to new format
+            $newRow['Sports'] = ucfirst(strtolower($data[$columnIndices['Sports']] ?? ''));
+            $newRow['League'] = strtoupper($data[$columnIndices['League']] ?? '');
+            
+            // Format date
+            $dateStr = $data[$columnIndices['Betting Date']] ?? '';
+            if (!empty($dateStr)) {
+                $date = DateTime::createFromFormat('n/j/Y', $dateStr);
+                if ($date) {
+                    $newRow['Month'] = $date->format('M'); // Get 3-letter month abbreviation
+                    $newRow['Betting Date'] = $date->format('Y-m-d');
+                } else {
+                    continue; // Skip rows with invalid dates
+                }
+            } else {
+                continue;
+            }
+            
+            $newRow['Matches'] = $data[$columnIndices['Matches']] ?? '';
+            $newRow['Markets'] = $data[$columnIndices['Markets']] ?? '';
+            $newRow['Wager Type'] = ''; // Leave empty when we don't have the value
+            $newRow['Wager Name'] = $data[$columnIndices['Wager Name']] ?? '';
+            
+            // Convert odds (remove minus sign if present for display)
+            $odds = $data[$columnIndices['Wager Odds']] ?? '0';
+            $newRow['Wager Odds'] = $odds;
+            
+            // Convert level to membership tier
+            $level = strtolower($data[$columnIndices['Membership']] ?? '');
+            $membershipMap = [
+                'silver' => 'Silver',
+                'gold' => 'Gold',
+                'platinum' => 'Platinum',
+                'bronze' => 'Bronze'
+            ];
+            $newRow['Membership'] = $membershipMap[$level] ?? 'Silver';
+            
+            // Referrer from Code column, or default based on year
+            $defaultReferrer = strpos($inputFile, '2024') !== false ? 'WWG2024' : 'WWG2025';
+            $newRow['Referrer'] = $data[$columnIndices['Referrer']] ?? $defaultReferrer;
+            
+            // Convert status
+            $status = strtolower($data[$columnIndices['Status']] ?? '');
+            $newRow['Status'] = ($status === 'win') ? 'Won' : 'Lost';
+            
+            // Format ROI
+            $roi = $data[$columnIndices['ROI %']] ?? '-100%';
+            $newRow['ROI %'] = $roi;
+            
+            // Format amounts (remove $ and spaces)
+            $wager = preg_replace('/[^\d.-]/', '', isset($columnIndices['Wager Amount']) && isset($data[$columnIndices['Wager Amount']]) ? $data[$columnIndices['Wager Amount']] : '0');
+            $winning = preg_replace('/[^\d.-]/', '', isset($columnIndices['Winning Amount']) && isset($data[$columnIndices['Winning Amount']]) ? $data[$columnIndices['Winning Amount']] : '0');
+            $profit = preg_replace('/[^\d.-]/', '', isset($columnIndices['Profit Amount']) && isset($data[$columnIndices['Profit Amount']]) ? $data[$columnIndices['Profit Amount']] : '0');
+            
+            $newRow['Wager Amount'] = '$' . number_format((float)$wager, 2);
+            $newRow['Winning Amount'] = '$' . number_format((float)$winning, 2);
+            $newRow['Profit Amount'] = '$' . number_format((float)$profit, 2);
+            
+            $rows[] = $newRow;
+        }
+        fclose($handle);
+    }
+
+    // Write the cleaned CSV
+    $handle = fopen($outputFile, 'w');
+    if ($handle !== FALSE) {
+        // Write headers
+        fputcsv($handle, $expectedHeaders);
+        
+        // Write data rows
+        foreach ($rows as $row) {
+            $outputRow = [];
+            foreach ($expectedHeaders as $header) {
+                $outputRow[] = $row[$header] ?? '';
+            }
+            fputcsv($handle, $outputRow);
+        }
+        
+        fclose($handle);
+        
+        echo "Successfully cleaned CSV file!\n";
+        echo "Input: $inputFile\n";
+        echo "Output: $outputFile\n";
+        echo "Processed " . count($rows) . " rows\n\n";
+    } else {
+        echo "Error: Could not create output file $outputFile\n";
+    }
+}
+
+// Clean both 2024 and 2025 files
+cleanCSV('WWG picks record - 2024.csv', 'WWG_picks_2024_cleaned.csv');
+cleanCSV('WWG picks record - 2025.csv', 'WWG_picks_2025_cleaned.csv');

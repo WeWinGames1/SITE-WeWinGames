@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Services\CsvImportService;
 use App\Services\BetImportService;
+use App\Services\CsvCleanerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -13,7 +14,8 @@ class BetImportWizardController extends Controller
 {
     public function __construct(
         private CsvImportService $csvImportService,
-        private BetImportService $betImportService
+        private BetImportService $betImportService,
+        private CsvCleanerService $csvCleanerService
     ) {}
 
     /**
@@ -228,6 +230,49 @@ class BetImportWizardController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to generate template: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Clean a CSV file with duplicate columns
+     */
+    public function cleanCsv(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt'
+        ]);
+
+        try {
+            // Store uploaded file temporarily
+            $file = $request->file('file');
+            $originalName = $file->getClientOriginalName();
+            $tempPath = $file->store('temp');
+            $fullTempPath = Storage::path($tempPath);
+            
+            // Clean the CSV file
+            $cleanedFileName = pathinfo($originalName, PATHINFO_FILENAME) . '_cleaned.csv';
+            $cleanedPath = Storage::path('temp/' . $cleanedFileName);
+            
+            $result = $this->csvCleanerService->cleanCsvFile($fullTempPath, $cleanedPath);
+            
+            // Clean up temp file
+            Storage::delete($tempPath);
+            
+            if ($result['success']) {
+                // Return the cleaned file as download
+                return response()->download($cleanedPath, $cleanedFileName)
+                    ->deleteFileAfterSend();
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => $result['message']
+                ], 422);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to clean CSV: ' . $e->getMessage()
             ], 500);
         }
     }
