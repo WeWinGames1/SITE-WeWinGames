@@ -29,32 +29,32 @@ class CleanupRegistrationAttempts extends Command
     {
         $days = $this->option('days');
         $cutoffDate = now()->subDays($days);
-        
+
         // Clean up old registration attempts
         $deletedAttempts = DB::table('registration_attempts')
             ->where('created_at', '<', $cutoffDate)
             ->delete();
-            
+
         $this->info("Deleted {$deletedAttempts} registration attempts older than {$days} days.");
-        
+
         // Clean up expired IP blocks
         $deletedBlocks = DB::table('ip_blacklist')
             ->whereNotNull('expires_at')
             ->where('expires_at', '<', now())
             ->delete();
-            
+
         $this->info("Removed {$deletedBlocks} expired IP blocks.");
-        
+
         // Update statistics
         $totalAttempts = DB::table('registration_attempts')->count();
         $failedAttempts = DB::table('registration_attempts')->where('successful', false)->count();
         $blockedIPs = DB::table('ip_blacklist')->count();
-        
+
         $this->info("\nCurrent Statistics:");
         $this->info("Total registration attempts: {$totalAttempts}");
         $this->info("Failed attempts: {$failedAttempts}");
         $this->info("Currently blocked IPs: {$blockedIPs}");
-        
+
         return Command::SUCCESS;
     }
 }

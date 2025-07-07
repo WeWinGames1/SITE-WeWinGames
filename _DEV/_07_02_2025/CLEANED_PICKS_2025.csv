@@ -1,0 +1,1057 @@
+Sport,League,Month,"Game Date",Game,"Bet Type","Wager Type","Wager Name",Odds,Level,Code,Status,ROI(net),Wager,Profits,"Winning Amount"
+soccer,"England League Two",Jan,2025-01-01,"Barrow AFC @ Bradford City",Results,"Bradford to win","Bradford to win",170,gold,Footy,loss,-100%,30.00,-30.00,0.00
+hockey,NHL,Jan,2025-01-01,"Los Angeles Kings @ New Jersey Devils",Moneyline,"Kings ML","Kings ML",106,gold,"leg exot",win,106%,30.00,31.80,61.80
+hockey,NHL,Jan,2025-01-01,"Los Angeles Kings @ New Jersey Devils",Moneyline,"Kings ML","Kings ML",106,gold,"leg taze",win,106%,30.00,31.80,61.80
+soccer,"England League Two",Jan,2025-01-01,"Barnsley FC @ Wrexham FC",Results,"Both Teams To Score = YES","Both Teams To Score = YES",-125,gold,Footy,win,80%,30.00,24.00,54.00
+hockey,NHL,Jan,2025-01-02,"Columbus Crew @ Detroit Red Wings","Player Props","D. Voronkov o0.5 Pts","D. Voronkov o0.5 Pts",106,gold,"leg exot",loss,-100%,30.00,-30.00,0.00
+hockey,NHL,Jan,2025-01-02,"Columbus Crew @ Detroit Red Wings","Player Props","D. Voronkov o0.5 Pts","D. Voronkov o0.5 Pts",120,gold,"leg exot",loss,-100%,30.00,-30.00,0.00
+hockey,NHL,Jan,2025-01-02,"Columbus Crew @ Detroit Red Wings","Player Props","K. Marchenko o2.5 SOG","K. Marchenko o2.5 SOG",-143,gold,"leg exot",loss,-100%,30.00,-30.00,0.00
+hockey,NHL,Jan,2025-01-02,"Boston Bruins @ New York Rangers",Moneyline,"Bruins ML","Bruins ML",-113,gold,"leg exot",loss,-100%,30.00,-30.00,0.00
+hockey,NHL,Jan,2025-01-02,"Florida Panthers @ Carolina Hurricanes",Moneyline,"Panthers ML","Panthers ML",-121,gold,"leg exot",loss,-100%,30.00,-30.00,0.00
+hockey,NHL,Jan,2025-01-02,"Florida Panthers @ Carolina Hurricanes",Moneyline,"S. Bennett 3+ SOG","S. Bennett 3+ SOG",132,platinum,"leg exot",loss,-100%,30.00,-30.00,0.00
+hockey,NHL,Jan,2025-01-02,"Washington Capitals @ Minnesota Wild",Moneyline,"Capitals ML","Capitals ML",-142,platinum,"leg exot",loss,-100%,30.00,-30.00,0.00
+hockey,NHL,Jan,2025-01-02,"Ottawa Senators @ Dallas Stars",Moneyline,"Senators ML","Senators ML",172,platinum,"leg exot",loss,-100%,30.00,-30.00,0.00
+hockey,NHL,Jan,2025-01-02,"Anaheim Ducks @ Winnipeg Jets",Results,"u1.5 1P Goals","u1.5 1P Goals",115,platinum,"leg exot",loss,-100%,30.00,-30.00,0.00
+soccer,"Scotland Premiership",Jan,2025-01-02,"Berwick Rangers @ Celtic Glasgow",Results,"Celtic to win","Celtic to win",133,gold,Footy,loss,-100%,30.00,-30.00,0.00
+hockey,NHL,Jan,2025-01-02,"Columbus Blue Jackets @ Detroit Red Wings",Goals,"o6 Goals","o6 Goals",-128,gold,"leg exot",win,78%,30.00,23.44,53.44
+hockey,NHL,Jan,2025-01-02,"Vancouver Canucks @ Seattle Kraken",Results,"o5.5 Goals","o5.5 Goals",104,gold,"leg exot",win,104%,30.00,31.20,61.20
+hockey,NHL,Jan,2025-01-03,"Ottawa Senators @ ST. Louis Blues",Results,"Senators ML","Senators ML",117,gold,"leg exot",loss,-100%,30.00,-30.00,0.00
+hockey,NHL,Jan,2025-01-03,"Ottawa Senators @ ST. Louis Blues",Results,"o5.5 Goals","o5.5 Goals",114,gold,"leg exot",loss,-100%,30.00,-30.00,0.00
+hockey,NHL,Jan,2025-01-03,"Ottawa Senators @ ST. Louis Blues",Results,"J. Kyrou 3+ SOG","J. Kyrou 3+ SOG",-138,silver,"leg exot",loss,-100%,30.00,-30.00,0.00
+hockey,NHL,Jan,2025-01-03,"Ottawa Senators @ ST. Louis Blues",Results,"C. Giroux o1.5 SOG","C. Giroux o1.5 SOG",-135,silver,"leg exot",win,74%,30.00,22.22,52.22
+hockey,NHL,Jan,2025-01-04,"Washington Capitals @ New York Rangers & New Jersey Devils @ San Jose Sharks",Results,"Capitals ML & Devils ML","Capitals ML & Devils ML",100,gold,"leg exot",loss,-100%,30.00,-30.00,0.00
+hockey,NHL,Jan,2025-01-04,"Detroit Red Wings @ Winnipeg Blue Bombers",Results,"G. Vilardi 3+ SOG","G. Vilardi 3+ SOG",-121,gold,"leg exot",loss,-100%,30.00,-30.00,0.00
+hockey,NHL,Jan,2025-01-04,"Detroit Red Wings @ Winnipeg Blue Bombers",Results,"G. Vilardi 3+ SOG","G. Vilardi 3+ SOG",128,gold,"leg exot",loss,-100%,30.00,-30.00,0.00
+soccer,"England Premier League",Jan,2025-01-04,"Crystal Palace @ Chelsea FC",Results,"Chelsea to win","Chelsea to win",-105,silver,Footy,loss,-100%,30.00,-30.00,0.00
+soccer,"England League One",Jan,2025-01-04,"Wycombe Wanderers @ Blackpool FC",Results,"Wycombe to win","Wycombe to win",-109,silver,Footy,loss,-100%,30.00,-30.00,0.00
+soccer,"England League One",Jan,2025-01-04,"Doncaster Rovers @ Port Vale",Results,"Doncaster to win","Doncaster to win",-106,silver,Footy,loss,-100%,30.00,-30.00,0.00
+football,NFL,Jan,2025-01-04,"Cincinnati Bengals @ Pittsburgh Steelers",Moneyline,"Bengals ML","Bengals ML",-122,platinum,"Bleacher Report",win,82%,20.00,16.39,36.39
+football,NFL,Jan,2025-01-04,"Cincinnati Bengals @ Pittsburgh Steelers",Spread,"Bengals -1.5","Bengals -1.5",-110,gold,"Bleacher Report",win,91%,30.00,27.27,57.27
+football,NFL,Jan,2025-01-04,"Cleveland Browns @ Baltimore Ravens","Total Points","Under 46.5","Under 46.5",-110,gold,"Bleacher Report",win,91%,30.00,27.27,57.27
+hockey,NHL,Jan,2025-01-04,"Columbus Blue Jackets @ Toronto Blue Jays",Results,"o5.5 Goals","o5.5 Goals",-121,gold,"leg exot",win,83%,30.00,24.79,54.79
+hockey,NHL,Jan,2025-01-04,"Detroit Red Wings @ Winnipeg Blue Bombers",Results,"M. Seider 2+ SOG","M. Seider 2+ SOG",-121,gold,"leg exot",win,83%,30.00,24.79,54.79
+hockey,NHL,Jan,2025-01-04,"Columbus Blue Jackets @ Toronto Blue Jays",Results,"Z. Werenski o3.5 SOG","Z. Werenski o3.5 SOG",100,gold,"leg exot",win,100%,30.00,30.00,60.00
+hockey,NHL,Jan,2025-01-04,"Columbus Blue Jackets @ Toronto Blue Jays",Results,"D. Holloway o2.5 SOG","D. Holloway o2.5 SOG",115,gold,"leg exot",win,115%,30.00,34.50,64.50
+soccer,"France Ligue Un",Jan,2025-01-04,"Strasbourg IG @ AJ Auxerre",Results,"Strasbourg to win","Strasbourg to win",100,gold,Footy,win,100%,20.00,20.00,40.00
+soccer,"England Premier League",Jan,2025-01-04,"Tottenham Hotspur @ Newcastle United",Results,"Newcastle to win","Newcastle to win",-109,silver,Footy,win,92%,30.00,27.52,57.52
+soccer,"England League One",Jan,2025-01-04,"Brighton & Hove Albion @ Arsenal 2 Tula",Results,Draw,Draw,280,platinum,Footy,win,280%,10.00,28.00,38.00
+football,NFL,Jan,2025-01-05,"Minnesota Vikings @ Detroit Lions","Total Points","Over 47.5","Over 47.5",-110,platinum,"Bleacher Report",loss,-100%,30.00,-30.00,0.00
+football,NFL,Jan,2025-01-05,"Miami Dolphins @ New York Jets",Moneyline,"Dolphins ML","Dolphins ML",-115,gold,"Bleacher Report",loss,-100%,30.00,-30.00,0.00
+football,NFL,Jan,2025-01-05,"Miami Dolphins @ New York Jets",Spread,"Dolphins -1.5","Dolphins -1.5",-104,gold,"Bleacher Report",loss,-100%,30.00,-30.00,0.00
+football,NFL,Jan,2025-01-05,"New Orleans Saints @ Tampa Bay Buccaneers",Spread,"buccaneers -14","buccaneers -14",101,platinum,"Bleacher Report",loss,-100%,30.00,-30.00,0.00
+football,NFL,Jan,2025-01-05,"Jacksonville Jaguars @ Indianapolis Colts",Spread,"Colts -5","Colts -5",-102,gold,"Bleacher Report",loss,-100%,30.00,-30.00,0.00
+football,NFL,Jan,2025-01-05,"Kansas City Chiefs @ Denver Broncos","Total Points","Over 40","Over 40",-107,gold,"Bleacher Report",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Jan,2025-01-05,"The Sentry",Results,"Akshay Bhatia 6 places ew","Akshay Bhatia 6 places ew",3500,platinum,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Jan,2025-01-05,"The Sentry",Results,"Eric Cole 8 places ew","Eric Cole 8 places ew",7000,platinum,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Jan,2025-01-05,"The Sentry",Results,"Nico Echavarria 8 places ew","Nico Echavarria 8 places ew",10000,platinum,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Jan,2025-01-05,"The Sentry",Results,"Patrick Cantlay 6 places ew","Patrick Cantlay 6 places ew",2000,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Jan,2025-01-05,"The Sentry",Results,"Matthieu Pavon 5 places ew","Matthieu Pavon 5 places ew",22500,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+hockey,NHL,Jan,2025-01-05,"New York Rangers @ Chicago Blackhawks",Results,"Blackhawks ML","Blackhawks ML",119,gold,"leg exot",loss,-100%,30.00,-30.00,0.00
+hockey,NHL,Jan,2025-01-05,"New York Rangers @ Chicago Blackhawks",Results,"A. Lafreniere 3+ SOG","A. Lafreniere 3+ SOG",-110,gold,"leg exot",loss,-100%,30.00,-30.00,0.00
+hockey,NHL,Jan,2025-01-05,"Carolina Hurricanes @ Pittsburgh Penguins",Results,"S. Walker o1.5 SOG","S. Walker o1.5 SOG",-130,gold,"leg exot",loss,-100%,30.00,-30.00,0.00
+football,NFL,Jan,2025-01-05,"Minnesota Vikings @ Detroit Lions",Moneyline,"Lions ML","Lions ML",-148,silver,"Bleacher Report",win,68%,30.00,20.27,50.27
+football,NFL,Jan,2025-01-05,"New York Giants @ Philadelphia Eagles",Moneyline,"Eagles ML","Eagles ML",-142,silver,"Bleacher Report",win,70%,30.00,21.13,51.13
+football,NFL,Jan,2025-01-05,"Washington Commanders @ Dallas Cowboys",Spread,"Commanders -4","Commanders -4",-136,platinum,"Bleacher Report",win,74%,30.00,22.06,52.06
+football,NFL,Jan,2025-01-05,"Jacksonville Jaguars @ Indianapolis Colts","Total Points","Over 44","Over 44",-110,silver,"Bleacher Report",win,91%,30.00,27.27,57.27
+football,NFL,Jan,2025-01-05,"Houston Texans @ Tennessee Titans",Moneyline,"Texans ML","Texans ML",105,platinum,"Bleacher Report",win,105%,30.00,31.50,61.50
+football,NFL,Jan,2025-01-05,"Buffalo Bills @ New England Patriots",Moneyline,"Patriots ML","Patriots ML",120,platinum,"Bleacher Report",win,120%,30.00,36.00,66.00
+hockey,NHL,Jan,2025-01-05,"Boston Bruins @ New York Islanders",Results,"o5.5 Goals","S. Walker o1.5 SOG",-105,gold,"leg exot",win,95%,30.00,28.57,58.57
+soccer,"France Ligue Un",Jan,2025-01-05,"Strasbourg IG @ AJ Auxerre",Results,"Strasbourg to win","Strasbourg to win",100,gold,Footy,win,100%,20.00,20.00,40.00
+hockey,NHL,Jan,2025-01-06,"Washington Capitals @ Buffalo Sabres",Results,"Capitals ML","Capitals ML",-143,gold,"leg exot",loss,-100%,30.00,-30.00,0.00
+hockey,NHL,Jan,2025-01-06,"Washington Capitals @ Buffalo Sabres",Results,"Capitals ML","Capitals ML",-143,gold,"leg exot",win,70%,30.00,20.98,50.98
+hockey,NHL,Jan,2025-01-06,"Washington Capitals @ Buffalo Sabres",Results,"o6 Goals","o6 Goals",-109,gold,"leg exot",win,92%,30.00,27.52,57.52
+soccer,"England League Cup",Jan,2025-01-07,"Arsenal 2 Tula @ Newcastle United",Results,"Over 2.5 Goals","Over 2.5 Goals",-111,gold,Footy,loss,-100%,20.00,-20.00,0.00
+soccer,"France Ligue Un",Jan,2025-01-07,"AJ Auxerre @ OSC Lille",Results,"Lille to win","Lille to win",-105,gold,Footy,loss,-100%,20.00,-20.00,0.00
+football,NFL,Jan,2025-01-11,"los angeles chargers @ Houston Texans",Spread,"Chargers -3","Chargers -3",-105,silver,"Bleacher Report",loss,-100%,30.00,-30.00,0.00
+football,NFL,Jan,2025-01-11,"los angeles chargers @ Houston Texans","Total Points","Over 42.5","Over 42.5",-110,silver,"Bleacher Report",win,91%,30.00,27.27,57.27
+football,NFL,Jan,2025-01-12,"Philadelphia Eagles @ Green Bay Packers","Total Points","Over 46.5","Over 46.5",-105,gold,"Bleacher Report",loss,-100%,30.00,-30.00,0.00
+football,NFL,Jan,2025-01-12,"Buccaneers @ Washington Commanders",Moneyline,"Buccaneers ML","Buccaneers ML",-155,silver,"Bleacher Report",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Jan,2025-01-12,"Sony Open",Results,"Tom Kim 8 places ew","Tom Kim 8 places ew",2000,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Jan,2025-01-12,"Sony Open",Results,"Austin Eckroat 6 places ew","Austin Eckroat 6 places ew",4500,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Jan,2025-01-12,"Sony Open",Results,"Robert MacIntyre 8 places ew","Robert MacIntyre 8 places ew",3000,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Jan,2025-01-12,"Sony Open",Results,"Sepp Straka 6 places ew","Sepp Straka 6 places ew",6600,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Jan,2025-01-12,"Sony Open",Results,"Mackenzie Hughes 6 places ew","Mackenzie Hughes 6 places ew",7000,gold,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Jan,2025-01-12,"Sony Open",Results,"Chan Kim 6 places ew","Chan Kim 6 places ew",17500,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+football,NFL,Jan,2025-01-12,"Denver Broncos @ Buffalo Bills",Spread,"Bills -8.5","Bills -8.5",-115,silver,"Bleacher Report",win,87%,30.00,26.09,56.09
+football,NFL,Jan,2025-01-12,"Philadelphia Eagles @ Green Bay Packers","Total Points","Eagles -4.5","Eagles -4.5",-115,silver,"Bleacher Report",win,87%,30.00,26.09,56.09
+soccer,"France Ligue Un",Jan,2025-01-12,"Atletico Madrid @ CA Osasuna",Results,"Half-time/Full-time – Atletico Madrid​​​​​​​/Atletico Madrid","Half-time/Full-time – Atletico Madrid​​​​​​​/Atletico Madrid",100,gold,Footy,win,100%,20.00,20.00,40.00
+football,NFL,Jan,2025-01-13,"Los Angeles Rams @ Minnesota Vikings","Total Points","Over 47.5","Over 47.5",-111,silver,"Bleacher Report",loss,-100%,30.00,-30.00,0.00
+football,NFL,Jan,2025-01-13,"Los Angeles Rams @ Minnesota Vikings",Spread,"Rams +2.5","Rams +2.5",-106,gold,"Bleacher Report",win,94%,30.00,28.30,58.30
+football,NFL,Jan,2025-01-13,"Los Angeles Rams @ Minnesota Vikings",Moneyline,"Rams ML","Rams ML",121,gold,"Bleacher Report",win,121%,30.00,36.30,66.30
+Basketball,NBA,Jan,2025-01-15,"Orlando Magic @ Milwaukee Bucks",Results,"Antetokounmpo :Bucks: over 29.5 points","Antetokounmpo :Bucks: over 29.5 points",-110,silver,"leg taze",loss,-100%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-15,"Denver Nuggets @ Houston Rockets",Results,"Porter Jr :Nuggets: over 20.5 points+rebounds","Porter Jr :Nuggets: over 20.5 points+rebounds",-120,silver,"leg taze",loss,-100%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-15,"Miami Heat @ Los Angeles Lakers",Results,"Adebayo :Heat: over 12.5 rebounds+assists","Adebayo :Heat: over 12.5 rebounds+assists",-130,silver,"leg taze",loss,-100%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-15,"Miami Heat @ Los Angeles Lakers",Results,"James :Lakers: over 22.5 points","James :Lakers: over 22.5 points",-110,silver,"leg taze",loss,-100%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-15,"Memphis Grizzlies @ San Antonio Spurs",Results,"Morant :Grizzlies: over 22.5 points","Morant :Grizzlies: over 22.5 points",-128,silver,"leg taze",loss,-100%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-15,"Milwaukee Bucks @ Orlando Magic",Results,"Lillard :Bucks: over 32.5 points+rebounds+assists","Lillard :Bucks: over 32.5 points+rebounds+assists",-120,silver,"leg taze",win,83%,30.00,25.00,55.00
+Basketball,NBA,Jan,2025-01-15,"Boston Celtics @ Toronto Raptors",Results,"Horford :celtics: over 12.5 points+rebounds+assists","Horford :celtics: over 12.5 points+rebounds+assists",-110,silver,"leg taze",win,91%,30.00,27.27,57.27
+Basketball,NBA,Jan,2025-01-15,"Philadelphia 76ers @ New York Knicks",Results,"George :76ers: over 4.5 assists","George :76ers: over 4.5 assists",-110,silver,"leg taze",win,91%,30.00,27.27,57.27
+soccer,"England League One",Jan,2025-01-16,"Shrewsbury Town @ Wrexham FC",Results,"Wrexham to win","Wrexham to win",-109,gold,Footy,loss,-100%,20.00,-20.00,0.00
+Basketball,NBA,Jan,2025-01-16,"Detroit Pistons @ Indiana Pacers",Results,"Duren :Pistons: over 9.5 rebounds","Duren :Pistons: over 9.5 rebounds",-135,silver,"leg taze",win,74%,30.00,22.22,52.22
+Basketball,NBA,Jan,2025-01-16,"Phoenix Suns @ Washington Wizards","Player Props","Jones :Suns: 6+ assists","Jones :Suns: 6+ assists",-125,silver,"leg taze",win,80%,30.00,24.00,54.00
+Basketball,NBA,Jan,2025-01-16,"Sacramento Kings @ Houston Rockets","Player Props","Derozan :kings: over 6.5 rebounds+assists","Derozan :kings: over 6.5 rebounds+assists",-121,silver,"leg taze",win,83%,30.00,24.79,54.79
+Basketball,NBA,Jan,2025-01-16,"Sacramento Kings @ Houston Rockets","Player Props","Monk :kings: over 26.5 points+rebounds+assists","Monk :kings: over 26.5 points+rebounds+assists",-120,silver,"leg taze",win,83%,30.00,25.00,55.00
+Basketball,NBA,Jan,2025-01-17,"Boston Celtics @ Orlando Magic","Player Props","Horford :celtics: over 12.5 points+rebounds+assists","Horford :celtics: over 12.5 points+rebounds+assists",-115,silver,"leg taze",loss,-100%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-17,"Los Angeles Lakers @ Brooklyn Nets","Player Props","Reaves :Lakers: over 6.5 assists","Reaves :Lakers: over 6.5 assists",-128,silver,"leg taze",loss,-100%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-17,"New York Knicks @ Minnesota Timberwolves","Player Props","Towns :Knicks: over 15.5 rebounds+assists","Towns :Knicks: over 15.5 rebounds+assists",-136,silver,"leg taze",push,0%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-17,"Milwaukee Bucks @ Toronto Raptors","Player Props","Lillard :Bucks: over 23.5 points","Lillard :Bucks: over 23.5 points",-115,silver,"leg taze",win,87%,30.00,26.09,56.09
+Basketball,NBA,Jan,2025-01-17,"Miami Heat @ Denver Nuggets","Player Props","Adebayo :Heat: over 8.5 rebounds","Adebayo :Heat: over 8.5 rebounds",-115,silver,"leg taze",win,87%,30.00,26.09,56.09
+Basketball,NBA,Jan,2025-01-17,"Los Angeles Lakers @ Brooklyn Nets","Player Props","Russell :Nets: over 18.5 points+assists","Russell :Nets: over 18.5 points+assists",-110,gold,"leg taze",win,91%,30.00,27.27,57.27
+Basketball,NBA,Jan,2025-01-18,"Boston Celtics @ Atlanta Hawks","Player Props","Holiday :celtics: over 14.5 points+assists","Holiday :celtics: over 14.5 points+assists",-120,silver,"leg taze",loss,-100%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-18,"Phoenix Suns @ Detroit Pistons","Player Props","Jones :Suns: over 5.5 assists","Jones :Suns: over 5.5 assists",-144,silver,"leg taze",loss,-100%,30.00,-30.00,0.00
+football,NFL,Jan,2025-01-18,"Houston Texans @ Kansas City Chiefs",Spread,"Chiefs -8.5","Chiefs -8.5",-105,silver,"Bleacher Report",loss,-100%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-18,"Phoenix Suns @ Detroit Pistons","Player Props","Jones :Suns: over 5.5 assists","Jones :Suns: over 5.5 assists",-144,silver,"leg taze",win,69%,30.00,20.83,50.83
+Basketball,NBA,Jan,2025-01-18,"Washington Wizards @ Golden State Warriors","Player Props","Valanciunas :wizards: over 6.5 rebounds","Valanciunas :wizards: over 6.5 rebounds",-135,silver,"leg taze",win,74%,30.00,22.22,52.22
+Basketball,NBA,Jan,2025-01-18,"Boston Celtics @ Atlanta Hawks","Player Props","Tatum :celtics: over 13.5 rebounds+assists","Tatum :celtics: over 13.5 rebounds+assists",-125,silver,"leg taze",win,71%,30.00,24.00,54.00
+Basketball,NBA,Jan,2025-01-18,"Indiana Pacers @ Philadelphia 76ers","Player Props","Siakam :Pacers: over 2.5 assists","Siakam :Pacers: over 2.5 assists",-125,silver,"leg taze",win,80%,30.00,24.00,54.00
+Basketball,NBA,Jan,2025-01-18,"Boston Celtics @ Atlanta Hawks","Player Props","Tatum :celtics: over 13.5 rebounds+assists","Tatum :celtics: over 13.5 rebounds+assists",-125,silver,"leg taze",win,71%,30.00,24.00,57.27
+Basketball,NBA,Jan,2025-01-18,"Boston Celtics @ Atlanta Hawks","Player Props","Johnson :Hawks: over 13.5 rebounds+assists","Johnson :Hawks: over 13.5 rebounds+assists",-105,gold,"leg taze",win,95%,30.00,28.57,58.57
+Basketball,NBA,Jan,2025-01-18,"Phoenix Suns @ Detroit Pistons","Player Props","Jones :Suns: 8+ assists","Jones :Suns: 8+ assists",220,platinum,"leg taze",win,220%,30.00,66.00,96.00
+football,NFL,Jan,2025-01-18,"Washington Commanders @ Detroit Lions",Spread,"Commanders +9.5","Commanders +9.5",-110,silver,"Bleacher Report",win,91%,30.00,27.27,57.27
+football,NFL,Jan,2025-01-18,"Washington Commanders @ Detroit Lions","Total Points","Under 55.5","Under 55.5",-110,gold,"Bleacher Report",win,91%,30.00,27.27,57.27
+Basketball,NBA,Jan,2025-01-19,"Denver Nuggets @ Broadmeadow Magic FC","Player Props","Gordon :Nuggets: over 11.5 points+assists","Gordon :Nuggets: over 11.5 points+assists",100,gold,"leg taze",loss,-100%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-19,"Brooklyn Nets @ Oklahoma City Thunder","Player Props","Russell :Nets: over 19.5 points+assists","Russell :Nets: over 19.5 points+assists",-113,gold,"leg taze",loss,-100%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-19,"Milwaukee Bucks @ Philadelphia 76ers","Player Props","Lillard :Bucks: over 34.5 points+rebounds+assists","Lillard :Bucks: over 34.5 points+rebounds+assists",-113,silver,"leg taze",loss,-100%,30.00,-30.00,0.00
+football,NFL,Jan,2025-01-19,"Baltimore Ravens @ Buffalo Bills","Total Points","Under 51.5","Under 51.5",-105,gold,"Bleacher Report",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Jan,2025-01-19,"American Express PGA Tour",Results,"Sungjae Im 3 places ew","Sungjae Im 3 places ew",2000,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Jan,2025-01-19,"American Express PGA Tour",Results,"Sam Burns 8 places ew","Sam Burns 8 places ew",2000,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Jan,2025-01-19,"American Express PGA Tour",Results,"Lee Hodges 8 places ew","Lee Hodges 8 places ew",8000,gold,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Jan,2025-01-19,"American Express PGA Tour",Results,"Keith Mitchell 8 places ew","Keith Mitchell 8 places ew",9000,gold,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Jan,2025-01-19,"Dubai Desert Classic",Results,"Adam Scott 8 places ew","Adam Scott 8 places ew",2000,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Jan,2025-01-19,"Dubai Desert Classic",Results,"Thorbjorn Olesen 6 places ew","Thorbjorn Olesen 6 places ew",3300,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Jan,2025-01-19,"American Express PGA Tour",Results,"Michael Kim 8 places ew","Michael Kim 8 places ew",11000,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,PGA,Jan,2025-01-19,"American Express PGA Tour",Results,"Adam Svensson 8 places ew","Adam Svensson 8 places ew",15000,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,DPWT,Jan,2025-01-19,"Dubai Desert Classic",Results,"Ugo Coussaud 8 places ew","Ugo Coussaud 8 places ew",19000,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,DPWT,Jan,2025-01-19,"Dubai Desert Classic",Results,"Jason Scrivener 8 places ew","Jason Scrivener 8 places ew",40000,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,DPWT,Jan,2025-01-19,"Dubai Desert Classic",Results,"Jon Rahm 10 places ew","Jon Rahm 10 places ew",1100,silver,"Golf Nich",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Jan,2025-01-19,"Dubai Desert Classic",Results,"Fleetwood to win","Fleetwood to win",1500,silver,"Golf Nich",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Jan,2025-01-19,"Dubai Desert Classic",Results,"Bhatia 6 places ew","Bhatia 6 places ew",3300,silver,"Golf Nich",loss,-100%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-19,"Sacramento Kings @ Washington Wizards","Player Props","Valanciuanas :wizards: over 6.5 rebounds","Valanciuanas :wizards: over 6.5 rebounds",-132,gold,"leg taze",win,76%,30.00,22.73,52.73
+Basketball,NBA,Jan,2025-01-19,"Los Angeles Lakers @ Los Angeles Clippers","Player Props","James :Lakers: over 29.5 points+rebounds","James :Lakers: over 29.5 points+rebounds",-105,gold,"leg taze",win,95%,30.00,28.57,58.57
+Basketball,NBA,Jan,2025-01-19,"Sacramento Kings @ Washington Wizards","Player Props","Valanciuanas :wizards: over 6.5 rebounds","Valanciuanas :wizards: over 6.5 rebounds",-105,gold,"leg taze",win,95%,30.00,28.57,58.57
+football,NFL,Jan,2025-01-19,"Baltimore Ravens @ Buffalo Bills",Spread,"Bills +1.5","Bills +1.5",-115,silver,"Bleacher Report",win,87%,30.00,26.09,56.09
+football,NFL,Jan,2025-01-19,"Baltimore Ravens @ Buffalo Bills",Moneyline,"Bills ML","Bills ML",105,platinum,"Bleacher Report",win,105%,30.00,31.50,61.50
+golf,DPWT,Jan,2025-01-19,"Dubai Desert Classic",Results,"Roy Mcllroy 10 places ew","Roy Mcllroy 10 places ew",4000,silver,"Golf Nich",win,450%,30.00,135.00,165.00
+golf,DPWT,Jan,2025-01-19,"Dubai Desert Classic",Results,"Laurie Canter 6 places ew","Laurie Canter 6 places ew",5500,silver,"Golf Nich",win,638%,30.00,191.25,221.25
+Basketball,NBA,Jan,2025-01-20,"Atlanta Hawks @ New York Knicks","Player Props","Johnson :Hawks: 30+ points+rebounds+assists","Johnson :Hawks: 30+ points+rebounds+assists",-140,silver,"leg taze",loss,-100%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-20,"Cleveland Cavaliers @ Phoenix Suns","Player Props","Allen :Cavs: over 26.5 points+rebounds","Allen :Cavs: over 26.5 points+rebounds",-106,silver,"leg taze",loss,-100%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-20,"Golden State Warriors @ Boston Celtics","Player Props","Curry :warriors: 25+ points","Curry :warriors: 25+ points",-140,silver,"leg taze",loss,-100%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-20,"Memphis Grizzlies @ Minnesota Timberwolves","Player Props","Morant :Grizzlies: over 32.5 points+rebounds+assists","Morant :Grizzlies: over 32.5 points+rebounds+assists",-115,silver,"leg taze",loss,-100%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-20,"Atlanta Hawks @ New York Knicks","Player Props","Hunter :Hawks: 15+ points","Hunter :Hawks: 15+ points",-140,silver,"leg taze",win,71%,30.00,21.43,51.43
+Basketball,NBA,Jan,2025-01-20,"Detroit Pistons @ Houston Rockets","Player Props","Cunningham :Pistons: over 8.5 assists","Cunningham :Pistons: over 8.5 assists",-130,silver,"leg taze",win,77%,30.00,23.08,53.08
+Basketball,NBA,Jan,2025-01-22,"Atlanta Hawks @ Detroit Pistons","Player Props","Johnson :Hawks: over 13.5 rebounds+assists","Johnson :Hawks: over 13.5 rebounds+assists",-115,silver,"leg taze",loss,-100%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-22,"Sacramento Kings @ Golden State Warriors","Player Props","Fox over 28.5 points + assists","Fox over 28.5 points + assists",-120,silver,"leg taze",loss,-100%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-22,"Atlanta Hawks @ Detroit Pistons","Player Props","Young :Hawks: over 9.5 assists","Young :Hawks: over 9.5 assists",-130,silver,"leg taze",loss,-100%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-22,"Phoenix Suns @ Brooklyn Nets","Player Props","Jones :Suns: 8+ assists","Jones :Suns: 8+ assists",200,platinum,"leg taze",loss,-100%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-22,"Cleveland Cavaliers @ Houston Rockets","Player props","Mitchell :Cavs: over 8.5 rebounds+assists","Mitchell :Cavs: over 8.5 rebounds+assists",-130,silver,"leg taze",loss,-100%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-22,"Milwaukee Bucks @ New Orleans Pelicans","Player Props","Lillard :Bucks: over 23.5 points","Lillard :Bucks: over 23.5 points",-120,silver,"leg taze",push,0%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-22,"Milwaukee Bucks @ New Orleans Pelicans","Player Props","Murray :Pelicans: over 13.5 rebounds+assists","Murray :Pelicans: over 13.5 rebounds+assists",-115,gold,"leg taze",push,0%,30.00,-30.00,0.00
+Basketball,NBA,Jan,2025-01-22,"Phoenix Suns @ Brooklyn Nets","Straight Bet","Phoenix :Suns: to be winning at the end of every quarter","Phoenix :Suns: to be winning at the end of every quarter",-136,silver,"leg taze",win,74%,30.00,22.06,52.06
+Basketball,NBA,Jan,2025-01-22,"Phoenix Suns @ Brooklyn Nets","Player Props","Booker :Suns: 25+ points","Booker :Suns: 25+ points",-135,silver,"leg taze",win,74%,30.00,22.22,52.22
+Basketball,NBA,Jan,2025-01-22,"Phoenix Suns @ Brooklyn Nets","Player Props","Jones :Suns: 6+ assists","Jones :Suns: 6+ assists",-130,silver,"leg taze",win,77%,30.00,23.08,53.08
+Basketball,NBA,Jan,2025-01-22,"Utah Jazz @ Oklahoma City Thunder","Player Props","Collins over 12.5 points","Collins over 12.5 points",-128,silver,"leg taze",win,78%,30.00,23.44,53.44
+golf,PGA,Jan,2025-01-26,"Farmers Insurance Open",Results,"Ludvig Aberg 3 places ew","Ludvig Aberg 3 places ew",1800,silver,"Bleacher Report",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Jan,2025-01-26,"Farmers Insurance Open",Results,"Ludvig Aberg 3 places ew","Ludvig Aberg 3 places ew",1800,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Jan,2025-01-26,"Farmers Insurance Open",Results,"Will Zalatoris 6 places ew","Will Zalatoris 6 places ew",2800,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Jan,2025-01-26,"Ras Al Khaimah",Results,"Keita Nakajima 6 places ew","Keita Nakajima 6 places ew",280,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Jan,2025-01-26,"Ras Al Khaimah",Results,"Rasmus Neergaard-Petersen 6 places ew","Rasmus Neergaard-Petersen 6 places ew",3500,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Jan,2025-01-26,"Farmers Insurance Open",Results,"Gary Woodland 8 places ew","Gary Woodland 8 places ew",9000,gold,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,PGA,Jan,2025-01-26,"Farmers Insurance Open",Results,"Stepan Jaeger 6 places ew","Stepan Jaeger 6 places ew",6000,gold,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,DPWT,Jan,2025-01-26,"Ras Al Khaimah",Results,"Freddy Schott 10 places ew","Freddy Schott 10 places ew",10000,platinum,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,PGA,Jan,2025-01-26,"Farmers Insurance Open",Results,"Taylor Moore 8 places ew","Taylor Moore 8 places ew",10000,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,PGA,Jan,2025-01-26,"Farmers Insurance Open",Results,"Jake Knapp 8 places ew","Jake Knapp 8 places ew",25000,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,PGA,Jan,2025-01-26,"Farmers Insurance Open",Results,"Seonghyeon Kim 8 places ew","Seonghyeon Kim 8 places ew",30000,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,DPWT,Jan,2025-01-26,"Ras Al Kaimah",Results,"McKibben 10 places ew","McKibben 10 places ew",28000,silver,"Golf Nich",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Jan,2025-01-26,"Ras Al Kaimah",Results,"Fox 10 places ew","Fox 10 places ew",25000,silver,"Golf Nich",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Jan,2025-01-26,"Ras Al Kaimah",Results,"Crocker 10 places ew","Crocker 10 places ew",90000,gold,"Golf Nich",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Jan,2025-01-26,"Ras Al Khaimah",Results,"Keita Nakajima 6 places ew","Keita Nakajima 6 places ew",280,silver,"Golf Nich",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Jan,2025-01-26,"Farmers Insurance Open",Results,"Stepan Jaeger 6 places ew","Stepan Jaeger 6 places ew",6000,gold,"Golf Nich",loss,-100%,20.00,-20.00,0.00
+golf,PGA,Jan,2025-01-26,"Farmers Insurance Open",Results,"Kevin Yu 7 places ew","Kevin Yu 7 places ew",8000,gold,"Golf Nich",loss,-100%,20.00,-20.00,0.00
+golf,DPWT,Jan,2025-01-26,"Ras Al Kaimah",Results,"Jarvis 10 places ew","Jarvis 10 places ew",100000,platinum,"Golf Nich",loss,-100%,10.00,-10.00,0.00
+soccer,"England Premier League",Jan,2025-01-26,"Crystal Palace @ Brentford FC",Results,"Crystal Palace to win","Crystal Palace to win",100,gold,Footy,loss,-100%,30.00,-30.00,0.00
+soccer,"Italy Serie A",Jan,2025-01-26,"SS Lazio @ AC Fiorentina",Results,"Lazio to win","Lazio to win",115,gold,Footy,loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Jan,2025-01-26,"Ras Al Khaimah",Results,"Hamish Brown 8 places ew","Hamish Brown 8 places ew",12500,platinum,"Golf Brad",win,1563%,10.00,156.25,166.25
+golf,DPWT,Jan,2025-01-26,"Ras Al Khaimah",Results,"Brandon Wu 6 places ew","Brandon Wu 6 places ew",15000,platinum,"Golf Brad",win,1875%,10.00,187.50,197.50
+golf,DPWT,Jan,2025-01-26,"Ras Al Khaimah",Results,"David Ravetto 10 places ew","David Ravetto 10 places ew",20000,platinum,"Golf Brad",win,2500%,10.00,250.00,260.00
+golf,DPWT,Jan,2025-01-26,"Ras Al Khaimah",Results,"Adrien Dumont De Chassert 6 places ew","Adrien Dumont De Chassert 6 places ew",7000,gold,"Golf Brad",win,875%,30.00,262.50,292.50
+soccer,"England Premier League",Jan,2025-01-26,"Everton FC @ Tottenham Hotspur",Results,"Draw No Bet – Everton","Draw No Bet – Everton",110,gold,Footy,win,110%,30.00,33.00,63.00
+golf,PGA,Feb,2025-02-02,"Pebble Beach Pro-Am",Results,"Taylor Pendrith 7 places ew","Taylor Pendrith 7 places ew",5000,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Feb,2025-02-02,"Pebble Beach Pro-Am",Results,"Akshay Bhatia 6 places ew","Akshay Bhatia 6 places ew",7000,gold,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Feb,2025-02-02,"Bahrain Championship",Results,"Hao Tong Li 6 places ew","Hao Tong Li 6 places ew",6000,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Feb,2025-02-02,"Bahrain Championship",Results,"Sam Bairstow 6 places ew","Sam Bairstow 6 places ew",6000,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Feb,2025-02-02,"Bahrain Championship",Results,"Ugo Coussaud 6 places ew","Ugo Coussaud 6 places ew",6600,gold,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Feb,2025-02-02,"Pebble Beach Pro-Am",Results,"J.J Spaun 7 places ew","J.J Spaun 7 places ew",8000,gold,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,PGA,Feb,2025-02-02,"Pebble Beach Pro-Am",Results,"Tom Hoge 7 places ew","Tom Hoge 7 places ew",8000,gold,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,DPWT,Feb,2025-02-02,"Bahrain Championship",Results,"Scott Jamieson 7 places ew","Scott Jamieson 7 places ew",8000,gold,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,DPWT,Feb,2025-02-02,"Bahrain Championship",Results,"David Ravetto 8 places ew","David Ravetto 8 places ew",11000,platinum,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,PGA,Feb,2025-02-02,"Pebble Beach Pro-Am",Results,"Denny McCarthy 7 places ew","Denny McCarthy 7 places ew",10000,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,PGA,Feb,2025-02-02,"Pebble Beach Pro-Am",Results,"Matthew Fitzpatrick 7 places ew","Matthew Fitzpatrick 7 places ew",10000,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,PGA,Feb,2025-02-02,"Pebble Beach Pro-Am",Results,"Billy Horschel 7 places ew","Billy Horschel 7 places ew",12500,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,DPWT,Feb,2025-02-02,"Bahrain Championship",Results,"Ewen Ferguson 10 places ew","Ewen Ferguson 10 places ew",4000,silver,"Golf Nich",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Feb,2025-02-02,"Pebble Beach Pro-AM",Results,"Wyndham Clark 10 places ew","Wyndham Clark 10 places ew",5000,silver,"Golf Nich",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Feb,2025-02-02,"Pebble Beach Pro-AM",Results,"Jordan Spieth 10 places ew","Jordan Spieth 10 places ew",5000,silver,"Golf Nich",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Feb,2025-02-02,"Pebble Beach Pro-AM",Results,"Nick Taylor 10 places ew","Nick Taylor 10 places ew",2800,silver,"Golf Nich",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Feb,2025-02-02,"Bahrain Championship",Results,"Ego Coussad 10 places ew","Ego Coussad 10 places ew",5500,silver,"Golf Nich",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Feb,2025-02-02,"Bahrain Championship",Results,"Dumont de Chassart 10 places ew","Dumont de Chassart 10 places ew",1000,silver,"Golf Nich",loss,-100%,25.00,-25.00,0.00
+golf,PGA,Feb,2025-02-02,"Pebble Beach Pro-AM",Results,"Keith Mitchell 10 places ew","Keith Mitchell 10 places ew",12500,platinum,"Golf Nich",loss,-100%,10.00,-10.00,0.00
+golf,PGA,Feb,2025-02-02,"Pebble Beach Pro-AM",Results,"Mark Hubbard 10 places ew","Mark Hubbard 10 places ew",12500,platinum,"Golf Nich",loss,-100%,10.00,-10.00,0.00
+golf,DPWT,Feb,2025-02-02,"Bahrain Championship",Results,"David Puig 7 places ew","David Puig 7 places ew",1800,silver,"Golf Brad",win,175%,30.00,52.50,82.50
+golf,PGA,Feb,2025-02-02,"Pebble Beach Pro-Am",Results,"Cam Davis 7 places ew","Cam Davis 7 places ew",10000,platinum,"Golf Brad",win,1200%,10.00,120.00,130.00
+golf,DPWT,Feb,2025-02-02,"Pebble Beach Pro-AM",Results,"Scottie Scheffler 10 places ew","Scottie Scheffler 10 places ew",550,silver,"Golf Nich",win,19%,30.00,5.63,35.63
+golf,DPWT,Feb,2025-02-02,"Pebble Beach Pro-AM",Results,"Sepp Straka 10 places ew","Sepp Straka 10 places ew",5000,silver,"Golf Nich",win,575%,30.00,172.50,202.50
+golf,DPWT,Feb,2025-02-02,"Bahrain Championship",Results,"Jason Scrivener 10 places ew","Jason Scrivener 10 places ew",7000,gold,"Golf Nich",win,700%,25.00,175.00,200.00
+golf,DPWT,Feb,2025-02-02,"Bahrain Championship",Results,"Marcus Armitage 10 places ew","Marcus Armitage 10 places ew",8000,gold,"Golf Nich",win,800%,25.00,200.00,225.00
+golf,DPWT,Feb,2025-02-02,"Pebble Beach Pro-AM",Results,"Rory Mcllroy 10 places ew","Rory Mcllroy 10 places ew",1100,silver,"Golf Nich",win,688%,30.00,206.25,236.25
+hockey,NHL,Feb,2025-02-07,"New York Islanders @ Winnipeg Jets","60 minute ML","New York Islanders 60 Minute ML","New York Islanders 60 Minute ML",180,gold,BB,loss,-100%,20.00,-20.00,0.00
+soccer,"Italy Serie A",Feb,2025-02-07,"Calcio Como @ Juventus Utena",Results,"Juventus to win","Juventus to win",110,gold,Footy,win,110%,30.00,33.00,63.00
+hockey,NHL,Feb,2025-02-08,"Seattle Kraken @ Calgary Flames","Puck Line","1st period goals over 0.5","1st period goals over 0.5",-136,silver,BB,loss,-100%,30.00,-30.00,0.00
+hockey,NHL,Feb,2025-02-08,"Toronto Maple Leafs @ Vancouver Canucks","Total Goals","Over 6.5 goals","Over 6.5 goals",162,gold,BB,loss,-100%,20.00,-20.00,0.00
+hockey,NHL,Feb,2025-02-08,"Seattle Kraken @ Calgary Flames","60 minute ML","Seattle Kraken 60 Minute ML","Seattle Kraken 60 Minute ML",260,platinum,BB,loss,-100%,20.00,-20.00,0.00
+hockey,NHL,Feb,2025-02-08,"Seattle Kraken @ Calgary Flames","Puck Line","Kraken -2.5","Kraken -2.5",520,platinum,BB,loss,-100%,10.00,-10.00,0.00
+football,NFL,Feb,2025-02-09,"Kansas City Chiefs @ 2024-2025 Superbowl",Results,"Chiefs to win Superbowl","Chiefs to win Superbowl",550,gold,"Action Sys",loss,-100%,20.00,-20.00,0.00
+football,NFL,Feb,2025-02-09,"Kansas City Chiefs @ Philadelphia Eagles",Moneyline,"Chiefs ML","Chiefs ML",-116,silver,BB,loss,-100%,30.00,-30.00,0.00
+football,NFL,Feb,2025-02-09,"Kansas City Chiefs @ Philadelphia Eagles","Player Props","Kareem Hunt anytime touchdown","Kareem Hunt anytime touchdown",150,silver,BB,loss,-100%,25.00,-25.00,0.00
+football,NFL,Feb,2025-02-09,"Kansas City Chiefs @ Philadelphia Eagles",Parlay,"Goedert & Kelce each 1st Drive player to catch a pass","Goedert & Kelce each 1st Drive player to catch a pass",306,gold,BB,loss,-100%,20.00,-20.00,0.00
+football,NFL,Feb,2025-02-09,"Kansas City Chiefs @ Philadelphia Eagles",Parlay,"Chiefs ML+ Eagles -1.5","Chiefs ML+ Eagles -1.5",677,platinum,BB,loss,-100%,10.00,-10.00,0.00
+golf,PGA,Feb,2025-02-09,"Waste Management - Phoenix Open",Resutls,"Kyoung-Hoon (K.H) Lee 7 places First Round Leader","Kyoung-Hoon (K.H) Lee 7 places First Round Leader",12500,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,PGA,Feb,2025-02-09,"Waste Management - Phoenix Open",Resutls,"Sami Valimaki 6 places First Round Leader","Sami Valimaki 6 places First Round Leader",20000,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+football,NFL,Feb,2025-02-09,"Kansas City Chiefs @ Philadelphia Eagles","Player Props","Mahomes over 4.5 4th qtr rushing yards + Jalen Hurts over 6.5 4th qtr rushing yards","Mahomes over 4.5 4th qtr rushing yards + Jalen Hurts over 6.5 4th qtr rushing yards",232,gold,BB,win,232%,30.00,69.60,99.60
+football,NFL,Feb,2025-02-09,"Kansas City Chiefs @ Philadelphia Eagles","Player Props","Drue Tranquill to record most tackles and assists","Drue Tranquill to record most tackles and assists",650,platinum,BB,win,650%,30.00,195.00,225.00
+soccer,"Champions League",Feb,2025-02-12,"Club Brugge @ Atalanta Bergamasca Calcio",Results,"Atalanta to win","Atalanta to win",111,gold,Footy,loss,-100%,30.00,-30.00,0.00
+soccer,"Italy Serie A",Feb,2025-02-14,"Bologna FC @ FC Torino",Results,"Bologna to win","Bologna to win",-125,silver,Footy,win,80%,30.00,24.00,54.00
+"Combat Sports",UFC,Feb,2025-02-15,"Rodolfo Viera @ Andre Petroski","METHOD OF VICTORY","Rodolfo Viera by Submission +145","Rodolfo Viera by Submission",+145,gold,BB,loss,-100%,25.00,-25.00,0.00
+"Combat Sports",UFC,Feb,2025-02-15,"Ismael Bonfirm @ Nazim Sadykhov","METHOD OF VICTORY","Ismael Bonfirm by Points","Ismael Bonfirm by Points",+135,silver,BB,loss,-100%,20.00,-20.00,0.00
+"Combat Sports",UFC,Feb,2025-02-15,"Gabriel Bonfirm @ Khaos Williams","METHOD OF VICTORY","Khaos Williams by KO/TKO","Khaos Williams by KO/TKO",+320,platinum,BB,loss,-100%,10.00,-10.00,0.00
+"Combat Sports",UFC,Feb,2025-02-15,"Jared Cannonier @ Gregory Rodrigues","METHOD OF VICTORY","Gregory Rodrigues by KO/TKO","Gregory Rodrigues by KO/TKO",+130,silver,BB,loss,-100%,15.00,-15.00,0.00
+"Combat Sports",UFC,Feb,2025-02-15,"Vince Morales @ Elijah Smith",MONEYLINE,"Elijah Smith Moneyline","Elijah Smith Moneyline",-145,silver,BB,win,69%,30.00,20.69,50.69
+"Combat Sports",UFC,Feb,2025-02-15,"Calvin Kattar @ Youssef Zalal","METHOD OF VICTORY","Youssef Zalal by Points","Youssef Zalal by Points",-125,silver,BB,win,80%,30.00,24.00,54.00
+"Combat Sports",UFC,Feb,2025-02-15,"Angela Hill @ Ketlen Souza",MONEYLINE,"Angela Hill Moneyline","Angela Hill Moneyline",-108,silver,BB,win,93%,30.00,27.78,57.78
+"Combat Sports",UFC,Feb,2025-02-15,"Vince Morales @ Elijah Smith","Method Of Victory","Elijah Smith by Points","Elijah Smith by Points",130,gold,BB,win,130%,25.00,32.50,57.50
+"Combat Sports",UFC,Feb,2025-02-15,"Edmen Shahbazyan @ Dylan Budka","Method of Victory","Edmen Shahbazyan by KO/TKO","Edmen Shahbazyan by KO/TKO",135,silver,BB,win,135%,25.00,33.75,58.75
+"Combat Sports",UFC,Feb,2025-02-15,"Rafael Estevam @ Jesus Aguilar","METHOD OF VICTORY","Rafael Estevam by Points","Rafael Estevam by Points",165,gold,BB,win,165%,25.00,41.25,66.25
+"Combat Sports",UFC,Feb,2025-02-15,"Julia Avila @ Jacqueline Cavalcanti","Method of Victory","Jacqueline Cavalcanti by Points","Jacqueline Cavalcanti by Points",-195,silver,BB,win,195%,30.00,58.50,88.50
+golf,PGA,Feb,2025-02-16,"Genesis Invitational",Results,"Taylor Pendrith 8 places ew","Taylor Pendrith 8 places ew",3500,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Feb,2025-02-16,"Genesis Invitational",Results,"Wyndham Clark 8 places ew","Wyndham Clark 8 places ew",7000,gold,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Feb,2025-02-16,"Genesis Invitational",Results,"Adam Scott 8 places ew","Adam Scott 8 places ew",7000,gold,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Feb,2025-02-16,"Genesis Invitational",Results,"Russell Henley 8 places ew","Russell Henley 8 places ew",4500,gold,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Feb,2025-02-16,"Qatar Masters",Results,"Daniel Hillier 7 places ew","Daniel Hillier 7 places ew",5000,gold,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Feb,2025-02-16,"Qatar Masters",Results,"Scott Jamieson 7 places ew","Scott Jamieson 7 places ew",5500,gold,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Feb,2025-02-16,"Qatar Masters",Results,"Sam Bairstow 6 places ew","Sam Bairstow 6 places ew",6000,gold,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Feb,2025-02-16,"Qatar Masters",Results,"Joe Dean 7 places ew","Joe Dean 7 places ew",6600,gold,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Feb,2025-02-16,"Genesis Invitational",Results,"Victor Hovland 6 places ew","Victor Hovland 6 places ew",6000,gold,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,PGA,Feb,2025-02-16,"Genesis Invitational",Results,"Gary Woodland 8 places ew","Gary Woodland 8 places ew",11000,gold,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,DPWT,Feb,2025-02-16,"Qatar Masters",Results,"Casey Jarvis 6 places ew","Casey Jarvis 6 places ew",11000,platinum,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,DPWT,Feb,2025-02-16,"Qatar Masters",Results,"Ricardo Gouveia 8 places ew","Ricardo Gouveia 8 places ew",10000,platinum,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,DPWT,Feb,2025-02-16,"Qatar Masters",Results,"Rafael Cabrera Bello 7 places ew","Rafael Cabrera Bello 7 places ew",20000,platinum,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,PGA,Feb,2025-02-16,"Genesis Invitational",Results,"Kevin Yu 8 places ew","Kevin Yu 8 places ew",20000,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,PGA,Feb,2025-02-16,"Genesis Invitational",Results,"Rory Mcllroy 10 places ew","Rory Mcllroy 10 places ew",700,silver,"Golf Nich",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Feb,2025-02-16,"Genesis Invitational",Results,"Jordan Spieth 10 places ew","Jordan Spieth 10 places ew",4000,silver,"Golf Nich",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Feb,2025-02-16,"Genesis Invitational",Results,"Jason Day 10 places ew","Jason Day 10 places ew",3300,silver,"Golf Nich",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Feb,2025-02-16,"Qatar Masters",Results,"Brandon Robinson-Thompson 7 places ew","Brandon Robinson-Thompson 7 places ew",9000,platinum,"Golf Brad",win,1075%,20.00,215.00,235.00
+golf,PGA,Feb,2025-02-16,"Genesis Invitational",Results,"Justin Thomas 10 places ew","Justin Thomas 10 places ew",1800,silver,"Golf Nich",win,175%,30.00,52.50,82.50
+golf,PGA,Feb,2025-02-16,"Genesis Invitational",Results,"Scottie Scheffler 10 places ew","Scottie Scheffler 10 places ew",4500,silver,"Golf Nich",win,513%,30.00,153.75,183.75
+"Combat Sports",UFC,Feb,2025-02-17,"Vince Morales @ Elijah Smith",Moneyline,"Elijah Smith ML","Elijah Smith ML",-146,silver,BB,win,69%,30.00,20.55,50.55
+hockey,NHL,Feb,2025-02-20,"Canada @ USA",Moneyline,"USA ML -110","USA ML -110",-110,silver,BB,loss,-100%,25.00,-25.00,0.00
+hockey,NHL,Feb,2025-02-20,"USA @ Canada","Anytime Goalscorer","Brayden Point Anytime Goalscorer","Brayden Point Anytime Goalscorer",290,gold,BB,loss,-100%,15.00,-15.00,0.00
+soccer,"Spain La Liga",Feb,2025-02-22,"Borussia Monchengladbach @ FC Augsburg",Results,"Gladbach to win","Gladbach to win",100,gold,Footy,loss,-100%,30.00,-30.00,0.00
+soccer,"England Premier League",Feb,2025-02-22,"Ipswich Town @ Tottenham Hotspur",Results,"Tottenham to win","Tottenham to win",100,gold,Footy,win,100%,30.00,30.00,60.00
+soccer,"Spain La Liga",Feb,2025-02-23,"Real Madrid Castilla @ Girona FC & Real Sociedad @ CD Leganes",Results,"Real Madrid & Real Sociedad to win","Real Madrid & Real Sociedad to win",108,gold,Footy,win,108%,30.00,32.40,62.40
+soccer,"England League One",Feb,2025-02-23,"Mansfield Town @ Wrexham FC",Results,"Wrexham to win","Wrexham to win",130,gold,Footy,win,130%,30.00,39.00,69.00
+soccer,"England Premier League",Feb,2025-02-25,"Newcastle United @ Nottingham Forest",Results,"Newcastle to win","Newcastle to win",-114,silver,Footy,win,88%,30.00,26.32,56.32
+soccer,"England Premier League",Feb,2025-02-26,"Tottenham Hotspur @ Manchester City",Results,"Man City to win","Man City to win",105,gold,Footy,win,105%,30.00,31.50,61.50
+"Combat Sports",UFC,Mar,2025-03-01,"Danny Barlow @ Sam Patterson","METHOD OF VICTORY","Sam Patterson by Submission +490","Sam Patterson by Submission +490",490,platinum,BB,loss,-100%,25.00,-25.00,0.00
+"Combat Sports",UFC,Mar,2025-03-01,"Charles Johnson @ Ramazan Temirov","METHOD OF VICTORY","Charles Johnson by Points","Charles Johnson by Points",175,gold,BB,loss,-100%,25.00,-25.00,0.00
+"Combat Sports",UFC,Mar,2025-03-01,"Charles Johnson @ Ramazan Temirov",MONEYLINE,"Charles Johnson to win","Charles Johnson to win",-126,silver,BB,loss,-100%,25.00,-25.00,0.00
+"Combat Sports",UFC,Mar,2025-03-01,"Hyder Amil @ William Gomis","METHOD OF VICTORY","William Gomis by KO/TKO","William Gomis by KO/TKO",500,platinum,BB,loss,-100%,20.00,-20.00,0.00
+"Combat Sports",UFC,Mar,2025-03-01,"Hyder Amil @ William Gomis","WILL THE FIGHT GO THE DISTANCE?","No, the fight won't go the distance +156","No, the fight won't go the distance +156",156,gold,BB,loss,-100%,20.00,-20.00,0.00
+"Combat Sports",UFC,Mar,2025-03-01,"Austen Lane @ Mario Pinto","METHOD & ROUND COMBO","Mario Pinto KO/TKO & Round 1","Mario Pinto KO/TKO & Round 1",210,platinum,BB,loss,-100%,20.00,-20.00,0.00
+"Combat Sports",UFC,Mar,2025-03-01,"Danny Silva @ Lucas Almeida","METHOD OF VICTORY","Danny Silva by Points","Danny Silva by Points",210,gold,BB,loss,-100%,20.00,-20.00,0.00
+"Combat Sports",UFC,Mar,2025-03-01,"Ricardo Ramos @ Chepe Mariscal","METHOD OF VICTORY","Chepe Mariscal by KO/TKO","Chepe Mariscal by KO/TKO",145,gold,BB,loss,-100%,15.00,-15.00,0.00
+"Combat Sports",UFC,Mar,2025-03-01,"Andrea Lee @ JJ Aldrich","Method of Victory","JJ Aldrich by Points","JJ Aldrich by Points",-135,silver,BB,win,74%,30.00,22.22,52.22
+"Combat Sports",UFC,Mar,2025-03-01,"Cody Brundage @ Julian Marquez",MONEYLINE,"Cody Brundage to Win","Cody Brundage to Win",100,silver,BB,win,100%,25.00,25.00,50.00
+"Combat Sports",UFC,Mar,2025-03-01,"Manel Kape @ Asu Almabayev","WILL THE FIGHT GO THE DISTANCE?","WILL THE FIGHT GO THE DISTANCE?-NO +106","WILL THE FIGHT GO THE DISTANCE?-NO",106,silver,BB,win,106%,25.00,26.50,51.50
+"Combat Sports",UFC,Mar,2025-03-01,"Cody Brundage @ Julian Marquez","METHOD OF VICTORY","Cody Brundage by KO/TKO","Cody Brundage by KO/TKO",250,platinum,BB,win,250%,15.00,37.50,52.50
+"Combat Sports",UFC,Mar,2025-03-01,"Manel Kape @ Asu Almabayev","METHOD OF VICTORY","Manel Kape by KO/TKO","Manel Kape by KO/TKO",190,gold,BB,win,190%,20.00,38.00,58.00
+"Combat Sports",UFC,Mar,2025-03-01,"Danny Barlow @ Sam Patterson",MONEYLINE,"Sam Patterson to win","Sam Patterson Moneyline",250,gold,BB,win,250%,25.00,62.50,87.50
+"Combat Sports",Boxing,Mar,2025-03-01,"Yoeniz Tellez @ Julian Williams",Moneyline,"Julian Williams To Win","Julian Williams To Win",+667,platinum,JJM,win,667%,10.00,66.70,76.70
+soccer,Soccer,Mar,2025-03-01,"1. FC Kaiserslautern @ SSV Jahn Regensburg & Middlesbrough FC @ Derby County",Parlay,"Kaiserslautern & Middlesbrough to win","Kaiserslautern & Middlesbrough to win",179,gold,Footy,win,179%,20.00,35.80,55.80
+golf,PGA,Mar,2025-03-02,"Cognizant Classic",Results,"Daniel Berger 6 places ew","Daniel Berger 6 places ew",3000,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Mar,2025-03-02,"Cognizant Classic",Results,"Denny McCarthy 8 places ew","Denny McCarthy 8 places ew",3500,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Mar,2025-03-02,"Cognizant Classic",Results,"Brian Harman 8 places ew","Brian Harman 8 places ew",5000,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Mar,2025-03-02,"South Africa Open",Results,"Danie Van Tonder 6 places ew","Danie Van Tonder 6 places ew",4000,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Mar,2025-03-02,"South Africa Open",Results,"Charl Schwartzel 6 places ew","Charl Schwartzel 6 places ew",3300,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Mar,2025-03-02,"South Africa Open",Results,"Sam Bairstow 6 places ew","Sam Bairstow 6 places ew",5000,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Mar,2025-03-02,"South Africa Open",Results,"David Ravetto 6 places ew","David Ravetto 6 places ew",8000,gold,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Mar,2025-03-02,"Cognizant Classic",Results,"Andrew Novak 6 places ew","Andrew Novak 6 places ew",6000,gold,"Golf Brad",loss,-100%,25.00,-25.00,0.00
+golf,PGA,Mar,2025-03-02,"Cognizant Classic",Results,"Ryan Gerard 8 places ew","Ryan Gerard 8 places ew",8000,gold,"Golf Brad",loss,-100%,25.00,-25.00,0.00
+golf,DPWT,Mar,2025-03-02,"South Africa Open",Results,"JC Ritchie 6 places ew","JC Ritchie 6 places ew",7000,gold,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,DPWT,Mar,2025-03-02,"South Africa Open",Results,"Deon Germishuys 7 places ew","Deon Germishuys 7 places ew",6600,gold,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,DPWT,Mar,2025-03-02,"South Africa Open",Results,"JC Ritchie 6 places ew FRL","JC Ritchie 6 places ew FRL",6600,gold,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,DPWT,Mar,2025-03-02,"South Africa Open",Results,"Andy Sullivan 5 places ew FRL","Andy Sullivan 5 places ew FRL",6600,gold,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,DPWT,Mar,2025-03-02,"South Africa Open",Results,"Ryan Van Velzen 8 places ew","Ryan Van Velzen 8 places ew",15000,platinum,"Golf Brad",loss,-100%,15.00,-15.00,0.00
+golf,PGA,Mar,2025-03-02,"Cognizant Classic",Results,"Chandler Phillips 8 places ew","Chandler Phillips 8 places ew",15000,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,DPWT,Mar,2025-03-02,"South Africa Open",Results,"Ryan van Velzen top 20","Ryan van Velzen top 20",500,silver,"Golf Nich",loss,-100%,40.00,-40.00,0.00
+golf,PGA,Mar,2025-03-02,"Cognizant Classic",Results,"Keith Mitchell 10 places ew","Keith Mitchell 10 places ew",4500,silver,"Golf Nich",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Mar,2025-03-02,"South Africa Open",Results,"Dean Burmester 10 places ew","Dean Burmester 10 places ew",1000,silver,"Golf Nich",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Mar,2025-03-02,"South Africa Open",Results,"John Parry 10 places ew","John Parry 10 places ew",2500,silver,"Golf Nich",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Mar,2025-03-02,"South Africa Open",Results,"Casey Jarvis 6 places ew","Casey Jarvis 6 places ew",5000,silver,"Golf Nich",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Mar,2025-03-02,"Cognizant Classic",Results,"Brian Campbell 10 places ew","Brian Campbell 10 places ew",8000,gold,"Golf Nich",loss,-100%,20.00,-20.00,0.00
+golf,PGA,Mar,2025-03-02,"Cognizant Classic",Results,"Eric Cole 10 places ew","Eric Cole 10 places ew",9000,gold,"Golf Nich",loss,-100%,20.00,-20.00,0.00
+golf,PGA,Mar,2025-03-02,"Cognizant Classic",Results,"Jake Knapp 8 places ew","Jake Knapp 8 places ew",8000,gold,"Golf Brad",win,950%,25.00,237.50,262.50
+golf,DPWT,Mar,2025-03-02,"South Africa Open",Results,"Branden Grace 10 places ew","Branden Grace 10 places ew",3300,silver,"Golf Nich",win,363%,30.00,108.75,138.75
+golf,DPWT,Mar,2025-03-02,"South Africa Open",Results,"Ryan van Velzen 6 places ew","Ryan van Velzen 6 places ew",15000,platinum,"Golf Nich",win,1500%,10.00,150.00,160.00
+soccer,"England League One",Mar,2025-03-04,"Charlton Athletic @ Barnsley FC",Results,"Both Teams to score, yes","Both Teams to score, yes",-120,silver,Footy,loss,-100%,30.00,-30.00,0.00
+soccer,"Champions League",Mar,2025-03-04,"Club Brugge @ Aston Villa",Results,"Aston Villa to win","Aston Villa to win",150,gold,Footy,win,150%,20.00,30.00,50.00
+soccer,"Champions League",Mar,2025-03-05,"SL Benfica @ FC Barcelona Lassa",Results,"Barcelona to win","Barcelona to win",-109,silver,Footy,win,92%,30.00,27.52,57.52
+soccer,"England Premier League",Mar,2025-03-08,"Nottingham Forest @ Manchester City",Results,"Manchester City to win","Manchester City to win",100,silver,Footy,loss,-100%,30.00,-30.00,0.00
+soccer,"England Championship",Mar,2025-03-08,"Watford FC @ Millwall FC",Results,"Watford to win","Watford to win",128,gold,Footy,loss,-100%,30.00,-30.00,0.00
+soccer,"England League One",Mar,2025-03-08,"Burton Albion @ Bolton Wanderers",Results,"Bolton to win","Bolton to win",100,gold,Footy,win,100%,30.00,30.00,60.00
+golf,PGA,Mar,2025-03-09,"Puerto Rico Open",Results,"Rico Hoey 7 places ew","Rico Hoey 7 places ew",4000,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Mar,2025-03-09,"Puerto Rico Open",Results,"Matti Schmid 7 places ew","Matti Schmid 7 places ew",4000,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Mar,2025-03-09,"Puerto Rico Open",Results,"Piercson Coody 7 places ew","Piercson Coody 7 places ew",4000,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Mar,2025-03-09,"Joburg Open",Results,"Daniel Brown 8 places ew","Daniel Brown 8 places ew",3300,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Mar,2025-03-09,"Joburg Open",Results,"Nathan Kimsey 7 places ew","Nathan Kimsey 7 places ew",5500,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Mar,2025-03-09,"Joburg Open",Results,"Todd Clements 6 places ew","Todd Clements 6 places ew",8000,gold,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,PGA,Mar,2025-03-09,"Puerto Rico Open",Results,"Justin Hastings 7 places ew","Justin Hastings 7 places ew",12500,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,PGA,Mar,2025-03-09,"Puerto Rico Open",Results,"Davis Riley 7 places ew","Davis Riley 7 places ew",20000,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,DPWT,Mar,2025-03-09,"Joburg Open",Results,"Nikhil Rama 8 places ew","Nikhil Rama 8 places ew",25000,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,DPWT,Mar,2025-03-09,"Joburg Open",Results,"Marcel Siem 8 places ew","Marcel Siem 8 places ew",10000,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,DPWT,Mar,2025-03-09,"Joburg Open",Results,"Dale Whitnell 7 places ew","Dale Whitnell 7 places ew",17500,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,DPWT,Mar,2025-03-09,"Joburg Open",Results,"Nikhil Rama 7 places ew","Nikhil Rama 7 places ew",30000,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,DPWT,Mar,2025-03-09,"Joburg Open",Results,"Zihao Jin 7 places ew","Zihao Jin 7 places ew",17500,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,PGA,Mar,2025-03-09,"Puerto Rico Open",Results,"Gerard 10 places ew","Gerard 10 places ew",2500,silver,"Golf Nich",loss,-100%,30.00,-30.00,0.00
+golf,DPWT,Mar,2025-03-09,"Joburg Open",Results,"Van Tonder 10 places ew","Van Tonder 10 places ew",3300,silver,"Golf Nich",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Mar,2025-03-09,"Puerto Rico Open",Results,"Montgomery 10 places ew","Montgomery 10 places ew",6600,gold,"Golf Nich",loss,-100%,20.00,-20.00,0.00
+golf,PGA,Mar,2025-03-09,"Puerto Rico Open",Results,"JJ Spaun 10 places ew","JJ Spaun 10 places ew",8000,gold,"Golf Nich",loss,-100%,20.00,-20.00,0.00
+golf,DPWT,Mar,2025-03-09,"Joburg Open",Results,"Fichardt 10 places ew","Fichardt 10 places ew",8000,gold,"Golf Nich",loss,-100%,20.00,-20.00,0.00
+golf,DPWT,Mar,2025-03-09,"Joburg Open",Results,"Blaauw 10 places ew","Blaauw 10 places ew",12500,platinum,"Golf Nich",loss,-100%,10.00,-10.00,0.00
+golf,DPWT,Mar,2025-03-09,"Joburg Open",Results,"van Velzen 10 places ew","van Velzen 10 places ew",15000,platinum,"Golf Nich",loss,-100%,10.00,-10.00,0.00
+golf,DPWT,Mar,2025-03-09,"Joburg Open",Results,"Nikhil Rama 8 places ew","Nikhil Rama 8 places ew",25000,platinum,"Golf Nich",loss,-100%,10.00,-10.00,0.00
+soccer,"England Premier League",Mar,2025-03-09,"Tottenham Hotspur @ AFC Bournemouth",Results,"Tottenham to win","Tottenham to win",180,gold,Footy,loss,-100%,30.00,-30.00,0.00
+soccer,"England Premier League",Mar,2025-03-09,"West Ham United @ Newcastle United",Results,"West Ham to win","West Ham to win",234,platinum,Footy,loss,-100%,10.00,-10.00,0.00
+golf,PGA,Mar,2025-03-09,"Puerto Rico Open",Results,"Adrien Dumont De Chassart 6 places ew","Adrien Dumont De Chassart 6 places ew",6600,gold,"Golf Brad",win,660%,20.00,132.00,152.00
+golf,PGA,Mar,2025-03-09,"Puerto Rico Open",Results,"Chad Ramey 7 places ew","Chad Ramey 7 places ew",7000,gold,"Golf Brad",win,700%,20.00,140.00,160.00
+golf,PGA,Mar,2025-03-09,"Puerto Rico Open",Results,"Karl Vilips 7 places ew","Karl Vilips 7 places ew",8000,gold,"Golf Brad",win,800%,20.00,160.00,180.00
+golf,PGA,Mar,2025-03-16,"The Player Championship",Results,"Hideki Matsuyama 8 places ew","Hideki Matsuyama 8 places ew",3000,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Mar,2025-03-16,"The Player Championship",Results,"Si Woo Kim 10 places ew","Si Woo Kim 10 places ew",6000,gold,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,PGA,Mar,2025-03-16,"The Player Championship",Results,"Jordan Spieth 10 places ew","Jordan Spieth 10 places ew",6600,gold,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,PGA,Mar,2025-03-16,"The Player Championship",Results,"Sepp Straka 8 places ew","Sepp Straka 8 places ew",6000,gold,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,PGA,Mar,2025-03-16,"The Player Championship",Results,"Ludvig Aberg 8 places ew","Ludvig Aberg 8 places ew",2000,silver,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,PGA,Mar,2025-03-16,"The Player Championship",Results,"Justin Rose 6 places ew","Justin Rose 6 places ew",15000,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+Basketball,NCAAB,Mar,2025-03-21,"North Carolina Tar Heels @ Ole Miss Rebels",Moneyline,"UNC to win","UNC to win",-130,silver,TPP,win,77%,30.00,23.08,53.08
+Basketball,NCAAB,Mar,2025-03-21,"Colorado State Rams @ Memphis Tigers",Moneyline,"Colorado State Moneyline","Colorado State Moneyline",-116,silver,TPP,win,86%,30.00,25.86,55.86
+Basketball,NCAAB,Mar,2025-03-21,"Xavier Musketeers @ Illinois Fighting Illini",Spread,"Xavier +4.5","Xavier +4.5",-115,silver,TPP,win,87%,30.00,26.10,56.10
+Basketball,NCAAB,Mar,2025-03-21,"Colorado State Rams @ Memphis Tigers","Total Score","Under 147.5","Under 147.5",-110,silver,TPP,win,91%,30.00,27.27,57.27
+Basketball,NCAAB,Mar,2025-03-21,"Vanderbilt Commodores @ Saint Mary’s Gaels","Total Score","Under 136.5","Under 136.5",-110,silver,TPP,win,91%,30.00,27.27,57.27
+Basketball,NCAAB,Mar,2025-03-21,"North Carolina Tar Heels @ Ole Miss Rebels","Total Score","Over 155.5","Over 155.5",-110,silver,TPP,win,91%,30.00,27.27,57.27
+Basketball,NCAAB,Mar,2025-03-21,"Oklahoma Sooners @ Connecticut Huskies","Total Score","Over 146.5","Over 146.5",-110,silver,TPP,win,91%,30.00,27.27,57.27
+Basketball,NCAAB,Mar,2025-03-21,"Xavier Musketeers @ Illinois Fighting Illini","Total Score","Over 161.5","Over 161.5",-110,silver,TPP,win,91%,30.00,27.27,57.27
+Basketball,NCAAB,Mar,2025-03-21,"Troy Trojans @ Kentucky Wildcats","Total Points","Under 151.5","Under 151.5",-110,silver,TPP,win,91%,30.00,27.27,57.27
+Basketball,NCAAB,Mar,2025-03-21,"Oklahoma Sooners @ Connecticut Huskies",Spread,"Oklahoma +5.5","Oklahoma +5.5",-102,silver,TPP,win,94%,30.00,28.33,58.33
+Basketball,NCAAB,Mar,2025-03-21,"Xavier Musketeers @ Illinois Fighting Illini",Moneyline,"Xavier Moneyline","Xavier Moneyline",150,platinum,TPP,win,150%,25.00,37.50,62.50
+Basketball,NCAAB,Mar,2025-03-21,"Vanderbilt Commodores @ Saint Mary’s Gaels",Moneyline,"Memphis to win","Memphis to win",180,gold,TPP,win,180%,25.00,45.00,70.00
+Basketball,NCAAB,Mar,2025-03-22,"Arkansas Razorbacks @ St John’s Red Storm","Spread Betting","Arkansas +6.5","Arkansas +6.5",-110,silver,TPP,win,91%,15.00,13.64,57.27
+Basketball,NCAAB,Mar,2025-03-22,"BYU Cougars @ Wisconsin Badgers","Total Points","Under 154.5","Under 154.5",-105,gold,TPP,win,90%,30.00,27.14,57.14
+Basketball,NCAAB,Mar,2025-03-22,"Creighton Bluejays @ Auburn Tigers","Spread Betting","Creighton +8.5","Creighton +8.5",-110,silver,TPP,win,91%,30.00,27.27,57.27
+Basketball,NCAAB,Mar,2025-03-22,"Michigan Wolverines @ Texas A&M",Moneyline,"Michigan to win","Michigan to win",122,gold,TPP,win,122%,25.00,30.50,55.50
+Basketball,NCAAB,Mar,2025-03-23,"Oregon Ducks @ Arizona Wildcats","Spread Betting","Oregon +3.5","Oregon +3.5",-105,silver,TPP,win,89%,25.00,22.14,57.14
+Basketball,NCAAB,Mar,2025-03-23,"Illinois Fighting Illini @ Kentucky Wildcats","Total Score","Under 168.5","Under 168.5",-115,silver,TPP,win,87%,30.00,26.10,56.10
+Basketball,NCAAB,Mar,2025-03-23,"Illinois Fighting Illini @ Kentucky Wildcats",Moneyline,"Kentucky to win","Kentucky to win",114,gold,TPP,win,112%,30.00,33.60,63.60
+golf,PGA,Mar,2025-03-23,"Valspar Championship",Results,"Matt Wallace 8 places","Matt Wallace 8 places",10000,platinum,"Golf Brad",win,900%,10.00,90.00,100.00
+golf,PGA,Mar,2025-03-23,"Valspar Championship",Results,"Billy Horschel 6 places","Billy Horschel 6 places",10000,gold,"Golf Brad",win,1000%,10.00,100.00,110.00
+golf,DPWT,Mar,2025-03-23,"Singapore Classic",Results,"Sam Bairstow 6 places","Sam Bairstow 6 places",3500,silver,"Golf Brad",win,350%,30.00,105.00,135.00
+golf,DPWT,Mar,2025-03-23,"Singapore Classic",Results,"David Ravetto 6 places","David Ravetto 6 places",11000,platinum,"Golf Brad",win,1100%,10.00,110.00,120.00
+golf,DPWT,Mar,2025-03-23,"Singapore Classic",Results,"Marcel Siem 6 places","Marcel Siem 6 places",11000,platinum,"Golf Brad",win,1100%,10.00,110.00,120.00
+golf,PGA,Mar,2025-03-23,"Valspar Championship",Results,"Lucas Glover 8 places","Lucas Glover 8 places",4500,silver,"Golf Brad",win,450%,30.00,135.00,165.00
+golf,DPWT,Mar,2025-03-23,"Singapore Classic",Results,"Wenyi Ding 6 places","Wenyi Ding 6 places",4500,silver,"Golf Brad",win,450%,30.00,135.00,165.00
+golf,PGA,Mar,2025-03-23,"Valspar Championship",Results,"Ryan Fox 8 places","Ryan Fox 8 places",15000,platinum,"Golf Brad",win,1500%,10.00,150.00,160.00
+golf,PGA,Mar,2025-03-23,"Valspar Championship",Results,"Rico Hoey 6 places","Rico Hoey 6 places",15000,gold,"Golf Brad",win,1500%,10.00,150.00,160.00
+golf,DPWT,Mar,2025-03-23,"Singapore Classic",Results,"Zihao Jin 6 places","Zihao Jin 6 places",15000,platinum,"Golf Brad",win,1500%,10.00,150.00,160.00
+golf,DPWT,Mar,2025-03-23,"Singapore Classic",Results,"Brandon Robinson-Thompson 6 places","Brandon Robinson-Thompson 6 places",5000,silver,"Golf Brad",win,500%,30.00,150.00,180.00
+golf,PGA,Mar,2025-03-23,"Valspar Championship",Results,"Victor Perez 8 places","Victor Perez 8 places",18000,gold,"Golf Brad",win,1800%,10.00,180.00,190.00
+golf,PGA,Mar,2025-03-23,"Valspar Championship",Results,"Rico Hoey 7 places","Rico Hoey 7 places",9000,gold,"Golf Brad",win,900%,20.00,180.00,200.00
+golf,PGA,Mar,2025-03-23,"Valspar Championship",Results,"Matt Wallace 5 places","Matt Wallace 5 places",9000,gold,"Golf Brad",win,900%,20.00,180.00,200.00
+golf,DPWT,Mar,2025-03-23,"Singapore Classic",Results,"Ugo Coussaud 6 places","Ugo Coussaud 6 places",6000,silver,"Golf Brad",win,600%,30.00,180.00,210.00
+golf,DPWT,Mar,2025-03-23,"Singapore Classic",Results,"Joakim Lagergren 8 places","Joakim Lagergren 8 places",19000,platinum,"Golf Brad",win,1900%,10.00,190.00,200.00
+golf,PGA,Mar,2025-03-23,"Valspar Championship",Results,"Ryan Fox 7 places","Ryan Fox 7 places",10000,gold,"Golf Brad",win,950%,20.00,190.00,210.00
+golf,PGA,Mar,2025-03-23,"Valspar Championship",Results,"Matt McCarty 8 places","Matt McCarty 8 places",22500,platinum,"Golf Brad",win,2250%,10.00,225.00,235.00
+golf,PGA,Mar,2025-03-23,"Valspar Championship",Results,"Nick Gabrelcik 5 places","Nick Gabrelcik 5 places",25000,platinum,"Golf Brad",win,2500%,10.00,250.00,260.00
+golf,PGA,Mar,2025-03-23,"Valspar Championship",Results,"Nick Gabrelcik 8 places","Nick Gabrelcik 8 places",80000,platinum,"Golf Brad",win,8000%,10.00,800.00,810.00
+Baseball,MLB,apr,2025-04-01,"Kansas City Royals @ Milwaukee Brewers","1st 5 Moneyline","Royals 1st 5 Moneyline","Royals 1st 5 Moneyline",+105,gold,TPP,loss,-100%,30.00,-30.00,0.00
+Baseball,MLB,Apr,2025-04-01,"Chicago Cubs @ Oakland Athletics",Moneyline,"Cubs to win","Cubs to win",-110,bronze,TPP,win,110%,30.00,33.00,63.00
+Baseball,MLB,Apr,2025-04-01,"Chicago Cubs @ Oakland Athletics",Moneyline,"Cubs to win","Cubs to win",-110,bronze,TPP,win,110%,30.00,33.00,63.00
+Baseball,MLB,Apr,2025-04-01,"San Francisco Giants @ Houston Astros",Moneyline,"San Francisco Giants to win","San Francisco Giants to win",-126,bronze,TPP,win,126%,30.00,37.80,67.80
+Baseball,MLB,Apr,2025-04-01,"New York Mets @ Miami Marlins","1st 5 Moneyline","Miami to lead after 1st 5 innings","Miami to lead after 1st 5 innings",+105,gold,TPP,win,105%,40.00,42.00,82.00
+Baseball,MLB,Apr,2025-04-01,"Atlanta Braves @ Los Angeles Dodgers",Moneyline,"Dodgers to win","Dodgers to win",-126,silver,TPP,win,126%,50.00,63.00,113.00
+Baseball,MLB,Apr,2025-04-01,"cleveland guardians @ San Diego Padres",Moneyline,"San Diego Padres to win","San Diego Padres to win",-140,bronze,TPP,win,140%,50.00,70.00,120.00
+Basketball,MLB,apr,2025-04-01,"Pittsburgh Pirates @ Tampa Bay Rays",Moneyline,"Tampa Bay to win","Tampa Bay to win",-125,bronze,TPP,win,125%,30.00,37.50,67.50
+soccer,"England League One",Apr,2025-04-01,"Stockport County @ Stevenage FC",Results,"Stockport to win","Stockport to win",-109,silver,Footy,win,92%,20.00,18.35,38.35
+Baseball,MLB,Apr,2025-04-02,"Chicago Cubs @ Oakland Athletics",Moneyline,"Chicago Cubs to win","Chicago Cubs to win",+125,Silver,TPP,win,125%,25.00,31.25,56.25
+Baseball,MLB,Apr,2025-04-02,"Chicago Cubs @ Oakland Athletics",Moneyline,"Cubs to win","Cubs to win",+105,Silver,TPP,win,105%,50.00,52.50,102.50
+golf,PGA,Apr,2025-04-02,"Valero Texas Open: Top 10 Finish","Valero Texas Open: Top 10 Finish","Tom Hoge to finish top 10","Tom Hoge to finish top 10",+700,platinum,"Golf Brad",win,700%,30.00,210.00,240.00
+golf,PGA,Apr,2025-04-02,"Valero Texas Open: Top 10 Finish","Valero Texas Open: Top 10 Finish","Thorbjorn Olesen top 10 Finish","Thorbjorn Olesen top 10 Finish",+800,platinum,"Golf Brad",win,800%,35.00,280.00,315.00
+soccer,"England Premier League",Apr,2025-04-02,"Brighton & Hove Albion @ Aston Villa",Results,"Aston Villa to win","Aston Villa to win",200,platinum,Footy,win,200%,20.00,40.00,60.00
+Baseball,MLB,Apr,2025-04-03,"Boston Red Sox @ Baltimore Orioles",Moneyline,"Boston to win","Boston to win",+117,Silver,TPP,win,117%,25.00,29.25,54.25
+Baseball,MLB,Apr,2025-04-03,"Colorado Rockies @ Philadelphia Phillies","Run Line","Phillies -1.5","Phillies -1.5",-115,Bronze,TPP,win,115%,30.00,34.50,64.50
+Baseball,MLB,Apr,2025-04-03,"Houston Astros @ Minnesota Twins","Player Homeruns","Christian Walker to hit 1+ Home Run","Christian Walker to hit 1+ Home Run",+500,gold,TPP,win,500%,40.00,200.00,240.00
+Basketball,NBA,Apr,2025-04-03,"Golden State Warriors @ Los Angeles Lakers","First Basket","Austin Reaves to score 1st Basket","Austin Reaves to score 1st Basket",+650,platinum,TPP,win,650%,40.00,260.00,300.00
+Baseball,MLB,Apr,2025-04-04,"Seattle Mariners @ San Francisco Giants",Moneyline,"Seattle to win outright","Seattle to win outright",+130,gold,TPP,loss,-100%,25.00,-25.00,0.00
+soccer,"German Bundesliga",apr,2025-04-04,"FC Augsburg @ FC Bayern Munich",Results,"Half-time/Full-time – Bayern/Bayern","Half-time/Full-time – Bayern/Bayern",120,gold,Footy,loss,-100%,20.00,-20.00,0.00
+Baseball,MLB,Apr,2025-04-04,"San Diego Padres @ Chicago Cubs",Moneyline,"Cubs to win","Cubs to win",-125,silver,TPP,win,80%,50.00,40.00,90.00
+Basketball,NBA,Apr,2025-04-04,"Oklahoma City Thunder @ Houston Rockets","First Basket","Chet Holmgren to score the first basket","Chet Holmgren to score the first basket",+700,platinum,TPP,win,700%,30.00,210.00,240.00
+Baseball,MLB,Apr,2025-04-05,"Houston Astros @ Minnesota Twins",Moneyline,"Astros to win","Astros to win",+112,gold,TPP,loss,-100%,25.00,-25.00,0.00
+Baseball,MLB,Apr,2025-04-05,"Los Angeles Dodgers @ Philadelphia Phillies",Moneyline,"Phillies to win","Phillies to win",-109,Silver,TPP,loss,-100%,35.00,-35.00,0.00
+Basketball,NCAAB,apr,2025-04-05,"Houston Cougars @ Duke Blue Devils","Total Score","Under 136.5","Under 136.5",-110,bronze,TPP,loss,-100%,30.00,-30.00,0.00
+"Combat Sports",UFC,Apr,2025-04-05,"Lerone Murphy @ Josh Emmett",Moneyline,"Josh Emmett to win","Josh Emmett to win",+235,gold,BB,loss,-100%,25.00,-25.00,0.00
+Baseball,MLB,Apr,2025-04-05,"Baltimore Orioles @ Kansas City Royals",Moneyline,"Orioles to win","Orioles to win",+115,gold,TPP,win,115%,30.00,34.50,64.50
+Baseball,MLB,apr,2025-04-05,"Oakland Athletics @ Colorado Rockies",Moneyline,"Athletics to win","Athletics to win",-115,silver,TPP,win,87%,50.00,43.48,93.48
+Baseball,MLB,apr,2025-04-05,"Los Angeles Dodgers @ Philadelphia Phillies",Moneyline,"Phillies to win","Phillies to win",-109,silver,TPP,win,92%,50.00,45.87,95.87
+Baseball,MLB,Apr,2025-04-05,"Cincinnati Reds @ Milwaukee Brewers",Moneyline,"Reds to win","Reds to win",+125,Silver,TPP,win,125%,40.00,50.00,90.00
+Baseball,MLB,apr,2025-04-05,"New York Yankees @ Pittsburgh Pirates",Runline,"Yankees -1.5","Yankees -1.5",+125,Silver,TPP,win,125%,40.00,50.00,90.00
+Basketball,MLB,Apr,2025-04-05,"Chicago White Sox @ Detroit Tigers",Moneyline,"White Sox to win","White Sox to win",-105,bronze,TPP,win,95%,50.00,47.62,97.62
+Basketball,NCAAB,Apr,2025-04-05,"Houston Cougars @ Duke Blue Devils","Spread Betting","Houston +4.5","Houston +4.5",-105,silver,TPP,win,105%,50.00,52.50,102.50
+Basketball,NCAAB,apr,2025-04-05,"Florida Gators @ Auburn Tigers","Total Score","Under 159","Under 159",-110,silver,TPP,win,110%,50.00,55.00,105.00
+"Combat Sports",UFC,Apr,2025-04-05,"Daniel Frunza @ Rhys McKee",Moneyline,"Rhys McKee to win","Rhys McKee to win",+110,gold,BB,win,110%,50.00,55.00,105.00
+golf,PGA,Apr,2025-04-06,"Valero Texas Open",Results,"Keegan Bradley 6 places ew","Keegan Bradley 6 places ew",2200,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Apr,2025-04-06,"Valero Texas Open",Results,"Lee Hodges 8 places ew","Lee Hodges 8 places ew",6600,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Apr,2025-04-06,"Valero Texas Open",Results,"Gary Woodland 6 places ew","Gary Woodland 6 places ew",6600,gold,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,PGA,apr,2025-04-06,"Valero Texas Open",Results,"Sam Stevens 6 places ew","Sam Stevens 6 places ew",6600,gold,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,PGA,Apr,2025-04-06,"Valero Texas Open",Results,"Chandler Phillips 8 places ew","Chandler Phillips 8 places ew",25000,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,PGA,Apr,2025-04-06,"Valero Texas Open",Results,"Thorbjorn Olesen 8 places ew","Thorbjorn Olesen 8 places ew",12500,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,PGA,Apr,2025-04-06,"Valero Texas Open",Results,"Tom Hoge 6 places ew","Tom Hoge 6 places ew",10000,platinum,"Golf Brad",win,1150%,10.00,115.00,125.00
+Baseball,MLB,Apr,2025-04-07,"Baltimore Orioles @ Arizona Diamondbacks",Moneyline,"Diamondbacks to win","Diamondbacks to win",-116,Bronze,BB,loss,-100%,30.00,-30.00,0.00
+Baseball,MLB,Apr,2025-04-07,"Texas Rangers @ Chicago Cubs",Moneyline,"Rangers to win","Rangers to win",-116,Silver,TPP,win,86%,50.00,43.10,93.10
+Baseball,MLB,Apr,2025-04-08,"Baltimore Orioles @ Arizona Diamondbacks",Moneyline,"Orioles to win","Orioles to win",-110,Bronze,BB,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,Apr,2025-04-08,"Milwaukee Brewers @ Colorado Rockies",Moneyline,"Rockies to win","Rockies to win",+140,Silver,TPP,loss,-100%,35.00,-35.00,0.00
+Baseball,MLB,Apr,2025-04-08,"Texas Rangers @ Chicago Cubs","Total Runs","Over 8.5 Runs","Over 8.5 Runs",+125,Bronze,TPP,win,80%,35.00,28.00,63.00
+Baseball,MLB,Apr,2025-04-08,"Houston Astros @ Seattle Mariners",Moneyline,"Astros to win","Astros to win",+125,Silver,TPP,win,80%,40.00,32.00,72.00
+Baseball,MLB,apr,2025-04-10,"Toronto Blue Jays @ Boston Red Sox",Moneyline,"Blue Jays to win","Blue Jays to win",+110,Bronze,TPP,loss,-100%,35.00,-35.00,0.00
+Baseball,MLB,apr,2025-04-10,"Milwaukee Brewers @ Colorado Rockies",Moneyline,"Brewers to win","Brewers to win",-125,Bronze,TPP,loss,-100%,35.00,-35.00,0.00
+Baseball,MLB,Apr,2025-04-10,"Washington Nationals @ Miami Marlins",Moneyline,"Marlins to win","Marlins to win",-105,Gold,TPP,loss,-100%,30.00,-30.00,0.00
+Baseball,MLB,apr,2025-04-10,"Minnesota Twins @ Kansas City Twins",Moneyline,"Twins to win","Twins to win",+102,gold,TPP,loss,-100%,30.00,-30.00,0.00
+Baseball,MLB,apr,2025-04-10,"Philadelphia Phillies @ Atlanta Braves",Moneyline,"Phillies to win","Phillies to win",-120,silver,TPP,win,83%,50.00,41.67,91.67
+Baseball,MLB,Apr,2025-04-11,"Los Angeles Angels @ Houston Astros","Total Runs","Under 8.5","Under 8.5",+100,gold,TPP,win,100%,40.00,40.00,80.00
+Baseball,MLB,apr,2025-04-11,"Kansas City Royals @ cleveland guardians",Moneyline,"Guardians to win","Guardians to win",-125,silver,TPP,win,80%,50.00,40.00,90.00
+Baseball,MLB,Apr,2025-04-11,"Atlanta Braves @ Tampa Bay Rays",Moneyline,"Rays to win","Rays to win",-125,silver,TPP,win,80%,50.00,40.00,90.00
+"Combat Sports",UFC,apr,2025-04-12,"Diego Lopes @ Alex Volkanovski",Moneyline,"Diego Lopes to win","Diego Lopes to win",+120,gold,BB,loss,-100%,25.00,-25.00,0.00
+"Combat Sports",UFC,Apr,2025-04-12,"Diego Lopes @ Alex Volkanovski","Method of Victory","Lopes to win by KO, TKO, or DQ","Lopes to win by KO, TKO, or DQ",+300,platinum,BB,loss,-100%,25.00,-25.00,0.00
+"Combat Sports",MMA,Apr,2025-04-12,"Paddy Pimblett @ Mike Chandler",Moneyline,"Paddy Pimblett to win","Paddy Pimblett to win",-125,silver,BB,win,80%,50.00,40.00,90.00
+"Combat Sports",UFC,Apr,2025-04-12,"Patricio Pitbull @ Yair Rodriguez",Moneyline,"Yair Rodriguez to win","Yair Rodriguez to win",-125,silver,BB,win,80%,50.00,40.00,90.00
+Baseball,MLB,Apr,2025-04-13,"New York Mets @ Oakland Athletics",Moneyline,"Athletics to win","Athletics to win",+130,gold,TPP,loss,-100%,30.00,-30.00,0.00
+golf,PGA,Apr,2025-04-13,"The Masters",Results,"Robert MacIntyre 8 places ew","Robert MacIntyre 8 places ew",5000,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,Apr,2025-04-13,"The Masters",Results,"Xander Schauffele 8 places ew","Xander Schauffele 8 places ew",2000,silver,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,apr,2025-04-13,"The Masters",Results,"Sepp Straka 8 places ew","Sepp Straka 8 places ew",6600,gold,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,PGA,apr,2025-04-13,"The Masters",Results,"Charl Schwartzel 8 places ew","Charl Schwartzel 8 places ew",30000,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+Baseball,MLB,apr,2025-04-13,"Chicago Cubs @ Los Angeles Dodgers",Moneyline,"Cubs to win","Cubs to win",+215,bronze,TPP,win,47%,35.00,16.28,51.28
+Baseball,MLB,Apr,2025-04-13,"Colorado Rockies @ San Diego Padres","Spread Betting/Runline","Padres -1.5","Padres -1.5",-105,silver,TPP,win,95%,35.00,33.33,68.33
+Baseball,MLB,apr,2025-04-13,"Texas Rangers @ Seattle Mariners",Moneyline,"Mariners to win","Mariners to win",-125,silver,TPP,win,80%,50.00,40.00,90.00
+Baseball,MLB,Apr,2025-04-13,"Milwaukee Brewers @ Arizona Diamondbacks",Moneyline,"Diamondbacks to win","Diamondbacks to win",-115,silver,TPP,win,87%,50.00,43.48,93.48
+Baseball,MLB,Apr,2025-04-13,"Colorado Rockies @ San Diego Padres","Total Runs","Under 7","Under 7",-105,silver,TPP,win,95%,50.00,47.62,97.62
+golf,PGA,apr,2025-04-13,"The Masters",Results,"Collin Morikawa 6 places ew","Collin Morikawa 6 places ew",1600,Bronze,"Golf Brad",win,275%,30.00,82.50,112.50
+Baseball,MLB,Apr,2025-04-14,"Washington Nationals @ Pittsburgh Pirates","Total Score","Under 7.5","Under 7.5",-115,silver,TPP,loss,-100%,40.00,-40.00,0.00
+Baseball,MLB,apr,2025-04-14,"San Francisco Giants @ Philadelphia Phillies",Moneyline,"Giants to win","Giants to win",+100,Bronze,TPP,win,100%,35.00,35.00,70.00
+Baseball,MLB,Apr,2025-04-14,"Washington Nationals @ Pittsburgh Pirates","Spread Betting/Runline","Pirates -1.5","Pirates -1.5",+105,Bronze,TPP,win,105%,35.00,36.75,71.75
+Baseball,MLB,apr,2025-04-14,"Chicago Cubs @ San Diego Padres",Moneyline,"Padres to win","Padres to win",-125,silver,TPP,win,80%,50.00,40.00,90.00
+Baseball,MLB,apr,2025-04-14,"Chicago Cubs @ San Diego Padres",Moneyline,"Padres to win","Padres to win",-125,silver,TPP,win,80%,50.00,40.00,90.00
+Baseball,MLB,Apr,2025-04-14,"Chicago Cubs @ San Diego Padres",Moneyline,"Padres to win","Padres to win",-125,silver,TPP,win,80%,50.00,40.00,90.00
+Baseball,MLB,Apr,2025-04-14,"Kansas City Royals @ New York Yankees","Spread Betting/Runline","Yankees -1.5","Yankees -1.5",+140,gold,TPP,win,140%,35.00,49.00,84.00
+Baseball,MLB,Apr,2025-04-15,"Atlanta Braves @ Toronto Blue Jays",Moneyline,"Braves to win","Braves to win",-107,silver,TPP,loss,-100%,40.00,-40.00,0.00
+Baseball,MLB,Apr,2025-04-15,"San Francisco Giants @ Philadelphia Phillies",Moneyline,"Giants to win","Giants to win",+145,silver,TPP,loss,-100%,30.00,-30.00,0.00
+Baseball,MLB,Apr,2025-04-15,"Washington Nationals @ Pittsburgh Pirates",Moneyline,"Nationals to win","Nationals to win",-107,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,apr,2025-04-15,"Colorado Rockies @ Los Angeles Dodgers","Spread Betting/Runline","Rockies +1.5","Rockies +1.5",+120,gold,TPP,loss,-100%,30.00,-30.00,0.00
+Baseball,MLB,Apr,2025-04-15,"Colorado Rockies @ Los Angeles Dodgers","Spread Betting/Runline","Rockies +1.5","Rockies +1.5",+120,gold,TPP,loss,-100%,25.00,-25.00,0.00
+Baseball,MLB,Apr,2025-04-15,"Colorado Rockies @ Los Angeles Dodgers","Spread Betting/Runline","Rockies +1.5","Rockies +1.5",+120,gold,TPP,loss,-100%,25.00,-25.00,0.00
+Baseball,MLB,Apr,2025-04-15,"Colorado Rockies @ Los Angeles Dodgers","Spread Betting/Runline","Rockies +1.5","Rockies +1.5",+120,gold,TPP,loss,-100%,25.00,-25.00,0.00
+Baseball,MLB,Apr,2025-04-15,"Chicago Cubs @ San Diego Padres","Spread Betting/Runline","Padres +1.5","Padres +1.5",-135,silver,TPP,win,74%,50.00,37.04,87.04
+Baseball,MLB,Apr,2025-04-15,"New York Mets @ Minnesota Twins","Total Score","Over 8","Over 8",-115,silver,TPP,win,87%,50.00,43.48,93.48
+Baseball,MLB,apr,2025-04-15,"San Francisco Giants @ Philadelphia Phillies","Total Runs","Over 8","Over 8",-115,silver,TPP,win,87%,50.00,43.48,93.48
+Baseball,MLB,apr,2025-04-15,"San Francisco Giants @ Philadelphia Phillies","Total Runs","Over 8","Over 8",-115,silver,TPP,win,87%,50.00,43.48,93.48
+Baseball,MLB,apr,2025-04-15,"Boston Red Sox @ Tampa Bay Rays",Moneyline,"Red Sox to win","Red Sox to win",+117,Silver,TPP,win,117%,40.00,46.80,86.80
+Baseball,MLB,Apr,2025-04-15,"Kansas City Royals @ New York Yankees","Spread Betting/Runline","Yankees -1.5","Yankees -1.5",-105,silver,TPP,win,95%,50.00,47.62,97.62
+Baseball,MLB,Apr,2025-04-16,"Arizona Diamondbacks @ Miami Marlins",Moneyline,"Diamondbacks to win","Diamondbacks to win",-125,silver,TPP,win,80%,50.00,40.00,90.00
+Baseball,MLB,Apr,2025-04-16,"Oakland Athletics @ Chicago White Sox","Spread Betting/Runline","Athletics -1.5","Athletics -1.5",+110,gold,TPP,win,110%,40.00,44.00,84.00
+Baseball,MLB,apr,2025-04-17,"Baltimore Orioles @ Texas Rangers","Same Game Parlay","Corey Seager (TEX) 1+ Home runs, Gunnar Henderson (BAL) 1+ Home runs","Corey Seager (TEX) 1+ Home runs, Gunnar Henderson (BAL) 1+ Home runs",+1900,platinum,TPP,win,1900%,20.00,380.00,400.00
+Baseball,MLB,Apr,2025-04-18,"Arizona Diamondbacks @ Chicago Cubs",Moneyline,"Diamondbacks to win","Diamondbacks to win",-110,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,Apr,2025-04-18,"Kansas City Royals @ Detroit Tigers",Moneyline,"Tigers to win","Tigers to win",+130,gold,TPP,win,130%,40.00,52.00,92.00
+Baseball,MLB,apr,2025-04-19,"New York Yankees @ Tampa Bay Rays","RBI\\\'s","Brandon Lowe 2+ RBI’s","Brandon Lowe 2+ RBI’s",+180,platinum,TPP,win,180%,40.00,72.00,112.00
+Baseball,MLB,Apr,2025-04-19,"New York Mets @ ST. Louis Cardinals","Home Runs","Pete Alonso 1+ Home Runs","Pete Alonso 1+ Home Runs",+300,platinum,TPP,win,300%,30.00,90.00,120.00
+Baseball,MLB,Apr,2025-04-20,"San Diego Padres @ Houston Astros",Moneyline,"Astros to win","Astros to win",+104,gold,TPP,loss,-100%,40.00,-40.00,0.00
+Baseball,MLB,apr,2025-04-20,"Oakland Athletics @ Milwaukee Brewers",Moneyline,"Athletics to win","Athletics to win",+123,gold,TPP,loss,-100%,35.00,-35.00,0.00
+Baseball,MLB,Apr,2025-04-20,"Arizona Diamondbacks @ Chicago Cubs",Moneyline,"Cubs to win","Cubs to win",-133,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,Apr,2025-04-20,"San Francisco Giants @ Los Angeles Angels",Moneyline,"Giants to win","Giants to win",+104,gold,TPP,loss,-100%,40.00,-40.00,0.00
+Baseball,MLB,Apr,2025-04-20,"Los Angeles Dodgers @ Texas Rangers",Moneyline,"Dodgers to win","Dodgers to win",-125,silver,TPP,win,80%,50.00,40.00,90.00
+Baseball,MLB,apr,2025-04-20,"Los Angeles Dodgers @ Texas Rangers",Moneyline,"Dodgers to win","Dodgers to win",-125,silver,TPP,win,80%,50.00,40.00,90.00
+Baseball,MLB,apr,2025-04-20,"Washington Nationals @ Colorado Rockies","Game 2 Moneyline","Rockies to win","Rockies to win",+103,gold,TPP,win,103%,40.00,41.20,81.20
+Baseball,MLB,Apr,2025-04-20,"Washington Nationals @ Colorado Rockies","Game 1 Moneyline","Nationals to win","Nationals to win",-101,silver,TPP,win,99%,50.00,49.50,99.50
+Baseball,MLB,Apr,2025-04-21,"Milwaukee Brewers @ San Francisco Giants",Moneyline,"Giants to win","Giants to win",-135,silver,TPP,win,74%,50.00,37.04,87.04
+Baseball,MLB,Apr,2025-04-21,"Toronto Blue Jays @ Houston Astros",Moneyline,"Astros to win","Astros to win",-125,silver,TPP,win,80%,50.00,40.00,90.00
+Baseball,MLB,apr,2025-04-21,"Philadelphia Phillies @ New York Mets",Moneyline,"Mets to win","Mets to win",-125,silver,TPP,win,80%,50.00,40.00,90.00
+Baseball,MLB,Apr,2025-04-21,"Atlanta Braves @ ST. Louis Cardinals","Home Runs","Austin Riley (ATL) 1+ Home runs","Austin Riley (ATL) 1+ Home runs",+350,platinum,TPP,win,350%,25.00,87.50,112.50
+Baseball,MLB,Apr,2025-04-22,"Cincinnati Reds @ Miami Marlins",Moneyline,"Reds to win","Reds to win",-117,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,Apr,2025-04-22,"New York Yankees @ cleveland guardians",Moneyline,"Yankees to win","Yankees to win",-125,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,Apr,2025-04-22,"Chicago White Sox @ Minnesota Twins","First 5 Innings Moneyline","Twins to lead after 5 innings","Twins to lead after 5 innings",+121,gold,TPP,win,121%,35.00,42.35,77.35
+Baseball,MLB,Apr,2025-04-23,"Pittsburgh Pirates @ Los Angeles Angels",Moneyline,"Angels to win","Angels to win",-127,silver,BB,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,Apr,2025-04-23,"Colorado Rockies @ Kansas City Royals","Home Runs","Bobby Witt Jr. to hit a Home Run","Bobby Witt Jr. to hit a Home Run",+450,platinum,LAW,loss,-100%,25.00,-25.00,0.00
+Baseball,MLB,Apr,2025-04-23,"Toronto Blue Jays @ Houston Astros",Moneyline,"Blue Jays to win","Blue Jays to win",-105,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,Apr,2025-04-23,"Seattle Mariners @ Boston Red Sox",Moneyline,"Red Sox to win","Red Sox to win",-134,silver,TPP,loss,-100%,50.00,-50.00,0.00
+soccer,"Premier League",Apr,2025-04-23,"Arsenal 2 Tula @ Crystal Palace","Both Teams to Score","Both teams not to score","Both teams not to score",-128,silver,LAW,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,Apr,2025-04-23,"Cincinnati Reds @ Miami Marlins","Player Hits","Elly De La Cruz to record a hit","Elly De La Cruz to record a hit",-260,silver,LAW,win,38%,50.00,19.23,69.23
+Baseball,MLB,Apr,2025-04-23,"Philadelphia Phillies @ New York Mets","Same Game Parlay","Bryce Harper and Fransico Lindor to record a hit","Bryce Harper and Fransico Lindor to record a hit",+114,gold,LAW,win,88%,30.00,26.32,56.32
+Baseball,MLB,Apr,2025-04-23,"Philadelphia Phillies @ New York Mets","Player Hits","Bryce Harper & Francisco Lindor to record a hit","Bryce Harper & Francisco Lindor to record a hit",+114,gold,LAW,win,114%,35.00,39.90,74.90
+Baseball,MLB,apr,2025-04-23,"Los Angeles Dodgers @ Chicago Cubs","Home Runs","Teoscar Hernandez to hit a Home Run","Teoscar Hernandez to hit a Home Run",+350,platinum,LAW,win,350%,30.00,105.00,135.00
+Baseball,MLB,Apr,2025-04-23,"Milwaukee Brewers @ San Francisco Giants",Moneyline,"Giants to win","Giants to win",-136,silver,TPP,win,74%,50.00,36.76,86.76
+Baseball,MLB,apr,2025-04-23,"Texas Rangers @ Oakland Athletics",Moneyline,"Athletics to win","Athletics to win",-106,silver,TPP,win,94%,50.00,47.17,97.17
+Baseball,MLB,Apr,2025-04-23,"Baltimore Orioles @ Washington Nationals",Moneyline,"Nationals to win","Nationals to win",+125,gold,TPP,win,125%,40.00,50.00,90.00
+Baseball,MLB,apr,2025-04-23,"Los Angeles Dodgers @ Chicago Cubs",Moneyline,"Dodgers to win +125","Dodgers to win +125",+125,gold,TPP,win,125%,45.00,56.25,101.25
+soccer,"English Premiere League",Apr,2025-04-23,"Arsenal 2 Tula @ Crystal Palace","Both Teams to Score","Both Teams to Score","Both Teams to Score",-128,silver,LAW,win,78%,50.00,39.06,89.06
+Baseball,MLB,apr,2025-04-24,"Milwaukee Brewers @ Washington Nationals",Moneyline,"Brewers to win","Brewers to win",+140,gold,TPP,loss,-100%,30.00,-30.00,0.00
+hockey,NHL,apr,2025-04-24,"Florida Panthers @ Tampa Bay Lightning","Anytime Goalscorer","Nikita Kucherov to score a goal","Nikita Kucherov to score a goal",+155,gold,LAW,loss,-100%,25.00,-25.00,0.00
+Baseball,MLB,Apr,2025-04-24,"Baltimore Orioles @ Washington Nationals",Moneyline,"Orioles to win","Orioles to win",+104,gold,TPP,win,104%,30.00,31.20,61.20
+Baseball,MLB,apr,2025-04-24,"Pittsburgh Pirates @ Los Angeles Angels",Moneyline,"Angels to win","Angels to win",-150,silver,TPP,win,67%,50.00,33.33,83.33
+hockey,NHL,Apr,2025-04-24,"Vegas Golden Knights @ Minnesota Wild","1st Period Goals","Over 1.5","Over 1.5",-122,silver,LAW,win,82%,50.00,40.98,90.98
+hockey,NHL,Apr,2025-04-24,"Toronto Maple Leafs @ Ottawa Senators","Anytime Goalscorer","Auston Matthews to score a goal","Auston Matthews to score a goal",+140,gold,LAW,win,140%,35.00,49.00,84.00
+soccer,"English Premiere League",Apr,2025-04-24,"Brighton & Hove Albion @ Martin, Daniel & Brighton & Hove Albion @ West Ham United",Moneyline,"Brighton & Hove Albion to win","Brighton & Hove Albion to win",-154,silver,LAW,win,65%,50.00,32.47,82.47
+golf,PGA,Apr,2025-04-25,"Truist Championship","Each Way","Sam Burns 6 places ew","Sam Burns 6 places ew",51,silver,"Golf Nich",loss,-100%,10.00,-10.00,0.00
+golf,PGA,Apr,2025-04-25,"Truist Championship","Each Way","Keith Mitchell 6 places ew","Keith Mitchell 6 places ew",81,silver,"Golf Nich",loss,-100%,10.00,-10.00,0.00
+golf,PGA,apr,2025-04-25,"Truist Championship","Each Way","Eric Cole 6 places ew","Eric Cole 6 places ew",101,silver,"Golf Nich",loss,-100%,10.00,-10.00,0.00
+golf,PGA,apr,2025-04-25,"Truist Championship","Each Way","Erik van Rooyen 8 places ew","Erik van Rooyen 8 places ew",126,silver,"Golf Nich",loss,-100%,10.00,-10.00,0.00
+Baseball,MLB,Apr,2025-04-25,"Pittsburgh Pirates @ Los Angeles Dodgers","Home Runs","Shohei Ohtani to hit 1+ Home Runs","Shohei Ohtani to hit 1+ Home Runs",+310,platinum,LAW,loss,-100%,20.00,-20.00,0.00
+Baseball,MLB,Apr,2025-04-25,"Pittsburgh Pirates @ Los Angeles Dodgers","Player Hits","Shohei Ohtani to record 2+ Hits","Shohei Ohtani to record 2+ Hits",+290,platinum,LAW,loss,-100%,25.00,-25.00,0.00
+Baseball,MLB,Apr,2025-04-25,"Atlanta Braves @ Arizona Diamondbacks",Moneyline,"Diamondbacks to win","Diamondbacks to win",+112,gold,TPP,loss,-100%,40.00,-40.00,0.00
+Baseball,MLB,Apr,2025-04-25,"Texas Rangers @ San Francisco Giants",Moneyline,"Giants to win -110","Giants to win -110",-110,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,Apr,2025-04-25,"Tampa Bay Rays @ San Diego Padres",Moneyline,"Padres to win","Padres to win",-140,silver,TPP,loss,-100%,40.00,-40.00,0.00
+Baseball,MLB,Apr,2025-04-25,"Toronto Blue Jays @ New York Yankees",Moneyline,"Yankees to win","Yankees to win",-130,silver,TPP,loss,-100%,40.00,-40.00,0.00
+golf,"LIV Golf Tour",Apr,2025-04-25,"LIV Golf Mexico City","Top 10 Finish","Charles Howell III Top 10 Finish","Charles Howell III Top 10 Finish",+400,platinum,"Golf Brad",loss,-100%,5.00,-5.00,0.00
+golf,"LIV Golf",apr,2025-04-25,"LIV Golf Mexico City","Top 10 Finish","Danny Lee Top 10 Finish","Danny Lee Top 10 Finish",+600,platinum,"Golf Brad",loss,-100%,5.00,-5.00,0.00
+golf,"LIV Golf Tour",apr,2025-04-25,"LIV Golf Mexico City","Top 10 Finish","Harold Varner Top 10 finish","Harold Varner Top 10 finish",+600,gold,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,"LIV Golf Tour",Apr,2025-04-25,"LIV Golf Mexico City","Top 10 Finish","Talor Gooch Top 10 Finish","Talor Gooch Top 10 Finish",+250,gold,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,PGA,apr,2025-04-25,"Truist Championship","Each Way","Victor Hovland 6 places ew","Victor Hovland 6 places ew",29,silver,"Golf Nich",loss,-100%,10.00,-10.00,0.00
+golf,PGA,Apr,2025-04-25,"Truist Championship","Each Way","Russell Henley 6 places ew","Russell Henley 6 places ew",34,silver,"Golf Nich",loss,-100%,10.00,-10.00,0.00
+Baseball,MLB,apr,2025-04-25,"Philadelphia Phillies @ Chicago Cubs",Moneyline,"Cubs to win","Cubs to win",-150,silver,TPP,win,67%,50.00,33.33,83.33
+Baseball,MLB,Apr,2025-04-25,"Cincinnati Reds @ Colorado Rockies",Moneyline,"Reds to win","Reds to win",-117,silver,TPP,win,85%,50.00,42.74,92.74
+Baseball,MLB,Apr,2025-04-25,"Pittsburgh Pirates @ Los Angeles Dodgers","First 5 Innings Moneyline","Pirates to lead after 5 innings","Pirates to lead after 5 innings",+165,gold,TPP,win,165%,40.00,66.00,106.00
+golf,"LIV Golf Tour",Apr,2025-04-25,"LIV Golf Mexico City","Top 10 Finish","Dustin Johnson @ +225 Top 10 Finish","Dustin Johnson @ +225 Top 10 Finish",+225,gold,"Golf Brad",win,225%,20.00,45.00,65.00
+golf,PGA,Apr,2025-04-25,"ONEflight Myrtle Beach Classic","Each Way","Alex Smalley 6 places ew","Alex Smalley 6 places ew",34,silver,"Golf Nich",win,-100%,10.00,-10.00,0.00
+golf,PGA,Apr,2025-04-25,"ONEflight Myrtle Beach Classic","Each Way","Thorbjorn Olesen 6 places ew","Thorbjorn Olesen 6 places ew",34,silver,"Golf Nich",win,-100%,10.00,-10.00,0.00
+golf,PGA,Apr,2025-04-25,"ONEflight Myrtle Beach Classic","Each Way","Harry Hall 6 places ew","Harry Hall 6 places ew",34,silver,"Golf Nich",win,-100%,10.00,-10.00,0.00
+golf,PGA,Apr,2025-04-25,"ONEflight Myrtle Beach Classic","Each Way","Kevin Yu 6 places ew","Kevin Yu 6 places ew",41,silver,"Golf Nich",win,-100%,10.00,-10.00,0.00
+golf,PGA,apr,2025-04-25,"ONEflight Myrtle Beach Classic","Each Way","Ricky Castillo 6 places ew","Ricky Castillo 6 places ew",51,silver,"Golf Nich",win,-100%,10.00,-10.00,0.00
+golf,PGA,apr,2025-04-25,"ONEflight Myrtle Beach Classic","Each Way","Patton Kizzire 6 places ew","Patton Kizzire 6 places ew",151,silver,"Golf Nich",win,-100%,10.00,-10.00,0.00
+golf,PGA,Apr,2025-04-25,"Truist Championship","Each Way","Sepp Straka 6 places ew","Sepp Straka 6 places ew",41,silver,"Golf Nich",win,1950%,10.00,195.00,205.00
+Baseball,MLB,Apr,2025-04-26,"Philadelphia Phillies @ Chicago Cubs",Moneyline,"Cubs to win","Cubs to win",+101,gold,TPP,loss,-100%,40.00,-40.00,0.00
+Baseball,MLB,Apr,2025-04-26,"Baltimore Orioles @ Detroit Tigers","Game 1 Moneyline","Orioles to win","Orioles to win",+133,gold,TPP,loss,-100%,30.00,-30.00,0.00
+"Combat Sports",UFC,apr,2025-04-26,"Gauge Young @ Evan Elder",Moneyline,"Gauge Young to win","Gauge Young to win",+160,gold,BB,loss,-100%,30.00,-30.00,0.00
+Baseball,MLB,Apr,2025-04-26,"Milwaukee Brewers @ ST. Louis Cardinals",Moneyline,"Cardinals to win","Cardinals to win",-145,silver,BB,win,69%,50.00,34.48,84.48
+Baseball,MLB,Apr,2025-04-26,"Texas Rangers @ San Francisco Giants",Moneyline,"Giants to win","Giants to win",-137,silver,TPP,win,73%,50.00,36.50,86.50
+Baseball,MLB,Apr,2025-04-26,"Boston Red Sox @ cleveland guardians","Game 2 Moneyline","Red Sox to win","Red Sox to win",-137,silver,TPP,win,73%,50.00,36.50,86.50
+Baseball,MLB,apr,2025-04-26,"Los Angeles Angels @ Minnesota Twins",Moneyline,"Twins to win","Twins to win",-125,silver,TPP,win,80%,50.00,40.00,90.00
+Baseball,MLB,apr,2025-04-26,"Boston Red Sox @ cleveland guardians","Game 1 Moneyline","Guardians to win","Guardians to win",-103,silver,TPP,win,97%,50.00,48.54,98.54
+Baseball,MLB,apr,2025-04-26,"Houston Astros @ Kansas City Royals",Moneyline,"Royals to win","Royals to win",+122,gold,TPP,win,122%,40.00,48.80,88.80
+Baseball,MLB,apr,2025-04-26,"Atlanta Braves @ Arizona Diamondbacks",Moneyline,"Braves to win","Braves to win",+105,gold,TPP,win,105%,50.00,52.50,102.50
+"Combat Sports",UFC,Apr,2025-04-26,"John Castaneda @ Chris Gutierrez",UFC,"Chris Gutierrez to win","Chris Gutierrez to win",-125,silver,BB,win,80%,50.00,40.00,90.00
+Baseball,MLB,apr,2025-04-27,"Philadelphia Phillies @ Chicago Cubs",Moneyline,"Cubs to win","Cubs to win",-118,silver,TPP,loss,-100%,40.00,-40.00,0.00
+Baseball,MLB,Apr,2025-04-27,"Toronto Blue Jays @ New York Yankees","Game 2 Moneyline","Yankees to win","Yankees to win",-155,silver,TPP,win,65%,50.00,32.26,82.26
+Baseball,MLB,apr,2025-04-27,"Tampa Bay Rays @ San Diego Padres",Moneyline,"Rays to win","Rays to win",-102,silver,TPP,win,98%,50.00,49.02,99.02
+Baseball,MLB,Apr,2025-04-28,"Minnesota Twins @ Cleveland Guardians","Game Winner","Cleveland Guardians to win","Cleveland Guardians to win",-123,Bronze,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,Apr,2025-04-28,"Detroit Tigers @ Houston Astros","Game Winner","Detroit Tigers to win","Detroit Tigers to win",107,Bronze,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,apr,2025-04-28,"New York Mets @ Washington Nationals","Game Winner","New York Mets to win","New York Mets to win",-170,Bronze,TPP,win,59%,50.00,29.41,79.41
+Baseball,MLB,Apr,2025-04-28,"Atlanta Braves @ Colorado Rockies","Game Winner","Atlanta Braves to win","Atlanta Braves to win",-165,Bronze,TPP,win,61%,50.00,30.30,80.30
+Baseball,MLB,apr,2025-04-28,"St. Louis Cardinals @ Cincinnati Reds","Game Winner","Cincinnati Reds to win","Cincinnati Reds to win",-115,Silver,TPP,win,87%,50.00,43.48,93.48
+Baseball,MLB,apr,2025-04-28,"Oakland Athletics @ Texas Rangers","Game Winner","Oakland Athletics to win","Oakland Athletics to win",-105,Silver,TPP,win,95%,50.00,47.62,97.62
+Baseball,MLB,apr,2025-04-28,"New York Yankees @ Baltimore Orioles","Game Winner","Baltimore Orioles to win","Baltimore Orioles to win",116,Silver,TPP,win,116%,50.00,58.00,108.00
+Baseball,MLB,apr,2025-04-29,"San Francisco Giants @ San Diego Padres","Game Winner","San Francisco Giants to win","San Francisco Giants to win",-120,Bronze,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,Apr,2025-04-29,"Minnesota Twins @ Cleveland Guardians","Game Winner","Minnesota Twins to win","Minnesota Twins to win",120,Gold,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,Apr,2025-04-29,"Kansas City Royals @ Tampa Bay Rays","Game Winner","Tampa Bay Rays to win","Tampa Bay Rays to win",-150,Bronze,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,apr,2025-04-29,"Detroit Tigers @ Houston Astros","Game Winner","Detroit Tigers to win","Detroit Tigers to win",107,Gold,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,Apr,2025-04-29,"Washington Nationals @ Philadelphia Phillies","Game Winner","Philadelphia Phillies to win","Philadelphia Phillies to win",-185,Bronze,TPP,win,54%,50.00,27.03,77.03
+Baseball,MLB,Apr,2025-04-29,"New York Yankees @ Baltimore Orioles","Game Winner","New York Yankees to win","New York Yankees to win",-150,Silver,TPP,win,67%,50.00,33.33,83.33
+Baseball,MLB,apr,2025-04-29,"St. Louis Cardinals @ Cincinnati Reds","Game Winner","Cincinnati Reds to win","Cincinnati Reds to win",-140,Silver,TPP,win,71%,50.00,35.71,85.71
+Baseball,MLB,Apr,2025-04-29,"Arizona Diamondbacks @ New York Mets","Game Winner","New York Mets to win","New York Mets to win",-137,Silver,TPP,win,73%,50.00,36.50,86.50
+Baseball,MLB,apr,2025-04-29,"Chicago Cubs @ Pittsburgh Pirates","Game Winner","Chicago Cubs to win","Chicago Cubs to win",-135,Silver,TPP,win,74%,50.00,37.04,87.04
+Baseball,MLB,Apr,2025-04-29,"Boston Red Sox @ Toronto Blue Jays","Game Winner","Boston Red Sox to win","Boston Red Sox to win",-135,Silver,TPP,win,74%,50.00,37.04,87.04
+Baseball,MLB,apr,2025-04-30,"Minnesota Twins @ Cleveland Guardians","Game Winner","Minnesota Twins to win","Minnesota Twins to win",-130,Silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,Apr,2025-04-30,"New York Yankees @ Baltimore Orioles","Game Winner","New York Yankees to win","New York Yankees to win",109,Bronze,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,Apr,2025-04-30,"Chicago Cubs @ Pittsburgh Pirates","Game Winner","Chicago Cubs to win","Chicago Cubs to win",-158,Bronze,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,Apr,2025-04-30,"Kansas City Royals @ Tampa Bay Rays","Game Winner","Tampa Bay Rays to win","Tampa Bay Rays to win",-160,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,apr,2025-04-30,"Boston Red Sox @ Toronto Blue Jays","Game Winner","Boston Red Sox to win","Boston Red Sox to win",-106,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,Apr,2025-04-30,"Oakland Athletics @ Texas Rangers","Game Winner","Texas Rangers to win","Texas Rangers to win",-150,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,Apr,2025-04-30,"Milwaukee Brewers @ Chicago White Sox","Game Winner","Milwaukee Brewers to win","Milwaukee Brewers to win",-155,silver,TPP,win,65%,50.00,32.26,82.26
+Baseball,MLB,Apr,2025-04-30,"San Francisco Giants @ San Diego Padres","Game Winner","San Diego Padres to win","San Diego Padres to win",-140,silver,TPP,win,71%,50.00,35.71,85.71
+Baseball,MLB,apr,2025-04-30,"Los Angeles Angels @ Seattle Mariners","Game Winner","Seattle Mariners to win","Seattle Mariners to win",-134,silver,TPP,win,75%,50.00,37.31,87.31
+Baseball,MLB,apr,2025-04-30,"Arizona Diamondbacks @ New York Mets","Game Winner","Arizona Diamondbacks to win","Arizona Diamondbacks to win",-104,silver,TPP,win,96%,50.00,48.08,98.08
+Baseball,MLB,Apr,2025-04-30,"St. Louis Cardinals @ Cincinnati Reds","Game Winner","St. Louis Cardinals to win","St. Louis Cardinals to win",102,gold,TPP,win,102%,50.00,51.00,101.00
+golf,PGA,May,2025-05-01,"Phil Mickelson to win",Outright,Outright,"LIV Golf South Korea",350,platinum,"Golf Brad",loss,-100%,18.00,-18.00,0.00
+golf,PGA,May,2025-05-01,"Hayden Springer Top 10 Finish",Outright,Outright,"The CJ Cup Byron Nelson",1000,platinum,"Golf Brad",Loss,-100%,30.00,-30.00,0.00
+golf,PGA,May,2025-05-01,"Ryo Hisatsune to win",Outright,Outright,"The CJ Cup Byron Nelson",500,platinum,"Golf Brad",Loss,-100%,30.00,-30.00,0.00
+golf,PGA,May,2025-05-01,"Matt Wallace to win",Outright,Outright,"The CJ Cup Byron Nelson",600,platinum,"Golf Brad",Loss,-100%,30.00,-30.00,0.00
+golf,PGA,May,2025-05-01,"Sami Valimaki to win",Outright,Outright,"The CJ Cup Byron Nelson",750,platinum,"Golf Brad",Loss,-100%,30.00,-30.00,0.00
+golf,PGA,May,2025-05-01,"Chad Ramey to win",Outright,Outright,"The CJ Cup Byron Nelson",1000,platinum,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,May,2025-05-01,"Davis Riley to win",Outright,Outright,"The CJ Cup Byron Nelson",650,platinum,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,May,2025-05-01,"Dustin Johnson to win",Outright,Outright,"LIV Golf South Korea",175,gold,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,PGA,May,2025-05-01,"Charl Schwartzel to win",Outright,Outright,"LIV Golf South Korea",200,gold,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,PGA,May,2025-05-01,"Louis Oosthuizen to win",Outright,Outright,"LIV Golf South Korea",275,platinum,"Golf Brad",loss,-100%,18.00,-18.00,0.00
+golf,PGA,May,2025-05-01,"Bubba Watson to win",Outright,Outright,"LIV Golf South Korea",333,platinum,"Golf Brad",loss,-100%,18.00,-18.00,0.00
+golf,PGA,May,2025-05-01,"Branden Grace to win",Outright,Outright,"LIV Golf South Korea",500,platinum,"Golf Brad",loss,-100%,15.00,-15.00,0.00
+golf,PGA,May,2025-05-01,"Jake Knapp to win",Outright,Outright,"The CJ Cup Byron Nelson",350,platinum,"Golf Brad",Loss,-100%,35.00,-35.00,0.00
+hockey,NHL,May,2025-05-01,"Ottawa Senators to win","Game Winner","Game Winner","Toronto Maple Leafs @ Ottawa Senators",-115,silver,LAW,Loss,-100%,50.00,-50.00,0.00
+hockey,NHL,May,2025-05-01,"Minnesota Wild to win","Game Winner","Game Winner","Vegas Golden Knights @ Minnesota Wild",145,gold,LAW,Loss,-100%,45.00,-45.00,0.00
+hockey,NHL,May,2025-05-01,"Dallas Stars 1st Period to win","1st Period Line","1st Period Line","Dallas Stars @ Colorado Avalanche",140,gold,LAW,Loss,-100%,45.00,-45.00,0.00
+hockey,NHL,May,2025-05-01,"Tie to win","Regulation Win","Regulation Win","Dallas Stars @ Colorado Avalanche",325,platinum,LAW,Loss,-100%,35.00,-35.00,0.00
+"Other Sports","Other Sports",May,2025-05-02,"Publisher to win",Outright,Outright,"2025 Kentucky Derby - Churchill Downs",4000,platinum,BB,loss,-100%,30.00,-30.00,0.00
+Baseball,MLB,May,2025-05-05,"Seattle Mariners (B Miller) to win","Game Winner","Game Winner","Seattle Mariners (B Miller) @ Oakland Athletics (L Severino)",-110,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-05,"Pittsburgh Pirates (C Mlodzinski) to win","Game Winner","Game Winner","Pittsburgh Pirates (C Mlodzinski) @ St. Louis Cardinals (M Mikolas)",117,gold,TPP,loss,-100%,45.00,-45.00,0.00
+Baseball,MLB,May,2025-05-05,"Chicago White Sox (S Smith) to win","Game Winner","Game Winner","Chicago White Sox (S Smith) @ Kansas City Royals (C Ragans)",190,gold,TPP,loss,-100%,40.00,-40.00,0.00
+golf,PGA,May,2025-05-06,"Brian Harman Top 10 Finish to win",Outright,Outright,"Truist Championship",450,platinum,"Golf Brad",loss,-100%,15.00,-15.00,0.00
+golf,PGA,May,2025-05-06,"Viktor Hovland Top 5 Finish to win",Outright,Outright,"Truist Championship",500,platinum,"Golf Brad",loss,-100%,15.00,-15.00,0.00
+golf,PGA,May,2025-05-06,"Keegan Bradley Top 5 Finish to win",Outright,Outright,"Truist Championship",750,platinum,"Golf Brad",loss,-100%,12.00,-12.00,0.00
+golf,PGA,May,2025-05-06,"Si-Woo Kim Top 5 Finish to win",Outright,Outright,"Truist Championship",1000,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,PGA,May,2025-05-06,"Sam Burns Top 5 Finish to win",Outright,Outright,"Truist Championship",800,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,PGA,May,2025-05-06,"Keith Mitchell Top 5 Finish to win",Outright,Outright,"Truist Championship",1000,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,PGA,May,2025-05-06,"Eric Cole Top 5 Finish to win",Outright,Outright,"Truist Championship",1600,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+golf,PGA,May,2025-05-06,"Erik Van Rooyen Top 5 Finish to win",Outright,Outright,"Truist Championship",2200,platinum,"Golf Brad",loss,-100%,10.00,-10.00,0.00
+Baseball,MLB,May,2025-05-08,"Los Angeles Dodgers (Y Yamamoto) to win","Game Winner","Game Winner","Los Angeles Dodgers (Y Yamamoto) @ Arizona Diamondbacks (B Pfaadt)",-140,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-08,"Texas Rangers (J Leiter) to win","Game Winner","Game Winner","Texas Rangers (J Leiter) @ Boston Red Sox (B Bello)",135,gold,TPP,loss,-100%,45.00,-45.00,0.00
+Baseball,MLB,May,2025-05-08,"Detroit Tigers to win","Game Winner","Game Winner","Detroit Tigers @ Colorado Rockies - Game 2",-180,Bronze,TPP,win,56%,50.00,27.78,77.78
+Baseball,MLB,May,2025-05-08,"Philadelphia Phillies (J Luzardo) to win","Game Winner","Game Winner","Philadelphia Phillies (J Luzardo) @ Tampa Bay Rays (R Pepiot)",-145,silver,TPP,win,69%,50.00,34.48,84.48
+Baseball,MLB,May,2025-05-09,"Seattle Mariners (L Castillo) to win","Game Winner","Game Winner","Toronto Blue Jays (K Gausman) @ Seattle Mariners (L Castillo)",-135,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-09,"Atlanta Braves (B Elder) to win","Game Winner","Game Winner","Atlanta Braves (B Elder) @ Pittsburgh Pirates (B Falter)",-140,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-09,"Milwaukee Brewers (J Quintana) to win","Game Winner","Game Winner","Milwaukee Brewers (J Quintana) @ Tampa Bay Rays (Z Littell)",-117,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-09,"Philadelphia Phillies (A Nola) to win","Game Winner","Game Winner","Philadelphia Phillies (A Nola) @ Cleveland Guardians (G Williams)",-120,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-09,"Boston Red Sox (H Dobbins) to win","Game Winner","Game Winner","Boston Red Sox (H Dobbins) @ Kansas City Royals (M Lorenzen)",-116,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-09,"Miami Marlins (M Meyer) to win","Game Winner","Game Winner","Miami Marlins (M Meyer) @ Chicago White Sox (B Wilson)",-145,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-09,"San Francisco Giants (J Hicks) to win","Game Winner","Game Winner","San Francisco Giants (J Hicks) @ Minnesota Twins (C Paddack)",-108,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-09,"Los Angeles Angels (K Hendricks) to win","Game Winner","Game Winner","Baltimore Orioles (T Sugano) @ Los Angeles Angels (K Hendricks)",130,gold,TPP,loss,-100%,45.00,-45.00,0.00
+Baseball,MLB,May,2025-05-09,"Cincinnati Reds (N Martinez) to win","Game Winner","Game Winner","Cincinnati Reds (N Martinez) @ Houston Astros (H Brown)",175,gold,TPP,loss,-100%,40.00,-40.00,0.00
+"Combat Sports",UFC,May,2025-05-09,"Ion Cutelaba to win","To Win Fight","To Win Fight","Ion Cutelaba v Modestas Bukauskas",-125,silver,BB,loss,-100%,50.00,-50.00,0.00
+"Combat Sports",UFC,May,2025-05-09,"Navajo Stirling to win by KO, TKO or DQ to win","Method of Victory","Method of Victory","Ivan Erslan v Navajo Stirling",-105,silver,BB,loss,-100%,50.00,-50.00,0.00
+"Combat Sports",UFC,May,2025-05-09,"Charlie Radtke to win","To Win Fight","To Win Fight","Charlie Radtke v Mike Malott",125,gold,BB,loss,-100%,45.00,-45.00,0.00
+"Combat Sports",UFC,May,2025-05-09,"Marc-Andre Barriault to win by decision/technical decision to win","Method of Victory","Method of Victory","Bruno Silva v Marc-Andre Barriault",250,gold,BB,loss,-100%,40.00,-40.00,0.00
+"Combat Sports",UFC,May,2025-05-09,"Jack Della Maddalena to win by KO, TKO or DQ to win","Method of Victory","Method of Victory","Jack Della Maddalena v Belal Muhammad",325,platinum,BB,loss,-100%,35.00,-35.00,0.00
+"Combat Sports",UFC,May,2025-05-09,"Jose Aldo to win by KO, TKO or DQ to win","Method of Victory","Method of Victory","Aiemann Zahabi v Jose Aldo",500,platinum,BB,loss,-100%,30.00,-30.00,0.00
+"Combat Sports",UFC,May,2025-05-09,"Natalia Silva to win by decision/technical decision to win","Method of Victory","Method of Victory","Natalia Silva v Alexa Grasso",-149,silver,BB,win,67%,50.00,33.56,83.56
+"Combat Sports",UFC,May,2025-05-09,"Valentina Shevchenko to win","To Win Fight","To Win Fight","Manon Fiorot v Valentina Shevchenko",100,gold,BB,win,100%,45.00,45.00,90.00
+"Combat Sports",UFC,May,2025-05-09,"Jack Della Maddalena to win","To Win Fight","To Win Fight","Jack Della Maddalena v Belal Muhammad",140,gold,BB,win,140%,45.00,63.00,108.00
+Baseball,MLB,May,2025-05-10,"Houston Astros (L McCullers) to win","Game Winner","Game Winner","Cincinnati Reds (B Singer) @ Houston Astros (L McCullers)",-125,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-10,"New York Mets (T Megill) to win","Game Winner","Game Winner","Chicago Cubs (B Keller) @ New York Mets (T Megill)",-150,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-10,"Los Angeles Dodgers (D May) to win","Game Winner","Game Winner","Los Angeles Dodgers (D May) to win",-115,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-10,"Baltimore Orioles (K Gibson) to win","Game Winner","Game Winner","Baltimore Orioles (K Gibson) to win",-135,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-10,"Seattle Mariners (L Evans) to win","Game Winner","Game Winner","Seattle Mariners (L Evans) to win",-130,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-10,"New York Yankees (C Rodon) to win","Game Winner","Game Winner","New York Yankees (C Rodon) to win",-155,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-10,"Pittsburgh Pirates (A Heaney) to win","Game Winner","Game Winner","Pittsburgh Pirates (A Heaney) to win",138,gold,TPP,loss,-100%,45.00,-45.00,0.00
+Baseball,MLB,May,2025-05-10,"Philadelphia Phillies (R Suarez) to win","Game Winner","Game Winner","Philadelphia Phillies (R Suarez) @ Cleveland Guardians (T Bibee)",-122,silver,TPP,win,82%,50.00,40.98,90.98
+Baseball,MLB,May,2025-05-10,"Tampa Bay Rays (T Bradley) to win","Game Winner","Game Winner","Tampa Bay Rays (T Bradley) to win",-116,silver,TPP,win,86%,50.00,43.10,93.10
+Baseball,MLB,May,2025-05-10,"Minnesota Twins (J Ryan) to win","Game Winner","Game Winner","San Francisco Giants (L Webb) @ Minnesota Twins (J Ryan)",-113,silver,TPP,win,88%,50.00,44.25,94.25
+Baseball,MLB,May,2025-05-10,"Texas Rangers (J Degrom) to win","Game Winner","Game Winner","Texas Rangers (J Degrom) @ Detroit Tigers (J Flaherty)",100,gold,TPP,win,100%,45.00,45.00,90.00
+Baseball,MLB,May,2025-05-10,"Boston Red Sox (G Crochet) to win","Game Winner","Game Winner","Boston Red Sox (G Crochet) @ Kansas City Royals (C Ragans)",100,gold,TPP,win,100%,45.00,45.00,90.00
+Baseball,MLB,May,2025-05-10,"St. Louis Cardinals (A Pallante) to win","Game Winner","Game Winner","St. Louis Cardinals (A Pallante) to win",-111,silver,TPP,win,90%,50.00,45.05,95.05
+Baseball,MLB,May,2025-05-10,"Miami Marlins (E Cabrera) to win","Game Winner","Game Winner","Miami Marlins (E Cabrera) @ Chicago White Sox (S Smith)",-103,silver,TPP,win,97%,50.00,48.54,98.54
+Baseball,MLB,May,2025-05-11,"Kansas City Royals (S Lugo) to win","Game Winner","Game Winner","Kansas City Royals (S Lugo) to win",-127,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-11,"Tampa Bay Rays (D Rasmussen) to win","Game Winner","Game Winner","Tampa Bay Rays (D Rasmussen) to win",-127,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-11,"Cleveland Guardians (L Ortiz) to win","Game Winner","Game Winner","Cleveland Guardians (L Ortiz) to win",155,gold,TPP,loss,-100%,40.00,-40.00,0.00
+Baseball,MLB,May,2025-05-11,"Minnesota Twins (P Lopez) to win","Game Winner","Game Winner","Minnesota Twins (P Lopez) to win",-155,silver,TPP,win,65%,50.00,32.26,82.26
+Baseball,MLB,May,2025-05-11,"Baltimore Orioles (Z Eflin) to win","Game Winner","Game Winner","Baltimore Orioles (Z Eflin) to win",-140,silver,TPP,win,71%,50.00,35.71,85.71
+Baseball,MLB,May,2025-05-11,"Houston Astros (R Blanco) to win","Game Winner","Game Winner","Houston Astros (R Blanco) to win",-138,silver,TPP,win,72%,50.00,36.23,86.23
+Baseball,MLB,May,2025-05-11,"New York Yankees (R Yarbrough) to win","Game Winner","Game Winner","New York Yankees (R Yarbrough) to win",-138,silver,TPP,win,72%,50.00,36.23,86.23
+Baseball,MLB,May,2025-05-11,"Los Angeles Dodgers (T Gonsolin) to win","Game Winner","Game Winner","Los Angeles Dodgers (T Gonsolin) to win",-110,silver,TPP,win,91%,50.00,45.45,95.45
+Baseball,MLB,May,2025-05-11,"Chicago White Sox (S Burke) to win","Game Winner","Game Winner","Chicago White Sox (S Burke) to win",121,Silver,TPP,win,121%,45.00,54.45,99.45
+Baseball,MLB,May,2025-05-11,"Toronto Blue Jays (J Urena) to win","Game Winner","Game Winner","Toronto Blue Jays (J Urena) to win",160,Silver,TPP,win,160%,40.00,64.00,104.00
+Baseball,MLB,May,2025-05-12,"Houston Astros (R Gusto) to win","Game Winner","Game Winner","Houston Astros (R Gusto) to win",-125,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-12,"Milwaukee Brewers (F Peralta) @ -115","Game Winner","Game Winner","Milwaukee Brewers (F Peralta) @ Cleveland Guardians (B Lively)",-115,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-12,"Boston Red Sox (T Houck) @ -113","Game Winner","Game Winner","Boston Red Sox (T Houck) @ Detroit Tigers (J Jobe)",-113,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-12,"Philadelphia Phillies (C Sanchez) @ -168","Game Winner","Game Winner","St. Louis Cardinals (M Liberatore) @ Philadelphia Phillies (C Sanchez)",-168,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-12,"New York Mets (D Peterson) @ -158","Game Winner","Game Winner","Pittsburgh Pirates (P Skenes) @ New York Mets (D Peterson)",-158,silver,TPP,win,63%,50.00,31.65,81.65
+Baseball,MLB,May,2025-05-12,"New York Yankees (C Schmidt) to win","Game Winner","Game Winner","New York Yankees (C Schmidt) to win",-140,silver,TPP,win,71%,50.00,35.71,85.71
+Baseball,MLB,May,2025-05-12,"Arizona Diamondbacks (M Kelly) to win","Game Winner","Game Winner","Arizona Diamondbacks (M Kelly) to win",-116,silver,TPP,win,86%,50.00,43.10,93.10
+Baseball,MLB,May,2025-05-12,"Pittsburgh Pirates (P Skenes) First 5 innings @ +100","1st Half Line","1st Half Line","Pittsburgh Pirates (P Skenes) @ New York Mets (D Peterson)",100,gold,TPP,win,100%,45.00,45.00,90.00
+Baseball,MLB,May,2025-05-13,"New York Yankees (M Fried) @ -135","Game Winner","Game Winner","New York Yankees (M Fried) @ Seattle Mariners (B Woo)",-135,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-13,"Milwaukee Brewers (Q Priester) @ +113","Game Winner","Game Winner","Milwaukee Brewers (Q Priester) @ Cleveland Guardians (L Allen)",113,gold,TPP,loss,-100%,44.57,-44.57,0.00
+Baseball,MLB,May,2025-05-13,"Philadelphia Phillies (J Luzardo) @ -140","Game Winner","Game Winner","St. Louis Cardinals (S Gray) @ Philadelphia Phillies (J Luzardo)",-140,silver,TPP,win,71%,50.00,35.71,85.71
+Baseball,MLB,May,2025-05-13,"Houston Astros (F Valdez) @ -135","Game Winner","Game Winner","Kansas City Royals (K Bubic) @ Houston Astros (F Valdez)",-135,silver,TPP,win,74%,50.00,37.04,87.04
+Baseball,MLB,May,2025-05-13,"Baltimore Orioles (C Povich) @ -125","Game Winner","Game Winner","Minnesota Twins (S Woods Richardson) @ Baltimore Orioles (C Povich)",-125,silver,TPP,win,80%,50.00,40.00,90.00
+Baseball,MLB,May,2025-05-13,"Detroit Tigers (T Holton) @ -103","Game Winner","Game Winner","Boston Red Sox (B Bello) @ Detroit Tigers (T Holton)",-103,silver,TPP,win,97%,50.00,48.54,98.54
+Baseball,MLB,May,2025-05-13,"Tampa Bay Rays (S Baz) @ +120","Game Winner","Game Winner","Tampa Bay Rays (S Baz) @ Toronto Blue Jays (J Berrios)",120,gold,TPP,win,120%,44.33,53.20,97.53
+Baseball,MLB,May,2025-05-13,"Chicago White Sox (J Cannon) @ +175","Game Winner","Game Winner","Chicago White Sox (J Cannon) @ Cincinnati Reds (A Abbott)",175,gold,TPP,win,175%,42.50,74.38,116.88
+Baseball,MLB,May,2025-05-14,"Atlanta Braves (B Elder) @ -160","Game Winner","Game Winner","Washington Nationals (M Parker) @ Atlanta Braves (B Elder)",-160,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-14,"Cleveland Guardians (G Williams) @ -135","Game Winner","Game Winner","Milwaukee Brewers (L Henderson) @ Cleveland Guardians (G Williams)",-135,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-14,"St. Louis Cardinals (E Fedde) @ +157","Game Winner","Game Winner","St. Louis Cardinals (E Fedde) @ Philadelphia Phillies (J Luzardo) - Game 1",157,gold,TPP,loss,-100%,43.10,-43.10,0.00
+Baseball,MLB,May,2025-05-14,"Los Angeles Angels (K Hendricks) @ +160","Game Winner","Game Winner","Los Angeles Angels (K Hendricks) @ San Diego Padres (R Vasquez)",160,gold,TPP,loss,-100%,43.00,-43.00,0.00
+Baseball,MLB,May,2025-05-14,"Toronto Blue Jays (C Bassitt) @ -140","Game Winner","Game Winner","Tampa Bay Rays (R Pepiot) @ Toronto Blue Jays (C Bassitt)",-140,silver,TPP,win,71%,50.00,35.71,85.71
+Baseball,MLB,May,2025-05-14,"Houston Astros (C Gordon) @ -135","Game Winner","Game Winner","Kansas City Royals (M Lorenzen) @ Houston Astros (C Gordon)",-135,silver,TPP,win,74%,50.00,37.04,87.04
+Baseball,MLB,May,2025-05-14,"New York Yankees (W Warren) @ -111","Game Winner","Game Winner","New York Yankees (W Warren) @ Seattle Mariners (L Castillo)",-111,silver,TPP,win,90%,50.00,45.05,95.05
+Baseball,MLB,May,2025-05-14,"Minnesota Twins (B Ober) @ +105","Game Winner","Game Winner","Minnesota Twins (B Ober) @ Baltimore Orioles (D Kremer) - Game 1",105,gold,TPP,win,105%,44.83,47.07,91.90
+Baseball,MLB,May,2025-05-14,"Arizona Diamondbacks (E Rodriguez) @ -103","Game Winner","Game Winner","Arizona Diamondbacks (E Rodriguez) @ San Francisco Giants (J Hicks)",-103,silver,TPP,win,97%,50.00,48.54,98.54
+Baseball,MLB,May,2025-05-15,"Toronto Blue Jays (K Gausman) @ -175","Game Winner","Game Winner","Tampa Bay Rays (Z Littell) @ Toronto Blue Jays (K Gausman)",-175,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-15,"Oakland Athletics (O Bido) @ +175","Game Winner","Game Winner","Oakland Athletics (O Bido) @ Los Angeles Dodgers (M Sauer)",175,gold,TPP,loss,-100%,42.50,-42.50,0.00
+Baseball,MLB,May,2025-05-15,"Washington Nationals (T Williams) @ +185","Game Winner","Game Winner","Washington Nationals (T Williams) @ Atlanta Braves (A Smith-Shawver)",185,gold,TPP,loss,-100%,42.17,-42.17,0.00
+golf,PGA,May,2025-05-15,"Tommy Fleetwood @ +250",Outright,Outright,"PGA Championship: Top English Player",250,gold,"Golf Nich",loss,-100%,20.00,-20.00,0.00
+golf,PGA,May,2025-05-15,"Tommy Fleetwood @ +300",Outright,Outright,"PGA Championship: Top 10 Finish",300,platinum,"Golf Nich",loss,-100%,17.00,-17.00,0.00
+golf,PGA,May,2025-05-15,"Tyrrell Hatton @ +333",Outright,Outright,"PGA Championship: Top 10 Finish",333,platinum,"Golf Nich",loss,-100%,17.00,-17.00,0.00
+golf,PGA,May,2025-05-15,"Corey Conners @ +450",Outright,Outright,"PGA Championship: Top 10 Finish",450,platinum,"Golf Nich",loss,-100%,17.00,-17.00,0.00
+golf,PGA,May,2025-05-15,"Justin Thomas @ +1000",Outright,Outright,"PGA Championship: Top American Player",1000,platinum,"Golf Nich",loss,-100%,12.00,-12.00,0.00
+golf,PGA,May,2025-05-15,"Patrick Reed @ +550",Outright,Outright,"PGA Championship: Top 10 Finish",550,platinum,"Golf Nich",loss,-100%,12.00,-12.00,0.00
+golf,PGA,May,2025-05-15,"Gary Woodland @ +1400",Outright,Outright,"PGA Championship: Top 10 Finish",1400,platinum,"Golf Nich",loss,-100%,10.00,-10.00,0.00
+golf,PGA,May,2025-05-15,"Cameron Young @ +1200",Outright,Outright,"PGA Championship: Top 10 Finish",1200,platinum,"Golf Nich",loss,-100%,10.00,-10.00,0.00
+Baseball,MLB,May,2025-05-15,"Texas Rangers (J Degrom) @ -127","Game Winner","Game Winner","Houston Astros (H Brown) @ Texas Rangers (J Degrom)",-127,silver,TPP,win,79%,50.00,39.37,89.37
+Baseball,MLB,May,2025-05-15,"Minnesota Twins (C Paddack) First 5 innings @ +110","1st Half Line","1st Half Line","Minnesota Twins (C Paddack) @ Baltimore Orioles (T Sugano)",110,gold,TPP,win,110%,44.67,49.14,93.81
+Baseball,MLB,May,2025-05-15,"Minnesota Twins (C Paddack) @ +115","Game Winner","Game Winner","Minnesota Twins (C Paddack) @ Baltimore Orioles (T Sugano)",115,gold,TPP,win,115%,44.50,51.17,95.67
+golf,PGA,May,2025-05-15,"Taylor Pendrith @ +333",Outright,Outright,"PGA Championship: Top Canadian Player",333,platinum,"Golf Brad",win,333%,17.00,56.61,73.61
+golf,PGA,May,2025-05-15,"Si-Woo Kim @ +600",Outright,Outright,"PGA Championship: Top Asian Player",600,platinum,"Golf Brad",win,600%,12.00,72.00,84.00
+golf,PGA,May,2025-05-15,"Harris English @ +1000",Outright,Outright,"PGA Championship: Top 10 Finish",1000,platinum,"Golf Brad",win,1000%,12.00,120.00,132.00
+Baseball,MLB,May,2025-05-16,"Cleveland Guardians (T Bibee) @ -115","Game Winner","Game Winner","Cleveland Guardians (T Bibee) @ Cincinnati Reds (B Singer)",-115,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-16,"Boston Red Sox (G Crochet) @ -109","Game Winner","Game Winner","Atlanta Braves (C Sale) @ Boston Red Sox (G Crochet)",-109,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-16,"Texas Rangers (N Eovaldi) @ -180","Game Winner","Game Winner","Houston Astros (L McCullers) @ Texas Rangers (N Eovaldi)",-180,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-16,"San Diego Padres (S Kolek) @ -140","Game Winner","Game Winner","Seattle Mariners (L Evans) @ San Diego Padres (S Kolek)",-140,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-16,"Tampa Bay Rays -1.5 @ +145",Spread,Spread,"Tampa Bay Rays @ Miami Marlins",145,gold,TPP,loss,-100%,43.50,-43.50,0.00
+Baseball,MLB,May,2025-05-16,"Oakland Athletics (J Sears) @ +175","Game Winner","Game Winner","Oakland Athletics (J Sears) @ San Francisco Giants (L Webb)",175,gold,TPP,loss,-100%,42.50,-42.50,0.00
+Baseball,MLB,May,2025-05-16,"New York Yankees (C Rodon) @ -140","Game Winner","Game Winner","New York Mets (T Megill) @ New York Yankees (C Rodon)",-140,bronze,TPP,win,71%,50.00,35.71,85.71
+Baseball,MLB,May,2025-05-16,"Detroit Tigers (J Flaherty) @ -111","Game Winner","Game Winner","Detroit Tigers (J Flaherty) @ Toronto Blue Jays (B Francis)",-111,silver,TPP,win,90%,50.00,45.05,95.05
+Baseball,MLB,May,2025-05-16,"Minnesota Twins (J Ryan) @ -111","Game Winner","Game Winner","Minnesota Twins (J Ryan) @ Milwaukee Brewers (C Patrick)",-111,silver,TPP,win,90%,50.00,45.05,95.05
+Baseball,MLB,May,2025-05-16,"Washington Nationals (M Gore) @ +113","Game Winner","Game Winner","Washington Nationals (M Gore) @ Baltimore Orioles (C Povich)",113,gold,TPP,win,113%,44.57,50.36,94.93
+Baseball,MLB,May,2025-05-16,"St. Louis Cardinals (A Pallante) @ +130","Game Winner","Game Winner","St. Louis Cardinals (A Pallante) @ Kansas City Royals (C Ragans)",130,gold,TPP,win,130%,44.00,57.20,101.20
+Baseball,MLB,May,2025-05-17,"Kansas City Royals @ -117","Game Winner","Game Winner","St. Louis Cardinals @ Kansas City Royals",-117,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-17,"Cleveland Guardians (S Cecconi) @ -122","Game Winner","Game Winner","Cleveland Guardians (S Cecconi) @ Cincinnati Reds (B Suter)",-122,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-17,"Baltimore Orioles (K Gibson) @ -155","Game Winner","Game Winner","Washington Nationals (J Irvin) @ Baltimore Orioles (K Gibson)",-155,bronze,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-17,"Atlanta Braves (G Holmes) @ +102","Game Winner","Game Winner","Atlanta Braves (G Holmes) @ Boston Red Sox (L Giolito)",102,gold,TPP,loss,-100%,44.93,-44.93,0.00
+Baseball,MLB,May,2025-05-17,"Oakland Athletics (L Severino) @ +135","Game Winner","Game Winner","Oakland Athletics (L Severino) @ San Francisco Giants (L Roupp)",135,gold,TPP,loss,-100%,43.93,-43.93,0.00
+"Combat Sports",UFC,May,2025-05-17,"Matheus Camilo @ -190","To Win Fight","To Win Fight","Gabriel Green v Matheus Camilo",-190,silver,BB,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-17,"Tampa Bay Rays (D Rasmussen) @ -150","Game Winner","Game Winner","Tampa Bay Rays (D Rasmussen) @ Miami Marlins (S Alcantara)",-150,bronze,TPP,win,67%,50.00,33.33,83.33
+Baseball,MLB,May,2025-05-17,"Texas Rangers (T Mahle) @ -117","Game Winner","Game Winner","Houston Astros (R Blanco) @ Texas Rangers (T Mahle)",-117,silver,TPP,win,85%,50.00,42.74,92.74
+Baseball,MLB,May,2025-05-17,"Minnesota Twins (P Lopez) @ -116","Game Winner","Game Winner","Minnesota Twins (P Lopez) @ Milwaukee Brewers (T Myers)",-116,silver,TPP,win,86%,50.00,43.10,93.10
+Baseball,MLB,May,2025-05-17,"New York Mets (G Canning) @ +115","Game Winner","Game Winner","New York Mets (G Canning) @ New York Yankees (C Schmidt)",115,gold,TPP,win,115%,44.50,51.17,95.67
+Baseball,MLB,May,2025-05-17,"Seattle Mariners (E Hancock) @ +170","Game Winner","Game Winner","Seattle Mariners (E Hancock) @ San Diego Padres (N Pivetta)",170,gold,TPP,win,170%,42.67,72.54,115.21
+"Combat Sports",UFC,May,2025-05-17,"Melquizael Costa @ -160","To Win Fight","To Win Fight","Julian Erosa v Melquizael Costa",-160,silver,BB,win,62%,50.00,31.25,81.25
+"Combat Sports",UFC,May,2025-05-17,"Mairon Santos @ -150","To Win Fight","To Win Fight","Sodiq Yusuff v Mairon Santos",-150,bronze,BB,win,67%,50.00,33.33,83.33
+Baseball,MLB,May,2025-05-18,"Texas Rangers (J Leiter) @ -101","Game Winner","Game Winner","Houston Astros (F Valdez) @ Texas Rangers (J Leiter)",-101,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-18,"Pittsburgh Pirates (P Skenes) @ -105","Game Winner","Game Winner","Pittsburgh Pirates (P Skenes) @ Philadelphia Phillies (M Abel)",-105,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-18,"Baltimore Orioles (Z Eflin) @ -175","Game Winner","Game Winner","Washington Nationals (M Soroka) @ Baltimore Orioles (Z Eflin)",-175,bronze,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-18,"Tampa Bay Rays (S Baz) @ -150","Game Winner","Game Winner","Tampa Bay Rays (S Baz) @ Miami Marlins (C Quantrill)",-150,bronze,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-18,"St. Louis Cardinals (M Liberatore) @ -110","Game Winner","Game Winner","St. Louis Cardinals (M Liberatore) @ Kansas City Royals (M Wacha)",-110,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-18,"Arizona Diamondbacks (M Kelly) -1.5 @ -155",Spread,Spread,"Colorado Rockies (C Dollander) @ Arizona Diamondbacks (M Kelly)",-155,bronze,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-18,"Los Angeles Dodgers (T Gonsolin) -1.5 @ -120",Spread,Spread,"Los Angeles Angels (Y Kikuchi) @ Los Angeles Dodgers (T Gonsolin)",-120,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-18,"San Diego Padres (M King) @ -138","Game Winner","Game Winner","Seattle Mariners (B Woo) @ San Diego Padres (M King)",-138,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-18,"Oakland Athletics (J Springs) @ +135","Game Winner","Game Winner","Oakland Athletics (J Springs) @ San Francisco Giants (J Verlander)",135,gold,TPP,loss,-100%,43.93,-43.93,0.00
+Baseball,MLB,May,2025-05-18,"New York Yankees (M Fried) @ -160","Game Winner","Game Winner","New York Mets (D Peterson) @ New York Yankees (M Fried)",-160,silver,TPP,win,62%,50.00,31.25,81.25
+Baseball,MLB,May,2025-05-18,"Milwaukee Brewers (F Peralta) @ -140","Game Winner","Game Winner","Minnesota Twins (Z Matthews) @ Milwaukee Brewers (F Peralta)",-140,silver,TPP,win,71%,50.00,35.71,85.71
+Baseball,MLB,May,2025-05-18,"Cincinnati Reds (A Abbott) @ -135","Game Winner","Game Winner","Cleveland Guardians (L Ortiz) @ Cincinnati Reds (A Abbott)",-135,silver,TPP,win,74%,50.00,37.04,87.04
+Baseball,MLB,May,2025-05-18,"Atlanta Braves (S Schwellenbach) @ -121","Game Winner","Game Winner","Atlanta Braves (S Schwellenbach) @ Boston Red Sox (B Bello)",-121,silver,TPP,win,83%,50.00,41.32,91.32
+Baseball,MLB,May,2025-05-18,"Chicago Cubs (C Rea) -1.5 @ -115",Spread,Spread,"Chicago White Sox (J Cannon) @ Chicago Cubs (C Rea)",-115,silver,TPP,win,87%,50.00,43.48,93.48
+Baseball,MLB,May,2025-05-18,"Detroit Tigers (J Jobe) @ +112","Game Winner","Game Winner","Detroit Tigers (J Jobe) @ Toronto Blue Jays (J Berrios)",112,gold,TPP,win,112%,44.57,50.07,94.64
+Baseball,MLB,May,2025-05-20,"Tigers @ Royals",Strikeouts,"T. Skubal o6.5",Prop,-130,bronze,BTB,win,76%,50.00,38.46,88.46
+Baseball,MLB,May,2025-05-20,"Blue Jays @ Athletics","Home Run","V. Guerrero Jr. HR / S. Langeliers HR",Parlay,3810,platinum,BTB,win,367%,20.00,73.05,93.05
+Baseball,MLB,May,2025-05-21,"Cincinnati Reds @ Pittsburgh Pirates",Moneyline,"Cincinnati Reds (Singer)","Game Winner",-122,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-21,"Houston Astros @ Tampa Bay Rays",Moneyline,"Houston Astros (Brown)","Game Winner",-133,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-21,"Los Angeles Angels @ Oakland Athletics",Moneyline,"Oakland Athletics (Sears)","Game Winner",-160,bronze,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-21,"Texas Rangers @ New York Yankees",Moneyline,"Texas Rangers (Degrom)","Game Winner",105,gold,TPP,loss,-100%,45.00,-45.00,0.00
+Baseball,MLB,May,2025-05-21,"San Diego Padres @ Toronto Blue Jays",Moneyline,"San Diego Padres (Vasquez)","Game Winner",135,platinum,TPP,loss,-100%,35.00,-35.00,0.00
+Baseball,MLB,May,2025-05-21,"Chicago Cubs @ Miami Marlins",Moneyline,"Chicago Cubs (Horton)","Game Winner",-140,bronze,TPP,win,64%,50.00,32.14,82.14
+Baseball,MLB,May,2025-05-21,"Seattle Mariners @ Chicago White Sox",Moneyline,"Seattle Mariners (Evans)","Game Winner",-150,bronze,TPP,win,67%,50.00,33.33,83.33
+Baseball,MLB,May,2025-05-21,"Detroit Tigers @ St. Louis Cardinals",Moneyline,"Detroit Tigers (Hurter)","Game Winner",105,gold,TPP,win,84%,45.00,47.25,92.25
+Baseball,MLB,May,2025-05-21,"Cleveland Guardians @ Minnesota Twins",Moneyline,"Cleveland Guardians (Williams)","Game Winner",105,gold,TPP,win,84%,45.00,47.25,92.25
+Baseball,MLB,May,2025-05-21,"Baltimore Orioles @ Milwaukee Brewers",Moneyline,"Baltimore Orioles (Sugano)","Game Winner",115,gold,TPP,win,88%,45.00,51.75,96.75
+Baseball,MLB,May,2025-05-21,"New York Mets @ Boston Red Sox",Moneyline,"New York Mets (Megill)","Game Winner",130,platinum,TPP,win,100%,40.00,52.00,92.00
+Baseball,MLB,May,2025-05-22,"San Diego Padres @ Toronto Blue Jays",Moneyline,"San Diego Padres (Kolek)","Game Winner",-118,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-22,"Seattle Mariners @ Houston Astros",Moneyline,"Seattle Mariners (Kirby)","Game Winner",-133,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-22,"Los Angeles Angels @ Oakland Athletics",Moneyline,"Oakland Athletics (Severino)","Game Winner",-126,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-22,"Cleveland Guardians @ Detroit Tigers",Moneyline,"Detroit Tigers (Flaherty)","Game Winner",-140,bronze,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-22,"Atlanta Braves @ Washington Nationals",Moneyline,"Atlanta Braves (Smith-Shawver)","Game Winner",-150,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-22,"Atlanta Braves @ Washington Nationals",Runline,"Atlanta Braves -1.5 (Smith-Shawver)",Spread,110,bronze,TPP,loss,-100%,30.00,-30.00,0.00
+Baseball,MLB,May,2025-05-22,"Seattle Mariners @ Houston Astros",Runline,"Seattle Mariners -1.5 (Kirby)",Spread,120,bronze,TPP,loss,-100%,30.00,-30.00,0.00
+Baseball,MLB,May,2025-05-22,"Cleveland Guardians @ Detroit Tigers",Runline,"Detroit Tigers -1.5 (Flaherty)",Spread,150,bronze,TPP,loss,-100%,30.00,-30.00,0.00
+Baseball,MLB,May,2025-05-22,"Los Angeles Angels @ Oakland Athletics",Runline,"Oakland Athletics -1.5 (Severino)",Spread,145,bronze,TPP,loss,-100%,30.00,-30.00,0.00
+Baseball,MLB,May,2025-05-22,"San Diego Padres @ Toronto Blue Jays",Runline,"San Diego Padres -1.5 (Kolek)",Spread,140,bronze,TPP,loss,-100%,30.00,-30.00,0.00
+Baseball,MLB,May,2025-05-22,"Texas Rangers @ New York Yankees",Runline,"New York Yankees -1.5 (Rodon)",Spread,140,bronze,TPP,loss,-100%,30.00,-30.00,0.00
+Baseball,MLB,May,2025-05-22,"Guardians @ Tigers",Strikeouts,"T. Bibee o7 / J. Flaherty o7",Parlay,788,platinum,BTB,win,262%,22.00,57.36,79.36
+Baseball,MLB,May,2025-05-22,"2 Leg Parlay",Strikeouts,"Bibee o7 / Flaherty o7",Parlay,788,platinum,BTB,win,263%,30.00,78.90,108.90
+Baseball,MLB,May,2025-05-22,"Guardians @ Tigers",Strikeouts,"T. Bibee o5.5 / Bibee o8 / Flaherty o8",Parlay,3511,platinum,BTB,win,478%,20.00,95.11,115.11
+Baseball,MLB,May,2025-05-22,"Texas Rangers @ New York Yankees",Moneyline,"New York Yankees (Rodon)","Game Winner",-155,bronze,TPP,win,64%,50.00,32.26,82.26
+Baseball,MLB,May,2025-05-23,"Seattle Mariners @ Houston Astros",Moneyline,"Houston Astros (Gusto)","Game Winner",-125,silver,BTB,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-23,"Arizona Diamondbacks @ St. Louis Cardinals",Moneyline,"Arizona Diamondbacks (Gallen)","Game Winner",-130,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-23,"Milwaukee Brewers @ Pittsburgh Pirates",Moneyline,"Milwaukee Brewers (Peralta)","Game Winner",110,gold,TPP,loss,-100%,40.00,-40.00,0.00
+Baseball,MLB,May,2025-05-23,"Toronto Blue Jays @ Tampa Bay Rays",Moneyline,"Toronto Blue Jays (Lauer)","Game Winner",125,platinum,TPP,loss,-100%,35.00,-35.00,0.00
+Baseball,MLB,May,2025-05-23,"Kansas City Royals @ Minnesota Twins",Moneyline,"Kansas City Royals (Cameron)","Game Winner",170,platinum,TPP,loss,-100%,30.00,-30.00,0.00
+golf,PGA,May,2025-05-23,"The Memorial Tournament","Each Way Betting","Tony Finau 40/1 (8 places, 1.50pts ew)",Outright,4000,platinum,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,May,2025-05-23,"The Memorial Tournament","Each Way Betting","Denny McCarthy 45/1 (8 places, 1.25pts ew)",Outright,4500,platinum,"Golf Brad",loss,-100%,25.00,-25.00,0.00
+golf,PGA,May,2025-05-23,"The Memorial Tournament","Each Way Betting","Matthew Fitzpatrick 66/1 (6 places, 1pt ew)",Outright,6600,platinum,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,PGA,May,2025-05-23,"The Memorial Tournament","Each Way Betting","Christian Bezuidenhout 80/1 (10 places, 0.75pts ew)",Outright,8000,platinum,"Golf Brad",loss,-100%,15.00,-15.00,0.00
+golf,PGA,May,2025-05-23,"Christian Bezuidenhout","Each Way Betting","Bezuidenhout 80/1 (10 places)",Outright,8000,platinum,"Golf Brad",loss,-100%,15.00,-15.00,0.00
+golf,PGA,May,2025-05-23,"Tony Finau","Each Way Betting","Tony Finau 40/1 (8 places)",Outright,4000,platinum,"Golf Brad",loss,-100%,30.00,-30.00,0.00
+golf,PGA,May,2025-05-23,"Denny McCarthy","Each Way Betting","Denny McCarthy 45/1 (8 places)",Outright,4500,platinum,"Golf Brad",loss,-100%,25.00,-25.00,0.00
+golf,PGA,May,2025-05-23,"Matthew Fitzpatrick","Each Way Betting","Matt Fitzpatrick 66/1 (6 places)",Outright,6600,platinum,"Golf Brad",loss,-100%,20.00,-20.00,0.00
+golf,PGA,May,2025-05-23,"Collin Morikawa","Each Way Betting","Collin Morikawa 18/1",Outright,1800,platinum,"Golf Nich",loss,-100%,25.00,-25.00,0.00
+golf,PGA,May,2025-05-23,"Patrick Cantlay","Each Way Betting","Patrick Cantlay 20/1",Outright,2000,platinum,"Golf Nich",loss,-100%,25.00,-25.00,0.00
+golf,PGA,May,2025-05-23,"Hideki Matsuyama","Each Way Betting","Hideki Matsuyama 33/1",Outright,3300,platinum,"Golf Nich",loss,-100%,20.00,-20.00,0.00
+golf,PGA,May,2025-05-23,"Matt Fitzpatrick","Each Way Betting","Matt Fitzpatrick 50/1",Outright,5000,platinum,"Golf Nich",loss,-100%,15.00,-15.00,0.00
+golf,PGA,May,2025-05-23,"Russell Henley","Each Way Betting","Russell Henley 50/1",Outright,5000,platinum,"Golf Nich",loss,-100%,15.00,-15.00,0.00
+golf,PGA,May,2025-05-23,"Justin Rose","Each Way Betting","Justin Rose 125/1",Outright,12500,platinum,"Golf Nich",loss,-100%,10.00,-10.00,0.00
+Baseball,MLB,May,2025-05-23,"Yankees @ Rockies",Strikeouts,"C. Schmidt o5.5",Prop,-122,silver,BTB,win,82%,50.00,41.00,91.00
+Baseball,MLB,May,2025-05-23,"2 Leg Parlay",Strikeouts:,"Cecconi o4.5 / Schmidt o5.5",Parlay,233,gold,BTB,win,207%,45.00,93.15,138.15
+Baseball,MLB,May,2025-05-23,"Miami Marlins @ Los Angeles Angels",Moneyline,"Los Angeles Angels (Kikuchi)","Game Winner",-150,bronze,TPP,win,67%,50.00,33.33,83.33
+Baseball,MLB,May,2025-05-23,"Baltimore Orioles @ Boston Red Sox",Moneyline,"Boston Red Sox (Bello)","Game Winner",-116,bronze,TPP,win,86%,40.00,34.48,74.48
+Baseball,MLB,May,2025-05-23,"Chicago Cubs @ Cincinnati Reds",Moneyline,"Chicago Cubs (Boyd)","Game Winner",-110,bronze,TPP,win,91%,40.00,36.36,76.36
+Baseball,MLB,May,2025-05-23,"San Francisco Giants @ Washington Nationals",Moneyline,"San Francisco Giants (Roupp)","Game Winner",100,gold,TPP,win,100%,40.00,40.00,80.00
+Baseball,MLB,May,2025-05-23,"Los Angeles Dodgers @ New York Mets",Moneyline,"Los Angeles Dodgers (Kershaw)","Game Winner",-105,silver,TPP,win,95%,50.00,47.62,97.62
+golf,PGA,May,2025-05-23,"The Memorial Tournament","Each Way Betting","Keegan Bradley 40/1 (10 places, 1.50pts ew)",Outright,4000,platinum,"Golf Brad",WIN,117%,30.00,35.00,65.00
+Baseball,MLB,May,2025-05-25,"Baltimore Orioles @ Boston Red Sox",Moneyline,"Boston Red Sox (Buehler)","Game Winner",-125,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-25,"Kansas City Royals @ Minnesota Twins",Moneyline,"Minnesota Twins (Ober)","Game Winner",-112,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-25,"Philadelphia Phillies @ Oakland Athletics",Moneyline,"Philadelphia Phillies (Luzardo)","Game Winner",-155,bronze,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-25,"Miami Marlins @ Los Angeles Angels",Moneyline,"Los Angeles Angels (Hendricks)","Game Winner",-112,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-25,"San Diego Padres @ Atlanta Braves",Moneyline,"Atlanta Braves (Schwellenbach)","Game Winner",-135,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-25,"San Francisco Giants @ Washington Nationals",Moneyline,"San Francisco Giants (Ray)","Game Winner",-145,silver,TPP,win,69%,50.00,34.48,84.48
+Baseball,MLB,May,2025-05-25,"Milwaukee Brewers @ Pittsburgh Pirates",Moneyline,"Milwaukee Brewers (Henderson)","Game Winner",-140,silver,TPP,win,71%,50.00,35.71,85.71
+Baseball,MLB,May,2025-05-25,"Chicago Cubs @ Cincinnati Reds",Moneyline,"Chicago Cubs (Brown)","Game Winner",-125,silver,TPP,win,80%,50.00,40.00,90.00
+Baseball,MLB,May,2025-05-25,"Arizona Diamondbacks @ St. Louis Cardinals",Moneyline,"St. Louis Cardinals (Gray)","Game Winner",-125,silver,TPP,win,80%,50.00,40.00,90.00
+Baseball,MLB,May,2025-05-25,"Texas Rangers @ Chicago White Sox",Moneyline,"Texas Rangers (Corbin)","Game Winner",-112,silver,TPP,win,89%,50.00,44.64,94.64
+Baseball,MLB,May,2025-05-25,"Toronto Blue Jays @ Tampa Bay Rays",Moneyline,"Tampa Bay Rays (Pepiot)","Game Winner",-106,silver,TPP,win,90%,50.00,45.00,95.00
+Baseball,MLB,May,2025-05-25,"Los Angeles Dodgers @ New York Mets",Moneyline,"New York Mets (Senga)","Game Winner",-110,silver,TPP,win,91%,50.00,45.45,95.45
+Baseball,MLB,May,2025-05-25,"Seattle Mariners @ Houston Astros",Moneyline,"Houston Astros (Gordon)","Game Winner",120,gold,TPP,win,120%,45.00,54.00,99.00
+Baseball,MLB,May,2025-05-26,"San Francisco Giants @ Detroit Tigers",Moneyline,"San Francisco Giants (Birdsong)","Game Winner",-104,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-26,"Boston Red Sox @ Milwaukee Brewers",Moneyline,"Boston Red Sox (Crochet)","Game Winner",-160,bronze,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-26,"St. Louis Cardinals @ Baltimore Orioles",Moneyline,"St. Louis Cardinals (Fedde)","Game Winner",-109,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-26,"Toronto Blue Jays @ Texas Rangers",Moneyline,"Texas Rangers (Degrom)","Game Winner",-129,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-26,"5 Leg Parlay",Moneyline,"BOS -148 / CHC -279 / NYM -246 / LAD -147 / 1 other",Parlay,754,platinum,TPP,loss,-100%,30.00,-30.00,0.00
+Baseball,MLB,May,2025-05-26,"Pittsburgh Pirates @ Arizona Diamondbacks",Moneyline,"Arizona Diamondbacks (Nelson)","Game Winner",-185,bronze,TPP,win,54%,50.00,27.03,77.03
+Baseball,MLB,May,2025-05-26,"New York Yankees @ Los Angeles Angels",Moneyline,"New York Yankees (Yarbrough)","Game Winner",-163,bronze,TPP,win,61%,50.00,30.67,80.67
+Baseball,MLB,May,2025-05-26,"Los Angeles Dodgers @ Cleveland Guardians",Moneyline,"Los Angeles Dodgers (Yamamoto)","Game Winner",-160,bronze,TPP,win,62%,50.00,31.25,81.25
+Baseball,MLB,May,2025-05-26,"Miami Marlins @ San Diego Padres",Moneyline,"San Diego Padres (Vasquez)","Game Winner",-145,silver,TPP,win,69%,50.00,34.48,84.48
+Baseball,MLB,May,2025-05-26,"Minnesota Twins @ Tampa Bay Rays",Moneyline,"Tampa Bay Rays (Littell)","Game Winner",-116,silver,TPP,win,86%,50.00,43.10,93.10
+Baseball,MLB,May,2025-05-26,"Cincinnati Reds @ Kansas City Royals",Moneyline,"Cincinnati Reds (Martinez)","Game Winner",100,gold,TPP,win,100%,45.00,45.00,90.00
+Baseball,MLB,May,2025-05-27,"Atlanta Braves @ Philadelphia Phillies",Moneyline,"Atlanta Braves (Strider)","Game Winner",101,gold,TPP,loss,-100%,45.00,-45.00,0.00
+Baseball,MLB,May,2025-05-27,"Miami Marlins @ San Diego Padres",Moneyline,"Miami Marlins (Meyer)","Game Winner",140,platinum,TPP,loss,-100%,30.00,-30.00,0.00
+Baseball,MLB,May,2025-05-27,"Washington Nationals @ Seattle Mariners",Moneyline,"Washington Nationals (Parker)","Game Winner",140,platinum,TPP,loss,-100%,30.00,-30.00,0.00
+Baseball,MLB,May,2025-05-27,"Toronto Blue Jays @ Texas Rangers",Moneyline,"Texas Rangers (Eovaldi)","Game Winner",-138,bronze,TPP,win,72%,50.00,36.23,86.23
+Baseball,MLB,May,2025-05-27,"Los Angeles Dodgers @ Cleveland Guardians",Moneyline,"Los Angeles Dodgers (May)","Game Winner",-125,silver,TPP,win,80%,50.00,40.00,90.00
+Baseball,MLB,May,2025-05-27,"Boston Red Sox @ Milwaukee Brewers",Moneyline,"Milwaukee Brewers","Game Winner",-123,silver,TPP,win,81%,50.00,40.65,90.65
+Baseball,MLB,May,2025-05-27,"Minnesota Twins @ Tampa Bay Rays",Moneyline,"Minnesota Twins (Ryan)","Game Winner",-120,silver,TPP,win,83%,50.00,41.67,91.67
+Baseball,MLB,May,2025-05-27,"St. Louis Cardinals @ Baltimore Orioles",Moneyline,"St. Louis Cardinals (Pallante)","Game Winner",-113,silver,TPP,win,88%,50.00,43.48,93.48
+Baseball,MLB,May,2025-05-27,"San Francisco Giants @ Detroit Tigers",Moneyline,"Detroit Tigers (Flaherty)","Game Winner",103,gold,TPP,win,103%,45.00,46.35,91.35
+Baseball,MLB,May,2025-05-27,"Cincinnati Reds @ Kansas City Royals",Moneyline,"Cincinnati Reds (Singer)","Game Winner",107,gold,TPP,win,107%,45.00,48.15,93.15
+Baseball,MLB,May,2025-05-28,"2 Leg Parlay",Strikeouts,"Cameron o6 / Schmidt o8",Parlay,760,platinum,BTB,loss,-100%,30.00,-30.00,0.00
+Baseball,MLB,May,2025-05-28,"2 Leg Parlay",Strikeouts,"Cameron o7 / Schmidt o9",Parlay,2350,platinum,BTB,loss,-100%,20.00,-20.00,0.00
+Baseball,MLB,May,2025-05-28,"Los Angeles Dodgers @ Cleveland Guardians",Moneyline,"Los Angeles Dodgers (Kershaw)","Game Winner",-170,bronze,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-28,"San Francisco Giants @ Detroit Tigers",Moneyline,"San Francisco Giants (Roupp)","Game Winner",-102,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-28,"Pittsburgh Pirates @ Arizona Diamondbacks",Moneyline,"Arizona Diamondbacks (Gallen)","Game Winner",-130,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-28,"Miami Marlins @ San Diego Padres",Moneyline,"San Diego Padres (Hart)","Game Winner",-150,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-28,"St. Louis Cardinals @ Baltimore Orioles",Moneyline,"Baltimore Orioles (Povich)","Game Winner",-120,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-28,"Cincinnati Reds @ Kansas City Royals",Moneyline,"Cincinnati Reds (Greene)","Game Winner",-115,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-28,"Toronto Blue Jays @ Texas Rangers",Moneyline,"Texas Rangers (Mahle)","Game Winner",-130,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-28,"Minnesota Twins @ Tampa Bay Rays",Moneyline,"Minnesota Twins (Lopez)","Game Winner",115,gold,TPP,loss,-100%,45.00,-45.00,0.00
+Baseball,MLB,May,2025-05-28,"NRFI parlay",Parlay,"1st Inning Result Tie x2","MLB Tie Parlay",182,Gold,BB,win,182%,40.00,72.80,112.80
+Baseball,MLB,May,2025-05-28,"New York Yankees @ Los Angeles Angels",Moneyline,"New York Yankees (Schmidt)","Game Winner",-155,bronze,BTB,win,62%,50.00,31.97,81.97
+Baseball,MLB,May,2025-05-28,"Boston Red Sox @ Milwaukee Brewers",Moneyline,"Milwaukee Brewers (Peralta)","Game Winner",-145,bronze,BTB,win,69%,50.00,34.48,84.48
+Baseball,MLB,May,2025-05-28,"White Sox @ Mets",Strikeouts,"S. Smith o4.5",Prop,-113,silver,BTB,win,88%,50.00,44.25,94.25
+Baseball,MLB,May,2025-05-28,"3 Leg Parlay",Strikeouts,"Gore o8 / Cecconi o6 / Schmidt o7",Parlay,1701,Gold,BTB,win,1251%,20.00,250.20,270.20
+Baseball,MLB,May,2025-05-28,"Oakland Athletics @ Houston Astros",Moneyline,"Houston Astros (McCullers)","Game Winner",-136,silver,TPP,win,73%,50.00,36.76,86.76
+Baseball,MLB,May,2025-05-28,"Atlanta Braves @ Philadelphia Phillies",Moneyline,"Atlanta Braves (Smith-Shawver)","Game Winner",133,gold,TPP,win,133%,45.00,59.85,104.85
+Baseball,MLB,May,2025-05-29,"Braves @ Phillies (Game 1)","Atlanta Braves (A Smith-Shawver)","Atlanta Braves (A Smith-Shawver)","Game Winner",121,gold,BTB,loss,-100%,45.00,-45.00,0.00
+Baseball,MLB,May,2025-05-29,"Rays @ Astros","Houston Astros (R Gusto)","Houston Astros (R Gusto)","Game Winner",-110,silver,BTB,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-29,"Braves @ Phillies (Game 2)","Atlanta Braves (C Sale)","Atlanta Braves (C Sale)","Game Winner",100,gold,BTB,win,100%,45.00,45.00,90.00
+Baseball,MLB,May,2025-05-29,"Athletics @ Blue Jays","Toronto Blue Jays (J Berrios)","Toronto Blue Jays (J Berrios)","Game Winner",-165,silver,BTB,win,61%,50.00,30.30,80.30
+Baseball,MLB,May,2025-05-29,"Nationals @ Mariners","Washington Nationals (M Gore)","Washington Nationals (M Gore)","Game Winner",108,gold,BTB,win,96%,45.00,43.20,88.20
+Baseball,MLB,May,2025-05-29,"Tampa Bay Rays",Single,"Yandy Diaz Over 0.5 Stolen Bases","Player Prop",1280,Gold,BTB,win,1280%,10.00,128.00,138.00
+Baseball,MLB,May,2025-05-30,"Cardinals @ Rangers","St. Louis Cardinals","St. Louis Cardinals","Game Winner",-140,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-30,"Rays @ Astros","Tampa Bay Rays (R Pepiot)","Tampa Bay Rays (R Pepiot)","Game Winner",145,gold,TPP,loss,-100%,40.00,-40.00,0.00
+Baseball,MLB,May,2025-05-30,"Yankees @ Dodgers","New York Yankees -1.5 (M Fried)","New York Yankees -1.5 (M Fried)",Spread,135,gold,TPP,loss,-100%,40.00,-40.00,0.00
+Baseball,MLB,May,2025-05-30,"Giants @ Marlins","San Francisco Giants (K Harrison)","San Francisco Giants (K Harrison)","Game Winner",-165,silver,BTB,win,61%,50.00,30.30,80.30
+Baseball,MLB,May,2025-05-30,"Angels @ Guardians","Los Angeles Angels (J Soriano)","Los Angeles Angels (J Soriano)","Game Winner",130,gold,TPP,win,117%,45.00,52.00,97.00
+Baseball,MLB,May,2025-05-30,"Tigers @ Royals","Detroit Tigers -1.5 (C Mize)","Detroit Tigers -1.5 (C Mize)",Spread,140,gold,TPP,win,122%,40.00,49.00,89.00
+Baseball,MLB,May,2025-05-30,"Tigers @ Royals","Detroit Tigers (C Mize)","Detroit Tigers (C Mize)","Game Winner",-116,silver,TPP,win,43%,50.00,21.55,71.55
+Baseball,MLB,May,2025-05-30,"Nationals @ Diamondbacks","Washington Nationals +1.5 (J Irvin)","Washington Nationals +1.5 (J Irvin)",Spread,-115,silver,TPP,win,43%,50.00,21.74,71.74
+Baseball,MLB,May,2025-05-31,"Pirates @ Padres","San Diego -1.5 (Dylan Cease) @ -105","San Diego -1.5 (Dylan Cease) @ -105",Spread,-105,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-31,"Reds @ Cubs","Cincinnati (Nick Lodolo) @ +155","Cincinnati (Nick Lodolo) @ +155","Game Winner",155,platinum,TPP,loss,-100%,35.00,-35.00,0.00
+Baseball,MLB,May,2025-05-31,"Brewers @ Phillies","Philadelphia -1.5 (Jesús Luzardo) @ +110","Philadelphia -1.5 (Jesús Luzardo) @ +110",Spread,110,gold,TPP,loss,-100%,40.00,-40.00,0.00
+Baseball,MLB,May,2025-05-31,"Giants @ Marlins","San Francisco (Robbie Ray) @ -145","San Francisco (Robbie Ray) @ -145","Game Winner",-145,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-31,"Tigers @ Royals","Detroit -1.5 (Tarik Skubal) @ -115","Detroit -1.5 (Tarik Skubal) @ -115",Spread,-115,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-31,"Angels @ Guardians","Angels (Kyle Hendricks) @ +155","Angels (Kyle Hendricks) @ +155","Game Winner",155,platinum,TPP,loss,-100%,35.00,-35.00,0.00
+Baseball,MLB,May,2025-05-31,"Twins @ Mariners","Minnesota (Bailey Ober) @ -102","Minnesota (Bailey Ober) @ -102","Game Winner",-102,silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,May,2025-05-31,"Cleveland Guardians @ Detroit Tigers",Parlay,"Bibee 7+ Ks + Flaherty 7+ Ks","Same Game Parlay",788,Gold,BTB,win,788%,30.00,236.40,266.40
+Baseball,MLB,May,2025-05-31,"Cleveland Guardians @ Detroit Tigers",Parlay,"Bibee 5.5+ Ks, 8+ Ks + Flaherty 8+ Ks","Same Game Parlay",3511,platinum,BTB,win,3511%,20.00,702.20,722.20
+Baseball,MLB,May,2025-05-31,"Houston Astros",Single,"Cam Smith Over 0.5 Stolen Bases","Player Prop",1280,Gold,BTB,win,1280%,10.00,128.00,138.00
+Baseball,MLB,May,2025-05-31,"Yankees @ Dodgers","Over 9.5 Runs @ -110","Over 9.5 Runs @ -110","Game Total",-110,silver,TPP,win,91%,50.00,45.45,95.45
+Baseball,MLB,May,2025-05-31,"Nationals @ Diamondbacks","Washington +1.5 (Michael Soroka) @ -125","Washington +1.5 (Michael Soroka) @ -125",Spread,-125,silver,TPP,win,82%,50.00,40.80,90.80
+Baseball,MLB,May,2025-05-31,"Athletics @ Blue Jays","Toronto (Bowden Fisher) @ -160","Toronto (Bowden Fisher) @ -160","Game Winner",-160,silver,TPP,win,63%,50.00,31.38,81.38
+Baseball,MLB,May,2025-05-31,"White Sox @ Orioles","Baltimore (Dean Kremer) @ -160","Baltimore (Dean Kremer) @ -160","Game Winner",-160,silver,TPP,win,63%,50.00,31.38,81.38
+Baseball,MLB,May,2025-05-31,"White Sox @ Orioles","Baltimore -1.5 (Dean Kremer) @ +125","Baltimore -1.5 (Dean Kremer) @ +125",Spread,125,gold,TPP,win,125%,40.00,50.00,90.00
+Baseball,MLB,May,2025-05-31,"Cardinals @ Rangers","St. Louis (Sonny Gray) @ -138","St. Louis (Sonny Gray) @ -138","Game Winner",-138,silver,TPP,win,72%,50.00,36.07,86.07
+Baseball,MLB,May,2025-05-31,"Cardinals @ Rangers","St. Louis -1.5 (Sonny Gray) @ +120","St. Louis -1.5 (Sonny Gray) @ +120",Spread,120,gold,TPP,win,123%,40.00,49.00,89.00
+Baseball,MLB,May,2025-05-31,"Rays @ Astros","Tampa Bay (Zack Littell) @ +122","Tampa Bay (Zack Littell) @ +122","Game Winner",122,gold,TPP,win,102%,45.00,46.10,91.10
+Baseball,MLB,May,2025-05-31,"Red Sox @ Braves","Atlanta (Spencer Schwellenbach) @ -180","Atlanta (Spencer Schwellenbach) @ -180","Game Winner",-180,silver,TPP,win,56%,50.00,28.89,78.89
+Baseball,MLB,May,2025-05-31,"Yankees @ Dodgers","Los Angeles (Landon Knack) @ +102","Los Angeles (Landon Knack) @ +102","Game Winner",102,gold,TPP,win,102%,45.00,45.90,90.90
+Baseball,MLB,May,2025-05-31,"New York Yankees @ Los Angeles Dodgers",Single,"Total Score Over 9.5","Total Score",-110,Silver,TPP,win,91%,50.00,45.45,95.45
+baseball,MLB,June,2025-06-01,"New York Yankees @ Los Angeles Dodgers",Single,"Los Angeles Dodgers Run Line","Run Line",125,Gold,TPP,loss,-100%,40.00,-40.00,0.00
+baseball,MLB,June,2025-06-01,"Chicago White Sox @ Baltimore Orioles",Single,"Baltimore Orioles Run Line","Run Line",130,Gold,TPP,loss,-100%,40.00,-40.00,0.00
+baseball,MLB,June,2025-06-01,"Washington Nationals @ Arizona Diamondbacks",Single,"Washington Nationals Moneyline",Moneyline,200,Gold,TPP,loss,-100%,40.00,-40.00,0.00
+Baseball,MLB,June,2025-06-01,"Boston Red Sox @ Atlanta Braves",Single,"Atlanta Braves Moneyline",Moneyline,115,Silver,TPP,loss,-100%,40.00,-40.00,0.00
+Baseball,MLB,June,2025-06-01,"New York Yankees @ Los Angeles Dodgers",Single,"Los Angeles Dodgers Moneyline",Moneyline,-170,Silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-01,"Milwaukee Brewers @ Philadelphia Phillies",Single,"Philadelphia Phillies Moneyline",Moneyline,-165,Silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-01,"Detroit Tigers @ Kansas City Royals",Single,"Kansas City Royals Moneyline",Moneyline,-160,Silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-01,"Washington Nationals @ Arizona Diamondbacks",Single,"Washington Nationals Run Line","Run Line",-110,Silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-01,"San Francisco Giants @ Miami Marlins",Single,"San Francisco Giants Run Line","Run Line",140,Bronze,TPP,win,140%,40.00,56.00,96.00
+Baseball,MLB,June,2025-06-01,"San Francisco Giants @ Miami Marlins",Single,"San Francisco Giants Moneyline",Moneyline,-118,Bronze,TPP,win,85%,50.00,42.37,92.37
+Baseball,MLB,June,2025-06-01,"Tampa Bay Rays @ Houston Astros",Single,"Houston Astros Moneyline",Moneyline,-170,Bronze,TPP,win,59%,50.00,29.41,79.41
+Baseball,MLB,June,2025-06-01,"Minnesota Twins @ Seattle Mariners",Single,"Seattle Mariners Moneyline",Moneyline,-135,bronze,TPP,win,74%,50.00,37.04,87.04
+baseball,MLB,June,2025-06-01,"Pittsburgh Pirates @ San Diego Padres",Single,"San Diego Padres Run Line","Run Line",150,Gold,TPP,win,150%,40.00,60.00,100.00
+baseball,MLB,June,2025-06-01,"Washington Nationals",Single,"Nathaniel Lowe Over 0.5 RBIs","Player Prop",180,Gold,TPP,win,180%,40.00,72.00,112.00
+Baseball,MLB,June,2025-06-01,"Pittsburgh Pirates @ San Diego Padres",Single,"San Diego Padres Moneyline",Moneyline,-150,Silver,TPP,win,67%,50.00,33.33,83.33
+Baseball,MLB,June,2025-06-01,"Minnesota Twins @ Seattle Mariners",Single,"Seattle Mariners Moneyline",Moneyline,-135,Silver,TPP,win,74%,50.00,37.04,87.04
+Baseball,MLB,June,2025-06-01,"St. Louis Cardinals @ Texas Rangers",Single,"Texas Rangers Moneyline",Moneyline,-155,Silver,TPP,win,66%,50.00,33.06,83.06
+Baseball,MLB,June,2025-06-01,"Chicago White Sox @ Baltimore Orioles",Single,"Baltimore Orioles Moneyline",Moneyline,-160,Silver,TPP,win,63%,50.00,31.25,81.25
+Baseball,MLB,June,2025-06-01,"Los Angeles Angels @ Cleveland Guardians",Single,"Cleveland Guardians Moneyline",Moneyline,-180,Silver,TPP,win,56%,50.00,27.78,77.78
+Baseball,MLB,June,2025-06-01,"Cincinnati Reds @ Chicago Cubs",Single,"Chicago Cubs Moneyline",Moneyline,-155,Silver,TPP,win,66%,50.00,32.26,82.26
+baseball,MLB,June,2025-06-02,"New York Mets @ Los Angeles Dodgers",Single,"Los Angeles Dodgers Run Line","Run Line",125,Gold,TPP,loss,-100%,40.00,-40.00,0.00
+baseball,MLB,June,2025-06-02,"Los Angeles Angels @ Boston Red Sox",Single,"Boston Red Sox Run Line","Run Line",135,Gold,TPP,loss,-100%,40.00,-40.00,0.00
+baseball,MLB,June,2025-06-02,"Colorado Rockies @ Miami Marlins",Single,"Miami Marlins Run Line","Run Line",110,Gold,TPP,loss,-100%,45.00,-45.00,0.00
+Baseball,MLB,June,2025-06-02,"New York Mets @ Los Angeles Dodgers",Single,"Los Angeles Dodgers Moneyline",Moneyline,-155,Silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-02,"Los Angeles Angels @ Boston Red Sox",Single,"Boston Red Sox Moneyline",Moneyline,-140,Silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-02,"Milwaukee Brewers @ Cincinnati Reds",Single,"Milwaukee Brewers Moneyline",Moneyline,102,Gold,TPP,win,102%,45.00,45.90,90.90
+Baseball,MLB,June,2025-06-02,"Minnesota Twins @ Oakland Athletics",Single,"Minnesota Twins Moneyline",Moneyline,-160,Silver,TPP,win,63%,50.00,31.25,81.25
+Baseball,MLB,June,2025-06-03,"Texas Rangers @ Tampa Bay Rays",Single,"Texas Rangers Moneyline",Moneyline,126,Gold,TPP,loss,-100%,42.00,-42.00,0.00
+Baseball,MLB,June,2025-06-03,"Cleveland Guardians @ New York Yankees",Single,"New York Yankees Run Line","Run Line",105,Gold,TPP,loss,-100%,45.00,-45.00,0.00
+Baseball,MLB,June,2025-06-03,"Milwaukee Brewers @ Cincinnati Reds",Single,"Milwaukee Brewers Moneyline",Moneyline,115,Gold,TPP,loss,-100%,45.00,-45.00,0.00
+Baseball,MLB,June,2025-06-03,"Houston Astros @ Pittsburgh Pirates",Single,"Pittsburgh Pirates Moneyline",Moneyline,-158,Silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-03,"Arizona Diamondbacks @ Atlanta Braves",Single,"Atlanta Braves Moneyline",Moneyline,-150,Silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-03,"Baltimore Orioles @ Seattle Mariners",Single,"Seattle Mariners Moneyline",Moneyline,-139,Silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-03,"San Diego Padres @ San Francisco Giants",Single,"San Francisco Giants Moneyline",Moneyline,-155,Silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-03,"Kansas City Royals @ St. Louis Cardinals",Single,"St. Louis Cardinals Moneyline",Moneyline,-145,Silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-03,"Los Angeles Angels @ Boston Red Sox",Single,"Boston Red Sox Moneyline",Moneyline,-130,Silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-03,"Philadelphia Phillies @ Toronto Blue Jays",Single,"Philadelphia Phillies Moneyline",Moneyline,-128,Bronze,TPP,win,78%,50.00,38.75,88.75
+Baseball,MLB,June,2025-06-03,"Chicago Cubs @ Washington Nationals",Single,"Chicago Cubs Moneyline",Moneyline,-153,Bronze,TPP,win,65%,50.00,32.50,82.50
+Baseball,MLB,June,2025-06-03,"Minnesota Twins @ Oakland Athletics",Single,"Minnesota Twins Run Line","Run Line",-120,Bronze,TPP,win,83%,50.00,41.67,91.67
+Baseball,MLB,June,2025-06-03,"New York Mets @ Los Angeles Dodgers",Single,"Los Angeles Dodgers Moneyline",Moneyline,-134,Bronze,TPP,win,74%,50.00,37.31,87.31
+Baseball,MLB,June,2025-06-03,"Detroit Tigers @ Chicago White Sox",Single,"Chicago White Sox Moneyline",Moneyline,150,Silver,TPP,win,150%,40.00,60.00,100.00
+Baseball,MLB,June,2025-06-03,"Colorado Rockies @ Miami Marlins",Single,"Colorado Rockies Moneyline",Moneyline,155,Silver,TPP,win,155%,42.00,65.10,107.10
+Baseball,MLB,June,2025-06-04,"New York Mets @ Los Angeles Dodgers",Single,"Los Angeles Dodgers Moneyline",Moneyline,-145,Silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-06,"San Diego Padres @ Milwaukee Brewers",Single,"Milwaukee Brewers Moneyline",Moneyline,-138,Silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-06,"Toronto Blue Jays @ Minnesota Twins",Single,"Minnesota Twins Moneyline",Moneyline,-140,Silver,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-18,"Colorado Rockies @ Washington Nationals",Straight,"WAS (M Soroka)",Moneyline,-185,Bronze,TPP,loss,-10000%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-18,"Cleveland Guardians @ San Francisco Giants",Straight,"SFO (R Ray)",Moneyline,-145,Bronze,TPP,loss,-10000%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-18,"Minnesota Twins @ Cincinnati Reds",Straight,"MIN (D Festa)",Moneyline,105,Gold,TPP,loss,-10000%,45.00,-45.00,0.00
+Baseball,MLB,June,2025-06-18,"Houston Astros @ Oakland Athletics",Straight,"ATH (J Sears)",Moneyline,103,Gold,TPP,loss,-10000%,45.00,-45.00,0.00
+Baseball,MLB,June,2025-06-18,"Los Angeles Angels @ New York Yankees",Straight,"NYY (W Warren) -1.5",Spread,-120,Silver,TPP,loss,-10000%,50.00,-50.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-18,"Real Madrid @ Al-Hilal",Straight,"Gonzalo Garcia To Score 2+ Goals",Goals,800,Platinum,BTB,loss,-10000%,15.00,-15.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-18,"Real Madrid @ Al-Hilal",Straight,"Gonzalo Garcia To Score 2+ Goals",Goals,800,Platinum,BTB,loss,-10000%,15.00,-15.00,0.00
+Baseball,MLB,June,2025-06-18,"Milwaukee Brewers @ Chicago Cubs",Straight,"CHC (B Brown)",Moneyline,-153,Bronze,TPP,Push,0%,50.00,0.00,0.00
+Baseball,MLB,June,2025-06-18,"St. Louis Cardinals @ Chicago White Sox",Straight,"STL (M Liberatore)",Moneyline,-129,Silver,TPP,Push,0%,50.00,0.00,0.00
+Baseball,MLB,June,2025-06-18,"Kansas City Royals @ Texas Rangers",Straight,"KAN (S Lugo)",Moneyline,130,Gold,TPP,win,13000%,40.00,52.00,130.00
+Baseball,MLB,June,2025-06-18,"Boston Red Sox @ Seattle Mariners",Straight,"BOS (W Buehler)",Moneyline,148,Gold,TPP,win,14800%,50.00,74.00,148.00
+Baseball,MLB,June,2025-06-18,"Arizona Diamondbacks @ Toronto Blue Jays",Straight,"TOR (C Bassitt)",Moneyline,-119,Silver,TPP,win,8400%,50.00,42.02,84.03
+Baseball,MLB,June,2025-06-18,"New York Mets @ Atlanta Braves",Straight,"ATL (S Schwellenbach)",Moneyline,-130,Silver,TPP,win,7690%,50.00,38.46,76.92
+Baseball,MLB,June,2025-06-18,"Baltimore Orioles @ Tampa Bay Rays",Straight,"TAM (Z Littell)",Moneyline,-110,Silver,TPP,win,9090%,50.00,45.45,90.91
+Baseball,MLB,June,2025-06-18,"San Diego Padres @ Los Angeles Dodgers",Straight,"LOS (J Dreyer) -1.5",Spread,-110,Silver,TPP,win,9090%,50.00,45.45,90.91
+Soccer,"FIFA Club World Cup",June,2025-06-18,"Real Madrid @ Al-Hilal",Straight,"Over 3.5 Corners (Al-Hilal)","Total Corners",104,Bronze,BTB,win,10400%,40.00,41.60,104.00
+Soccer,"FIFA Club World Cup",June,2025-06-18,"Real Madrid @ Al-Hilal",Straight,"Al-Hilal 9+ Shots","Total Shots",-125,Bronze,BTB,win,8000%,50.00,40.00,80.00
+Soccer,"FIFA Club World Cup",June,2025-06-18,"Real Madrid @ Al-Hilal",Straight,"Gonzalo Garcia Anytime Goalscorer",Goals,165,Gold,BTB,win,16500%,40.00,66.00,165.00
+Soccer,"FIFA Club World Cup",June,2025-06-18,"Real Madrid @ Al-Hilal",Straight,"Al-Hilal 12+ Shots","Total Shots",300,Gold,BTB,win,30000.00%,40.00,120.00,300.00
+Soccer,"FIFA Club World Cup",June,2025-06-18,"Real Madrid @ Al-Hilal",Straight,"Over 6.5 Corners (Al-Hilal)","Total Corners",730,Platinum,BTB,win,73000%,15.00,109.50,730.00
+Soccer,"FIFA Club World Cup",June,2025-06-18,"Real Madrid @ Al-Hilal",Straight,"Over 5.5 Corners (Al-Hilal)","Total Corners",480,Platinum,BTB,win,48000%,20.00,96.00,480.00
+Soccer,"FIFA Club World Cup",June,2025-06-18,"Real Madrid @ Al-Hilal",Straight,"Gonzalo Garcia First Goalscorer",Goals,550,Platinum,BTB,win,55000.00%,20.00,110.00,550.00
+Soccer,"FIFA Club World Cup",June,2025-06-18,"Real Madrid @ Al-Hilal",Straight,"Over 3.5 Corners (Al-Hilal)","Total Corners",104,Bronze,BTB,win,10400%,40.00,41.60,104.00
+Soccer,"FIFA Club World Cup",June,2025-06-18,"Real Madrid @ Al-Hilal",Straight,"Al-Hilal 9+ Shots","Total Shots",-125,Bronze,BTB,win,8000%,50.00,40.00,80.00
+Soccer,"FIFA Club World Cup",June,2025-06-18,"Real Madrid @ Al-Hilal",Straight,"Gonzalo Garcia Anytime Goalscorer",Goals,165,Gold,BTB,win,16500%,40.00,66.00,165.00
+Soccer,"FIFA Club World Cup",June,2025-06-18,"Real Madrid @ Al-Hilal",Straight,"Al-Hilal 12+ Shots","Total Shots",300,Gold,BTB,win,30000.00%,40.00,120.00,300.00
+Soccer,"FIFA Club World Cup",June,2025-06-18,"Real Madrid @ Al-Hilal",Straight,"Over 6.5 Corners (Al-Hilal)","Total Corners",730,Platinum,BTB,win,73000%,15.00,109.50,730.00
+Soccer,"FIFA Club World Cup",June,2025-06-18,"Real Madrid @ Al-Hilal",Straight,"Over 5.5 Corners (Al-Hilal)","Total Corners",480,Platinum,BTB,win,48000%,20.00,96.00,480.00
+Soccer,"FIFA Club World Cup",June,2025-06-18,"Real Madrid @ Al-Hilal",Straight,"Gonzalo Garcia First Goalscorer",Goals,550,Platinum,BTB,win,55000.00%,20.00,110.00,550.00
+Baseball,MLB,June,2025-06-19,"ML PARLAY",Parlay,"Twins ML (-101), Royals ML (+106), Tigers ML (+125)",Moneyline,822,Bronze,TPP,loss,-10000%,20.00,-20.00,0.00
+Baseball,MLB,June,2025-06-19,"Pittsburgh Pirates @ Detroit Tigers (Game 2)",Straight,"Detroit Tigers ML",Moneyline,125,Gold,TPP,loss,-10000%,40.00,-40.00,0.00
+Baseball,MLB,June,2025-06-19,"Pittsburgh Pirates @ Detroit Tigers (Game 1)",Straight,"Pittsburgh Pirates ML",Moneyline,260,Platinum,TPP,loss,-10000%,30.00,-30.00,0.00
+Baseball,MLB,June,2025-06-19,"Baltimore Orioles @ Tampa Bay Rays",Straight,"Tampa Bay Rays ML",Moneyline,-135,Silver,TPP,loss,-10000%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-19,"Houston Astros @ Oakland Athletics",Straight,"Houston Astros ML",Moneyline,-128,Silver,TPP,loss,-10000%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-19,"San Diego Padres @ Los Angeles Dodgers",Straight,"Los Angeles Dodgers -1.5",Runline,-130,Silver,TPP,loss,-10000%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-19,"Arizona Diamondbacks @ Toronto Blue Jays",Straight,"Toronto Blue Jays ML",Moneyline,-135,Silver,TPP,loss,0%,50.00,0.00,0.00
+Basketball,NBA,June,2025-06-19,"Oklahoma City Thunder @ Indiana Pacers",Straight,"Bennedict Mathurin 15+ Points",Points,220,Gold,BTB,loss,-10000%,40.00,-40.00,0.00
+Basketball,NBA,June,2025-06-19,"Oklahoma City Thunder @ Indiana Pacers",Straight,"Bennedict Mathurin 25+ Points",Points,2359,Platinum,BTB,loss,-10000%,15.00,-15.00,0.00
+Basketball,NBA,June,2025-06-19,"Oklahoma City Thunder @ Indiana Pacers",Straight,"Bennedict Mathurin 20+ Points",Points,750,Platinum,BTB,loss,-10000%,20.00,-20.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"Richard Rios 1+",SOT,110,Gold,BTB,loss,-10000.00%,40.00,-40.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"Trezeguet 1+",SOT,105,Gold,BTB,loss,-10000%,40.00,-40.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"Inter Miami CF @ Porto",Straight,"Lionel Messi 2+ SOT",SOT,115,Gold,BTB,loss,-10000%,40.00,-40.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"Richard Rios 3+",SOT,3300,Platinum,BTB,loss,-10000.00%,15.00,-15.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"Trezeguet 3+",SOT,3100,Platinum,BTB,loss,-10000%,15.00,-15.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"Inter Miami CF @ Porto",Straight,"Porto GK 6+ Saves",Saves,1000,Platinum,BTB,loss,-10000%,15.00,-15.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"Inter Miami CF @ Porto",Straight,"Inter Miami 8+ SOT",SOT,1300,Platinum,BTB,loss,-10000%,15.00,-15.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"Inter Miami CF @ Porto",Straight,"Lionel Messi 4+ SOT",SOT,1100,Platinum,BTB,loss,-10000.00%,15.00,-15.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"SE Palmeiras Over 11.5 Corners",Corners,1200,Platinum,BTB,loss,-10000.00%,15.00,-15.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"Richard Rios 2+",SOT,650,Platinum,BTB,loss,-10000%,20.00,-20.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"Trezeguet 2+",SOT,600,Platinum,BTB,loss,-10000%,20.00,-20.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"Inter Miami CF @ Porto",Straight,"Porto GK 5+ Saves",Saves,440,Platinum,BTB,loss,-10000%,20.00,-20.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"Inter Miami CF @ Porto",Straight,"Lionel Messi 3+ SOT",SOT,380,Platinum,BTB,loss,-10000%,20.00,-20.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"SE Palmeiras Over 8.5 Corners",Corners,370,Platinum,BTB,loss,-10000%,20.00,-20.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"SE Palmeiras 2+ SOT Each Half",SOT,-150,Silver,BTB,loss,-10000.00%,50.00,-50.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"Richard Rios 1+",SOT,110,Gold,BTB,loss,-10000.00%,40.00,-40.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"Trezeguet 1+",SOT,105,Gold,BTB,loss,-10000%,40.00,-40.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"Inter Miami CF @ Porto",Straight,"Lionel Messi 2+ SOT",SOT,115,Gold,BTB,loss,-10000%,40.00,-40.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"Richard Rios 3+",SOT,3300,Platinum,BTB,loss,-10000.00%,15.00,-15.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"Trezeguet 3+",SOT,3100,Platinum,BTB,loss,-10000%,15.00,-15.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"Inter Miami CF @ Porto",Straight,"Porto GK 6+ Saves",Saves,1000,Platinum,BTB,loss,-10000%,15.00,-15.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"Inter Miami CF @ Porto",Straight,"Inter Miami 8+ SOT",SOT,1300,Platinum,BTB,loss,-10000%,15.00,-15.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"Inter Miami CF @ Porto",Straight,"Lionel Messi 4+ SOT",SOT,1100,Platinum,BTB,loss,-10000.00%,15.00,-15.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"SE Palmeiras Over 11.5 Corners",Corners,1200,Platinum,BTB,loss,-10000.00%,15.00,-15.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"Richard Rios 2+",SOT,650,Platinum,BTB,loss,-10000%,20.00,-20.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"Trezeguet 2+",SOT,600,Platinum,BTB,loss,-10000%,20.00,-20.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"Inter Miami CF @ Porto",Straight,"Porto GK 5+ Saves",Saves,440,Platinum,BTB,loss,-10000%,20.00,-20.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"Inter Miami CF @ Porto",Straight,"Lionel Messi 3+ SOT",SOT,380,Platinum,BTB,loss,-10000%,20.00,-20.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"SE Palmeiras Over 8.5 Corners",Corners,370,Platinum,BTB,loss,-10000%,20.00,-20.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"SE Palmeiras 2+ SOT Each Half",SOT,-150,Silver,BTB,loss,-10000.00%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-19,"Kansas City Royals @ Texas Rangers",Straight,"Kansas City Royals ML",Moneyline,106,Gold,TPP,push,0%,40.00,0.00,0.00
+Baseball,MLB,June,2025-06-19,"Minnesota Twins @ Cincinnati Reds",Straight,"Minnesota Twins ML",Moneyline,-101,Bronze,TPP,win,9900%,45.00,44.55,99.01
+Baseball,MLB,June,2025-06-19,"Philadelphia Phillies @ Miami Marlins",Straight,"Philadelphia Phillies ML",Moneyline,-140,Bronze,TPP,win,7140%,50.00,35.71,71.43
+Baseball,MLB,June,2025-06-19,"St. Louis Cardinals @ Chicago White Sox (Game 1)",Straight,"St. Louis Cardinals ML",Moneyline,-140,Bronze,TPP,win,7140%,50.00,35.71,71.43
+Baseball,MLB,June,2025-06-19,"Pittsburgh Pirates @ Detroit Tigers (Game 1)",Straight,"Pirates +1.5",Runline,125,Gold,TPP,win,12500%,40.00,50.00,125.00
+Baseball,MLB,June,2025-06-19,"Milwaukee Brewers @ Chicago Cubs",Straight,"Milwaukee Brewers ML",Moneyline,112,Gold,TPP,win,11200%,40.00,44.80,112.00
+Baseball,MLB,June,2025-06-19,"Cleveland Guardians @ San Francisco Giants",Straight,"Cleveland Guardians ML",Moneyline,157,Gold,TPP,win,15700%,40.00,62.80,157.00
+Baseball,MLB,June,2025-06-19,"St. Louis Cardinals @ Chicago White Sox (Game 2)",Straight,"St. Louis Cardinals ML",Moneyline,-165,Silver,TPP,win,30%,50.00,30.30,80.30
+Baseball,MLB,June,2025-06-19,"New York Mets @ Atlanta Braves",Straight,"Atlanta Braves ML",Moneyline,-130,Silver,TPP,win,7690%,50.00,38.46,76.92
+Baseball,MLB,June,2025-06-19,"Los Angeles Angels @ New York Yankees",Straight,"New York Yankees -1.5",Runline,-140,Silver,TPP,win,7140%,50.00,35.71,71.43
+Baseball,MLB,June,2025-06-19,"Colorado Rockies @ Washington Nationals",Straight,"Washington Nationals ML",Moneyline,-155,Silver,TPP,win,6450%,50.00,32.26,64.52
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"Al Ahly Cairo 4+ SOT",SOT,130,Gold,BTB,win,13000%,40.00,52.00,130.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"Al Ahly Cairo 7+ SOT",SOT,1500,Platinum,BTB,win,150000%,15.00,225.00,1500.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"Inter Miami CF @ Porto",Straight,"Inter Miami 6+ SOT",SOT,330,Platinum,BTB,win,33000%,20.00,66.00,330.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"Al Ahly Cairo 6+ SOT",SOT,700,Platinum,BTB,win,70000%,20.00,140.00,700.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"Inter Miami CF @ Porto",Straight,"Porto GK 3+ Saves",Saves,-120,Silver,BTB,win,8330%,50.00,41.67,83.33
+Soccer,"FIFA Club World Cup",June,2025-06-19,"Inter Miami CF @ Porto",Straight,"Inter Miami 4+ SOT",SOT,-140,Silver,BTB,win,7140%,50.00,35.71,71.43
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"SE Palmeiras Over 5.5 Corners",Corners,-148,Silver,BTB,win,6760%,50.00,33.78,67.57
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"Al Ahly Cairo 4+ SOT",SOT,130,Gold,BTB,win,13000%,40.00,52.00,130.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"Al Ahly Cairo 7+ SOT",SOT,1500,Platinum,BTB,win,150000%,15.00,225.00,1500.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"Inter Miami CF @ Porto",Straight,"Inter Miami 6+ SOT",SOT,330,Platinum,BTB,win,33000%,20.00,66.00,330.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"Al Ahly Cairo 6+ SOT",SOT,700,Platinum,BTB,win,70000%,20.00,140.00,700.00
+Soccer,"FIFA Club World Cup",June,2025-06-19,"Inter Miami CF @ Porto",Straight,"Porto GK 3+ Saves",Saves,-120,Silver,BTB,win,8330%,50.00,41.67,83.33
+Soccer,"FIFA Club World Cup",June,2025-06-19,"Inter Miami CF @ Porto",Straight,"Inter Miami 4+ SOT",SOT,-140,Silver,BTB,win,7140%,50.00,35.71,71.43
+Soccer,"FIFA Club World Cup",June,2025-06-19,"SE Palmeiras @ Al Ahly Cairo",Straight,"SE Palmeiras Over 5.5 Corners",Corners,-148,Silver,BTB,win,6760%,50.00,33.78,67.57
+Baseball,MLB,June,2025-06-20,"Arizona Diamondbacks @ Colorado Rockies",Straight,"Colorado Rockies (A Gomber) +1.5 RL",Runline,105,Bronze,TPP,loss,-10000%,45.00,-45.00,0.00
+Baseball,MLB,June,2025-06-20,"Seattle Mariners @ Chicago Cubs",Straight,"Chicago Cubs (M Boyd) ML",Moneyline,-135,Bronze,TPP,loss,-10000%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-20,"Detroit Tigers @ Tampa Bay Rays",Straight,"Detroit Tigers (J Flaherty) ML",Moneyline,100,Gold,TPP,loss,-10000%,45.00,-45.00,0.00
+Baseball,MLB,June,2025-06-20,"Chicago White Sox @ Toronto Blue Jays",Straight,"Toronto Blue Jays (S Turnbull) -1.5 RL",Runline,105,Gold,TPP,loss,-10000%,45.00,-45.00,0.00
+Baseball,MLB,June,2025-06-20,"Atlanta Braves @ Miami Marlins",Straight,"Atlanta Braves (D Fuentes) ML",Moneyline,-135,Silver,TPP,loss,-10000%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-20,"Milwaukee Brewers @ Minnesota Twins",Straight,"Minnesota Twins (J Ryan) ML",Moneyline,-153,Silver,TPP,loss,-10000%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-20,"Kansas City Royals @ San Diego Padres",Straight,"San Diego Padres (N Pivetta) ML",Moneyline,-155,Silver,TPP,loss,-10000%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-20,"Boston Red Sox @ San Francisco Giants",Straight,"San Francisco Giants (H Birdsong) ML",Moneyline,-125,Silver,TPP,loss,-10000%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-20,"Texas Rangers @ Pittsburgh Pirates",Straight,"Texas Rangers (J DeGrom) ML",Moneyline,-175,Bronze,TPP,win,5710%,50.00,28.57,57.14
+Baseball,MLB,June,2025-06-20,"Baltimore Orioles @ New York Yankees",Straight,"Baltimore Orioles (T Sugano) ML",Moneyline,240,Gold,TPP,win,24000%,40.00,96.00,240.00
+Baseball,MLB,June,2025-06-20,"Cincinnati Reds @ St. Louis Cardinals",Straight,"St. Louis Cardinals (A Pallante) -1.5 RL",Runline,145,Gold,TPP,win,14500%,40.00,58.00,145.00
+Baseball,MLB,June,2025-06-20,"Cleveland Guardians @ Oakland Athletics",Straight,"Oakland Athletics (J Springs) ML",Moneyline,105,Gold,TPP,win,10500%,45.00,47.25,105.00
+Baseball,MLB,June,2025-06-20,"New York Mets @ Philadelphia Phillies",Straight,"Philadelphia Phillies (Z Wheeler) ML",Moneyline,-190,Silver,TPP,win,5260%,50.00,26.32,52.63
+Baseball,MLB,June,2025-06-20,"Houston Astros @ Los Angeles Angels",Straight,"Houston Astros (H Brown) ML",Moneyline,-160,Silver,TPP,win,6250%,50.00,31.25,62.50
+Baseball,MLB,June,2025-06-21,"Washington Nationals @ Los Angeles Dodgers",Straight,"Los Angeles Dodgers (D May) -1.5 RL",Runline,-130,Bronze,TPP,loss,-100%,50.00,-50.00,0.00
+Baseball,MLB,June,2025-06-21,"Baltimore Orioles @ New York Yankees",Straight,"Baltimore Orioles (Z Eflin) ML",Moneyline,148,Gold,TPP,loss,-10000%,40.00,-40.00,0.00
+Baseball,MLB,June,2025-06-21,"Seattle Mariners @ Chicago Cubs",Straight,"Seattle Mariners (E Hancock) ML",Moneyline,150,Gold,TPP,loss,-10000%,40.00,-40.00,0.00
+Baseball,MLB,June,2025-06-21,"Houston Astros @ Los Angeles Angels",Straight,"Houston Astros (B Walter) ML",Moneyline,108,Gold,TPP,loss,-10000%,45.00,-45.00,0.00
+Baseball,MLB,June,2025-06-21,"Milwaukee Brewers @ Minnesota Twins",Straight,"Minnesota Twins (S Woods Richardson) ML",Moneyline,-130,Silver,TPP,loss,-10000%,50.00,-50.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-21,"Mamelodi Sundowns @ Borussia Dortmund",Straight,"Niklas Sule 2+ Shots","Player Shots",200,Gold,BTB,loss,-10000%,40.00,-40.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-21,"Mamelodi Sundowns @ Borussia Dortmund",Straight,"Niklas Süle 3+ Shots","Player Shots",750,Platinum,BTB,loss,-100%,10.00,-10.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-21,"Mamelodi Sundowns @ Borussia Dortmund",Straight,"Teboho Mokoena 4+ Shots","Player Shots",1600,Platinum,BTB,loss,-10000%,10.00,-10.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-21,"Mamelodi Sundowns @ Borussia Dortmund",Straight,"Niklas Sule 2+ Shots","Player Shots",200,Gold,BTB,loss,-10000%,40.00,-40.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-21,"Mamelodi Sundowns @ Borussia Dortmund",Straight,"Niklas Süle 3+ Shots","Player Shots",750,Platinum,BTB,loss,-100%,10.00,-10.00,0.00
+Soccer,"FIFA Club World Cup",June,2025-06-21,"Mamelodi Sundowns @ Borussia Dortmund",Straight,"Teboho Mokoena 4+ Shots","Player Shots",1600,Platinum,BTB,loss,-10000%,10.00,-10.00,0.00
+Baseball,MLB,June,2025-06-21,"Cincinnati Reds @ St. Louis Cardinals",Straight,"St. Louis Cardinals (S Gray) ML",Moneyline,-200,Bronze,TPP,win,5000%,50.00,25.00,50.00
+Baseball,MLB,June,2025-06-21,"Cleveland Guardians @ Oakland Athletics",Straight,"Cleveland Guardians (L Ortiz) ML",Moneyline,-130,Bronze,TPP,win,7690%,50.00,38.46,76.92
+Baseball,MLB,June,2025-06-21,"Kansas City Royals @ San Diego Padres",Straight,"Kansas City Royals (N Cameron) ML",Moneyline,140,Gold,TPP,win,14000%,40.00,56.00,140.00
+Baseball,MLB,June,2025-06-21,"New York Mets @ Philadelphia Phillies",Straight,"New York Mets (G Canning) ML",Moneyline,100,Gold,TPP,win,10000%,45.00,45.00,100.00
+Baseball,MLB,June,2025-06-21,"Boston Red Sox @ San Francisco Giants",Straight,"San Francisco Giants (L Roupp) ML",Moneyline,-116,Silver,TPP,win,8620%,50.00,43.10,86.21
+Baseball,MLB,June,2025-06-21,"Texas Rangers @ Pittsburgh Pirates",Straight,"Texas Rangers (K Rocker) ML",Moneyline,-104,Silver,TPP,win,9620%,50.00,48.08,96.15
+Baseball,MLB,June,2025-06-21,"Atlanta Braves @ Miami Marlins",Straight,"Atlanta Braves (G Holmes) ML",Moneyline,-153,Silver,TPP,win,6540%,50.00,32.68,65.36
+Baseball,MLB,June,2025-06-21,"Arizona Diamondbacks @ Colorado Rockies",Straight,"Arizona Diamondbacks (M Kelly) -1.5 RL",Runline,-140,Silver,TPP,win,7140%,50.00,35.71,71.43
+Soccer,"FIFA Club World Cup",June,2025-06-21,"Mamelodi Sundowns @ Borussia Dortmund",Straight,"Teboho Mokoena 2+ Shots","Player Shots",145,Bronze,BTB,win,14500%,40.00,58.00,145.00
+Soccer,"FIFA Club World Cup",June,2025-06-21,"Mamelodi Sundowns @ Borussia Dortmund",Straight,"Lucas Ribeiro Costa 2+ Shots","Player Shots",-160,Bronze,BTB,win,6250.00%,50.00,31.25,62.50
+Soccer,"FIFA Club World Cup",June,2025-06-21,"Mamelodi Sundowns @ Borussia Dortmund",Straight,"Teboho Mokoena 3+ Shots","Player Shots",500,Platinum,BTB,win,50000%,20.00,100.00,500.00
+Soccer,"FIFA Club World Cup",June,2025-06-21,"Mamelodi Sundowns @ Borussia Dortmund",Straight,"Teboho Mokoena 2+ Shots","Player Shots",145,Bronze,BTB,win,14500%,40.00,58.00,145.00
+Soccer,"FIFA Club World Cup",June,2025-06-21,"Mamelodi Sundowns @ Borussia Dortmund",Straight,"Lucas Ribeiro Costa 2+ Shots","Player Shots",-160,Bronze,BTB,win,6250.00%,50.00,31.25,62.50
+Soccer,"FIFA Club World Cup",June,2025-06-21,"Mamelodi Sundowns @ Borussia Dortmund",Straight,"Teboho Mokoena 3+ Shots","Player Shots",500,Platinum,BTB,win,50000%,20.00,100.00,500.00

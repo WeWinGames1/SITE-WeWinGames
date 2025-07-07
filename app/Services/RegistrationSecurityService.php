@@ -7,17 +7,16 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Services\CloudflareService;
 
 class RegistrationSecurityService
 {
     protected CloudflareService $cloudflare;
-    
+
     public function __construct(CloudflareService $cloudflare)
     {
         $this->cloudflare = $cloudflare;
     }
-    
+
     /**
      * Check if registration should be allowed
      */
@@ -25,7 +24,7 @@ class RegistrationSecurityService
     {
         // Get real IP from Cloudflare
         $realIp = $this->cloudflare->getRealIp($request);
-        
+
         // Check Cloudflare security signals first
         if ($this->cloudflare->isSuspiciousRequest($request)) {
             return [
@@ -34,7 +33,7 @@ class RegistrationSecurityService
                 'reason' => 'Your request has been flagged as suspicious. Please try again later.',
             ];
         }
-        
+
         // Check if country is blocked
         if ($this->cloudflare->isBlockedCountry($request)) {
             return [
@@ -43,23 +42,23 @@ class RegistrationSecurityService
                 'reason' => 'Registration is not available from your location.',
             ];
         }
-        
+
         $checks = [
             'ip_reputation' => $this->checkIpReputation($realIp),
             'email_domain' => $this->checkEmailDomain($request->input('email')),
             'velocity' => $this->checkRegistrationVelocity(),
             'turnstile' => $this->checkTurnstile($request),
         ];
-        
-        $allowed = !in_array(false, $checks, true);
-        
+
+        $allowed = ! in_array(false, $checks, true);
+
         return [
             'allowed' => $allowed,
             'checks' => $checks,
             'reason' => $allowed ? null : $this->getBlockReason($checks),
         ];
     }
-    
+
     /**
      * Log registration attempt
      */
@@ -75,7 +74,7 @@ class RegistrationSecurityService
             'created_at' => now(),
         ]);
     }
-    
+
     /**
      * Check IP reputation
      */
@@ -86,18 +85,18 @@ class RegistrationSecurityService
         if (in_array($ip, $blacklistedIps)) {
             return false;
         }
-        
+
         // Check if IP has too many failed attempts
         $failedAttempts = DB::table('registration_attempts')
             ->where('ip_address', $ip)
             ->where('successful', false)
             ->where('created_at', '>', now()->subHours(24))
             ->count();
-            
+
         if ($failedAttempts > 5) {
             return false;
         }
-        
+
         // Optional: Check against external IP reputation service
         // This is commented out but can be enabled with proper API key
         /*
@@ -108,7 +107,7 @@ class RegistrationSecurityService
             ], [
                 'Key' => env('ABUSEIPDB_API_KEY'),
             ]);
-            
+
             if ($response->successful()) {
                 $data = $response->json();
                 return $data['data']['abuseConfidenceScore'] < 50;
@@ -117,34 +116,34 @@ class RegistrationSecurityService
             Log::error('IP reputation check failed', ['error' => $e->getMessage()]);
         }
         */
-        
+
         return true;
     }
-    
+
     /**
      * Check email domain
      */
     private function checkEmailDomain(?string $email): bool
     {
-        if (!$email) {
+        if (! $email) {
             return false;
         }
-        
-        $domain = substr(strrchr($email, "@"), 1);
-        
+
+        $domain = substr(strrchr($email, '@'), 1);
+
         // Check MX records
-        if (!checkdnsrr($domain, 'MX')) {
+        if (! checkdnsrr($domain, 'MX')) {
             return false;
         }
-        
+
         // Check against known spam domains
         $spamDomains = Cache::remember('spam_email_domains', 86400, function () {
             return DB::table('spam_email_domains')->pluck('domain')->toArray();
         });
-        
-        return !in_array($domain, $spamDomains);
+
+        return ! in_array($domain, $spamDomains);
     }
-    
+
     /**
      * Check registration velocity
      */
@@ -154,38 +153,39 @@ class RegistrationSecurityService
         $recentRegistrations = DB::table('users')
             ->where('created_at', '>', now()->subMinutes(10))
             ->count();
-            
+
         // If more than 10 registrations in 10 minutes, suspicious
         if ($recentRegistrations > 10) {
             Log::warning('High registration velocity detected', [
                 'count' => $recentRegistrations,
-                'timeframe' => '10 minutes'
+                'timeframe' => '10 minutes',
             ]);
+
             return false;
         }
-        
+
         return true;
     }
-    
+
     /**
      * Check Turnstile verification
      */
     private function checkTurnstile(Request $request): bool
     {
-        if (!config('services.turnstile.enabled')) {
+        if (! config('services.turnstile.enabled')) {
             return true;
         }
-        
+
         $token = $request->input('cf-turnstile-response');
-        if (!$token) {
+        if (! $token) {
             return false;
         }
-        
+
         $result = $this->cloudflare->verifyTurnstile($token, $this->cloudflare->getRealIp($request));
-        
+
         return $result['success'];
     }
-    
+
     /**
      * Generate device fingerprint
      */
@@ -202,10 +202,10 @@ class RegistrationSecurityService
             $request->header('Sec-CH-UA-Mobile'),
             $request->header('Sec-CH-UA-Platform'),
         ];
-        
+
         return hash('sha256', implode('|', array_filter($components)));
     }
-    
+
     /**
      * Get security checks performed
      */
@@ -221,36 +221,36 @@ class RegistrationSecurityService
             'timestamp' => time(),
         ];
     }
-    
+
     /**
      * Get block reason from failed checks
      */
     private function getBlockReason(array $checks): string
     {
-        if (isset($checks['cloudflare']) && !$checks['cloudflare']) {
+        if (isset($checks['cloudflare']) && ! $checks['cloudflare']) {
             return 'Your request has been flagged as suspicious. Please try again later.';
         }
-        
-        if (isset($checks['turnstile']) && !$checks['turnstile']) {
+
+        if (isset($checks['turnstile']) && ! $checks['turnstile']) {
             return 'Please complete the security verification.';
         }
-        
-        if (!$checks['ip_reputation']) {
+
+        if (! $checks['ip_reputation']) {
             return 'Your IP address has been flagged for suspicious activity.';
         }
-        
-        if (!$checks['email_domain']) {
+
+        if (! $checks['email_domain']) {
             return 'Please use a valid email address from a recognized email provider.';
         }
-        
-        if (!$checks['velocity']) {
+
+        if (! $checks['velocity']) {
             return 'Registration is temporarily unavailable due to high demand. Please try again later.';
         }
-        
-        if (isset($checks['geo_location']) && !$checks['geo_location']) {
+
+        if (isset($checks['geo_location']) && ! $checks['geo_location']) {
             return 'Registration is not available from your location.';
         }
-        
+
         return 'Registration is temporarily unavailable.';
     }
 }

@@ -57,6 +57,7 @@ class SanitizeInput
 
             if ($this->shouldSkip($fullKey)) {
                 $sanitized[$key] = $value;
+
                 continue;
             }
 

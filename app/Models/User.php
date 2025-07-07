@@ -6,14 +6,15 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Spatie\Permission\Traits\HasRoles;
-use Laravel\Sanctum\HasApiTokens;
 use Laravel\Cashier\Billable;
+use Laravel\Sanctum\HasApiTokens;
 use NotificationChannels\WebPush\HasPushSubscriptions;
+use Spatie\Permission\Traits\HasRoles;
+
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use Billable, HasApiTokens, HasPushSubscriptions, HasRoles, HasFactory, Notifiable;
+    use Billable, HasApiTokens, HasFactory, HasPushSubscriptions, HasRoles, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -78,16 +79,17 @@ class User extends Authenticatable implements MustVerifyEmail
         if ($this->status === 'disabled') {
             return false;
         }
-        
+
         // Check for admin override first
         if ($this->is_ambassador || $this->is_gifted || $this->admin_override) {
             // If there's an expiry date, check if it's still valid
             if ($this->override_expiry && $this->override_expiry->isPast()) {
                 return false;
             }
+
             return true;
         }
-        
+
         // Then check Stripe subscription
         return $this->subscribed();
     }
@@ -101,7 +103,7 @@ class User extends Authenticatable implements MustVerifyEmail
         if ($this->override_tier && $this->hasActiveSubscription()) {
             return $this->override_tier;
         }
-        
+
         // Otherwise check their actual subscription
         if ($this->subscribed()) {
             $subscription = $this->subscription();
@@ -110,11 +112,11 @@ class User extends Authenticatable implements MustVerifyEmail
                 $stripeProduct = \App\Models\StripeProduct::where('stripe_price_id', $subscription->stripe_price)
                     ->where('is_active', true)
                     ->first();
-                    
+
                 if ($stripeProduct) {
                     return $stripeProduct->tier;
                 }
-                
+
                 // Fallback to config
                 $priceToTier = config('stripe.price_to_tier');
                 if (isset($priceToTier[$subscription->stripe_price])) {
@@ -122,7 +124,7 @@ class User extends Authenticatable implements MustVerifyEmail
                 }
             }
         }
-        
+
         return null;
     }
 

@@ -13,16 +13,16 @@ return new class extends Migration
     {
         Schema::table('bets', function (Blueprint $table) {
             // Add new fields for 16-column CSV format
-            if (!Schema::hasColumn('bets', 'wager_type')) {
+            if (! Schema::hasColumn('bets', 'wager_type')) {
                 $table->string('wager_type', 50)->nullable()->after('markets');
             }
-            if (!Schema::hasColumn('bets', 'code')) {
+            if (! Schema::hasColumn('bets', 'code')) {
                 $table->string('code', 50)->nullable()->after('membership');
             }
-            if (!Schema::hasColumn('bets', 'level')) {
+            if (! Schema::hasColumn('bets', 'level')) {
                 $table->string('level', 50)->nullable()->after('membership');
             }
-            if (!Schema::hasColumn('bets', 'month')) {
+            if (! Schema::hasColumn('bets', 'month')) {
                 $table->string('month', 50)->nullable()->after('league');
             }
         });

@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BlogController;
+use Illuminate\Support\Facades\Route;
 
 // Dynamic blog routes - using database-driven content
 Route::get('/', [BlogController::class, 'index'])->name('index');

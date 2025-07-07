@@ -15,9 +15,9 @@ class UserResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-           ...parent::toArray($request),
-            //'subscribed' =>  $this->subscribed(),
-            //'isAdmin' => $this->hasRole('admin')
+            ...parent::toArray($request),
+            // 'subscribed' =>  $this->subscribed(),
+            // 'isAdmin' => $this->hasRole('admin')
         ];
     }
 }

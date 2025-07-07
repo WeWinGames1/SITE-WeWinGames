@@ -1,13 +1,13 @@
 <?php
 
+use App\Http\Middleware\AdminRateLimit;
+use App\Http\Middleware\AdminSecurityHeaders;
+use App\Http\Middleware\CacheHeaders;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
-use App\Http\Middleware\SecurityHeaders;
-use App\Http\Middleware\SanitizeInput;
-use App\Http\Middleware\CacheHeaders;
 use App\Http\Middleware\LogApiRequests;
-use App\Http\Middleware\AdminSecurityHeaders;
-use App\Http\Middleware\AdminRateLimit;
+use App\Http\Middleware\SanitizeInput;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\UnderConstructionMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -26,10 +26,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->prefix('blog')
                 ->name('blog.')
                 ->group(base_path('routes/blog.php'));
-            
+
             Route::middleware('web')
                 ->group(base_path('routes/auth.php'));
-            
+
             Route::middleware('web')
                 ->group(base_path('routes/settings.php'));
         },
@@ -46,18 +46,18 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
-        
+
         // Global middleware
         $middleware->append([
             SecurityHeaders::class,
             SanitizeInput::class,
         ]);
-        
+
         // API middleware
         $middleware->api(append: [
             LogApiRequests::class,
         ]);
-        
+
         // Alias middleware
         $middleware->alias([
             'cache.headers' => CacheHeaders::class,

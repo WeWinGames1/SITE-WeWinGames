@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Carbon\Carbon;
 
 class DiscountCode extends Model
 {
@@ -74,7 +74,7 @@ class DiscountCode extends Model
      */
     public function isValid(): bool
     {
-        if (!$this->is_active) {
+        if (! $this->is_active) {
             return false;
         }
 
@@ -100,7 +100,7 @@ class DiscountCode extends Model
      */
     public function canBeUsedBy(User $user): bool
     {
-        if (!$this->isValid()) {
+        if (! $this->isValid()) {
             return false;
         }
 
@@ -142,10 +142,10 @@ class DiscountCode extends Model
     public function getFormattedDiscountAttribute(): string
     {
         if ($this->discount_type === 'percentage') {
-            return $this->discount_amount . '%';
+            return $this->discount_amount.'%';
         }
 
-        return '$' . number_format($this->discount_amount, 2);
+        return '$'.number_format($this->discount_amount, 2);
     }
 
     /**
@@ -178,6 +178,7 @@ class DiscountCode extends Model
     public function scopeValid($query)
     {
         $now = Carbon::now();
+
         return $query->active()
             ->where(function ($q) use ($now) {
                 $q->whereNull('valid_from')

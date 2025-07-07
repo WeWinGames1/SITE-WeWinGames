@@ -68,8 +68,8 @@ class SecurityHeaders
             $csp[] = "script-src-elem * 'unsafe-inline'";
             $csp[] = "style-src * 'unsafe-inline'";
             $csp[] = "style-src-elem * 'unsafe-inline'";
-            $csp[] = "font-src * data:";
-            $csp[] = "connect-src *";
+            $csp[] = 'font-src * data:';
+            $csp[] = 'connect-src *';
         } else {
             $csp[] = "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdnjs.cloudflare.com https://unpkg.com https://www.googletagmanager.com https://www.google-analytics.com https://challenges.cloudflare.com";
             $csp[] = "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.bunny.net https://cdnjs.cloudflare.com";
@@ -78,7 +78,7 @@ class SecurityHeaders
 
         // Common CSP directives - skip font-src if already set in local
         $commonCsp = [
-            !app()->environment('local') ? "font-src 'self' https://fonts.gstatic.com https://fonts.bunny.net https://cdnjs.cloudflare.com data:" : null,
+            ! app()->environment('local') ? "font-src 'self' https://fonts.gstatic.com https://fonts.bunny.net https://cdnjs.cloudflare.com data:" : null,
             "img-src 'self' data: https: blob:",
             "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
             "object-src 'none'",
@@ -86,14 +86,14 @@ class SecurityHeaders
             "form-action 'self'",
             "frame-ancestors 'self'",
         ];
-        
+
         // Filter out null values and merge
         $csp = array_merge($csp, array_filter($commonCsp));
 
         // Only add these in production
-        if (!app()->environment('local')) {
-            $csp[] = "block-all-mixed-content";
-            $csp[] = "upgrade-insecure-requests";
+        if (! app()->environment('local')) {
+            $csp[] = 'block-all-mixed-content';
+            $csp[] = 'upgrade-insecure-requests';
         }
 
         $response->headers->set('Content-Security-Policy', implode('; ', $csp));

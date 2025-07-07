@@ -21,13 +21,13 @@ return new class extends Migration
             $table->boolean('successful')->default(false);
             $table->json('checks_performed')->nullable();
             $table->timestamps();
-            
+
             $table->index('ip_address');
             $table->index('email');
             $table->index('fingerprint');
             $table->index('created_at');
         });
-        
+
         // Spam email domains blacklist
         Schema::create('spam_email_domains', function (Blueprint $table) {
             $table->id();
@@ -35,7 +35,7 @@ return new class extends Migration
             $table->string('reason')->nullable();
             $table->timestamps();
         });
-        
+
         // IP blacklist
         Schema::create('ip_blacklist', function (Blueprint $table) {
             $table->id();
@@ -43,7 +43,7 @@ return new class extends Migration
             $table->string('reason')->nullable();
             $table->timestamp('expires_at')->nullable();
             $table->timestamps();
-            
+
             $table->index('expires_at');
         });
     }

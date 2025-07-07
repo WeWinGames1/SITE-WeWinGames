@@ -3,17 +3,20 @@
 namespace App\Repositories\Eloquent;
 
 use App\Repositories\Contracts\BaseRepositoryInterface;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 
 abstract class BaseRepository implements BaseRepositoryInterface
 {
     protected Model $model;
+
     protected Builder $query;
+
     protected int $cacheTime = 3600; // 1 hour default
+
     protected bool $cacheEnabled = true;
 
     public function __construct()
@@ -41,7 +44,7 @@ abstract class BaseRepository implements BaseRepositoryInterface
 
     protected function remember(string $key, \Closure $callback, ?int $seconds = null)
     {
-        if (!$this->cacheEnabled) {
+        if (! $this->cacheEnabled) {
             return $callback();
         }
 
@@ -52,6 +55,7 @@ abstract class BaseRepository implements BaseRepositoryInterface
     {
         $result = $this->query->get($columns);
         $this->resetQuery();
+
         return $result;
     }
 
@@ -59,6 +63,7 @@ abstract class BaseRepository implements BaseRepositoryInterface
     {
         $result = $this->query->paginate($perPage, $columns);
         $this->resetQuery();
+
         return $result;
     }
 
@@ -66,6 +71,7 @@ abstract class BaseRepository implements BaseRepositoryInterface
     {
         $model = $this->model->create($data);
         $this->clearCache();
+
         return $model;
     }
 
@@ -73,6 +79,7 @@ abstract class BaseRepository implements BaseRepositoryInterface
     {
         $result = $this->model->where('id', $id)->update($data);
         $this->clearCache();
+
         return $result;
     }
 
@@ -80,13 +87,14 @@ abstract class BaseRepository implements BaseRepositoryInterface
     {
         $result = $this->model->destroy($id);
         $this->clearCache();
+
         return $result;
     }
 
     public function find(int $id, array $columns = ['*']): ?Model
     {
         $cacheKey = $this->getCacheKey('find', $id, $columns);
-        
+
         return $this->remember($cacheKey, function () use ($id, $columns) {
             return $this->model->find($id, $columns);
         });
@@ -100,7 +108,7 @@ abstract class BaseRepository implements BaseRepositoryInterface
     public function findBy(string $field, $value, array $columns = ['*']): ?Model
     {
         $cacheKey = $this->getCacheKey('findBy', $field, $value, $columns);
-        
+
         return $this->remember($cacheKey, function () use ($field, $value, $columns) {
             return $this->model->where($field, $value)->first($columns);
         });
@@ -109,36 +117,42 @@ abstract class BaseRepository implements BaseRepositoryInterface
     public function with(array $relations): self
     {
         $this->query->with($relations);
+
         return $this;
     }
 
     public function withCount(array $relations): self
     {
         $this->query->withCount($relations);
+
         return $this;
     }
 
     public function orderBy(string $column, string $direction = 'asc'): self
     {
         $this->query->orderBy($column, $direction);
+
         return $this;
     }
 
     public function where(string $column, $operator = null, $value = null): self
     {
         $this->query->where($column, $operator, $value);
+
         return $this;
     }
 
     public function whereIn(string $column, array $values): self
     {
         $this->query->whereIn($column, $values);
+
         return $this;
     }
 
-    public function whereHas(string $relation, \Closure $callback = null): self
+    public function whereHas(string $relation, ?\Closure $callback = null): self
     {
         $this->query->whereHas($relation, $callback);
+
         return $this;
     }
 
@@ -146,6 +160,7 @@ abstract class BaseRepository implements BaseRepositoryInterface
     {
         $model = $this->model->firstOrCreate($attributes, $values);
         $this->clearCache();
+
         return $model;
     }
 
@@ -153,6 +168,7 @@ abstract class BaseRepository implements BaseRepositoryInterface
     {
         $model = $this->model->updateOrCreate($attributes, $values);
         $this->clearCache();
+
         return $model;
     }
 
@@ -171,12 +187,14 @@ abstract class BaseRepository implements BaseRepositoryInterface
     public function disableCache(): self
     {
         $this->cacheEnabled = false;
+
         return $this;
     }
 
     public function enableCache(): self
     {
         $this->cacheEnabled = true;
+
         return $this;
     }
 }

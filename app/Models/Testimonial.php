@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class Testimonial extends Model
 {
@@ -15,14 +14,14 @@ class Testimonial extends Model
         'image',
         'review_date',
         'published',
-        'sort_order'
+        'sort_order',
     ];
 
     protected $casts = [
         'review_date' => 'date',
         'published' => 'boolean',
         'stars' => 'integer',
-        'sort_order' => 'integer'
+        'sort_order' => 'integer',
     ];
 
     /**
@@ -32,13 +31,13 @@ class Testimonial extends Model
     {
         $words = explode(' ', $this->name);
         $initials = '';
-        
+
         foreach ($words as $word) {
-            if (!empty($word)) {
+            if (! empty($word)) {
                 $initials .= strtoupper(substr($word, 0, 1));
             }
         }
-        
+
         return substr($initials, 0, 2); // Return maximum 2 characters
     }
 
@@ -65,14 +64,14 @@ class Testimonial extends Model
     {
         return $query->orderBy('sort_order', 'asc')->orderBy('created_at', 'desc');
     }
-    
+
     /**
      * Scope for frontend display
      */
     public function scopeForDisplay($query)
     {
         return $query->published()
-                    ->ordered()
-                    ->select(['id', 'name', 'title', 'stars', 'review', 'image', 'review_date']);
+            ->ordered()
+            ->select(['id', 'name', 'title', 'stars', 'review', 'image', 'review_date']);
     }
 }

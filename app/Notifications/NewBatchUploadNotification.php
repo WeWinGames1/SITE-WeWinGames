@@ -2,14 +2,13 @@
 
 namespace App\Notifications;
 
-
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Support\Collection;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use NotificationChannels\WebPush\WebPushMessage;
+use Illuminate\Support\Collection;
 use NotificationChannels\WebPush\WebPushChannel;
+use NotificationChannels\WebPush\WebPushMessage;
 
 class NewBatchUploadNotification extends Notification implements ShouldQueue
 {
@@ -63,15 +62,15 @@ class NewBatchUploadNotification extends Notification implements ShouldQueue
         foreach ($this->bets as $bet) {
             if ($notifiable->can('view', $bet)) {
                 $mail->line('-----------------------------')
-                    ->line('Sport: ' . $bet->sports)
-                    ->line('League: ' . $bet->league)
-                    ->line('Teams: ' . $bet->team_one . ' vs ' . $bet->team_two)
-                    ->line('Markets: ' . $bet->markets)
-                    ->line('Tips: ' . $bet->tips)
-                    ->line('Wager Odds: ' . $bet->wager_odds)
-                    ->line('Membership: ' . $bet->membership)
-                    ->line('Wager Amount: ' . $bet->wager_amount)
-                    ->line('Betting Date: ' . $bet->betting_date);
+                    ->line('Sport: '.$bet->sports)
+                    ->line('League: '.$bet->league)
+                    ->line('Teams: '.$bet->team_one.' vs '.$bet->team_two)
+                    ->line('Markets: '.$bet->markets)
+                    ->line('Tips: '.$bet->tips)
+                    ->line('Wager Odds: '.$bet->wager_odds)
+                    ->line('Membership: '.$bet->membership)
+                    ->line('Wager Amount: '.$bet->wager_amount)
+                    ->line('Betting Date: '.$bet->betting_date);
             }
         }
 
@@ -93,16 +92,16 @@ class NewBatchUploadNotification extends Notification implements ShouldQueue
                 return method_exists($notifiable, 'can') && $notifiable->can('view', $bet);
             })->map(function ($bet) {
                 return [
-                    'sports'         => $bet->sports,
-                    'league'         => $bet->league,
-                    'team_one'       => $bet->team_one,
-                    'team_two'       => $bet->team_two,
-                    'markets'        => $bet->markets,
-                    'tips'           => $bet->tips,
-                    'wager_odds'     => $bet->wager_odds,
-                    'membership'     => $bet->membership,
-                    'wager_amount'   => $bet->wager_amount,
-                    'betting_date'   => $bet->betting_date,
+                    'sports' => $bet->sports,
+                    'league' => $bet->league,
+                    'team_one' => $bet->team_one,
+                    'team_two' => $bet->team_two,
+                    'markets' => $bet->markets,
+                    'tips' => $bet->tips,
+                    'wager_odds' => $bet->wager_odds,
+                    'membership' => $bet->membership,
+                    'wager_amount' => $bet->wager_amount,
+                    'betting_date' => $bet->betting_date,
                 ];
             })->values(),
             'message' => 'New bet picks submitted.',

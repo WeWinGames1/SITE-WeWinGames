@@ -24,7 +24,7 @@ return new class extends Migration
             $table->enum('status', ['new', 'reviewed', 'contacted', 'hired', 'rejected'])->default('new');
             $table->text('notes')->nullable();
             $table->timestamps();
-            
+
             $table->index('email');
             $table->index('status');
             $table->index('created_at');

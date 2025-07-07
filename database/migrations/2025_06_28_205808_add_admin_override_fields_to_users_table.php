@@ -17,7 +17,7 @@ return new class extends Migration
             $table->boolean('admin_override')->default(false)->after('is_gifted');
             $table->date('override_expiry')->nullable()->after('admin_override');
             $table->string('override_tier', 50)->nullable()->after('override_expiry');
-            
+
             // Add indexes for performance
             $table->index('is_ambassador');
             $table->index('is_gifted');
@@ -34,13 +34,13 @@ return new class extends Migration
             $table->dropIndex(['is_ambassador']);
             $table->dropIndex(['is_gifted']);
             $table->dropIndex(['admin_override']);
-            
+
             $table->dropColumn([
                 'is_ambassador',
                 'is_gifted',
                 'admin_override',
                 'override_expiry',
-                'override_tier'
+                'override_tier',
             ]);
         });
     }

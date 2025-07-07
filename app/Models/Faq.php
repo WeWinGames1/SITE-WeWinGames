@@ -11,12 +11,12 @@ class Faq extends Model
         'answer',
         'category',
         'is_active',
-        'sort_order'
+        'sort_order',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
-        'sort_order' => 'integer'
+        'sort_order' => 'integer',
     ];
 
     /**
@@ -34,15 +34,15 @@ class Faq extends Model
     {
         return $query->orderBy('sort_order', 'asc')->orderBy('created_at', 'desc');
     }
-    
+
     /**
      * Scope for frontend display
      */
     public function scopeForDisplay($query)
     {
         return $query->active()
-                    ->ordered()
-                    ->select(['id', 'question', 'answer', 'category']);
+            ->ordered()
+            ->select(['id', 'question', 'answer', 'category']);
     }
 
     /**
@@ -51,11 +51,11 @@ class Faq extends Model
     public static function getGroupedByCategory()
     {
         return self::forDisplay()
-                   ->get()
-                   ->groupBy('category')
-                   ->map(function ($faqs) {
-                       return $faqs->values();
-                   });
+            ->get()
+            ->groupBy('category')
+            ->map(function ($faqs) {
+                return $faqs->values();
+            });
     }
 
     /**
@@ -64,9 +64,9 @@ class Faq extends Model
     public static function getCategories()
     {
         return self::whereNotNull('category')
-                   ->distinct()
-                   ->pluck('category')
-                   ->sort()
-                   ->values();
+            ->distinct()
+            ->pluck('category')
+            ->sort()
+            ->values();
     }
 }

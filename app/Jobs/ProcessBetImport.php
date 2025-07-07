@@ -2,24 +2,27 @@
 
 namespace App\Jobs;
 
+use App\Services\BetImportService;
+use App\Services\CsvImportService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Services\CsvImportService;
-use App\Services\BetImportService;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ProcessBetImport implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected string $filePath;
+
     protected array $mappings;
+
     protected string $importId;
+
     protected int $userId;
 
     /**
@@ -68,7 +71,7 @@ class ProcessBetImport implements ShouldQueue
                 'success' => 0,
                 'errors' => 0,
                 'percentage' => 0,
-                'error_log' => []
+                'error_log' => [],
             ]);
 
             // Parse CSV with mappings
@@ -101,14 +104,14 @@ class ProcessBetImport implements ShouldQueue
                         $chunkErrors[] = [
                             'row' => $rowNumber,
                             'message' => $e->getMessage(),
-                            'data' => $row
+                            'data' => $row,
                         ];
-                        
+
                         // Keep only first 100 errors in log
                         if (count($errorLog) < 100) {
                             $errorLog[] = [
                                 'row' => $rowNumber,
-                                'message' => $e->getMessage()
+                                'message' => $e->getMessage(),
                             ];
                         }
                     }
@@ -117,13 +120,13 @@ class ProcessBetImport implements ShouldQueue
                 // Update progress after each chunk
                 $processed = ($chunkIndex + 1) * $chunkSize;
                 $processed = min($processed, $totalRows); // Don't exceed total
-                
+
                 $this->updateProgress([
                     'processed' => $processed,
                     'success' => $successCount,
                     'errors' => $errorCount,
                     'percentage' => round(($processed / $totalRows) * 100),
-                    'error_log' => $errorLog
+                    'error_log' => $errorLog,
                 ]);
 
                 // Log chunk results
@@ -131,19 +134,19 @@ class ProcessBetImport implements ShouldQueue
                     Log::warning("Bet import chunk {$chunkIndex} had errors", [
                         'import_id' => $this->importId,
                         'chunk_errors' => count($chunkErrors),
-                        'chunk_successes' => $chunkSuccesses
+                        'chunk_successes' => $chunkSuccesses,
                     ]);
                 }
             }
 
             // Mark as completed
             $finalStatus = $errorCount > 0 ? 'completed_with_errors' : 'completed';
-            
+
             $this->updateProgress([
                 'status' => $finalStatus,
                 'processed' => $totalRows,
                 'percentage' => 100,
-                'completed_at' => now()->toIso8601String()
+                'completed_at' => now()->toIso8601String(),
             ]);
 
             // Store error details for download if any
@@ -152,24 +155,24 @@ class ProcessBetImport implements ShouldQueue
             }
 
             // Log final results
-            Log::info("Bet import completed", [
+            Log::info('Bet import completed', [
                 'import_id' => $this->importId,
                 'total' => $totalRows,
                 'success' => $successCount,
-                'errors' => $errorCount
+                'errors' => $errorCount,
             ]);
 
         } catch (\Exception $e) {
-            Log::error("Bet import failed", [
+            Log::error('Bet import failed', [
                 'import_id' => $this->importId,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->updateProgress([
                 'status' => 'failed',
                 'error_message' => $e->getMessage(),
-                'failed_at' => now()->toIso8601String()
+                'failed_at' => now()->toIso8601String(),
             ]);
 
             throw $e;
@@ -189,7 +192,7 @@ class ProcessBetImport implements ShouldQueue
         $key = "import_progress_{$this->importId}";
         $current = Cache::get($key, []);
         $updated = array_merge($current, $data);
-        
+
         // Keep progress for 24 hours
         Cache::put($key, $updated, now()->addHours(24));
     }
@@ -200,16 +203,16 @@ class ProcessBetImport implements ShouldQueue
     protected function storeErrorReport(array $errorLog, array $allData): void
     {
         $reportPath = "imports/errors/{$this->importId}_errors.csv";
-        
+
         $csv = fopen('php://temp', 'w');
-        
+
         // Headers
         fputcsv($csv, ['Row', 'Error', 'Sport', 'Home Team', 'Away Team', 'Game Date', 'Bet Type', 'Selection', 'Odds', 'Stake']);
-        
+
         // Error rows
         foreach ($errorLog as $error) {
             $rowData = $allData[$error['row'] - 2] ?? []; // -2 for header and 0-index
-            
+
             fputcsv($csv, [
                 $error['row'],
                 $error['message'],
@@ -220,16 +223,16 @@ class ProcessBetImport implements ShouldQueue
                 $rowData['bet_type'] ?? '',
                 $rowData['selection'] ?? '',
                 $rowData['odds'] ?? '',
-                $rowData['stake'] ?? ''
+                $rowData['stake'] ?? '',
             ]);
         }
-        
+
         rewind($csv);
         $csvContent = stream_get_contents($csv);
         fclose($csv);
-        
+
         Storage::disk('local')->put($reportPath, $csvContent);
-        
+
         // Store path in cache for download
         Cache::put("import_error_report_{$this->importId}", $reportPath, now()->addDays(7));
     }
@@ -239,15 +242,15 @@ class ProcessBetImport implements ShouldQueue
      */
     public function failed(\Throwable $exception): void
     {
-        Log::error("Bet import job failed", [
+        Log::error('Bet import job failed', [
             'import_id' => $this->importId,
-            'error' => $exception->getMessage()
+            'error' => $exception->getMessage(),
         ]);
 
         $this->updateProgress([
             'status' => 'failed',
-            'error_message' => 'Import job failed: ' . $exception->getMessage(),
-            'failed_at' => now()->toIso8601String()
+            'error_message' => 'Import job failed: '.$exception->getMessage(),
+            'failed_at' => now()->toIso8601String(),
         ]);
     }
 }

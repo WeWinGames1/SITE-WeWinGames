@@ -1,10 +1,10 @@
 <?php
 
 namespace App\Listeners;
+
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Laravel\Cashier\Cashier;
 use Laravel\Cashier\Events\WebhookReceived;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 
 class SubscriptionCreated implements ShouldQueue
 {
@@ -16,20 +16,20 @@ class SubscriptionCreated implements ShouldQueue
         //
     }
 
-     /**
+    /**
      * Handle received Stripe webhooks.
      */
     public function handle(WebhookReceived $event): void
     {
         if ($event->payload['type'] === 'customer.subscription.created') {
             $stripeId = $event->payload['data']['object']['customer'] ?? null;
-            if (!$stripeId) {
+            if (! $stripeId) {
                 return;
             }
             $user = Cashier::findBillable($stripeId);
             // revoke the user's permissions
             $user->syncPermissions(['view-bets']);
-            $user->notify(new \App\Notifications\SubscriptionStarted());
+            $user->notify(new \App\Notifications\SubscriptionStarted);
         }
     }
 }

@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -18,7 +16,7 @@ return new class extends Migration
             // We don't need to do anything for SQLite
             return;
         }
-        
+
         // For MySQL and PostgreSQL
         DB::statement("ALTER TABLE stripe_products MODIFY COLUMN billing_period ENUM('daily', 'weekly', 'monthly', 'yearly') NOT NULL");
     }
@@ -32,7 +30,7 @@ return new class extends Migration
             // Nothing to do for SQLite
             return;
         }
-        
+
         // First update any yearly to monthly
         DB::statement("UPDATE stripe_products SET billing_period = 'monthly' WHERE billing_period = 'yearly'");
         // Then modify the column

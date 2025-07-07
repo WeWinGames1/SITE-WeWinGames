@@ -4,12 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\SupportTicket;
 use App\Models\TicketCategory;
-use App\Models\TicketReply;
 use App\Models\User;
 use App\Services\CloudflareService;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class SupportTicketController extends Controller
 {
@@ -43,7 +42,7 @@ class SupportTicketController extends Controller
         ]);
 
         $ticket = auth()->user()->supportTickets()->create([
-            'ticket_number' => 'TICKET-' . strtoupper(Str::random(8)),
+            'ticket_number' => 'TICKET-'.strtoupper(Str::random(8)),
             'category_id' => $validated['category_id'],
             'subject' => $validated['subject'],
             'content' => $validated['content'],
@@ -58,7 +57,7 @@ class SupportTicketController extends Controller
     public function show(SupportTicket $ticket)
     {
         // Ensure user can only view their own tickets
-        if ($ticket->user_id !== auth()->id() && !auth()->user()->is_admin) {
+        if ($ticket->user_id !== auth()->id() && ! auth()->user()->is_admin) {
             abort(403);
         }
 
@@ -72,7 +71,7 @@ class SupportTicketController extends Controller
     public function reply(Request $request, SupportTicket $ticket)
     {
         // Ensure user can only reply to their own tickets
-        if ($ticket->user_id !== auth()->id() && !auth()->user()->is_admin) {
+        if ($ticket->user_id !== auth()->id() && ! auth()->user()->is_admin) {
             abort(403);
         }
 
@@ -155,7 +154,7 @@ class SupportTicketController extends Controller
         ];
 
         // If user is not authenticated, require guest information
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             $rules['first_name'] = 'required|string|max:255';
             $rules['last_name'] = 'required|string|max:255';
             $rules['email'] = 'required|email|max:255';
@@ -175,7 +174,7 @@ class SupportTicketController extends Controller
                 $request->ip()
             );
 
-            if (!$turnstileResult['success']) {
+            if (! $turnstileResult['success']) {
                 return back()->withErrors([
                     'cf-turnstile-response' => 'Security verification failed. Please try again.',
                 ])->withInput();
@@ -184,15 +183,15 @@ class SupportTicketController extends Controller
 
         // Check if email belongs to existing user
         $existingUser = null;
-        $isGuestSubmission = !auth()->check();
-        
+        $isGuestSubmission = ! auth()->check();
+
         if ($isGuestSubmission) {
             $existingUser = User::where('email', $validated['email'])->first();
         }
 
         // Create ticket
         $ticketData = [
-            'ticket_number' => 'TICKET-' . strtoupper(Str::random(8)),
+            'ticket_number' => 'TICKET-'.strtoupper(Str::random(8)),
             'category_id' => $validated['category_id'],
             'subject' => $validated['subject'],
             'content' => $validated['content'],
@@ -204,7 +203,7 @@ class SupportTicketController extends Controller
 
         // Add guest information if not authenticated
         if ($isGuestSubmission) {
-            $ticketData['guest_name'] = $validated['first_name'] . ' ' . $validated['last_name'];
+            $ticketData['guest_name'] = $validated['first_name'].' '.$validated['last_name'];
             $ticketData['guest_email'] = $validated['email'];
             $ticketData['potential_user_id'] = $existingUser?->id;
         }

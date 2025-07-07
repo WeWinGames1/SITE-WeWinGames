@@ -25,7 +25,7 @@ return new class extends Migration
     {
         Schema::table('bets', function (Blueprint $table) {
             //
-            $table->dropColumn(['team_one_logo','team_two_logo']);
+            $table->dropColumn(['team_one_logo', 'team_two_logo']);
         });
     }
 };

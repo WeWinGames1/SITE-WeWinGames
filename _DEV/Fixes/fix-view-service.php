@@ -1,9 +1,9 @@
 <?php
+
 /**
  * Temporary fix for view service registration issue
  * Run this on production if the view service is not being registered
  */
-
 echo "Attempting to fix view service registration...\n\n";
 
 // Clear all caches
@@ -43,10 +43,10 @@ try {
     } else {
         echo "✗ FAILED: View service is still not registered.\n";
         echo "\nTrying alternative fix...\n";
-        
+
         // Alternative: manually register the view service provider
         echo "Creating temporary ViewServiceProvider registration...\n";
-        
+
         $content = '<?php
 
 namespace App\Providers;
@@ -69,25 +69,25 @@ class ViewServiceProvider extends ServiceProvider
     }
 }
 ';
-        
+
         file_put_contents('app/Providers/ViewServiceProvider.php', $content);
-        
+
         // Add to providers
         $providers = file_get_contents('bootstrap/providers.php');
         if (strpos($providers, 'ViewServiceProvider') === false) {
             $providers = str_replace(
                 'App\Providers\RepositoryServiceProvider::class,',
-                'App\Providers\RepositoryServiceProvider::class,' . "\n    App\Providers\ViewServiceProvider::class,",
+                'App\Providers\RepositoryServiceProvider::class,'."\n    App\Providers\ViewServiceProvider::class,",
                 $providers
             );
             file_put_contents('bootstrap/providers.php', $providers);
         }
-        
+
         echo "Added ViewServiceProvider to bootstrap/providers.php\n";
         echo "Run 'composer dump-autoload -o' and 'php artisan optimize' again.\n";
     }
 } catch (Exception $e) {
-    echo "✗ ERROR: " . $e->getMessage() . "\n";
+    echo '✗ ERROR: '.$e->getMessage()."\n";
 }
 
 echo "\nFix script complete.\n";

@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use DateTime;
-use Illuminate\Support\Facades\Storage;
 
 class CsvCleanerService
 {
@@ -11,49 +10,51 @@ class CsvCleanerService
      * Expected column headers for the cleaned import format
      */
     private array $expectedHeaders = [
-        'Sports',
+        'Sport',
         'League',
         'Month',
-        'Betting Date',
-        'Matches',
-        'Markets',
+        'Game Date',
+        'Game',
+        'Bet Type',
         'Wager Type',
         'Wager Name',
-        'Wager Odds',
-        'Membership',
-        'Referrer',
+        'Odds',
+        'Level',
+        'Code',
         'Status',
-        'ROI %',
-        'Wager Amount',
+        'ROI(net)',
+        'Wager',
+        'Profits',
         'Winning Amount',
-        'Profit Amount',
     ];
 
     /**
      * Mapping from old column names to new column names
      */
     private array $columnMapping = [
-        'Section' => 'Sports',
+        'Section' => 'Sport',
         'Subsection' => 'League',
-        'Date' => 'Betting Date',
-        'Game' => 'Matches',
-        'Bet Type' => 'Markets',
+        'Month' => 'Month',
+        'Date' => 'Game Date',
+        'Game' => 'Game',
         'Wager name' => 'Wager Name',
-        'Odds' => 'Wager Odds',
-        'Level' => 'Membership',
-        'Code' => 'Referrer',
+        'Bet Type' => 'Bet Type',
+        // Note: Column 7 "Wager" maps to "Wager Type"
+        // Note: Column 13 "Wager" maps to "Wager" (amount)
+        'Odds' => 'Odds',
+        'Level' => 'Level',
+        'Code' => 'Code',
         'Status' => 'Status',
-        'ROI(net)' => 'ROI %',
-        'Profits' => 'Profit Amount',
-        'Winnings' => 'Winning Amount',
-        'Winning Amount' => 'Winning Amount', // Handle both with and without space
+        'ROI(net)' => 'ROI(net)',
+        'Profits' => 'Profits',
+        'Winning Amount' => 'Winning Amount',
     ];
 
     /**
      * Clean a CSV file with duplicate columns and format it for import
      *
-     * @param string $inputPath Path to input CSV file
-     * @param string $outputPath Path to output cleaned CSV file
+     * @param  string  $inputPath  Path to input CSV file
+     * @param  string  $outputPath  Path to output cleaned CSV file
      * @return array Result with success status and details
      */
     public function cleanCsvFile(string $inputPath, string $outputPath): array
@@ -71,8 +72,9 @@ class CsvCleanerService
 
             // Read header row
             $headerRow = fgetcsv($handle);
-            if (!$headerRow) {
+            if (! $headerRow) {
                 fclose($handle);
+
                 return [
                     'success' => false,
                     'message' => 'Could not read header row',
@@ -98,7 +100,7 @@ class CsvCleanerService
 
             // Write the cleaned CSV
             $result = $this->writeCsvFile($outputPath, $rows);
-            
+
             if ($result) {
                 return [
                     'success' => true,
@@ -116,7 +118,7 @@ class CsvCleanerService
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => 'Error cleaning CSV: ' . $e->getMessage(),
+                'message' => 'Error cleaning CSV: '.$e->getMessage(),
             ];
         }
     }
@@ -127,21 +129,29 @@ class CsvCleanerService
     private function mapColumnIndices(array $headerRow): array
     {
         $columnIndices = [];
-        
+        $wagerCount = 0;
+
         foreach ($headerRow as $index => $header) {
             $header = trim($header);
-            
+
             // Special handling for duplicate "Wager" columns
-            if ($header === 'Wager' && !isset($columnIndices['Wager Amount'])) {
-                // Use the first occurrence (index 7)
-                if ($index === 7) {
-                    $columnIndices['Wager Amount'] = $index;
+            if ($header === 'Wager') {
+                $wagerCount++;
+                if ($wagerCount === 1) {
+                    // First "Wager" column (index 7) is Wager Type
+                    $columnIndices['Wager Type'] = $index;
+                } elseif ($wagerCount === 2) {
+                    // Second "Wager" column (index 13) is Wager amount
+                    $columnIndices['Wager'] = $index;
                 }
             } elseif (isset($this->columnMapping[$header])) {
                 $columnIndices[$this->columnMapping[$header]] = $index;
+            } else {
+                // Direct mapping if no transformation needed
+                $columnIndices[$header] = $index;
             }
         }
-        
+
         return $columnIndices;
     }
 
@@ -151,65 +161,67 @@ class CsvCleanerService
     private function processRow(array $data, array $columnIndices, string $inputPath): ?array
     {
         $newRow = [];
-        
-        // Map data to new format
-        $newRow['Sports'] = ucfirst(strtolower($data[$columnIndices['Sports'] ?? 0] ?? ''));
-        $newRow['League'] = strtoupper($data[$columnIndices['League'] ?? 0] ?? '');
-        
-        // Format date
-        $dateStr = $data[$columnIndices['Betting Date'] ?? 0] ?? '';
-        if (!empty($dateStr)) {
-            $date = DateTime::createFromFormat('n/j/Y', $dateStr);
-            if ($date) {
-                $newRow['Month'] = $date->format('M'); // Get 3-letter month abbreviation
-                $newRow['Betting Date'] = $date->format('Y-m-d');
+
+        // Direct mapping based on expected headers
+        foreach ($this->expectedHeaders as $header) {
+            $index = $columnIndices[$header] ?? null;
+            
+            if ($index !== null && isset($data[$index])) {
+                $value = trim($data[$index]);
+                
+                // Special handling for specific fields
+                switch ($header) {
+                    case 'Sport':
+                        // Keep original casing for sports
+                        $newRow[$header] = $value;
+                        break;
+                    
+                    case 'Game Date':
+                        // Format date from m/d/Y to Y-m-d
+                        if (! empty($value)) {
+                            $date = DateTime::createFromFormat('n/j/Y', $value);
+                            if ($date) {
+                                $newRow[$header] = $date->format('Y-m-d');
+                            } else {
+                                // Try alternative formats
+                                $date = DateTime::createFromFormat('m/d/Y', $value);
+                                if ($date) {
+                                    $newRow[$header] = $date->format('Y-m-d');
+                                } else {
+                                    return null; // Skip rows with invalid dates
+                                }
+                            }
+                        } else {
+                            return null;
+                        }
+                        break;
+                    
+                    case 'Wager':
+                    case 'Profits':
+                    case 'Winning Amount':
+                        // Clean monetary values - remove $ and spaces
+                        $newRow[$header] = str_replace(['$', ' ', ','], '', $value);
+                        break;
+                    
+                    case 'ROI(net)':
+                        // Keep ROI as is (including % sign)
+                        $newRow[$header] = $value;
+                        break;
+                    
+                    default:
+                        $newRow[$header] = $value;
+                        break;
+                }
             } else {
-                return null; // Skip rows with invalid dates
+                $newRow[$header] = '';
             }
-        } else {
-            return null;
         }
         
-        $newRow['Matches'] = $data[$columnIndices['Matches'] ?? 0] ?? '';
-        $newRow['Markets'] = $data[$columnIndices['Markets'] ?? 0] ?? '';
-        $newRow['Wager Type'] = ''; // Leave empty when we don't have the value
-        $newRow['Wager Name'] = $data[$columnIndices['Wager Name'] ?? 0] ?? '';
-        
-        // Convert odds
-        $odds = $data[$columnIndices['Wager Odds'] ?? 0] ?? '0';
-        $newRow['Wager Odds'] = $odds;
-        
-        // Convert level to membership tier
-        $level = strtolower($data[$columnIndices['Membership'] ?? 0] ?? '');
-        $membershipMap = [
-            'silver' => 'Silver',
-            'gold' => 'Gold',
-            'platinum' => 'Platinum',
-            'bronze' => 'Bronze'
-        ];
-        $newRow['Membership'] = $membershipMap[$level] ?? 'Silver';
-        
-        // Referrer from Code column, or default based on year
-        $defaultReferrer = strpos($inputPath, '2024') !== false ? 'WWG2024' : 'WWG2025';
-        $newRow['Referrer'] = $data[$columnIndices['Referrer'] ?? 0] ?? $defaultReferrer;
-        
-        // Convert status
-        $status = strtolower($data[$columnIndices['Status'] ?? 0] ?? '');
-        $newRow['Status'] = ($status === 'win') ? 'Won' : 'Lost';
-        
-        // Format ROI
-        $roi = $data[$columnIndices['ROI %'] ?? 0] ?? '-100%';
-        $newRow['ROI %'] = $roi;
-        
-        // Format amounts (remove $ and spaces)
-        $wager = preg_replace('/[^\d.-]/', '', $data[$columnIndices['Wager Amount'] ?? 0] ?? '0');
-        $winning = preg_replace('/[^\d.-]/', '', $data[$columnIndices['Winning Amount'] ?? 0] ?? '0');
-        $profit = preg_replace('/[^\d.-]/', '', $data[$columnIndices['Profit Amount'] ?? 0] ?? '0');
-        
-        $newRow['Wager Amount'] = '$' . number_format((float)$wager, 2);
-        $newRow['Winning Amount'] = '$' . number_format((float)$winning, 2);
-        $newRow['Profit Amount'] = '$' . number_format((float)$profit, 2);
-        
+        // Skip rows without essential data
+        if (empty($newRow['Sport']) || empty($newRow['Game Date'])) {
+            return null;
+        }
+
         return $newRow;
     }
 
@@ -222,10 +234,10 @@ class CsvCleanerService
         if ($handle === false) {
             return false;
         }
-        
+
         // Write headers
         fputcsv($handle, $this->expectedHeaders);
-        
+
         // Write data rows
         foreach ($rows as $row) {
             $outputRow = [];
@@ -234,8 +246,9 @@ class CsvCleanerService
             }
             fputcsv($handle, $outputRow);
         }
-        
+
         fclose($handle);
+
         return true;
     }
 
@@ -245,11 +258,11 @@ class CsvCleanerService
     public function cleanMultipleCsvFiles(array $files): array
     {
         $results = [];
-        
+
         foreach ($files as $input => $output) {
             $results[] = $this->cleanCsvFile($input, $output);
         }
-        
+
         return $results;
     }
 

@@ -7,8 +7,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use NotificationChannels\WebPush\WebPushMessage;
 use NotificationChannels\WebPush\WebPushChannel;
+use NotificationChannels\WebPush\WebPushMessage;
 
 class NewBetPick extends Notification implements ShouldQueue
 {
@@ -58,16 +58,16 @@ class NewBetPick extends Notification implements ShouldQueue
             ->subject('New Bet Pick Submitted')
             ->greeting('Hello!')
             ->line('A new bet pick has been submitted. Here are the details:')
-            ->line('Sport: ' . $this->bet->sports)
-            ->line('League: ' . $this->bet->league)
-            ->line('Teams: ' . $this->bet->team_one . ' vs ' . $this->bet->team_two)
-            ->line('Markets: ' . $this->bet->markets)
-            ->line('Tips: ' . $this->bet->tips)
-            ->line('Wager Odds: ' . $this->bet->wager_odds)
-            ->line('Membership: ' . $this->bet->membership)
-            ->line('Wager Amount: ' . $this->bet->wager_amount)
-            ->line('Betting Date: ' . $this->bet->betting_date)
-            ->action('View Bet', url('/pick/' . $this->bet->id))
+            ->line('Sport: '.$this->bet->sports)
+            ->line('League: '.$this->bet->league)
+            ->line('Teams: '.$this->bet->team_one.' vs '.$this->bet->team_two)
+            ->line('Markets: '.$this->bet->markets)
+            ->line('Tips: '.$this->bet->tips)
+            ->line('Wager Odds: '.$this->bet->wager_odds)
+            ->line('Membership: '.$this->bet->membership)
+            ->line('Wager Amount: '.$this->bet->wager_amount)
+            ->line('Betting Date: '.$this->bet->betting_date)
+            ->action('View Bet', url('/pick/'.$this->bet->id))
             ->line('Thank you for using our application!');
     }
 
@@ -79,17 +79,17 @@ class NewBetPick extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'sports'         => $this->bet->sports,
-            'league'         => $this->bet->league,
-            'team_one'       => $this->bet->team_one,
-            'team_two'       => $this->bet->team_two,
-            'markets'        => $this->bet->markets,
-            'tips'           => $this->bet->tips,
-            'wager_odds'     => $this->bet->wager_odds,
-            'membership'     => $this->bet->membership,
-            'wager_amount'   => $this->bet->wager_amount,
-            'betting_date'   => $this->bet->betting_date,
-            'message'        => 'New bet pick submitted.',
+            'sports' => $this->bet->sports,
+            'league' => $this->bet->league,
+            'team_one' => $this->bet->team_one,
+            'team_two' => $this->bet->team_two,
+            'markets' => $this->bet->markets,
+            'tips' => $this->bet->tips,
+            'wager_odds' => $this->bet->wager_odds,
+            'membership' => $this->bet->membership,
+            'wager_amount' => $this->bet->wager_amount,
+            'betting_date' => $this->bet->betting_date,
+            'message' => 'New bet pick submitted.',
         ];
     }
 
@@ -102,14 +102,14 @@ class NewBetPick extends Notification implements ShouldQueue
             ->title('New Bet Pick Submitted')
             ->icon('/images/icons/icon-192x192.png')
             ->body(
-                "Sport: {$this->bet->sports}\n" .
-                "League: {$this->bet->league}\n" .
-                "Teams: {$this->bet->team_one} vs {$this->bet->team_two}\n" .
-                "Markets: {$this->bet->markets}\n" .
-                "Tips: {$this->bet->tips}\n" .
-                "Wager Odds: {$this->bet->wager_odds}\n" .
-                "Membership: {$this->bet->membership}\n" .
-                "Wager Amount: {$this->bet->wager_amount}\n" .
+                "Sport: {$this->bet->sports}\n".
+                "League: {$this->bet->league}\n".
+                "Teams: {$this->bet->team_one} vs {$this->bet->team_two}\n".
+                "Markets: {$this->bet->markets}\n".
+                "Tips: {$this->bet->tips}\n".
+                "Wager Odds: {$this->bet->wager_odds}\n".
+                "Membership: {$this->bet->membership}\n".
+                "Wager Amount: {$this->bet->wager_amount}\n".
                 "Betting Date: {$this->bet->betting_date}"
             )
             ->action('View Bet', url('/dashboard'));

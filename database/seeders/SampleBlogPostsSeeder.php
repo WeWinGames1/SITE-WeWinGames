@@ -18,12 +18,13 @@ class SampleBlogPostsSeeder extends Seeder
             $query->where('name', 'admin');
         })->first();
 
-        if (!$admin) {
+        if (! $admin) {
             $admin = User::first();
         }
 
-        if (!$admin) {
+        if (! $admin) {
             $this->command->warn('No users found. Please create a user first.');
+
             return;
         }
 
@@ -220,7 +221,7 @@ class SampleBlogPostsSeeder extends Seeder
         foreach ($posts as $postData) {
             $postData['user_id'] = $admin->id;
             $postData['views_count'] = rand(100, 1000);
-            
+
             Post::create($postData);
         }
 

@@ -1,5 +1,7 @@
 <?php
+
 // app/Services/PageService.php
+
 namespace App\Services;
 
 use App\Models\Page;
@@ -11,7 +13,7 @@ class PageService
         return Page::orderBy('created_at', 'desc')
             ->paginate(20);
     }
-    
+
     public function getAllUnpaginated()
     {
         return Page::orderBy('created_at', 'desc')
@@ -31,6 +33,7 @@ class PageService
     public function update(Page $page, array $data)
     {
         $page->update($data);
+
         return $page;
     }
 

@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\LegacyBetImportService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class BetImportController extends Controller
 {
@@ -31,7 +31,7 @@ class BetImportController extends Controller
         return response()->json([
             'success' => true,
             'format' => $this->importService->getSampleCsvFormat(),
-            'message' => 'Use this format for CSV imports'
+            'message' => 'Use this format for CSV imports',
         ]);
     }
 }

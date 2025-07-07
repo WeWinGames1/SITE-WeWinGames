@@ -15,36 +15,36 @@ return new class extends Migration
             $table->id();
             $table->string('code', 50)->unique();
             $table->string('description')->nullable();
-            
+
             // Discount type and amount
             $table->enum('discount_type', ['percentage', 'fixed']);
             $table->decimal('discount_amount', 10, 2);
-            
+
             // Application rules
             $table->enum('apply_to', ['first_payment', 'forever', 'specific_months']);
             $table->integer('months_count')->nullable(); // For specific_months option
-            
+
             // Usage limits
             $table->integer('max_uses')->nullable(); // Total uses allowed
             $table->integer('max_uses_per_customer')->default(1);
             $table->integer('times_used')->default(0);
-            
+
             // Validity period
             $table->datetime('valid_from')->nullable();
             $table->datetime('valid_until')->nullable();
-            
+
             // Restrictions
             $table->json('applicable_products')->nullable(); // Array of stripe_product_ids
             $table->decimal('minimum_amount', 10, 2)->nullable();
-            
+
             // Status
             $table->boolean('is_active')->default(true);
-            
+
             // Metadata
             $table->string('stripe_coupon_id')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users');
             $table->timestamps();
-            
+
             // Indexes
             $table->index('code');
             $table->index('is_active');

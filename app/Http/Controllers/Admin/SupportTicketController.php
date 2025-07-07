@@ -35,23 +35,23 @@ class SupportTicketController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('ticket_number', 'like', "%{$search}%")
-                  ->orWhere('subject', 'like', "%{$search}%")
-                  ->orWhere('content', 'like', "%{$search}%")
-                  ->orWhere('guest_name', 'like', "%{$search}%")
-                  ->orWhere('guest_email', 'like', "%{$search}%")
-                  ->orWhereHas('user', function($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
-                  });
+                    ->orWhere('subject', 'like', "%{$search}%")
+                    ->orWhere('content', 'like', "%{$search}%")
+                    ->orWhere('guest_name', 'like', "%{$search}%")
+                    ->orWhere('guest_email', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    });
             });
         }
 
         $tickets = $query->paginate(20)->withQueryString();
-        
+
         // Get admin users for assignment
-        $adminUsers = User::whereHas('roles', function($q) {
+        $adminUsers = User::whereHas('roles', function ($q) {
             $q->where('name', 'admin');
         })->get(['id', 'name']);
 
@@ -68,7 +68,7 @@ class SupportTicketController extends Controller
         $ticket->load(['category', 'user', 'assignedTo', 'replies.user']);
 
         // Get admin users for assignment
-        $adminUsers = User::whereHas('roles', function($q) {
+        $adminUsers = User::whereHas('roles', function ($q) {
             $q->where('name', 'admin');
         })->get(['id', 'name']);
 

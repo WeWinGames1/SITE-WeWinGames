@@ -11,13 +11,13 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
 {
     protected function getModelClass(): Model
     {
-        return new User();
+        return new User;
     }
 
     public function findByEmail(string $email): ?User
     {
         $cacheKey = $this->getCacheKey('findByEmail', $email);
-        
+
         return $this->remember($cacheKey, function () use ($email) {
             return $this->model->where('email', $email)->first();
         });
@@ -26,7 +26,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     public function getAdmins(): Collection
     {
         $cacheKey = $this->getCacheKey('getAdmins');
-        
+
         return $this->remember($cacheKey, function () {
             return $this->model->with('roles')->role('admin')->get();
         });
@@ -35,10 +35,10 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     public function getNonAdminUsers(): Collection
     {
         $cacheKey = $this->getCacheKey('getNonAdminUsers');
-        
+
         return $this->remember($cacheKey, function () {
             return $this->model->with('roles')
-                ->whereDoesntHave('roles', function($q) {
+                ->whereDoesntHave('roles', function ($q) {
                     $q->where('name', 'admin');
                 })->get();
         });
@@ -47,10 +47,10 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     public function getUsersWithActiveSubscriptions(): Collection
     {
         $cacheKey = $this->getCacheKey('getUsersWithActiveSubscriptions');
-        
+
         return $this->remember($cacheKey, function () {
             return $this->model->with('subscriptions')
-                ->whereHas('subscriptions', function($q) {
+                ->whereHas('subscriptions', function ($q) {
                     $q->active();
                 })
                 ->get();
@@ -72,7 +72,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     public function getUsersByRole(string $role): Collection
     {
         $cacheKey = $this->getCacheKey('getUsersByRole', $role);
-        
+
         return $this->remember($cacheKey, function () use ($role) {
             return $this->model->with('roles')->role($role)->get();
         });

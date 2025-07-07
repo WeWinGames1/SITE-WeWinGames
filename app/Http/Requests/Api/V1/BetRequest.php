@@ -41,13 +41,14 @@ class BetRequest extends FormRequest
                 if ($key !== false) {
                     $rule[$key] = 'sometimes';
                 }
+
                 return $rule;
             }, $rules);
 
             // Add status validation for updates
             $rules['status'] = [
                 'sometimes',
-                Rule::in(['pending', 'won', 'lost', 'void', 'cashout', 'push'])
+                Rule::in(['pending', 'won', 'lost', 'void', 'cashout', 'push']),
             ];
         }
 
@@ -78,11 +79,11 @@ class BetRequest extends FormRequest
         // Convert odds format if needed
         if ($this->has('odds')) {
             $odds = $this->input('odds');
-            
+
             // Handle American odds format
             if (is_string($odds) && (str_starts_with($odds, '+') || str_starts_with($odds, '-'))) {
                 $this->merge([
-                    'odds' => $this->convertAmericanToDecimal($odds)
+                    'odds' => $this->convertAmericanToDecimal($odds),
                 ]);
             }
         }
@@ -94,7 +95,7 @@ class BetRequest extends FormRequest
     private function convertAmericanToDecimal(string $americanOdds): float
     {
         $odds = (int) $americanOdds;
-        
+
         if ($odds > 0) {
             return ($odds / 100) + 1;
         } else {

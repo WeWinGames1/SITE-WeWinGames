@@ -4,8 +4,8 @@ namespace App\Http\Requests\Auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Validation\Rules;
 
 class RegisterRequest extends FormRequest
 {
@@ -45,12 +45,12 @@ class RegisterRequest extends FormRequest
                     if ($this->isDisposableEmail($value)) {
                         $fail('Please use a permanent email address.');
                     }
-                    
+
                     // Check for suspicious patterns
                     if ($this->hasSuspiciousEmailPattern($value)) {
                         $fail('This email address cannot be used for registration.');
                     }
-                }
+                },
             ],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             // Honeypot field - should be empty
@@ -69,7 +69,7 @@ class RegisterRequest extends FormRequest
                     if ($timeTaken > 1800) {
                         $fail('This form has expired. Please refresh and try again.');
                     }
-                }
+                },
             ],
             // Cloudflare Turnstile token
             'cf-turnstile-response' => config('services.turnstile.enabled') ? 'required|string' : 'nullable',
@@ -93,7 +93,7 @@ class RegisterRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             // Additional checks after basic validation
-            if (!$validator->errors()->isEmpty()) {
+            if (! $validator->errors()->isEmpty()) {
                 // Log validation failures for monitoring
                 $this->logSuspiciousActivity('validation_failed');
             }
@@ -105,8 +105,8 @@ class RegisterRequest extends FormRequest
      */
     private function isDisposableEmail(string $email): bool
     {
-        $domain = substr(strrchr($email, "@"), 1);
-        
+        $domain = substr(strrchr($email, '@'), 1);
+
         // Common disposable email domains
         $disposableDomains = [
             'mailinator.com', 'guerrillamail.com', '10minutemail.com',
@@ -114,13 +114,13 @@ class RegisterRequest extends FormRequest
             'maildrop.cc', 'mintemail.com', 'temp-mail.org',
             'fakeinbox.com', 'sharklasers.com', 'guerrillamail.info',
             'spam4.me', 'grr.la', 'mailnesia.com', 'tempmailaddress.com',
-            'getairmail.com', 'throwawaymail.com', 'tempmail.net'
+            'getairmail.com', 'throwawaymail.com', 'tempmail.net',
         ];
-        
+
         // Check against cached blacklist
         $cachedBlacklist = Cache::get('disposable_email_domains', []);
         $allBlacklisted = array_merge($disposableDomains, $cachedBlacklist);
-        
+
         return in_array($domain, $allBlacklisted);
     }
 
@@ -130,17 +130,17 @@ class RegisterRequest extends FormRequest
     private function hasSuspiciousEmailPattern(string $email): bool
     {
         $localPart = strstr($email, '@', true);
-        
+
         // Check for excessive numbers in email
         if (preg_match('/\d{5,}/', $localPart)) {
             return true;
         }
-        
+
         // Check for random character patterns
         if (preg_match('/^[a-z]{1,2}\d{6,}/', $localPart)) {
             return true;
         }
-        
+
         // Check for known spam patterns
         $spamPatterns = [
             '/^test\d+@/',
@@ -149,13 +149,13 @@ class RegisterRequest extends FormRequest
             '/^spam/',
             '/^fake/',
         ];
-        
+
         foreach ($spamPatterns as $pattern) {
             if (preg_match($pattern, $email)) {
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -171,7 +171,7 @@ class RegisterRequest extends FormRequest
             'email' => $this->input('email'),
             'timestamp' => now(),
         ];
-        
+
         \Log::channel('security')->warning('Suspicious registration attempt', $data);
     }
 }

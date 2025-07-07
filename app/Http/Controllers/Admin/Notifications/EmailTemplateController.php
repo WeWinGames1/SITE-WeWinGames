@@ -58,7 +58,7 @@ class EmailTemplateController extends Controller
     {
         // Generate sample data based on template key
         $sampleData = $this->getSampleData($emailTemplate->key);
-        
+
         // Render the template with sample data
         $rendered = $emailTemplate->render($sampleData);
 
@@ -82,7 +82,7 @@ class EmailTemplateController extends Controller
             'user_email' => 'john.doe@example.com',
         ];
 
-        return match($templateKey) {
+        return match ($templateKey) {
             EmailTemplate::NEW_REGISTRATION => array_merge($baseData, [
                 'login_url' => route('login'),
             ]),
@@ -114,7 +114,7 @@ class EmailTemplateController extends Controller
     public function reset(EmailTemplate $emailTemplate)
     {
         $defaults = EmailTemplate::getDefaultTemplates();
-        
+
         if (isset($defaults[$emailTemplate->key])) {
             $emailTemplate->update([
                 'subject' => $defaults[$emailTemplate->key]['subject'],

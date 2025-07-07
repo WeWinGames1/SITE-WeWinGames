@@ -3,9 +3,9 @@
 namespace App\Services;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 
 class CloudflareService
 {
@@ -14,7 +14,7 @@ class CloudflareService
      */
     public function verifyTurnstile(string $token, string $ip): array
     {
-        if (!config('services.turnstile.enabled')) {
+        if (! config('services.turnstile.enabled')) {
             return ['success' => true, 'score' => 1.0];
         }
 
@@ -24,16 +24,17 @@ class CloudflareService
             'remoteip' => $ip,
         ]);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             Log::error('Turnstile verification failed', [
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
+
             return ['success' => false, 'score' => 0];
         }
 
         $data = $response->json();
-        
+
         return [
             'success' => $data['success'] ?? false,
             'score' => $data['success'] ? 1.0 : 0,
@@ -68,7 +69,7 @@ class CloudflareService
         if (config('services.cloudflare.enabled') && $request->header('CF-Connecting-IP')) {
             return $request->header('CF-Connecting-IP');
         }
-        
+
         return $request->ip();
     }
 
@@ -86,13 +87,13 @@ class CloudflareService
     public function isBlockedCountry(Request $request): bool
     {
         // If Cloudflare security is disabled, don't check
-        if (!config('services.cloudflare.security_enabled', false)) {
+        if (! config('services.cloudflare.security_enabled', false)) {
             return false;
         }
-        
+
         $country = $this->getCountryCode($request);
-        
-        if (!$country) {
+
+        if (! $country) {
             return false;
         }
 
@@ -110,12 +111,12 @@ class CloudflareService
     public function isSuspiciousRequest(Request $request): bool
     {
         // If Cloudflare security is disabled, don't check
-        if (!config('services.cloudflare.security_enabled', false)) {
+        if (! config('services.cloudflare.security_enabled', false)) {
             return false;
         }
-        
+
         $cfData = $this->getCloudflareData($request);
-        
+
         // Check bot score if available (Enterprise feature)
         if (isset($cfData['cf_bot_score'])) {
             $botScore = (int) $cfData['cf_bot_score'];
@@ -124,6 +125,7 @@ class CloudflareService
                     'score' => $botScore,
                     'ip' => $this->getRealIp($request),
                 ]);
+
                 return true;
             }
         }
@@ -141,6 +143,7 @@ class CloudflareService
                     'score' => $threatScore,
                     'ip' => $this->getRealIp($request),
                 ]);
+
                 return true;
             }
         }
@@ -150,6 +153,7 @@ class CloudflareService
             Log::warning('Tor exit node detected', [
                 'ip' => $this->getRealIp($request),
             ]);
+
             return true;
         }
 
@@ -162,7 +166,7 @@ class CloudflareService
     public function getSecuritySummary(Request $request): array
     {
         $cfData = $this->getCloudflareData($request);
-        
+
         return [
             'ip' => $this->getRealIp($request),
             'country' => $cfData['cf_ipcountry'] ?? 'Unknown',

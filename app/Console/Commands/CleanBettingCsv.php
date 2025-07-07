@@ -32,25 +32,27 @@ class CleanBettingCsv extends Command
         $outputPath = $this->argument('output');
 
         // Check if input file exists
-        if (!file_exists($inputPath)) {
+        if (! file_exists($inputPath)) {
             $this->error("Input file not found: {$inputPath}");
+
             return Command::FAILURE;
         }
 
         $this->info("Cleaning CSV file: {$inputPath}");
-        
+
         // Clean the CSV file
         $result = $cleaner->cleanCsvFile($inputPath, $outputPath);
-        
+
         if ($result['success']) {
             $this->info($result['message']);
             $this->info("Input: {$result['input']}");
             $this->info("Output: {$result['output']}");
             $this->info("Processed {$result['rows_processed']} rows");
-            
+
             return Command::SUCCESS;
         } else {
             $this->error($result['message']);
+
             return Command::FAILURE;
         }
     }

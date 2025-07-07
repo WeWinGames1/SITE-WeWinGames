@@ -65,7 +65,7 @@ class AnalyzeDatabasePerformance extends Command
         foreach ($tables as $table) {
             $tableName = $table->$tableKey;
             $stats = $this->getTableStats($tableName);
-            
+
             $tableData[] = [
                 $tableName,
                 $this->formatBytes($stats['data_length']),
@@ -86,8 +86,9 @@ class AnalyzeDatabasePerformance extends Command
      */
     private function analyzeTable(string $tableName): void
     {
-        if (!Schema::hasTable($tableName)) {
+        if (! Schema::hasTable($tableName)) {
             $this->error("Table '{$tableName}' does not exist.");
+
             return;
         }
 
@@ -96,7 +97,7 @@ class AnalyzeDatabasePerformance extends Command
 
         // Get table stats
         $stats = $this->getTableStats($tableName);
-        
+
         $this->table(
             ['Metric', 'Value'],
             [
@@ -113,7 +114,7 @@ class AnalyzeDatabasePerformance extends Command
         $this->newLine();
         $this->info('Indexes:');
         $indexes = DB::select("SHOW INDEX FROM {$tableName}");
-        
+
         $indexData = [];
         foreach ($indexes as $index) {
             $indexData[] = [
@@ -165,7 +166,7 @@ class AnalyzeDatabasePerformance extends Command
             $indexes = $this->getTableIndexes($tableName);
 
             foreach ($commonColumns as $column) {
-                if (in_array($column, $columns) && !$this->hasIndexOn($indexes, $column)) {
+                if (in_array($column, $columns) && ! $this->hasIndexOn($indexes, $column)) {
                     $suggestions[] = [
                         $tableName,
                         $column,
@@ -208,7 +209,7 @@ class AnalyzeDatabasePerformance extends Command
      */
     private function getTableStats(string $tableName): array
     {
-        $result = DB::select("
+        $result = DB::select('
             SELECT 
                 table_rows as rows,
                 data_length,
@@ -217,7 +218,7 @@ class AnalyzeDatabasePerformance extends Command
                 auto_increment
             FROM information_schema.tables 
             WHERE table_schema = ? AND table_name = ?
-        ", [DB::getDatabaseName(), $tableName]);
+        ', [DB::getDatabaseName(), $tableName]);
 
         return $result[0] ? (array) $result[0] : [];
     }
@@ -227,7 +228,7 @@ class AnalyzeDatabasePerformance extends Command
      */
     private function getForeignKeysWithoutIndexes(): array
     {
-        return DB::select("
+        return DB::select('
             SELECT 
                 kcu.table_name,
                 kcu.column_name,
@@ -243,7 +244,7 @@ class AnalyzeDatabasePerformance extends Command
                         AND s.table_name = kcu.table_name
                         AND s.column_name = kcu.column_name
                 )
-        ", [DB::getDatabaseName()]);
+        ', [DB::getDatabaseName()]);
     }
 
     /**
@@ -264,6 +265,7 @@ class AnalyzeDatabasePerformance extends Command
                 return true;
             }
         }
+
         return false;
     }
 
@@ -272,9 +274,16 @@ class AnalyzeDatabasePerformance extends Command
      */
     private function formatBytes(int $bytes): string
     {
-        if ($bytes < 1024) return $bytes . ' B';
-        if ($bytes < 1048576) return round($bytes / 1024, 2) . ' KB';
-        if ($bytes < 1073741824) return round($bytes / 1048576, 2) . ' MB';
-        return round($bytes / 1073741824, 2) . ' GB';
+        if ($bytes < 1024) {
+            return $bytes.' B';
+        }
+        if ($bytes < 1048576) {
+            return round($bytes / 1024, 2).' KB';
+        }
+        if ($bytes < 1073741824) {
+            return round($bytes / 1048576, 2).' MB';
+        }
+
+        return round($bytes / 1073741824, 2).' GB';
     }
 }

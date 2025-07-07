@@ -2,10 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\Page;
-use Illuminate\Support\Str;
 use App\Services\PageService;
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 
 class ImportBlogPages extends Command
 {
@@ -29,7 +28,7 @@ class ImportBlogPages extends Command
     public function handle(PageService $pages)
     {
         $blogDir = resource_path('js/pages/blog');
-        $files = glob($blogDir . '/*.vue');
+        $files = glob($blogDir.'/*.vue');
         $imported = 0;
 
         foreach ($files as $file) {
@@ -57,16 +56,17 @@ class ImportBlogPages extends Command
 
             // Slug from filename (hyphenated)
             $slug = Str::slug($title);
-            
+
             // Extract first image src as featured_image
             $featured_image = null;
             if (preg_match('/<img[^>]+src=["\']([^"\']+)["\']/i', $templateHtml, $imgMatch)) {
                 $featured_image = $imgMatch[1];
             }
-            
+
             // Skip if already imported
             if (\App\Models\Page::where('slug', $slug)->exists()) {
                 $this->info("Skipping existing page: $slug");
+
                 continue;
             }
 
@@ -82,6 +82,7 @@ class ImportBlogPages extends Command
         }
 
         $this->info("Imported $imported blog pages.");
+
         return 0;
     }
 }

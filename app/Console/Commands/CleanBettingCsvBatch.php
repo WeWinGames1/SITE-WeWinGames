@@ -34,37 +34,39 @@ class CleanBettingCsvBatch extends Command
         $suffix = $this->option('suffix') ?? '_cleaned';
 
         // Find matching files
-        $files = glob($directory . '/' . $pattern);
-        
+        $files = glob($directory.'/'.$pattern);
+
         if (empty($files)) {
             $this->warn("No files found matching pattern: {$pattern} in {$directory}");
+
             return Command::FAILURE;
         }
 
-        $this->info("Found " . count($files) . " files to clean");
-        
+        $this->info('Found '.count($files).' files to clean');
+
         $filesToClean = [];
         foreach ($files as $file) {
             // Skip already cleaned files
             if (strpos($file, $suffix) !== false) {
                 continue;
             }
-            
+
             $pathInfo = pathinfo($file);
-            $outputFile = $pathInfo['dirname'] . '/' . 
-                         $pathInfo['filename'] . $suffix . '.' . $pathInfo['extension'];
-            
+            $outputFile = $pathInfo['dirname'].'/'.
+                         $pathInfo['filename'].$suffix.'.'.$pathInfo['extension'];
+
             $filesToClean[$file] = $outputFile;
         }
 
         if (empty($filesToClean)) {
             $this->warn("No files need cleaning (all files already have '{$suffix}' suffix)");
+
             return Command::SUCCESS;
         }
 
         // Clean the files
         $results = $cleaner->cleanMultipleCsvFiles($filesToClean);
-        
+
         $successCount = 0;
         foreach ($results as $result) {
             if ($result['success']) {
@@ -74,9 +76,9 @@ class CleanBettingCsvBatch extends Command
                 $this->error("✗ Failed: {$result['message']}");
             }
         }
-        
-        $this->info("\nSummary: {$successCount}/" . count($results) . " files cleaned successfully");
-        
+
+        $this->info("\nSummary: {$successCount}/".count($results).' files cleaned successfully');
+
         return $successCount === count($results) ? Command::SUCCESS : Command::FAILURE;
     }
 }

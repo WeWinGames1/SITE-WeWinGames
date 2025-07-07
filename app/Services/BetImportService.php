@@ -16,8 +16,11 @@ use League\Csv\Reader;
 class BetImportService
 {
     private array $errors = [];
+
     private array $successCount = ['bets' => 0, 'games' => 0, 'teams' => 0];
+
     private array $columnMappings = [];
+
     private array $staticValues = [];
 
     public function __construct(
@@ -31,7 +34,7 @@ class BetImportService
     {
         $this->columnMappings = $mappings;
     }
-    
+
     /**
      * Set static values for import
      */
@@ -45,20 +48,20 @@ class BetImportService
         try {
             $csv = Reader::createFromPath($filePath, 'r');
             $csv->setHeaderOffset(0);
-            
+
             $records = $csv->getRecords();
             $totalRecords = 0;
-            
+
             DB::beginTransaction();
-            
+
             foreach ($records as $offset => $record) {
                 $totalRecords++;
                 $this->processRecord($record, $offset + 2); // +2 because header is line 1
             }
-            
-            if (!empty($this->errors)) {
+
+            if (! empty($this->errors)) {
                 DB::rollBack();
-                
+
                 return [
                     'success' => false,
                     'message' => 'Import failed due to validation errors',
@@ -66,33 +69,33 @@ class BetImportService
                     'processed' => $totalRecords,
                 ];
             }
-            
+
             DB::commit();
-            
+
             Log::info('CSV import completed successfully', [
                 'file' => $filePath,
                 'stats' => $this->successCount,
             ]);
-            
+
             return [
                 'success' => true,
                 'message' => 'Import completed successfully',
                 'stats' => $this->successCount,
                 'processed' => $totalRecords,
             ];
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             Log::error('CSV import failed', [
                 'file' => $filePath,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return [
                 'success' => false,
-                'message' => 'Import failed: ' . $e->getMessage(),
+                'message' => 'Import failed: '.$e->getMessage(),
                 'errors' => $this->errors,
             ];
         }
@@ -101,7 +104,7 @@ class BetImportService
     private function processRecord(array $record, int $lineNumber): void
     {
         // Map the record using column mappings if provided
-        if (!empty($this->columnMappings)) {
+        if (! empty($this->columnMappings)) {
             $mappedRecord = [];
             foreach ($this->columnMappings as $field => $csvColumn) {
                 if (isset($record[$csvColumn])) {
@@ -110,23 +113,24 @@ class BetImportService
             }
             $record = $mappedRecord;
         }
-        
+
         // Apply static values (these override any mapped values)
         foreach ($this->staticValues as $field => $value) {
             $record[$field] = $value;
         }
-        
+
         // Transform data before validation
         $record = $this->transformRecordData($record);
-        
+
         // Validate record
         $validation = $this->validateRecord($record);
-        if (!$validation['valid']) {
+        if (! $validation['valid']) {
             $this->errors[] = [
                 'line' => $lineNumber,
                 'errors' => $validation['errors'],
                 'data' => $record,
             ];
+
             return;
         }
 
@@ -140,14 +144,14 @@ class BetImportService
             // Get teams - should already be parsed in transformRecordData
             $homeTeamName = $record['home_team'] ?? null;
             $awayTeamName = $record['away_team'] ?? null;
-            
+
             // Format matches field based on sport type and available teams first
             $matchesField = '';
             if ($awayTeamName && $homeTeamName) {
                 // Team sports - format as "Away @ Home" or "Fighter1 vs Fighter2"
                 $isCombatSport = in_array(strtolower($record['sport']), ['ufc', 'mma', 'boxing', 'combat sports']);
-                $matchesField = $isCombatSport ? 
-                    "{$awayTeamName} vs {$homeTeamName}" : 
+                $matchesField = $isCombatSport ?
+                    "{$awayTeamName} vs {$homeTeamName}" :
                     "{$awayTeamName} @ {$homeTeamName}";
             } elseif ($homeTeamName) {
                 // Individual sports - just the player name
@@ -158,13 +162,13 @@ class BetImportService
             $homeTeam = null;
             $awayTeam = null;
             $game = null;
-            
+
             if ($homeTeamName) {
                 $homeTeam = Team::firstOrCreate(
                     ['name' => $homeTeamName, 'sport_id' => $sport->id],
                     ['slug' => \Str::slug($homeTeamName)]
                 );
-                
+
                 // Only create away team if provided (not required for individual sports)
                 if ($awayTeamName) {
                     $awayTeam = Team::firstOrCreate(
@@ -180,7 +184,7 @@ class BetImportService
 
             // Get or create operator if provided
             $operator = null;
-            if (!empty($record['operator'])) {
+            if (! empty($record['operator'])) {
                 $operator = Operator::firstOrCreate(
                     ['name' => $record['operator']],
                     ['slug' => \Str::slug($record['operator'])]
@@ -188,22 +192,27 @@ class BetImportService
             }
 
             // Create bet using the correct field names
-            
-            
+
             $betData = [
-                'sports' => $record['sport'],
+                // Use both old and new column names for compatibility
+                'sport' => $record['sport'],
+                'sports' => $record['sport'], // Keep old column for compatibility
                 'league' => $record['league'] ?? null,
                 'month' => $record['month'] ?? null,
+                'game' => $record['game'] ?? $matchesField, // New column
                 'matches' => $matchesField,
-                'markets' => $record['bet_type'],
+                'bet_type' => $record['bet_type'] ?? null, // New column
+                'markets' => $record['bet_type'], // Keep old column for compatibility
                 'wager_type' => $record['wager_type'] ?? null,
+                'wager_name' => $record['wager_name'] ?? $record['selection'] ?? '', // New column
                 'team_one' => $homeTeamName ?? '',
                 'team_one_logo' => $homeTeam ? $homeTeam->logo : null,
                 'team_two' => $awayTeamName ?? '',
                 'team_two_logo' => $awayTeam ? $awayTeam->logo : null,
                 'tips' => $record['wager_name'] ?? $record['selection'] ?? '',
                 'betting_date' => $record['game_date'],
-                'wager_odds' => (float) $record['odds'],
+                'odds' => (float) $record['odds'], // New column
+                'wager_odds' => (float) $record['odds'], // Keep old column for compatibility
                 'wager_amount' => (float) ($record['wager_amount'] ?? $record['stake'] ?? 0),
                 'status' => $record['status'] ?? 'pending',
                 'membership' => $record['level'] ?? $record['membership'] ?? 'Bronze',
@@ -211,52 +220,54 @@ class BetImportService
                 'code' => $record['code'] ?? null,
                 'referrer' => $record['referrer'] ?? $record['code'] ?? null,
                 'user_id' => $record['user_id'] ?? null,
+                'sport_id' => $sport->id ?? null,
+                'game_id' => $game->id ?? null,
             ];
 
             // Calculate winning and profit amounts based on American odds
             if (in_array($betData['status'], ['won', 'lost', 'placed'])) {
                 // Check if this is an Each-Way bet
-                $isEachWay = isset($betData['wager_type']) && 
+                $isEachWay = isset($betData['wager_type']) &&
                     strtolower($betData['wager_type']) === 'each way';
-                
+
                 if ($betData['status'] === 'won') {
                     // Check if we have pre-calculated values from CSV
-                    if (!empty($record['winning_amount'])) {
+                    if (! empty($record['winning_amount'])) {
                         $betData['winning_amount'] = (float) $record['winning_amount'];
-                        $betData['profit_amount'] = !empty($record['profit']) ? (float) $record['profit'] : 
+                        $betData['profit_amount'] = ! empty($record['profit']) ? (float) $record['profit'] :
                             ($betData['winning_amount'] - $betData['wager_amount']);
                     } else {
                         // Calculate based on American odds
                         $odds = $betData['wager_odds'];
                         $stake = $betData['wager_amount'];
-                        
+
                         if ($isEachWay) {
                             // Each-Way bet: Split stake in half
                             $winStake = $stake / 2;
                             $placeStake = $stake / 2;
-                            
+
                             // Calculate win part
                             if ($odds > 0) {
                                 $winProfit = $winStake * ($odds / 100);
                             } else {
                                 $winProfit = $winStake * (100 / abs($odds));
                             }
-                            
+
                             // Calculate place part (typically 1/4 or 1/5 of odds)
                             // Using place_fraction if available, default to 1/5
-                            $placeFraction = !empty($record['place_fraction']) ? 
+                            $placeFraction = ! empty($record['place_fraction']) ?
                                 (float) $record['place_fraction'] : 0.2;
-                            
-                            $placeOdds = $odds > 0 ? 
-                                ($odds * $placeFraction) : 
+
+                            $placeOdds = $odds > 0 ?
+                                ($odds * $placeFraction) :
                                 -abs(100 / (abs($odds) * $placeFraction));
-                                
+
                             if ($placeOdds > 0) {
                                 $placeProfit = $placeStake * ($placeOdds / 100);
                             } else {
                                 $placeProfit = $placeStake * (100 / abs($placeOdds));
                             }
-                            
+
                             $betData['profit_amount'] = $winProfit + $placeProfit;
                             $betData['winning_amount'] = $stake + $betData['profit_amount'];
                         } else {
@@ -268,7 +279,7 @@ class BetImportService
                                 // Negative American odds (-120)
                                 $profit = $stake * (100 / abs($odds));
                             }
-                            
+
                             $betData['profit_amount'] = $profit;
                             $betData['winning_amount'] = $stake + $profit;
                         }
@@ -279,22 +290,22 @@ class BetImportService
                     $stake = $betData['wager_amount'];
                     $placeStake = $stake / 2;
                     $winStake = $stake / 2;
-                    
+
                     // Calculate place part payout
-                    $placeFraction = !empty($record['place_fraction']) ? 
+                    $placeFraction = ! empty($record['place_fraction']) ?
                         (float) $record['place_fraction'] : 0.2;
-                    
+
                     $odds = $betData['wager_odds'];
-                    $placeOdds = $odds > 0 ? 
-                        ($odds * $placeFraction) : 
+                    $placeOdds = $odds > 0 ?
+                        ($odds * $placeFraction) :
                         -abs(100 / (abs($odds) * $placeFraction));
-                        
+
                     if ($placeOdds > 0) {
                         $placeProfit = $placeStake * ($placeOdds / 100);
                     } else {
                         $placeProfit = $placeStake * (100 / abs($placeOdds));
                     }
-                    
+
                     // Lost the win part, won the place part
                     $betData['profit_amount'] = $placeProfit - $winStake;
                     $betData['winning_amount'] = $placeStake + $placeProfit;
@@ -304,8 +315,8 @@ class BetImportService
                     $betData['profit_amount'] = -$betData['wager_amount'];
                 }
             } else {
-                $betData['winning_amount'] = !empty($record['winning_amount']) ? (float) $record['winning_amount'] : 0;
-                $betData['profit_amount'] = !empty($record['profit']) ? (float) $record['profit'] : 0;
+                $betData['winning_amount'] = ! empty($record['winning_amount']) ? (float) $record['winning_amount'] : 0;
+                $betData['profit_amount'] = ! empty($record['profit']) ? (float) $record['profit'] : 0;
             }
 
             // Calculate ROI
@@ -314,6 +325,17 @@ class BetImportService
             } else {
                 $betData['roi'] = 0;
             }
+
+            // Set roi_net from CSV or calculate it
+            if (! empty($record['roi'])) {
+                $betData['roi_net'] = (float) str_replace('%', '', $record['roi']);
+            } else {
+                $betData['roi_net'] = $betData['roi'];
+            }
+            
+            // Also set game_date and profits for compatibility
+            $betData['game_date'] = $betData['betting_date'];
+            $betData['profits'] = $betData['profit_amount'];
 
             // Create the bet directly using the model
             Bet::create($betData);
@@ -325,7 +347,7 @@ class BetImportService
                 'errors' => ['processing' => $e->getMessage()],
                 'data' => $record,
             ];
-            
+
             Log::error('Error processing CSV record', [
                 'line' => $lineNumber,
                 'error' => $e->getMessage(),
@@ -336,9 +358,9 @@ class BetImportService
 
     private function transformRecordData(array $record): array
     {
-        
+
         // Always parse teams from game column when present
-        if (isset($record['game']) && !empty($record['game'])) {
+        if (isset($record['game']) && ! empty($record['game'])) {
             $teams = $this->parseGameColumn($record['game']);
             if ($teams) {
                 $record['home_team'] = $teams['home'];
@@ -349,12 +371,12 @@ class BetImportService
                 $record['away_team'] = null;
             }
         }
-        
+
         // Handle both 'date' and 'game_date' fields from CSV
         $dateField = isset($record['date']) ? 'date' : (isset($record['game_date']) ? 'game_date' : null);
-        
+
         // Parse dates
-        if ($dateField && isset($record[$dateField]) && !empty($record[$dateField])) {
+        if ($dateField && isset($record[$dateField]) && ! empty($record[$dateField])) {
             try {
                 // Try multiple date formats
                 $formats = [
@@ -368,7 +390,7 @@ class BetImportService
                     'm/d/Y H:i:s',
                     'm/d/Y H:i',
                 ];
-                
+
                 $parsed = false;
                 foreach ($formats as $format) {
                     try {
@@ -380,8 +402,8 @@ class BetImportService
                         continue;
                     }
                 }
-                
-                if (!$parsed) {
+
+                if (! $parsed) {
                     // Last resort - let Carbon try to parse it
                     $record['game_date'] = \Carbon\Carbon::parse($record[$dateField])->format('Y-m-d H:i:s');
                 }
@@ -389,30 +411,30 @@ class BetImportService
                 // Keep original value if parse fails
             }
         }
-        
+
         // Parse placed_at date
-        if (isset($record['placed_at']) && !empty($record['placed_at'])) {
+        if (isset($record['placed_at']) && ! empty($record['placed_at'])) {
             try {
                 $record['placed_at'] = \Carbon\Carbon::parse($record['placed_at'])->format('Y-m-d H:i:s');
             } catch (\Exception $e) {
                 // Keep original value if parse fails
             }
         }
-        
+
         // Parse numeric values
         if (isset($record['odds'])) {
             $record['odds'] = $this->parseNumeric($record['odds']);
         }
-        
+
         if (isset($record['stake'])) {
             $record['stake'] = $this->parseMonetary($record['stake']);
         }
-        
+
         // Normalize status
         if (isset($record['status'])) {
             $record['status'] = $this->normalizeStatus($record['status']);
         }
-        
+
         // Handle wager vs stake field naming - map both to wager_amount for database
         if (isset($record['wager'])) {
             $record['wager_amount'] = $this->parseMonetary($record['wager']);
@@ -420,65 +442,67 @@ class BetImportService
         } elseif (isset($record['stake'])) {
             $record['wager_amount'] = $this->parseMonetary($record['stake']);
         }
-        
+
         // Trim all string values
         foreach ($record as $key => $value) {
             if (is_string($value)) {
                 $record[$key] = trim($value);
             }
         }
-        
-        
+
         return $record;
     }
-    
+
     private function parseNumeric($value): ?float
     {
         if ($value === null || $value === '') {
             return null;
         }
-        
+
         // Keep American odds as-is (don't convert to decimal)
         if (is_string($value) && (str_starts_with($value, '+') || str_starts_with($value, '-'))) {
             $cleaned = preg_replace('/[^0-9+-]/', '', $value);
+
             return is_numeric($cleaned) ? (float) $cleaned : null;
         }
-        
+
         // Remove non-numeric characters except decimal point
         $cleaned = preg_replace('/[^0-9.-]/', '', $value);
+
         return is_numeric($cleaned) ? (float) $cleaned : null;
     }
-    
+
     private function parseMonetary($value): ?float
     {
         if ($value === null || $value === '') {
             return null;
         }
-        
+
         // Remove currency symbols and thousands separators
         $cleaned = preg_replace('/[^0-9.-]/', '', $value);
+
         return is_numeric($cleaned) ? (float) $cleaned : null;
     }
-    
+
     private function convertAmericanToDecimal(string $americanOdds): float
     {
         $odds = (int) $americanOdds;
-        
+
         if ($odds > 0) {
             return ($odds / 100) + 1;
         } else {
             return (100 / abs($odds)) + 1;
         }
     }
-    
+
     private function normalizeStatus(?string $status): string
     {
-        if (!$status) {
+        if (! $status) {
             return 'pending';
         }
-        
+
         $status = strtolower(trim($status));
-        
+
         $statusMap = [
             'win' => 'won',
             'won' => 'won',
@@ -497,10 +521,10 @@ class BetImportService
             'open' => 'pending',
             'active' => 'pending',
         ];
-        
+
         return $statusMap[$status] ?? 'pending';
     }
-    
+
     private function parseGameColumn(string $game): ?array
     {
         // Handle @ separator (most common in sports betting)
@@ -510,20 +534,20 @@ class BetImportService
                 // Clean up team names - remove game numbers like (Game 2)
                 $away = trim($parts[0]);
                 $home = trim($parts[1]);
-                
+
                 // Remove game indicators from home team
                 $home = preg_replace('/\s*\(Game \d+\)\s*/', '', $home);
-                
+
                 return [
                     'away' => $away,
                     'home' => $home,
                 ];
             }
         }
-        
+
         // Try other common separators
         $separators = [' vs ', ' v ', ' - ', ' at ', ' vs. '];
-        
+
         foreach ($separators as $separator) {
             if (str_contains($game, $separator)) {
                 $parts = explode($separator, $game);
@@ -535,7 +559,7 @@ class BetImportService
                 }
             }
         }
-        
+
         return null;
     }
 
@@ -570,7 +594,7 @@ class BetImportService
         $validator = Validator::make($record, $rules);
 
         return [
-            'valid' => !$validator->fails(),
+            'valid' => ! $validator->fails(),
             'errors' => $validator->errors()->toArray(),
         ];
     }
@@ -591,7 +615,7 @@ class BetImportService
                 'status',
                 'description',
                 'placed_at',
-                'game_status'
+                'game_status',
             ],
             'example' => [
                 'sport' => 'NFL',
@@ -606,8 +630,8 @@ class BetImportService
                 'status' => 'pending',
                 'description' => 'Divisional round playoff game',
                 'placed_at' => '2024-01-14 15:30:00',
-                'game_status' => 'scheduled'
-            ]
+                'game_status' => 'scheduled',
+            ],
         ];
     }
 
@@ -618,12 +642,12 @@ class BetImportService
     {
         // Set user_id in the record for processing
         $record['user_id'] = $userId;
-        
+
         // Process the record using existing method
         $this->processRecord($record, 1);
-        
+
         // Check if there were errors
-        if (!empty($this->errors)) {
+        if (! empty($this->errors)) {
             $lastError = end($this->errors);
             throw new \Exception($lastError['errors']['processing'] ?? 'Import failed');
         }

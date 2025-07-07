@@ -16,7 +16,7 @@ return new class extends Migration
             $table->text('registration_user_agent')->nullable()->after('registration_ip');
             $table->timestamp('last_login_at')->nullable()->after('registration_user_agent');
             $table->string('last_login_ip', 45)->nullable()->after('last_login_at');
-            
+
             $table->index('registration_ip');
         });
     }
@@ -31,7 +31,7 @@ return new class extends Migration
                 'registration_ip',
                 'registration_user_agent',
                 'last_login_at',
-                'last_login_ip'
+                'last_login_ip',
             ]);
         });
     }

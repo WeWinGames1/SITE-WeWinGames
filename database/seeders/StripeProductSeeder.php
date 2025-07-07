@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\StripeProduct;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class StripeProductSeeder extends Seeder

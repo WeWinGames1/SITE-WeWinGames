@@ -153,7 +153,7 @@ class BlogPostsSeeder extends Seeder
 
     private function getWhereIsOnlineSportsBettingBiggestContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <p class="mb-4">
     The best site for betting can now be found throughout the United States. March 2022 showed record Growth in a number of the large USA States such as New York, Illinois, Colorado and Arizona. We can use the published figures from each state to assess the largest and fastest-growing markets. March had the climax of the NBA basketball season for most teams and the ever-popular college basketball, March madness. It is likely that these numbers will slow down through the summer. Football season in September will likely bring further strong growth across all states.
 </p>
@@ -200,7 +200,7 @@ HTML;
 
     private function getWhyWasAmericaLateContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <p class="mb-4">
     America was relatively late to legalize sports betting compared to many other countries. The main reason was the Professional and Amateur Sports Protection Act (PASPA) of 1992, which effectively banned sports betting in most states.
 </p>
@@ -224,7 +224,7 @@ HTML;
 
     private function getCanBettingBeProfitableContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <p class="mb-4">
     The short answer is yes, but it requires discipline, knowledge, and proper bankroll management. Most casual bettors lose money, but professional bettors can maintain long-term profitability.
 </p>
@@ -253,7 +253,7 @@ HTML;
 
     private function getIsBettingRiskierThanStockMarketContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <p class="mb-4">
     Both sports betting and stock market investing involve risk, but they differ significantly in nature, time horizon, and potential returns.
 </p>
@@ -285,7 +285,7 @@ HTML;
 
     private function getSportbooksEarnProfitsContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <p class="mb-4">
     Sportsbooks are businesses designed to profit regardless of game outcomes. Understanding their profit mechanisms helps bettors make more informed decisions.
 </p>
@@ -318,7 +318,7 @@ HTML;
 
     private function getHowToBecomeMoreProfitableContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <p class="mb-4">
     Becoming a profitable sports bettor requires dedication, discipline, and a systematic approach. Here's a comprehensive guide to improving your betting results.
 </p>
@@ -361,7 +361,7 @@ HTML;
 
     private function getBestBettingSitesContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <p class="mb-4">
     Choosing the right sportsbook is crucial for betting success. Different books excel in different areas, and the best choice depends on your betting style and preferences.
 </p>
@@ -393,7 +393,7 @@ HTML;
 
     private function getBestBettingPicksTricksContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <p class="mb-4">
     Success in sports betting isn't about finding "tricks" but rather developing solid strategies and habits. Here are proven approaches used by winning bettors.
 </p>
@@ -433,7 +433,7 @@ HTML;
 
     private function getAreParlaysAGoodBetContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <p class="mb-4">
     Parlays are among the most popular bet types but also the most profitable for sportsbooks. Understanding why reveals important betting principles.
 </p>
@@ -471,7 +471,7 @@ HTML;
 
     private function getStatisticsVersusEmotionContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <p class="mb-4">
     The battle between statistical analysis and emotional decision-making is at the heart of sports betting success. Understanding this dynamic is crucial for profitability.
 </p>
@@ -514,7 +514,7 @@ HTML;
 
     private function getInPlayFastestMaturingAreasContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <p class="mb-4">
     Live or in-play betting has exploded in popularity and now represents over 70% of betting volume in mature markets. This growth is reshaping the sports betting landscape.
 </p>
@@ -547,7 +547,7 @@ HTML;
 
     private function getBestSportsBettingPicksMeasuresContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <p class="mb-4">
     Evaluating sports betting picks requires understanding various performance metrics. Not all winning percentages are created equal, and proper analysis reveals true profitability.
 </p>
@@ -592,7 +592,7 @@ HTML;
 
     private function getBetPredictionsContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <p class="mb-4">
     Making accurate bet predictions requires a systematic approach combining data analysis, market understanding, and disciplined execution. Here's how professionals approach predictions.
 </p>
@@ -633,7 +633,7 @@ HTML;
 
     private function getImportanceOfLineShoppingContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <p class="mb-4">
     Line shopping - comparing odds across multiple sportsbooks - is perhaps the easiest way to improve betting profitability, yet many bettors neglect this crucial practice.
 </p>
@@ -673,7 +673,7 @@ HTML;
 
     private function getHowToBetOnBaseballContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <p class="mb-4">
     Baseball offers unique betting opportunities with its long season, statistical depth, and variety of markets. Understanding baseball betting fundamentals is crucial for success.
 </p>
@@ -719,7 +719,7 @@ HTML;
 
     private function getBestNHLBettingTipsContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <p class="mb-4">
     Hockey betting combines elements of other major sports with unique characteristics that create profitable opportunities for informed bettors.
 </p>
@@ -772,7 +772,7 @@ HTML;
 
     private function getHowToBetOnSoccerContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <p class="mb-4">
     Soccer is the world's most popular sport for betting, offering unique markets and opportunities different from American sports.
 </p>
@@ -817,7 +817,7 @@ HTML;
 
     private function getGolfBettingTipsContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <p class="mb-4">
     Golf betting offers unique opportunities with its individual format, large fields, and variety of markets. Success requires understanding golf-specific factors and betting strategies.
 </p>

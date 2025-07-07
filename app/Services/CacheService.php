@@ -3,13 +3,15 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
 
 class CacheService
 {
     private array $cacheTags = [];
+
     private int $defaultTtl = 3600; // 1 hour
+
     private bool $enabled = true;
 
     public function __construct()
@@ -22,7 +24,7 @@ class CacheService
      */
     public function remember(string $key, \Closure $callback, ?int $ttl = null, array $tags = []): mixed
     {
-        if (!$this->enabled) {
+        if (! $this->enabled) {
             return $callback();
         }
 
@@ -30,7 +32,7 @@ class CacheService
         $fullKey = $this->buildKey($key);
 
         try {
-            if (!empty($tags)) {
+            if (! empty($tags)) {
                 return Cache::tags($tags)->remember($fullKey, $ttl, $callback);
             }
 
@@ -38,7 +40,7 @@ class CacheService
         } catch (\Exception $e) {
             Log::warning('Cache operation failed, executing callback directly', [
                 'key' => $fullKey,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return $callback();
@@ -50,14 +52,14 @@ class CacheService
      */
     public function rememberForever(string $key, \Closure $callback, array $tags = []): mixed
     {
-        if (!$this->enabled) {
+        if (! $this->enabled) {
             return $callback();
         }
 
         $fullKey = $this->buildKey($key);
 
         try {
-            if (!empty($tags)) {
+            if (! empty($tags)) {
                 return Cache::tags($tags)->rememberForever($fullKey, $callback);
             }
 
@@ -65,7 +67,7 @@ class CacheService
         } catch (\Exception $e) {
             Log::warning('Cache operation failed, executing callback directly', [
                 'key' => $fullKey,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return $callback();
@@ -77,11 +79,12 @@ class CacheService
      */
     public function get(string $key, mixed $default = null): mixed
     {
-        if (!$this->enabled) {
+        if (! $this->enabled) {
             return $default;
         }
 
         $fullKey = $this->buildKey($key);
+
         return Cache::get($fullKey, $default);
     }
 
@@ -90,7 +93,7 @@ class CacheService
      */
     public function put(string $key, mixed $value, ?int $ttl = null, array $tags = []): bool
     {
-        if (!$this->enabled) {
+        if (! $this->enabled) {
             return false;
         }
 
@@ -98,7 +101,7 @@ class CacheService
         $fullKey = $this->buildKey($key);
 
         try {
-            if (!empty($tags)) {
+            if (! empty($tags)) {
                 Cache::tags($tags)->put($fullKey, $value, $ttl);
             } else {
                 Cache::put($fullKey, $value, $ttl);
@@ -108,7 +111,7 @@ class CacheService
         } catch (\Exception $e) {
             Log::error('Failed to set cache', [
                 'key' => $fullKey,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -121,6 +124,7 @@ class CacheService
     public function forget(string $key): bool
     {
         $fullKey = $this->buildKey($key);
+
         return Cache::forget($fullKey);
     }
 
@@ -131,11 +135,12 @@ class CacheService
     {
         try {
             Cache::tags($tags)->flush();
+
             return true;
         } catch (\Exception $e) {
             Log::error('Failed to clear cache by tags', [
                 'tags' => $tags,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -149,10 +154,11 @@ class CacheService
     {
         try {
             Cache::flush();
+
             return true;
         } catch (\Exception $e) {
             Log::error('Failed to clear all cache', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return false;
@@ -198,6 +204,7 @@ class CacheService
             ];
         } catch (\Exception $e) {
             Log::error('Failed to get cache stats', ['error' => $e->getMessage()]);
+
             return [];
         }
     }
@@ -208,6 +215,7 @@ class CacheService
     private function buildKey(string $key): string
     {
         $prefix = config('cache.prefix', 'wewingames');
+
         return "{$prefix}:{$key}";
     }
 

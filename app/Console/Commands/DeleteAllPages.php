@@ -1,14 +1,14 @@
 <?php
 
-
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Page;
+use Illuminate\Console\Command;
 
 class DeleteAllPages extends Command
 {
     protected $signature = 'pages:delete-all';
+
     protected $description = 'Delete all pages from the database';
 
     public function handle()
@@ -20,6 +20,7 @@ class DeleteAllPages extends Command
         } else {
             $this->info('Operation cancelled.');
         }
+
         return 0;
     }
 }

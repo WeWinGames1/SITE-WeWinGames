@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Faq;
+use Illuminate\Database\Seeder;
 
 class FaqSeeder extends Seeder
 {
@@ -32,7 +32,7 @@ class FaqSeeder extends Seeder
                 'category' => 'Getting Started',
                 'sort_order' => 3,
             ],
-            
+
             // Subscriptions & Pricing
             [
                 'question' => 'What subscription plans are available?',
@@ -58,7 +58,7 @@ class FaqSeeder extends Seeder
                 'category' => 'Subscriptions & Pricing',
                 'sort_order' => 7,
             ],
-            
+
             // Picks & Predictions
             [
                 'question' => 'When are picks released?',
@@ -84,7 +84,7 @@ class FaqSeeder extends Seeder
                 'category' => 'Picks & Predictions',
                 'sort_order' => 11,
             ],
-            
+
             // Account & Technical
             [
                 'question' => 'How do I reset my password?',
@@ -110,7 +110,7 @@ class FaqSeeder extends Seeder
                 'category' => 'Account & Technical',
                 'sort_order' => 15,
             ],
-            
+
             // Betting Education
             [
                 'question' => 'I\'m new to sports betting. Can you help?',
@@ -130,7 +130,7 @@ class FaqSeeder extends Seeder
                 'category' => 'Betting Education',
                 'sort_order' => 18,
             ],
-            
+
             // Support
             [
                 'question' => 'How do I contact customer support?',

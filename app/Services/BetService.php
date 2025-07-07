@@ -5,9 +5,9 @@ namespace App\Services;
 use App\Models\Bet;
 use App\Models\User;
 use App\Repositories\Contracts\BetRepositoryInterface;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class BetService
 {
@@ -29,7 +29,7 @@ class BetService
             $data['placed_at'] = now();
 
             // Set default status if not provided
-            if (!isset($data['status'])) {
+            if (! isset($data['status'])) {
                 $data['status'] = 'pending';
             }
 
@@ -94,7 +94,7 @@ class BetService
 
             // Update bet
             $this->betRepository->update($data, $bet->id);
-            
+
             // Reload bet with relationships
             $bet = $this->betRepository->find($bet->id);
             $bet->load(['user', 'sport', 'game', 'operator']);
@@ -247,7 +247,7 @@ class BetService
             if ($userId) {
                 // User-specific statistics
                 $bets = $this->betRepository->getBetsByUser($userId);
-                
+
                 return [
                     'total_bets' => $bets->count(),
                     'winning_bets' => $bets->where('status', 'won')->count(),
@@ -289,12 +289,13 @@ class BetService
     private function calculateWinRate($bets): float
     {
         $settledBets = $bets->whereIn('status', ['won', 'lost']);
-        
+
         if ($settledBets->isEmpty()) {
             return 0.0;
         }
 
         $winningBets = $settledBets->where('status', 'won')->count();
+
         return round(($winningBets / $settledBets->count()) * 100, 2);
     }
 
@@ -304,12 +305,13 @@ class BetService
     private function calculateROI($bets): float
     {
         $totalStake = $bets->whereIn('status', ['won', 'lost'])->sum('stake');
-        
+
         if ($totalStake <= 0) {
             return 0.0;
         }
 
         $totalProfit = $bets->sum('profit');
+
         return round(($totalProfit / $totalStake) * 100, 2);
     }
 
@@ -352,7 +354,7 @@ class BetService
         foreach ($yearlyGroups as $year => $yearBets) {
             $totalStake = $yearBets->sum('wager_amount');
             $totalProfit = $yearBets->sum('profit_amount');
-            
+
             if ($totalStake > 0) {
                 $result[$year] = round(($totalProfit / $totalStake) * 100, 2);
             } else {
@@ -362,7 +364,7 @@ class BetService
 
         // Sort by year descending
         krsort($result);
-        
+
         return $result;
     }
 
@@ -372,7 +374,7 @@ class BetService
     public function getTotalROIBySubscriptionLevel(?int $year = null): array
     {
         $query = DB::table('bets')->whereIn('status', ['won', 'lost']);
-        
+
         if ($year) {
             $query->whereYear('betting_date', $year);
         }
@@ -390,7 +392,7 @@ class BetService
             $result[$stat->membership] = [
                 'total_stake' => round($stat->total_stake, 2),
                 'total_profit' => round($stat->total_profit, 2),
-                'roi' => $roi
+                'roi' => $roi,
             ];
         }
 
@@ -403,7 +405,7 @@ class BetService
     public function getProfitAndROIByLevel(?int $year = null): array
     {
         $query = DB::table('bets')->whereIn('status', ['won', 'lost']);
-        
+
         if ($year) {
             $query->whereYear('betting_date', $year);
         }
@@ -416,22 +418,22 @@ class BetService
         foreach ($stats as $stat) {
             $roi = 0.0;
             $winRate = 0.0;
-            
+
             if ($stat->total_stake > 0) {
                 $roi = round(($stat->total_profit / $stat->total_stake) * 100, 2);
             }
-            
+
             if ($stat->total_bets > 0) {
                 $winRate = round(($stat->wins / $stat->total_bets) * 100, 2);
             }
-            
+
             $result[$stat->membership] = [
                 'total_bets' => $stat->total_bets,
                 'wins' => $stat->wins,
                 'win_rate' => $winRate,
                 'total_stake' => round($stat->total_stake, 2),
                 'total_profit' => round($stat->total_profit, 2),
-                'roi' => $roi
+                'roi' => $roi,
             ];
         }
 
@@ -444,7 +446,7 @@ class BetService
     public function getProfitAndROIBySport(?int $year = null): array
     {
         $query = DB::table('bets')->whereIn('status', ['won', 'lost']);
-        
+
         if ($year) {
             $query->whereYear('betting_date', $year);
         }
@@ -457,22 +459,22 @@ class BetService
         foreach ($stats as $stat) {
             $roi = 0.0;
             $winRate = 0.0;
-            
+
             if ($stat->total_stake > 0) {
                 $roi = round(($stat->total_profit / $stat->total_stake) * 100, 2);
             }
-            
+
             if ($stat->total_bets > 0) {
                 $winRate = round(($stat->wins / $stat->total_bets) * 100, 2);
             }
-            
+
             $result[$stat->sports] = [
                 'total_bets' => $stat->total_bets,
                 'wins' => $stat->wins,
                 'win_rate' => $winRate,
                 'total_stake' => round($stat->total_stake, 2),
                 'total_profit' => round($stat->total_profit, 2),
-                'roi' => $roi
+                'roi' => $roi,
             ];
         }
 
@@ -546,7 +548,7 @@ class BetService
         return [
             'wins' => $wins,
             'losses' => $losses,
-            'win_rate' => $total > 0 ? round(($wins / $total) * 100, 2) : 0.0
+            'win_rate' => $total > 0 ? round(($wins / $total) * 100, 2) : 0.0,
         ];
     }
 
@@ -569,7 +571,7 @@ class BetService
         return [
             'wins' => $wins,
             'losses' => $losses,
-            'win_rate' => $total > 0 ? round(($wins / $total) * 100, 2) : 0.0
+            'win_rate' => $total > 0 ? round(($wins / $total) * 100, 2) : 0.0,
         ];
     }
 
@@ -599,7 +601,7 @@ class BetService
             ->selectRaw('SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit')
             ->first();
 
-        if (!$stats || $stats->total_stake <= 0) {
+        if (! $stats || $stats->total_stake <= 0) {
             return 0.0;
         }
 
@@ -626,7 +628,7 @@ class BetService
         return [
             'wins' => $wins,
             'losses' => $losses,
-            'win_rate' => $total > 0 ? round(($wins / $total) * 100, 2) : 0.0
+            'win_rate' => $total > 0 ? round(($wins / $total) * 100, 2) : 0.0,
         ];
     }
 
@@ -651,31 +653,31 @@ class BetService
             $wins = $yearBets->where('status', 'won')->count();
             $totalStake = $yearBets->sum('wager_amount');
             $totalProfit = $yearBets->sum('profit_amount');
-            
+
             $roi = 0.0;
             $winRate = 0.0;
-            
+
             if ($totalStake > 0) {
                 $roi = round(($totalProfit / $totalStake) * 100, 2);
             }
-            
+
             if ($totalBets > 0) {
                 $winRate = round(($wins / $totalBets) * 100, 2);
             }
-            
+
             $result[$year] = [
                 'total_bets' => $totalBets,
                 'wins' => $wins,
                 'win_rate' => $winRate,
                 'total_stake' => round($totalStake, 2),
                 'total_profit' => round($totalProfit, 2),
-                'roi' => $roi
+                'roi' => $roi,
             ];
         }
 
         // Sort by year descending
         krsort($result);
-        
+
         return $result;
     }
 
@@ -686,7 +688,7 @@ class BetService
     {
         // Get bets from the last 24 months
         $cutoffDate = Carbon::now()->subMonths(24)->startOfMonth();
-        
+
         $bets = Bet::whereIn('status', ['won', 'lost'])
             ->where('betting_date', '>=', $cutoffDate)
             ->select('betting_date', 'status', 'wager_amount', 'profit_amount')
@@ -705,18 +707,18 @@ class BetService
             $totalBets = $monthBets->count();
             $totalStake = $monthBets->sum('wager_amount');
             $totalProfit = $monthBets->sum('profit_amount');
-            
+
             $roi = 0.0;
             $winRate = 0.0;
-            
+
             if ($totalStake > 0) {
                 $roi = round(($totalProfit / $totalStake) * 100, 2);
             }
-            
+
             if ($totalBets > 0) {
                 $winRate = round(($wins / $totalBets) * 100, 2);
             }
-            
+
             $result[$monthKey] = [
                 'year' => $date->year,
                 'month' => $date->month,
@@ -725,13 +727,13 @@ class BetService
                 'win_rate' => $winRate,
                 'total_stake' => round($totalStake, 2),
                 'total_profit' => round($totalProfit, 2),
-                'roi' => $roi
+                'roi' => $roi,
             ];
         }
 
         // Sort by month descending
         krsort($result);
-        
+
         // Limit to 24 months
         return array_slice($result, 0, 24, true);
     }

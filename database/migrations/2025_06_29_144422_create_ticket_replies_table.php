@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('message');
             $table->boolean('is_internal')->default(false); // For internal admin notes
             $table->timestamps();
-            
+
             $table->index(['ticket_id', 'created_at']);
         });
     }

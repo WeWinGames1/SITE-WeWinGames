@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Bet;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class BetPolicy
 {
@@ -22,9 +21,9 @@ class BetPolicy
     public function view(User $user, Bet $bet): bool
     {
         $return = false;
-        switch($bet->membership) {
+        switch ($bet->membership) {
             case 'Bronze':
-                $return =  true;
+                $return = true;
                 break;
             case 'Silver':
                 $return = $user->subscribed('silver') || $user->subscribed('gold') || $user->subscribed('platinum') || $user->hasRole('admin');
@@ -35,8 +34,9 @@ class BetPolicy
             case 'Platinum':
                 $return = $user->subscribed('platinum') || $user->hasRole('admin');
                 break;
-           
+
         }
+
         return $return;
     }
 

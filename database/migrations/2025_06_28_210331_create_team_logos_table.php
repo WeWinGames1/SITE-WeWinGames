@@ -20,10 +20,10 @@ return new class extends Migration
             $table->string('api_id', 100)->nullable();
             $table->json('metadata')->nullable(); // For storing additional API data
             $table->timestamps();
-            
+
             // Unique constraint to prevent duplicates
             $table->unique(['sport', 'league', 'team_name']);
-            
+
             // Indexes for performance
             $table->index('sport');
             $table->index('league');

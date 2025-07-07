@@ -13,10 +13,10 @@ class FaqController extends Controller
     public function index()
     {
         $faqs = Faq::getGroupedByCategory();
-        
+
         return Inertia::render('Faq', [
             'faqs' => $faqs,
-            'categories' => array_keys($faqs->toArray())
+            'categories' => array_keys($faqs->toArray()),
         ]);
     }
 }

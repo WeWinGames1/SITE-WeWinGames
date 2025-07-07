@@ -4,16 +4,17 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
-use NotificationChannels\WebPush\WebPushMessage;
+use Illuminate\Notifications\Notification;
 use NotificationChannels\WebPush\WebPushChannel;
+use NotificationChannels\WebPush\WebPushMessage;
 
 class GenericAdminNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     public string $title;
+
     public string $body;
 
     public function __construct($title, $body)
@@ -32,6 +33,7 @@ class GenericAdminNotification extends Notification implements ShouldQueue
             $channels[] = WebPushChannel::class;
         }
         $channels[] = 'database';
+
         return $channels;
     }
 

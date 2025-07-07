@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Inertia\Inertia;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 
 class BlogPostController extends Controller
 {
@@ -17,7 +17,7 @@ class BlogPostController extends Controller
     public function index(Request $request)
     {
         $query = Post::with('author:id,name,email');
-        
+
         // Apply filters
         if ($request->filled('status')) {
             switch ($request->status) {
@@ -32,30 +32,30 @@ class BlogPostController extends Controller
                     break;
             }
         }
-        
+
         if ($request->filled('category')) {
             $query->inCategory($request->category);
         }
-        
+
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('title', 'like', '%' . $request->search . '%')
-                    ->orWhere('content', 'like', '%' . $request->search . '%')
-                    ->orWhere('excerpt', 'like', '%' . $request->search . '%');
+                $q->where('title', 'like', '%'.$request->search.'%')
+                    ->orWhere('content', 'like', '%'.$request->search.'%')
+                    ->orWhere('excerpt', 'like', '%'.$request->search.'%');
             });
         }
-        
+
         $posts = $query->orderBy('created_at', 'desc')
             ->paginate(20)
             ->withQueryString();
-        
+
         return Inertia::render('admin/BlogPosts/Index', [
             'posts' => $posts,
             'filters' => $request->only(['status', 'category', 'search']),
             'categories' => Post::getCategories(),
         ]);
     }
-    
+
     /**
      * Show the form for creating a new blog post.
      */
@@ -66,7 +66,7 @@ class BlogPostController extends Controller
             'popularTags' => Post::getPopularTags(),
         ]);
     }
-    
+
     /**
      * Store a newly created blog post.
      */
@@ -79,7 +79,7 @@ class BlogPostController extends Controller
                 'string',
                 'max:255',
                 Rule::unique('posts'),
-                'regex:/^[a-z0-9-]+$/'
+                'regex:/^[a-z0-9-]+$/',
             ],
             'excerpt' => 'nullable|string|max:500',
             'content' => 'required|string',
@@ -93,23 +93,23 @@ class BlogPostController extends Controller
             'seo_description' => 'nullable|string|max:160',
             'seo_keywords' => 'nullable|string|max:255',
         ]);
-        
+
         // Handle featured image upload
         if ($request->hasFile('featured_image')) {
             $path = $request->file('featured_image')->store('posts/featured-images', 'public');
             $validated['featured_image'] = $path;
         }
-        
+
         // Set the author
         $validated['user_id'] = auth()->id();
-        
+
         // Create the post
         $post = Post::create($validated);
-        
+
         return redirect()->route('admin.blog-posts.edit', $post)
             ->with('success', 'Blog post created successfully.');
     }
-    
+
     /**
      * Show the form for editing a blog post.
      */
@@ -121,7 +121,7 @@ class BlogPostController extends Controller
             'popularTags' => Post::getPopularTags(),
         ]);
     }
-    
+
     /**
      * Update the specified blog post.
      */
@@ -134,7 +134,7 @@ class BlogPostController extends Controller
                 'string',
                 'max:255',
                 Rule::unique('posts')->ignore($post->id),
-                'regex:/^[a-z0-9-]+$/'
+                'regex:/^[a-z0-9-]+$/',
             ],
             'excerpt' => 'nullable|string|max:500',
             'content' => 'required|string',
@@ -148,25 +148,25 @@ class BlogPostController extends Controller
             'seo_description' => 'nullable|string|max:160',
             'seo_keywords' => 'nullable|string|max:255',
         ]);
-        
+
         // Handle featured image upload
         if ($request->hasFile('featured_image')) {
             // Delete old image if exists
             if ($post->featured_image && Storage::disk('public')->exists($post->featured_image)) {
                 Storage::disk('public')->delete($post->featured_image);
             }
-            
+
             $path = $request->file('featured_image')->store('posts/featured-images', 'public');
             $validated['featured_image'] = $path;
         }
-        
+
         // Update the post
         $post->update($validated);
-        
+
         return redirect()->route('admin.blog-posts.edit', $post)
             ->with('success', 'Blog post updated successfully.');
     }
-    
+
     /**
      * Remove the specified blog post.
      */
@@ -176,20 +176,20 @@ class BlogPostController extends Controller
         if ($post->featured_image && Storage::disk('public')->exists($post->featured_image)) {
             Storage::disk('public')->delete($post->featured_image);
         }
-        
+
         $post->delete();
-        
+
         return redirect()->route('admin.blog-posts.index')
             ->with('success', 'Blog post deleted successfully.');
     }
-    
+
     /**
      * Duplicate a blog post.
      */
     public function duplicate(Post $post)
     {
         $newPost = $post->replicate();
-        $newPost->title = $post->title . ' (Copy)';
+        $newPost->title = $post->title.' (Copy)';
         $newPost->slug = Post::generateUniqueSlug($newPost->title);
         $newPost->is_published = false;
         $newPost->published_at = null;
@@ -197,11 +197,11 @@ class BlogPostController extends Controller
         $newPost->created_at = now();
         $newPost->updated_at = now();
         $newPost->save();
-        
+
         return redirect()->route('admin.blog-posts.edit', $newPost)
             ->with('success', 'Blog post duplicated successfully.');
     }
-    
+
     /**
      * Upload image for rich text editor.
      */
@@ -210,14 +210,14 @@ class BlogPostController extends Controller
         $request->validate([
             'image' => 'required|image|max:2048', // 2MB max
         ]);
-        
+
         $path = $request->file('image')->store('posts/content-images', 'public');
-        
+
         return response()->json([
             'location' => Storage::url($path),
         ]);
     }
-    
+
     /**
      * Get blog statistics.
      */
@@ -242,7 +242,7 @@ class BlogPostController extends Controller
                 ->limit(5)
                 ->get(['id', 'title', 'slug', 'views_count']),
         ];
-        
+
         return response()->json($stats);
     }
 }

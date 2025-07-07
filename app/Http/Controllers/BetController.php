@@ -9,23 +9,23 @@ use Inertia\Inertia;
 
 class BetController extends Controller
 {
-
     /**
      * The BetService instance.
      *
      * @var \App\Services\BetService
      */
-    protected $betService;  
+    protected $betService;
+
     /**
      * Create a new controller instance.
      *
-     * @param  \App\Services\BetService  $betService
      * @return void
      */
     public function __construct(BetService $betService)
     {
         $this->betService = $betService;
     }
+
     /**
      * Display a listing of the resource.
      */
@@ -36,6 +36,7 @@ class BetController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
         $bets = $this->betService->getAllBets();
+
         return response()->json($bets);
     }
 
@@ -46,12 +47,14 @@ class BetController extends Controller
     {
         if ($request->user()->cannot('create', Bet::class)) {
             session()->flash('error', 'You are not authorized to create a bet.');
+
             return redirect()->back();
         }
 
         $bet = $this->betService->createBetFromRequest($request);
 
         session()->flash('success', 'Bet created successfully!');
+
         return redirect()->route('dashboard');
     }
 
@@ -64,6 +67,7 @@ class BetController extends Controller
         if (request()->user()->cannot('view', $bet)) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
+
         return response()->json($bet);
     }
 
@@ -106,6 +110,7 @@ class BetController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
         $bets = $this->betService->getBetsBySport($sport);
+
         return response()->json($bets);
     }
 
@@ -136,6 +141,7 @@ class BetController extends Controller
     public function showPick($id)
     {
         $bet = Bet::findOrFail($id);
+
         return Inertia::render('BetPickShow', [
             'bet' => $bet,
         ]);
@@ -148,7 +154,7 @@ class BetController extends Controller
     {
         return Inertia::render('TodaysBets', [
             'roiData' => $this->betService->getTotalROIBySubscriptionLevel(),
-            'freeBets' => $this->betService->getTodaysBets()
+            'freeBets' => $this->betService->getTodaysBets(),
         ]);
     }
 
@@ -167,7 +173,7 @@ class BetController extends Controller
         $roiByYear = $this->betService->getROIByYear();
         $thisMonthROI = $this->betService->getROIByMonth($thisYear, $thisMonth);
         $lastMonthROI = $this->betService->getROIByMonth($lastMonthYear, $lastMonthNum);
-        
+
         return Inertia::render('BettingResults', [
             'roiData' => $this->betService->getTotalROIBySubscriptionLevel(),
             'sportProfitRoiData' => $this->betService->getProfitAndROIBySport(),
@@ -200,11 +206,12 @@ class BetController extends Controller
      */
     public function authenticatedShow(Request $request, Bet $bet)
     {
-        if($request->user()->can('view', $bet) === false) {
+        if ($request->user()->can('view', $bet) === false) {
             abort(403, 'Unauthorized');
         }
+
         return Inertia::render('BetPickShow', [
-            'bet' => $bet
+            'bet' => $bet,
         ]);
     }
 }

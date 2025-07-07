@@ -6,19 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Models\DiscountCode;
 use App\Models\StripeProduct;
 use App\Services\StripeService;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class DiscountCodeController extends Controller
 {
     private ?StripeService $stripeService = null;
-    
+
     public function __construct()
     {
         try {
-            $this->stripeService = new StripeService();
+            $this->stripeService = new StripeService;
         } catch (\Exception $e) {
             // Stripe is not configured, but we can still show the page
             $this->stripeService = null;
@@ -31,7 +31,7 @@ class DiscountCodeController extends Controller
     public function index(Request $request)
     {
         $query = DiscountCode::with(['creator', 'redemptions']);
-        
+
         // Apply filters
         if ($request->filled('status')) {
             if ($request->status === 'active') {
@@ -42,18 +42,18 @@ class DiscountCodeController extends Controller
                 $query->where('is_active', false);
             }
         }
-        
+
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('code', 'like', '%' . $request->search . '%')
-                    ->orWhere('description', 'like', '%' . $request->search . '%');
+                $q->where('code', 'like', '%'.$request->search.'%')
+                    ->orWhere('description', 'like', '%'.$request->search.'%');
             });
         }
-        
+
         $discountCodes = $query->orderBy('created_at', 'desc')
             ->paginate(20)
             ->withQueryString();
-        
+
         // Transform for frontend
         $discountCodes->through(function ($code) {
             return [
@@ -80,16 +80,16 @@ class DiscountCodeController extends Controller
                 ] : null,
             ];
         });
-        
+
         $products = StripeProduct::active()->ordered()->get(['id', 'name', 'tier', 'billing_period', 'stripe_product_id']);
-        
+
         return Inertia::render('admin/Discounts/Index', [
             'discountCodes' => $discountCodes,
             'filters' => $request->only(['status', 'search']),
             'products' => $products,
         ]);
     }
-    
+
     /**
      * Store a new discount code
      */
@@ -111,44 +111,44 @@ class DiscountCodeController extends Controller
             'minimum_amount' => 'nullable|numeric|min:0',
             'create_in_stripe' => 'boolean',
         ]);
-        
+
         // Generate code if not provided
         if (empty($validated['code'])) {
             $validated['code'] = $this->generateUniqueCode();
         }
-        
+
         // Convert product IDs to Stripe product IDs
-        if (!empty($validated['applicable_products'])) {
+        if (! empty($validated['applicable_products'])) {
             $stripeProductIds = StripeProduct::whereIn('id', $validated['applicable_products'])
                 ->pluck('stripe_product_id')
                 ->filter()
                 ->toArray();
             $validated['applicable_products'] = $stripeProductIds;
         }
-        
+
         // Add creator
         $validated['created_by'] = auth()->id();
-        
+
         // Create in Stripe if requested
         if ($request->input('create_in_stripe', false)) {
-            if (!$this->stripeService) {
+            if (! $this->stripeService) {
                 return back()->withErrors(['stripe' => 'Stripe is not configured. Please set STRIPE_SECRET in your .env file.']);
             }
-            
+
             try {
                 $stripeCoupon = $this->createStripeDiscount($validated);
                 $validated['stripe_coupon_id'] = $stripeCoupon['id'];
             } catch (\Exception $e) {
-                return back()->withErrors(['stripe' => 'Failed to create in Stripe: ' . $e->getMessage()]);
+                return back()->withErrors(['stripe' => 'Failed to create in Stripe: '.$e->getMessage()]);
             }
         }
-        
+
         $discountCode = DiscountCode::create($validated);
-        
+
         return redirect()->route('admin.discounts.index')
             ->with('success', 'Discount code created successfully.');
     }
-    
+
     /**
      * Update a discount code
      */
@@ -160,38 +160,38 @@ class DiscountCodeController extends Controller
             'valid_until' => 'nullable|date',
             'is_active' => 'boolean',
         ]);
-        
+
         // Don't allow changing usage limit if already exceeded
         if (isset($validated['max_uses']) && $validated['max_uses'] < $discountCode->times_used) {
             return back()->withErrors(['max_uses' => 'Cannot set max uses below current usage count.']);
         }
-        
+
         $discountCode->update($validated);
-        
+
         return redirect()->route('admin.discounts.index')
             ->with('success', 'Discount code updated successfully.');
     }
-    
+
     /**
      * Deactivate a discount code
      */
     public function deactivate(DiscountCode $discountCode)
     {
         $discountCode->update(['is_active' => false]);
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Discount code deactivated.',
         ]);
     }
-    
+
     /**
      * Get discount code details
      */
     public function show(DiscountCode $discountCode)
     {
         $discountCode->load(['redemptions.user', 'creator']);
-        
+
         $redemptions = $discountCode->redemptions->map(function ($redemption) {
             return [
                 'id' => $redemption->id,
@@ -204,7 +204,7 @@ class DiscountCodeController extends Controller
                 'created_at' => $redemption->created_at,
             ];
         });
-        
+
         return response()->json([
             'discount_code' => [
                 'id' => $discountCode->id,
@@ -231,7 +231,7 @@ class DiscountCodeController extends Controller
             'redemptions' => $redemptions,
         ]);
     }
-    
+
     /**
      * Validate a discount code
      */
@@ -242,45 +242,45 @@ class DiscountCodeController extends Controller
             'user_id' => 'nullable|exists:users,id',
             'product_id' => 'nullable|exists:stripe_products,id',
         ]);
-        
+
         $discountCode = DiscountCode::where('code', $request->code)->first();
-        
-        if (!$discountCode) {
+
+        if (! $discountCode) {
             return response()->json([
                 'valid' => false,
                 'message' => 'Invalid discount code.',
             ]);
         }
-        
-        if (!$discountCode->isValid()) {
+
+        if (! $discountCode->isValid()) {
             return response()->json([
                 'valid' => false,
                 'message' => 'This discount code is no longer valid.',
             ]);
         }
-        
+
         // Check user-specific validation if provided
         if ($request->filled('user_id')) {
             $user = \App\Models\User::find($request->user_id);
-            if (!$discountCode->canBeUsedBy($user)) {
+            if (! $discountCode->canBeUsedBy($user)) {
                 return response()->json([
                     'valid' => false,
                     'message' => 'You have already used this discount code.',
                 ]);
             }
         }
-        
+
         // Check product applicability if provided
         if ($request->filled('product_id')) {
             $product = StripeProduct::find($request->product_id);
-            if ($product && $product->stripe_product_id && !$discountCode->appliesToProduct($product->stripe_product_id)) {
+            if ($product && $product->stripe_product_id && ! $discountCode->appliesToProduct($product->stripe_product_id)) {
                 return response()->json([
                     'valid' => false,
                     'message' => 'This discount code does not apply to the selected product.',
                 ]);
             }
         }
-        
+
         return response()->json([
             'valid' => true,
             'discount_type' => $discountCode->discount_type,
@@ -289,7 +289,7 @@ class DiscountCodeController extends Controller
             'apply_to' => $discountCode->apply_to,
         ]);
     }
-    
+
     /**
      * Generate a unique discount code
      */
@@ -298,10 +298,10 @@ class DiscountCodeController extends Controller
         do {
             $code = strtoupper(Str::random(8));
         } while (DiscountCode::where('code', $code)->exists());
-        
+
         return $code;
     }
-    
+
     /**
      * Create discount in Stripe
      */
@@ -314,14 +314,14 @@ class DiscountCodeController extends Controller
                 'description' => $data['description'] ?? '',
             ],
         ];
-        
+
         if ($data['discount_type'] === 'percentage') {
             $couponData['percent_off'] = $data['discount_amount'];
         } else {
             $couponData['amount_off'] = $this->stripeService->dollarsToCents($data['discount_amount']);
             $couponData['currency'] = 'usd';
         }
-        
+
         // Set duration
         if ($data['apply_to'] === 'first_payment') {
             $couponData['duration'] = 'once';
@@ -331,17 +331,17 @@ class DiscountCodeController extends Controller
             $couponData['duration'] = 'repeating';
             $couponData['duration_in_months'] = $data['months_count'];
         }
-        
+
         // Set redemption limit
-        if (!empty($data['max_uses'])) {
+        if (! empty($data['max_uses'])) {
             $couponData['max_redemptions'] = $data['max_uses'];
         }
-        
+
         // Set validity period
-        if (!empty($data['valid_until'])) {
+        if (! empty($data['valid_until'])) {
             $couponData['redeem_by'] = Carbon::parse($data['valid_until'])->timestamp;
         }
-        
+
         return $this->stripeService->createCoupon($couponData);
     }
 }

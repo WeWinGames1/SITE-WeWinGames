@@ -4,8 +4,8 @@ namespace App\Services;
 
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 
 class RateLimiterService
 {
@@ -29,7 +29,7 @@ class RateLimiterService
         RateLimiter::for('login', function (Request $request) {
             $config = config('ratelimit.limits.auth.login');
             $key = $this->resolveRequestKey($request, 'login');
-            
+
             return Limit::perMinutes(
                 $config['decay_minutes'],
                 $config['attempts']
@@ -38,7 +38,7 @@ class RateLimiterService
                     'ip' => $request->ip(),
                     'email' => $request->input('email'),
                 ]);
-                
+
                 return response()->json([
                     'message' => __('ratelimit.messages.auth_blocked', ['minutes' => $config['block_duration']]),
                     'retry_after' => $headers['Retry-After'] ?? null,
@@ -50,7 +50,7 @@ class RateLimiterService
         RateLimiter::for('register', function (Request $request) {
             $config = config('ratelimit.limits.auth.register');
             $key = $this->resolveRequestKey($request, 'register');
-            
+
             return Limit::perMinutes(
                 $config['decay_minutes'],
                 $config['attempts']
@@ -61,7 +61,7 @@ class RateLimiterService
         RateLimiter::for('password-reset', function (Request $request) {
             $config = config('ratelimit.limits.auth.password_reset');
             $key = $request->input('email', $request->ip());
-            
+
             return Limit::perMinutes(
                 $config['decay_minutes'],
                 $config['attempts']
@@ -78,14 +78,14 @@ class RateLimiterService
         RateLimiter::for('api', function (Request $request) {
             $config = config('ratelimit.limits.api.default');
             $user = $request->user();
-            
+
             if ($user) {
                 // Authenticated users get higher limits
                 return Limit::perMinute($config['attempts'] * 2)
                     ->by($user->id)
                     ->response($this->rateLimitResponse());
             }
-            
+
             return Limit::perMinute($config['attempts'])
                 ->by($request->ip())
                 ->response($this->rateLimitResponse());
@@ -95,7 +95,7 @@ class RateLimiterService
         RateLimiter::for('api-search', function (Request $request) {
             $config = config('ratelimit.limits.api.search');
             $key = $this->resolveRequestKey($request, 'search');
-            
+
             return Limit::perMinutes(
                 $config['decay_minutes'],
                 $config['attempts']
@@ -106,7 +106,7 @@ class RateLimiterService
         RateLimiter::for('api-export', function (Request $request) {
             $config = config('ratelimit.limits.api.export');
             $key = $this->resolveRequestKey($request, 'export');
-            
+
             return Limit::perMinutes(
                 $config['decay_minutes'],
                 $config['attempts']
@@ -117,7 +117,7 @@ class RateLimiterService
         RateLimiter::for('api-import', function (Request $request) {
             $config = config('ratelimit.limits.api.import');
             $key = $this->resolveRequestKey($request, 'import');
-            
+
             return Limit::perMinutes(
                 $config['decay_minutes'],
                 $config['attempts']
@@ -134,12 +134,12 @@ class RateLimiterService
         RateLimiter::for('admin', function (Request $request) {
             $config = config('ratelimit.limits.admin.default');
             $user = $request->user();
-            
-            if (!$user || !$user->hasRole('admin')) {
+
+            if (! $user || ! $user->hasRole('admin')) {
                 // Non-admins get stricter limits
                 return Limit::perMinute(10)->by($request->ip());
             }
-            
+
             return Limit::perMinute($config['attempts'])->by($user->id);
         });
 
@@ -147,7 +147,7 @@ class RateLimiterService
         RateLimiter::for('admin-users', function (Request $request) {
             $config = config('ratelimit.limits.admin.user_management');
             $user = $request->user();
-            
+
             return Limit::perMinutes(
                 $config['decay_minutes'],
                 $config['attempts']
@@ -158,7 +158,7 @@ class RateLimiterService
         RateLimiter::for('admin-bulk', function (Request $request) {
             $config = config('ratelimit.limits.admin.bulk_operations');
             $user = $request->user();
-            
+
             return Limit::perMinutes(
                 $config['decay_minutes'],
                 $config['attempts']
@@ -174,14 +174,14 @@ class RateLimiterService
         // Public pages rate limiter
         RateLimiter::for('public', function (Request $request) {
             $config = config('ratelimit.limits.public.default');
-            
+
             return Limit::perMinute($config['attempts'])->by($request->ip());
         });
 
         // Contact form rate limiter
         RateLimiter::for('contact', function (Request $request) {
             $config = config('ratelimit.limits.public.contact');
-            
+
             return Limit::perMinutes(
                 $config['decay_minutes'],
                 $config['attempts']
@@ -195,12 +195,12 @@ class RateLimiterService
     private function resolveRequestKey(Request $request, string $prefix = ''): string
     {
         $user = $request->user();
-        
+
         if ($user) {
-            return $prefix . ':user:' . $user->id;
+            return $prefix.':user:'.$user->id;
         }
-        
-        return $prefix . ':ip:' . $request->ip();
+
+        return $prefix.':ip:'.$request->ip();
     }
 
     /**
@@ -214,7 +214,7 @@ class RateLimiterService
                 'user_id' => $request->user()?->id,
                 'endpoint' => $request->path(),
             ]);
-            
+
             return response()->json([
                 'message' => config('ratelimit.messages.too_many_attempts'),
                 'retry_after' => $headers['Retry-After'] ?? null,
@@ -230,7 +230,7 @@ class RateLimiterService
         $whitelist = array_filter(
             explode(',', config('ratelimit.ip_limits.whitelist', ''))
         );
-        
+
         return in_array($ip, $whitelist);
     }
 
@@ -242,7 +242,7 @@ class RateLimiterService
         $blacklist = array_filter(
             explode(',', config('ratelimit.ip_limits.blacklist', ''))
         );
-        
+
         return in_array($ip, $blacklist);
     }
 }

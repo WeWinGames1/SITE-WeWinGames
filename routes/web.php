@@ -1,33 +1,29 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\BetImportWizardController;
-use App\Http\Controllers\Admin\PageController;
-use App\Http\Controllers\Admin\CustomerController;
-use App\Http\Controllers\Admin\AdminUserController;
-use App\Http\Controllers\Admin\LandingPageController;
-use App\Http\Controllers\Admin\AdminToolsController;
-use App\Http\Controllers\Admin\StripeProductController;
-use App\Http\Controllers\Admin\SubscriptionDashboardController;
-use App\Http\Controllers\Admin\DiscountCodeController;
-use App\Http\Controllers\Admin\BlogPostController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminToolsController;
+use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\BetImportWizardController;
 use App\Http\Controllers\Admin\BetManagementController;
+use App\Http\Controllers\Admin\BlogPostController;
+use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\DiscountCodeController;
+use App\Http\Controllers\Admin\LandingPageController;
+use App\Http\Controllers\Admin\Notifications\EmailLogController;
+use App\Http\Controllers\Admin\Notifications\EmailTemplateController;
+use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\StripeProductController;
 use App\Http\Controllers\Admin\UnderConstructionController;
-use App\Http\Controllers\BettingEducationController;
-use App\Http\Controllers\HomeController;
 use App\Http\Controllers\BetController;
-use App\Http\Controllers\BlogController;
-use App\Http\Controllers\StaticPageController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\BettingEducationController;
 use App\Http\Controllers\CustomerDashboardController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PageShowController;
-use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\StaticPageController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Middleware\AdminMiddleware;
-use App\Http\Controllers\Admin\Notifications\EmailTemplateController;
-use App\Http\Controllers\Admin\Notifications\EmailLogController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/pick/{id}', [BetController::class, 'showPick'])->name('pick.show');
@@ -54,14 +50,14 @@ Route::get('/bet/{bet}', [BetController::class, 'authenticatedShow'])->middlewar
 Route::get('/subscription-checkout', [\App\Http\Controllers\SubscriptionController::class, 'checkout'])
     ->name('subscription.checkout')
     ->middleware(['auth', 'verified']);
-    
+
 Route::post('/subscription-process', [\App\Http\Controllers\SubscriptionController::class, 'process'])
-    ->name('subscription.process')
-    ->middleware(['auth', 'verified']);
-    
+        ->name('subscription.process')
+        ->middleware(['auth', 'verified']);
+
 Route::post('/validate-coupon', [\App\Http\Controllers\SubscriptionController::class, 'validateCoupon'])
-    ->name('subscription.validate-coupon')
-    ->middleware(['auth', 'verified']);
+        ->name('subscription.validate-coupon')
+        ->middleware(['auth', 'verified']);
 
 // Subscription management routes
 Route::middleware(['auth', 'verified'])->prefix('subscription')->name('subscription.')->group(function () {
@@ -69,7 +65,6 @@ Route::middleware(['auth', 'verified'])->prefix('subscription')->name('subscript
     Route::post('/cancel', [\App\Http\Controllers\SubscriptionController::class, 'cancel'])->name('cancel');
     Route::post('/resume', [\App\Http\Controllers\SubscriptionController::class, 'resume'])->name('resume');
 });
-
 
 // Public Support Route (for both guests and authenticated users)
 Route::get('/support', [SupportTicketController::class, 'publicCreate'])->name('support.public');
@@ -97,7 +92,7 @@ Route::prefix('admin')->group(function () {
 // Admin Dashboard
 Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
-    
+
     // Support Ticket Management
     Route::prefix('support-tickets')->name('support-tickets.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\SupportTicketController::class, 'index'])->name('index');
@@ -109,56 +104,56 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
         Route::post('/bulk-update', [\App\Http\Controllers\Admin\SupportTicketController::class, 'bulkUpdate'])->name('bulk-update');
         Route::get('/api/statistics', [\App\Http\Controllers\Admin\SupportTicketController::class, 'statistics'])->name('statistics');
     });
-    
+
     // Bet Management
     Route::resource('bets', BetManagementController::class)->except(['show']);
     Route::post('bets/bulk-update-status', [BetManagementController::class, 'bulkUpdateStatus'])->name('bets.bulk-update-status');
     Route::get('bets/statistics', [BetManagementController::class, 'statistics'])->name('bets.statistics');
     Route::get('bets/export', [BetManagementController::class, 'export'])->name('bets.export')->middleware('admin.rate_limit:export');
-    
+
     // Game Management (TODO)
     // Route::resource('games', Admin\GameManagementController::class);
-    
+
     // Team Management (TODO)
     // Route::resource('teams', Admin\TeamManagementController::class);
-    
+
     // Sport Management (TODO)
     // Route::resource('sports', Admin\SportManagementController::class);
-    
+
     // Operator Management (TODO)
     // Route::resource('operators', Admin\OperatorManagementController::class);
-    
+
     // Notification Management (TODO)
     // Route::get('notifications/create', [Admin\NotificationController::class, 'create'])->name('notifications.create');
     // Route::post('notifications/send', [Admin\NotificationController::class, 'send'])->name('notifications.send');
-    
+
     // Email Template Management (TODO)
     // Route::resource('email-templates', Admin\EmailTemplateController::class);
-    
+
     // System Settings (TODO)
     // Route::get('settings', [Admin\SettingsController::class, 'index'])->name('settings.index');
     // Route::post('settings', [Admin\SettingsController::class, 'update'])->name('settings.update');
-    
+
     // Under Construction Settings
     Route::get('under-construction', [UnderConstructionController::class, 'index'])->name('under-construction.index');
     Route::post('under-construction', [UnderConstructionController::class, 'update'])->name('under-construction.update');
-    
+
     // Testimonial Management
     Route::resource('testimonials', \App\Http\Controllers\Admin\TestimonialController::class);
     Route::post('testimonials/update-order', [\App\Http\Controllers\Admin\TestimonialController::class, 'updateOrder'])->name('testimonials.update-order');
-    
+
     // FAQ Management
     Route::resource('faqs', \App\Http\Controllers\Admin\FaqController::class);
     Route::post('faqs/{faq}/toggle', [\App\Http\Controllers\Admin\FaqController::class, 'toggle'])->name('faqs.toggle');
     Route::post('faqs/update-order', [\App\Http\Controllers\Admin\FaqController::class, 'updateOrder'])->name('faqs.update-order');
-    
+
     // Resume Submission Management
     Route::prefix('resume-submissions')->name('resume-submissions.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\ResumeSubmissionController::class, 'index'])->name('index');
         Route::get('/{resumeSubmission}', [\App\Http\Controllers\Admin\ResumeSubmissionController::class, 'show'])->name('show');
         Route::put('/{resumeSubmission}/update-status', [\App\Http\Controllers\Admin\ResumeSubmissionController::class, 'updateStatus'])->name('update-status');
         Route::delete('/{resumeSubmission}', [\App\Http\Controllers\Admin\ResumeSubmissionController::class, 'destroy'])->name('destroy');
-        
+
         // Job Position Management
         Route::prefix('positions')->name('positions.')->group(function () {
             Route::post('/', [\App\Http\Controllers\Admin\ResumeSubmissionController::class, 'storePosition'])->name('store');
@@ -168,7 +163,6 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
         });
     });
 });
-
 
 // New bet import wizard routes
 Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit:import'])->prefix('admin/bets/import')->name('admin.bets.import.')->group(function () {
@@ -203,12 +197,14 @@ Route::get('/pages/{slug}', [PageShowController::class, 'showPage'])->name('page
 
 // Static page routes that use the CMS
 Route::get('/terms', function () {
-    $controller = new PageShowController();
+    $controller = new PageShowController;
+
     return $controller->showPage('terms-and-conditions');
 })->name('terms');
 
 Route::get('/privacy-policy', function () {
-    $controller = new PageShowController();
+    $controller = new PageShowController;
+
     return $controller->showPage('privacy-policy');
 })->name('privacy');
 
@@ -256,7 +252,7 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
     Route::post('/', [StripeProductController::class, 'store'])->name('store');
     Route::put('/{stripeProduct}', [StripeProductController::class, 'update'])->name('update');
     Route::delete('/{stripeProduct}', [StripeProductController::class, 'destroy'])->name('destroy');
-    
+
     // Stripe API routes
     Route::get('/fetch-stripe-products', [StripeProductController::class, 'fetchFromStripe'])->name('fetch-stripe');
     Route::post('/fetch-prices', [StripeProductController::class, 'fetchPrices'])->name('fetch-prices');
@@ -289,7 +285,7 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
         Route::get('/{emailTemplate}/preview', [EmailTemplateController::class, 'preview'])->name('preview');
         Route::post('/{emailTemplate}/reset', [EmailTemplateController::class, 'reset'])->name('reset');
     });
-    
+
     // Email Logs
     Route::prefix('email-logs')->name('email-logs.')->group(function () {
         Route::get('/', [EmailLogController::class, 'index'])->name('index');
@@ -316,10 +312,3 @@ Route::post(
     'stripe/webhook',
     '\Laravel\Cashier\Http\Controllers\WebhookController@handleWebhook'
 )->name('cashier.webhook');
-
-
-
-
-
-
-

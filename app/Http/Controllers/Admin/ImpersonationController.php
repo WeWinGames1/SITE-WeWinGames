@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
@@ -16,7 +15,7 @@ class ImpersonationController extends Controller
     public function start(User $user)
     {
         // Security check: ensure the current user is an admin
-        if (!Auth::user()->hasRole('admin')) {
+        if (! Auth::user()->hasRole('admin')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -42,33 +41,34 @@ class ImpersonationController extends Controller
         // Store the admin's ID in the session
         Session::put('impersonator_id', Auth::id());
         Session::put('impersonation_started_at', now());
-        
+
         // Login as the user
         Auth::login($user);
-        
+
         // Regenerate session to prevent session fixation attacks
         request()->session()->regenerate();
-        
+
         return redirect('/dashboard')->with('success', "You are now impersonating {$user->name}");
     }
-    
+
     /**
      * Stop impersonating and return to admin account
      */
     public function stop()
     {
         $impersonatorId = Session::get('impersonator_id');
-        
-        if (!$impersonatorId) {
+
+        if (! $impersonatorId) {
             return redirect('/');
         }
-        
+
         // Get the admin user
         $impersonator = User::find($impersonatorId);
-        
-        if (!$impersonator || !$impersonator->hasRole('admin')) {
+
+        if (! $impersonator || ! $impersonator->hasRole('admin')) {
             Session::forget('impersonator_id');
             Session::forget('impersonation_started_at');
+
             return redirect('/');
         }
 
@@ -81,21 +81,21 @@ class ImpersonationController extends Controller
                 'impersonator_email' => $impersonator->email,
                 'target_user_id' => Auth::id(),
                 'target_user_email' => Auth::user()->email,
-                'duration' => Session::has('impersonation_started_at') 
-                    ? now()->diffInMinutes(Session::get('impersonation_started_at')) . ' minutes'
+                'duration' => Session::has('impersonation_started_at')
+                    ? now()->diffInMinutes(Session::get('impersonation_started_at')).' minutes'
                     : 'unknown',
                 'ip_address' => request()->ip(),
                 'user_agent' => request()->userAgent(),
             ])
             ->log('Admin stopped impersonating user');
-        
+
         // Login back as the admin
         Auth::login($impersonator);
-        
+
         // Clear the impersonation session
         Session::forget('impersonator_id');
         Session::forget('impersonation_started_at');
-        
+
         return redirect('/admin/customers')->with('success', 'Impersonation ended');
     }
 }

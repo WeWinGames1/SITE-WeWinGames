@@ -24,9 +24,9 @@ class AdminUserController extends Controller
     public function add(Request $request)
     {
         $request->validate(['user_id' => 'required|exists:users,id']);
-        
+
         $result = $this->userService->promoteToAdmin($request->user_id);
-        
+
         return back()->with(
             $result['success'] ? 'success' : 'error',
             $result['message']
@@ -36,9 +36,9 @@ class AdminUserController extends Controller
     public function remove(Request $request)
     {
         $request->validate(['user_id' => 'required|exists:users,id']);
-        
+
         $result = $this->userService->demoteFromAdmin($request->user_id);
-        
+
         return back()->with(
             $result['success'] ? 'success' : 'error',
             $result['message']

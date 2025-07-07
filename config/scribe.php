@@ -1,9 +1,11 @@
 <?php
 
-use Knuckles\Scribe\Extracting\Strategies;
-use Knuckles\Scribe\Config\Defaults;
 use Knuckles\Scribe\Config\AuthIn;
-use function Knuckles\Scribe\Config\{removeStrategies, configureStrategy};
+use Knuckles\Scribe\Config\Defaults;
+use Knuckles\Scribe\Extracting\Strategies;
+
+use function Knuckles\Scribe\Config\configureStrategy;
+use function Knuckles\Scribe\Config\removeStrategies;
 
 // Only the most common configs are shown. See the https://scribe.knuckles.wtf/laravel/reference/config for all.
 
@@ -16,7 +18,7 @@ return [
 
     // The base URL displayed in the docs.
     // If you're using `laravel` type, you can set this to a dynamic string, like '{{ config("app.tenant_url") }}' to get a dynamic base URL.
-    'base_url' => config("app.url"),
+    'base_url' => config('app.url'),
 
     // Routes to include in the docs
     'routes' => [
@@ -36,7 +38,7 @@ return [
 
             // Exclude these routes even if they matched the rules above.
             'exclude' => [
-                'api/docs', 'api/docs/*', 'sanctum/*', 'telescope/*', 'admin/*'
+                'api/docs', 'api/docs/*', 'sanctum/*', 'telescope/*', 'admin/*',
             ],
         ],
     ],
@@ -74,7 +76,7 @@ return [
     ],
 
     'external' => [
-        'html_attributes' => []
+        'html_attributes' => [],
     ],
 
     'try_it_out' => [
@@ -120,7 +122,7 @@ return [
     ],
 
     // Text to place in the "Introduction" section, right after the `description`. Markdown and HTML are supported.
-    'intro_text' => <<<INTRO
+    'intro_text' => <<<'INTRO'
         This documentation provides comprehensive information about the WeWinGames API.
 
         ## Base URL
@@ -255,7 +257,7 @@ return [
         ),
         'responseFields' => [
             ...Defaults::RESPONSE_FIELDS_STRATEGIES,
-        ]
+        ],
     ],
 
     // For response calls, API resource responses and transformer responses,

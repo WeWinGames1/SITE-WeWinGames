@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
-use Stripe\StripeClient;
-use Stripe\Exception\ApiErrorException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Stripe\Exception\ApiErrorException;
+use Stripe\StripeClient;
 
 class StripeService
 {
@@ -37,7 +37,7 @@ class StripeService
                 }
 
                 $response = $this->stripe->products->all($params);
-                
+
                 foreach ($response->data as $product) {
                     $products[] = [
                         'id' => $product->id,
@@ -57,8 +57,8 @@ class StripeService
 
             return collect($products);
         } catch (ApiErrorException $e) {
-            Log::error('Stripe API Error fetching products: ' . $e->getMessage());
-            throw new \Exception('Failed to fetch products from Stripe: ' . $e->getMessage());
+            Log::error('Stripe API Error fetching products: '.$e->getMessage());
+            throw new \Exception('Failed to fetch products from Stripe: '.$e->getMessage());
         }
     }
 
@@ -83,7 +83,7 @@ class StripeService
                 }
 
                 $response = $this->stripe->prices->all($params);
-                
+
                 foreach ($response->data as $price) {
                     $prices[] = [
                         'id' => $price->id,
@@ -110,8 +110,8 @@ class StripeService
 
             return collect($prices);
         } catch (ApiErrorException $e) {
-            Log::error('Stripe API Error fetching prices: ' . $e->getMessage());
-            throw new \Exception('Failed to fetch prices from Stripe: ' . $e->getMessage());
+            Log::error('Stripe API Error fetching prices: '.$e->getMessage());
+            throw new \Exception('Failed to fetch prices from Stripe: '.$e->getMessage());
         }
     }
 
@@ -122,7 +122,7 @@ class StripeService
     {
         try {
             $product = $this->stripe->products->retrieve($productId);
-            
+
             return [
                 'id' => $product->id,
                 'name' => $product->name,
@@ -132,8 +132,8 @@ class StripeService
                 'created' => $product->created,
             ];
         } catch (ApiErrorException $e) {
-            Log::error('Stripe API Error fetching product: ' . $e->getMessage());
-            throw new \Exception('Failed to fetch product from Stripe: ' . $e->getMessage());
+            Log::error('Stripe API Error fetching product: '.$e->getMessage());
+            throw new \Exception('Failed to fetch product from Stripe: '.$e->getMessage());
         }
     }
 
@@ -144,7 +144,7 @@ class StripeService
     {
         try {
             $price = $this->stripe->prices->retrieve($priceId);
-            
+
             return [
                 'id' => $price->id,
                 'product' => $price->product,
@@ -161,8 +161,8 @@ class StripeService
                 'created' => $price->created,
             ];
         } catch (ApiErrorException $e) {
-            Log::error('Stripe API Error fetching price: ' . $e->getMessage());
-            throw new \Exception('Failed to fetch price from Stripe: ' . $e->getMessage());
+            Log::error('Stripe API Error fetching price: '.$e->getMessage());
+            throw new \Exception('Failed to fetch price from Stripe: '.$e->getMessage());
         }
     }
 
@@ -177,7 +177,7 @@ class StripeService
                 'description' => $data['description'] ?? null,
                 'metadata' => $data['metadata'] ?? [],
             ]);
-            
+
             return [
                 'id' => $product->id,
                 'name' => $product->name,
@@ -187,8 +187,8 @@ class StripeService
                 'created' => $product->created,
             ];
         } catch (ApiErrorException $e) {
-            Log::error('Stripe API Error creating product: ' . $e->getMessage());
-            throw new \Exception('Failed to create product in Stripe: ' . $e->getMessage());
+            Log::error('Stripe API Error creating product: '.$e->getMessage());
+            throw new \Exception('Failed to create product in Stripe: '.$e->getMessage());
         }
     }
 
@@ -217,7 +217,7 @@ class StripeService
             }
 
             $price = $this->stripe->prices->create($priceData);
-            
+
             return [
                 'id' => $price->id,
                 'product' => $price->product,
@@ -234,8 +234,8 @@ class StripeService
                 'created' => $price->created,
             ];
         } catch (ApiErrorException $e) {
-            Log::error('Stripe API Error creating price: ' . $e->getMessage());
-            throw new \Exception('Failed to create price in Stripe: ' . $e->getMessage());
+            Log::error('Stripe API Error creating price: '.$e->getMessage());
+            throw new \Exception('Failed to create price in Stripe: '.$e->getMessage());
         }
     }
 
@@ -260,7 +260,7 @@ class StripeService
             }
 
             $product = $this->stripe->products->update($productId, $updateData);
-            
+
             return [
                 'id' => $product->id,
                 'name' => $product->name,
@@ -270,8 +270,8 @@ class StripeService
                 'created' => $product->created,
             ];
         } catch (ApiErrorException $e) {
-            Log::error('Stripe API Error updating product: ' . $e->getMessage());
-            throw new \Exception('Failed to update product in Stripe: ' . $e->getMessage());
+            Log::error('Stripe API Error updating product: '.$e->getMessage());
+            throw new \Exception('Failed to update product in Stripe: '.$e->getMessage());
         }
     }
 
@@ -282,10 +282,11 @@ class StripeService
     {
         try {
             $this->stripe->prices->update($priceId, ['active' => false]);
+
             return true;
         } catch (ApiErrorException $e) {
-            Log::error('Stripe API Error deactivating price: ' . $e->getMessage());
-            throw new \Exception('Failed to deactivate price in Stripe: ' . $e->getMessage());
+            Log::error('Stripe API Error deactivating price: '.$e->getMessage());
+            throw new \Exception('Failed to deactivate price in Stripe: '.$e->getMessage());
         }
     }
 
@@ -312,7 +313,7 @@ class StripeService
     {
         try {
             $coupon = $this->stripe->coupons->create($data);
-            
+
             return [
                 'id' => $coupon->id,
                 'amount_off' => $coupon->amount_off,
@@ -328,8 +329,8 @@ class StripeService
                 'created' => $coupon->created,
             ];
         } catch (ApiErrorException $e) {
-            Log::error('Stripe API Error creating coupon: ' . $e->getMessage());
-            throw new \Exception('Failed to create coupon in Stripe: ' . $e->getMessage());
+            Log::error('Stripe API Error creating coupon: '.$e->getMessage());
+            throw new \Exception('Failed to create coupon in Stripe: '.$e->getMessage());
         }
     }
 }

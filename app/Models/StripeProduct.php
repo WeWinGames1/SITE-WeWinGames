@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class StripeProduct extends Model
 {
@@ -39,7 +39,7 @@ class StripeProduct extends Model
      */
     public function getFormattedPriceAttribute(): string
     {
-        return '$' . number_format($this->price, 2);
+        return '$'.number_format($this->price, 2);
     }
 
     /**
@@ -47,7 +47,7 @@ class StripeProduct extends Model
      */
     public function getDisplayNameAttribute(): string
     {
-        return $this->tier . ' ' . ucfirst($this->billing_period);
+        return $this->tier.' '.ucfirst($this->billing_period);
     }
 
     /**
@@ -55,7 +55,7 @@ class StripeProduct extends Model
      */
     public function isConnectedToStripe(): bool
     {
-        return !empty($this->stripe_product_id) && !empty($this->stripe_price_id);
+        return ! empty($this->stripe_product_id) && ! empty($this->stripe_price_id);
     }
 
     /**

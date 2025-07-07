@@ -1,8 +1,8 @@
 <?php
 
 namespace Database\Seeders;
+
 use App\Models\Operator;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class OperatorSeeder extends Seeder
@@ -14,73 +14,73 @@ class OperatorSeeder extends Seeder
     {
         //
         Operator::create([
-            'name' => 'Barstool'
+            'name' => 'Barstool',
         ]);
         Operator::create([
-            'name' => 'DraftKings'
-        ]);
-
-        Operator::create([
-            'name' => 'FanDuel'
-        ]);
-        Operator::create([
-            'name' => 'BetMGM'
-        ]);
-        Operator::create([
-            'name' => 'BetFair'
-        ]);
-        Operator::create([
-            'name' => 'BetOnlineAG'
-        ]);
-        Operator::create([
-            'name' => 'BetRivers'
-        ]);
-        Operator::create([
-            'name' => 'BetUS'
-        ]);
-        Operator::create([
-            'name' => 'Bovada'
-        ]);
-        Operator::create([
-            'name' => 'CircaSports'
-        ]);
-        Operator::create([
-            'name' => 'PointsBetUS'
+            'name' => 'DraftKings',
         ]);
 
         Operator::create([
-            'name' => 'Unibet'
+            'name' => 'FanDuel',
+        ]);
+        Operator::create([
+            'name' => 'BetMGM',
+        ]);
+        Operator::create([
+            'name' => 'BetFair',
+        ]);
+        Operator::create([
+            'name' => 'BetOnlineAG',
+        ]);
+        Operator::create([
+            'name' => 'BetRivers',
+        ]);
+        Operator::create([
+            'name' => 'BetUS',
+        ]);
+        Operator::create([
+            'name' => 'Bovada',
+        ]);
+        Operator::create([
+            'name' => 'CircaSports',
+        ]);
+        Operator::create([
+            'name' => 'PointsBetUS',
         ]);
 
         Operator::create([
-            'name' => 'William Hill'
+            'name' => 'Unibet',
+        ]);
+
+        Operator::create([
+            'name' => 'William Hill',
         ]);
         Operator::create([
-            'name' => 'FoxBet'
+            'name' => 'FoxBet',
         ]);
         Operator::create([
-            'name' => 'SugarHouse'
+            'name' => 'SugarHouse',
         ]);
         Operator::create([
-            'name' => 'SuperBook'
+            'name' => 'SuperBook',
         ]);
         Operator::create([
-            'name' => 'TwinSpires'
+            'name' => 'TwinSpires',
         ]);
         Operator::create([
-            'name' => 'WynnBET'
+            'name' => 'WynnBET',
         ]);
         Operator::create([
-            'name' => 'GTBets'
+            'name' => 'GTBets',
         ]);
         Operator::create([
-            'name' => 'MyBookieAG'
+            'name' => 'MyBookieAG',
         ]);
         Operator::create([
-            'name' => 'LowVig'
+            'name' => 'LowVig',
         ]);
         Operator::create([
-            'name' => 'Intertops'
+            'name' => 'Intertops',
         ]);
     }
 }

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('operator_id');
             $table->foreign('sport_id')->references('id')->on('sports')->onDelete('cascade');
             $table->foreign('operator_id')->references('id')->on('operators')->onDelete('cascade');
-            $table->string('game_name'); // e.g., scheduled, ongoing, completed  
+            $table->string('game_name'); // e.g., scheduled, ongoing, completed
             $table->string('props');
             $table->string('line');
             $table->string('wager_team')->nullable();

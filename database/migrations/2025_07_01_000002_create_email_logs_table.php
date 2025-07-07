@@ -27,7 +27,7 @@ return new class extends Migration
             $table->timestamp('clicked_at')->nullable();
             $table->timestamp('bounced_at')->nullable();
             $table->timestamps();
-            
+
             $table->index('to_email');
             $table->index('status');
             $table->index('template_key');

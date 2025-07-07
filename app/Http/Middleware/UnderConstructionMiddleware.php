@@ -27,7 +27,7 @@ class UnderConstructionMiddleware
         if ($request->is('logout')) {
             return $next($request);
         }
-        
+
         // Allow API routes, assets, and CSRF token refresh
         if ($request->is('api/*') || $request->is('sanctum/*') || $request->is('broadcasting/*') || $request->is('csrf-token')) {
             return $next($request);
@@ -46,7 +46,7 @@ class UnderConstructionMiddleware
             if ($request->user() && $request->user()->hasRole('admin')) {
                 return $next($request);
             }
-            
+
             return Inertia::render('UnderConstruction', [
                 'blurb' => $settings->blurb ?? '<p>We are currently updating our website. Please check back soon!</p>',
             ])->toResponse($request)->setStatusCode(503);
@@ -57,7 +57,7 @@ class UnderConstructionMiddleware
 
     private function isUnderConstruction(UnderConstructionSetting $settings): bool
     {
-        if (!$settings->is_enabled) {
+        if (! $settings->is_enabled) {
             return false;
         }
 

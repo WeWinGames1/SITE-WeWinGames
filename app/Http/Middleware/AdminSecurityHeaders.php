@@ -16,19 +16,19 @@ class AdminSecurityHeaders
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
-        
+
         // Set security headers for admin routes
         $response->headers->set('X-Frame-Options', 'DENY');
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-XSS-Protection', '1; mode=block');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
-        
+
         // Add Strict Transport Security in production
         if (app()->environment('production')) {
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
         }
-        
+
         // Content Security Policy for admin area
         $csp = [
             "default-src 'self'",
@@ -41,16 +41,16 @@ class AdminSecurityHeaders
             "object-src 'none'",
             "base-uri 'self'",
             "form-action 'self'",
-            "frame-ancestors 'none'"
+            "frame-ancestors 'none'",
         ];
-        
+
         // Only add upgrade-insecure-requests in production
         if (app()->environment('production')) {
-            $csp[] = "upgrade-insecure-requests";
+            $csp[] = 'upgrade-insecure-requests';
         }
-        
+
         $response->headers->set('Content-Security-Policy', implode('; ', $csp));
-        
+
         return $response;
     }
 }

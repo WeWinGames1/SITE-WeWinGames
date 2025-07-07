@@ -5,7 +5,4 @@ namespace App\Services;
 /**
  * Class GameService.
  */
-class GameService
-{
-
-}
+class GameService {}

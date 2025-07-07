@@ -15,7 +15,7 @@ class FirstMonthDiscountSeeder extends Seeder
     {
         // Check if the discount already exists
         $existingDiscount = DiscountCode::where('code', 'FIRSTMONTH50')->first();
-        
+
         if ($existingDiscount) {
             $this->command->info('First month 50% discount already exists. Updating...');
             $existingDiscount->update([
@@ -32,7 +32,7 @@ class FirstMonthDiscountSeeder extends Seeder
         } else {
             // Get the first admin user for created_by
             $adminUser = User::role('admin')->first();
-            
+
             DiscountCode::create([
                 'code' => 'FIRSTMONTH50',
                 'description' => '50% off your first month on any plan',
@@ -51,7 +51,7 @@ class FirstMonthDiscountSeeder extends Seeder
                 'stripe_coupon_id' => null, // Will be created when first used
                 'created_by' => $adminUser ? $adminUser->id : null,
             ]);
-            
+
             $this->command->info('Created FIRSTMONTH50 discount code for 50% off first month.');
         }
     }

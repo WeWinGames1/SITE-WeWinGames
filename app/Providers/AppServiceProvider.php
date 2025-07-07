@@ -2,14 +2,14 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Inertia\Inertia;
-use App\Services\RateLimiterService;
 use App\Services\CacheService;
+use App\Services\RateLimiterService;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\ServiceProvider;
+use Inertia\Inertia;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Register cache service as singleton
         $this->app->singleton(CacheService::class, function ($app) {
-            return new CacheService();
+            return new CacheService;
         });
     }
 
@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Fix for MySQL key length issue
         Schema::defaultStringLength(191);
-        
+
         // Configure Inertia shared data
         Inertia::share([
             'env' => [
@@ -40,11 +40,11 @@ class AppServiceProvider extends ServiceProvider
         ]);
 
         // Configure rate limiters
-        $rateLimiterService = new RateLimiterService();
+        $rateLimiterService = new RateLimiterService;
         $rateLimiterService->configure();
 
         // Configure model settings
-        Model::preventLazyLoading(!$this->app->isProduction());
+        Model::preventLazyLoading(! $this->app->isProduction());
 
         // Log slow queries in development
         if ($this->app->isLocal()) {

@@ -29,11 +29,11 @@ class CareerApplicationSubmitted extends Notification implements ShouldQueue
             ->greeting('Hello Tony,')
             ->line('A new career application has been submitted on WeWinGames.com.')
             ->line('Details:')
-            ->line('Name: ' . $this->data['first_name'] . ' ' . $this->data['last_name'])
-            ->line('Phone: ' . $this->data['phone'])
-            ->line('Email: ' . $this->data['email'])
-            ->line('About: ' . $this->data['about'])
-            ->line('Position: ' . $this->data['position'])
+            ->line('Name: '.$this->data['first_name'].' '.$this->data['last_name'])
+            ->line('Phone: '.$this->data['phone'])
+            ->line('Email: '.$this->data['email'])
+            ->line('About: '.$this->data['about'])
+            ->line('Position: '.$this->data['position'])
             ->line('---')
             ->line('This is an automated notification.');
     }

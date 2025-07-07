@@ -19,10 +19,10 @@ return new class extends Migration
             $table->decimal('discount_applied', 10, 2);
             $table->string('stripe_invoice_id')->nullable();
             $table->timestamps();
-            
+
             // Prevent duplicate redemptions
             $table->unique(['discount_code_id', 'user_id', 'subscription_id'], 'disc_redemptions_unique');
-            
+
             // Indexes
             $table->index('user_id');
             $table->index('subscription_id');

@@ -50,7 +50,7 @@ abstract class BaseApiController extends Controller
             ],
         ];
 
-        if (!empty($errors)) {
+        if (! empty($errors)) {
             $response['errors'] = $errors;
         }
 
@@ -132,7 +132,7 @@ abstract class BaseApiController extends Controller
     protected function getPerPage(Request $request, int $default = 15): int
     {
         $perPage = $request->input('per_page', $default);
-        
+
         // Limit to reasonable values
         return min(max($perPage, 1), 100);
     }

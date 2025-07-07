@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Inertia\Inertia;
-use App\Models\TicketCategory;
 use App\Models\Page;
+use Inertia\Inertia;
 
 class StaticPageController extends Controller
 {
@@ -31,14 +30,14 @@ class StaticPageController extends Controller
     public function careersJobs()
     {
         $page = Page::where('slug', 'careers-jobs')->first();
-        
-        if (!$page) {
+
+        if (! $page) {
             abort(404);
         }
-        
+
         // Get active job positions for the form
         $jobPositions = \App\Models\JobPosition::active()->ordered()->get(['id', 'title']);
-        
+
         return Inertia::render('CareersJobs', [
             'page' => $page,
             'jobPositions' => $jobPositions,
@@ -48,11 +47,11 @@ class StaticPageController extends Controller
     public function aboutUs()
     {
         $page = Page::where('slug', 'about-us')->first();
-        
-        if (!$page) {
+
+        if (! $page) {
             abort(404);
         }
-        
+
         return Inertia::render('AboutUs', [
             'page' => $page,
         ]);

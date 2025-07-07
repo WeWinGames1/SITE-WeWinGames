@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Page;
+use Illuminate\Database\Seeder;
 
 class LegalPagesSeeder extends Seeder
 {
@@ -39,7 +39,7 @@ class LegalPagesSeeder extends Seeder
 
     private function getTermsContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <div class="legal-content">
     <p class="lead">Last Updated: January 1, 2025</p>
 
@@ -121,7 +121,7 @@ HTML;
 
     private function getPrivacyContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <div class="legal-content">
     <p class="lead">Last Updated: January 1, 2025</p>
 

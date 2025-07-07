@@ -2,14 +2,12 @@
 
 namespace App\Http\Middleware;
 
-use Illuminate\Foundation\Inspiring;
+use App\Http\Resources\UserResource;
+use App\Models\Faq;
+use App\Services\BetService;
+use App\Services\SimpleCacheService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
-use Tighten\Ziggy\Ziggy;
-use App\Http\Resources\UserResource;
-use App\Services\BetService;
-use App\Models\Faq;
-use App\Services\SimpleCacheService;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -87,7 +85,7 @@ class HandleInertiaRequests extends Middleware
         $footerFaqs = SimpleCacheService::rememberQuery(
             'footer_faqs',
             SimpleCacheService::TTL_LONG,
-            fn() => Faq::active()
+            fn () => Faq::active()
                 ->ordered()
                 ->limit(4)
                 ->get(['id', 'question', 'answer'])

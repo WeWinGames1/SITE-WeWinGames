@@ -17,10 +17,10 @@ class FaqController extends Controller
     {
         $faqs = Faq::ordered()->paginate(20);
         $categories = Faq::getCategories();
-        
+
         return Inertia::render('admin/Faqs/Index', [
             'faqs' => $faqs,
-            'categories' => $categories
+            'categories' => $categories,
         ]);
     }
 
@@ -30,9 +30,9 @@ class FaqController extends Controller
     public function create()
     {
         $categories = Faq::getCategories();
-        
+
         return Inertia::render('admin/Faqs/Create', [
-            'categories' => $categories
+            'categories' => $categories,
         ]);
     }
 
@@ -46,11 +46,11 @@ class FaqController extends Controller
             'answer' => 'required|string',
             'category' => 'nullable|string|max:100',
             'is_active' => 'boolean',
-            'sort_order' => 'integer'
+            'sort_order' => 'integer',
         ]);
 
         Faq::create($validated);
-        
+
         // Clear FAQ cache
         SimpleCacheService::invalidateRelated('faq');
 
@@ -64,10 +64,10 @@ class FaqController extends Controller
     public function edit(Faq $faq)
     {
         $categories = Faq::getCategories();
-        
+
         return Inertia::render('admin/Faqs/Edit', [
             'faq' => $faq,
-            'categories' => $categories
+            'categories' => $categories,
         ]);
     }
 
@@ -81,11 +81,11 @@ class FaqController extends Controller
             'answer' => 'required|string',
             'category' => 'nullable|string|max:100',
             'is_active' => 'boolean',
-            'sort_order' => 'integer'
+            'sort_order' => 'integer',
         ]);
 
         $faq->update($validated);
-        
+
         // Clear FAQ cache
         SimpleCacheService::invalidateRelated('faq');
 
@@ -99,7 +99,7 @@ class FaqController extends Controller
     public function destroy(Faq $faq)
     {
         $faq->delete();
-        
+
         // Clear FAQ cache
         SimpleCacheService::invalidateRelated('faq');
 
@@ -112,8 +112,8 @@ class FaqController extends Controller
      */
     public function toggle(Faq $faq)
     {
-        $faq->update(['is_active' => !$faq->is_active]);
-        
+        $faq->update(['is_active' => ! $faq->is_active]);
+
         // Clear FAQ cache
         SimpleCacheService::invalidateRelated('faq');
 
@@ -129,14 +129,14 @@ class FaqController extends Controller
         $validated = $request->validate([
             'faqs' => 'required|array',
             'faqs.*.id' => 'required|exists:faqs,id',
-            'faqs.*.sort_order' => 'required|integer'
+            'faqs.*.sort_order' => 'required|integer',
         ]);
 
         foreach ($validated['faqs'] as $item) {
             Faq::where('id', $item['id'])
                 ->update(['sort_order' => $item['sort_order']]);
         }
-        
+
         // Clear FAQ cache
         SimpleCacheService::invalidateRelated('faq');
 

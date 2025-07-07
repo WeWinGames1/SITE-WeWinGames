@@ -14,7 +14,7 @@ class SupportTicketTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Seed ticket categories
         $this->seed(\Database\Seeders\TicketCategorySeeder::class);
     }
@@ -87,7 +87,7 @@ class SupportTicketTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        
+
         $this->assertDatabaseHas('support_tickets', [
             'user_id' => $user->id,
             'subject' => 'Test Support Request',

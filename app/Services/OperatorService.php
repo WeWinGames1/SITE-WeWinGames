@@ -5,7 +5,4 @@ namespace App\Services;
 /**
  * Class OperatorService.
  */
-class OperatorService
-{
-
-}
+class OperatorService {}

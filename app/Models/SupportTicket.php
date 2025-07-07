@@ -38,7 +38,7 @@ class SupportTicket extends Model
         parent::boot();
 
         static::creating(function ($ticket) {
-            $ticket->ticket_number = 'TKT-' . strtoupper(Str::random(8));
+            $ticket->ticket_number = 'TKT-'.strtoupper(Str::random(8));
         });
     }
 
@@ -69,7 +69,7 @@ class SupportTicket extends Model
 
     public function getStatusColorAttribute(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             'open' => 'primary',
             'pending' => 'warning',
             'resolved' => 'success',
@@ -80,7 +80,7 @@ class SupportTicket extends Model
 
     public function getPriorityColorAttribute(): string
     {
-        return match($this->priority) {
+        return match ($this->priority) {
             'low' => 'info',
             'medium' => 'primary',
             'high' => 'warning',

@@ -32,7 +32,7 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
-        
+
         // Ensure CSRF token is refreshed
         $request->session()->put('_token', csrf_token());
 

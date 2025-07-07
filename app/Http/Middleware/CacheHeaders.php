@@ -21,11 +21,11 @@ class CacheHeaders
         if ($request->isMethod('GET') && $response->isSuccessful()) {
             $response->headers->set('Cache-Control', "public, max-age={$maxAge}");
             $response->headers->set('X-Cache-Status', 'HIT');
-            
+
             // Add ETag for better cache validation
             $etag = md5($response->getContent());
             $response->headers->set('ETag', $etag);
-            
+
             // Check if client has the same ETag
             if ($request->headers->get('If-None-Match') === $etag) {
                 $response->setStatusCode(304);

@@ -26,9 +26,9 @@ class BetApiController extends BaseApiController
      * Get all bets
      *
      * Retrieve a paginated list of bets. Regular users can only see their own bets, while admins can see all bets.
-     * 
+     *
      * @authenticated
-     * 
+     *
      * @queryParam per_page integer Number of items per page. Min: 1, Max: 100. Example: 20
      * @queryParam page integer Page number. Example: 1
      * @queryParam sort_by string Field to sort by. Available: created_at, placed_at, odds, stake, profit. Example: created_at
@@ -114,7 +114,7 @@ class BetApiController extends BaseApiController
         }
 
         // Only show user's own bets unless admin
-        if (!$request->user()->hasRole('admin')) {
+        if (! $request->user()->hasRole('admin')) {
             $query->where('user_id', $request->user()->id);
         }
 
@@ -129,7 +129,7 @@ class BetApiController extends BaseApiController
      * Create a bet
      *
      * Place a new bet. The potential return is automatically calculated based on stake and odds.
-     * 
+     *
      * @authenticated
      *
      * @bodyParam sport_id integer required The ID of the sport. Example: 1
@@ -173,7 +173,6 @@ class BetApiController extends BaseApiController
      *     "timestamp": "2024-01-14T15:30:00Z"
      *   }
      * }
-     *
      * @response 422 scenario="Validation Error" {
      *   "success": false,
      *   "message": "Validation failed",
@@ -194,7 +193,7 @@ class BetApiController extends BaseApiController
             $request->validated()
         );
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return $this->errorResponse($result['message'], 400);
         }
 
@@ -209,9 +208,9 @@ class BetApiController extends BaseApiController
      * Get a bet
      *
      * Retrieve details of a specific bet. Users can only view their own bets unless they are admins.
-     * 
+     *
      * @authenticated
-     * 
+     *
      * @urlParam id integer required The ID of the bet. Example: 1
      *
      * @response 200 scenario="Success" {
@@ -246,7 +245,6 @@ class BetApiController extends BaseApiController
      *     "timestamp": "2024-01-14T16:00:00Z"
      *   }
      * }
-     *
      * @response 404 scenario="Not Found" {
      *   "success": false,
      *   "message": "Bet not found",
@@ -255,7 +253,6 @@ class BetApiController extends BaseApiController
      *     "timestamp": "2024-01-14T16:00:00Z"
      *   }
      * }
-     *
      * @response 403 scenario="Forbidden" {
      *   "success": false,
      *   "message": "Forbidden",
@@ -269,12 +266,12 @@ class BetApiController extends BaseApiController
     {
         $bet = $this->betRepository->find($id);
 
-        if (!$bet) {
+        if (! $bet) {
             return $this->notFoundResponse('Bet not found');
         }
 
         // Check ownership unless admin
-        if (!$request->user()->hasRole('admin') && $bet->user_id !== $request->user()->id) {
+        if (! $request->user()->hasRole('admin') && $bet->user_id !== $request->user()->id) {
             return $this->forbiddenResponse();
         }
 
@@ -285,9 +282,9 @@ class BetApiController extends BaseApiController
      * Update a bet
      *
      * Update an existing bet. Only pending bets can be updated. Settled bets (won, lost, void) cannot be modified.
-     * 
+     *
      * @authenticated
-     * 
+     *
      * @urlParam id integer required The ID of the bet. Example: 1
      *
      * @bodyParam sport_id integer The ID of the sport. Example: 1
@@ -332,7 +329,6 @@ class BetApiController extends BaseApiController
      *     "timestamp": "2024-01-14T16:00:00Z"
      *   }
      * }
-     *
      * @response 400 scenario="Cannot Update Settled Bet" {
      *   "success": false,
      *   "message": "Cannot update a settled bet",
@@ -346,18 +342,18 @@ class BetApiController extends BaseApiController
     {
         $bet = $this->betRepository->find($id);
 
-        if (!$bet) {
+        if (! $bet) {
             return $this->notFoundResponse('Bet not found');
         }
 
         // Check ownership unless admin
-        if (!$request->user()->hasRole('admin') && $bet->user_id !== $request->user()->id) {
+        if (! $request->user()->hasRole('admin') && $bet->user_id !== $request->user()->id) {
             return $this->forbiddenResponse();
         }
 
         $result = $this->betService->updateBet($bet, $request->validated());
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return $this->errorResponse($result['message'], 400);
         }
 
@@ -371,9 +367,9 @@ class BetApiController extends BaseApiController
      * Delete a bet
      *
      * Delete a bet. Only pending bets can be deleted. Settled bets (won, lost) cannot be deleted for audit purposes.
-     * 
+     *
      * @authenticated
-     * 
+     *
      * @urlParam id integer required The ID of the bet. Example: 1
      *
      * @response 200 scenario="Success" {
@@ -385,7 +381,6 @@ class BetApiController extends BaseApiController
      *     "timestamp": "2024-01-14T16:00:00Z"
      *   }
      * }
-     *
      * @response 400 scenario="Cannot Delete Settled Bet" {
      *   "success": false,
      *   "message": "Cannot delete a settled bet",
@@ -394,7 +389,6 @@ class BetApiController extends BaseApiController
      *     "timestamp": "2024-01-14T16:00:00Z"
      *   }
      * }
-     *
      * @response 404 scenario="Not Found" {
      *   "success": false,
      *   "message": "Bet not found",
@@ -408,18 +402,18 @@ class BetApiController extends BaseApiController
     {
         $bet = $this->betRepository->find($id);
 
-        if (!$bet) {
+        if (! $bet) {
             return $this->notFoundResponse('Bet not found');
         }
 
         // Check ownership unless admin
-        if (!$request->user()->hasRole('admin') && $bet->user_id !== $request->user()->id) {
+        if (! $request->user()->hasRole('admin') && $bet->user_id !== $request->user()->id) {
             return $this->forbiddenResponse();
         }
 
         $result = $this->betService->deleteBet($bet);
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return $this->errorResponse($result['message'], 400);
         }
 
@@ -430,9 +424,9 @@ class BetApiController extends BaseApiController
      * Get betting statistics
      *
      * Retrieve comprehensive betting statistics. Regular users see their own stats, admins see global stats.
-     * 
+     *
      * @authenticated
-     * 
+     *
      * @response 200 scenario="Success" {
      *   "success": true,
      *   "message": "Success",

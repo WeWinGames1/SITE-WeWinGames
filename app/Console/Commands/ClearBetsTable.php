@@ -2,12 +2,13 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Bet;
+use Illuminate\Console\Command;
 
 class ClearBetsTable extends Command
 {
     protected $signature = 'bets:clear';
+
     protected $description = 'Delete all records from the bets table';
 
     public function handle()

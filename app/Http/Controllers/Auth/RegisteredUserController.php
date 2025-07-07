@@ -10,8 +10,8 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -35,15 +35,15 @@ class RegisteredUserController extends Controller
     {
         // Perform security checks
         $securityCheck = $securityService->canRegister($request);
-        
-        if (!$securityCheck['allowed']) {
+
+        if (! $securityCheck['allowed']) {
             $securityService->logRegistrationAttempt($request, false);
-            
+
             throw ValidationException::withMessages([
                 'email' => [$securityCheck['reason']],
             ]);
         }
-        
+
         // Use database transaction for atomicity
         try {
             $user = DB::transaction(function () use ($request) {
@@ -54,10 +54,10 @@ class RegisteredUserController extends Controller
                     'registration_ip' => $request->ip(),
                     'registration_user_agent' => $request->userAgent(),
                 ]);
-                
+
                 // Assign default role
                 $user->assignRole('user');
-                
+
                 // Create Stripe customer
                 $user->createAsStripeCustomer([
                     'metadata' => [
@@ -65,31 +65,32 @@ class RegisteredUserController extends Controller
                         'registration_date' => now()->toDateTimeString(),
                     ],
                 ]);
-                
+
                 return $user;
             });
-            
+
             // Log successful registration
             $securityService->logRegistrationAttempt($request, true);
-            
+
             // Fire registered event
             event(new Registered($user));
-            
+
             // Login user
             Auth::login($user);
-            
+
             return to_route('dashboard')->with('success', 'Welcome to WeWinGames!');
-            
+
         } catch (\Exception $e) {
             $securityService->logRegistrationAttempt($request, false);
-            
+
             throw ValidationException::withMessages([
                 'email' => ['Registration failed. Please try again later.'],
             ]);
         }
     }
 
-    public function newSubscription(Request $request) {
+    public function newSubscription(Request $request)
+    {
         $request->validate([
             'subscription_name' => 'required|string',
             'subscription_price_id' => 'required|string',
@@ -98,12 +99,12 @@ class RegisteredUserController extends Controller
 
         $checkout = $request->user()
             ->newSubscription($request->subscription_name, $request->subscription_price_id);
-        
+
         // Apply coupon if provided
         if ($request->filled('coupon')) {
             $checkout->withCoupon($request->coupon);
         }
-        
+
         return $checkout->checkout([
             'success_url' => route('dashboard')->with('success', 'Subscription activated successfully!'),
             'cancel_url' => route('dashboard'),

@@ -16,28 +16,28 @@ class BlogController extends Controller
         $query = Post::published()
             ->with('author:id,name')
             ->orderBy('published_at', 'desc');
-        
+
         // Filter by category
         if ($request->filled('category')) {
             $query->inCategory($request->category);
         }
-        
+
         // Filter by tag
         if ($request->filled('tag')) {
             $query->withTag($request->tag);
         }
-        
+
         // Search
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('title', 'like', '%' . $request->search . '%')
-                    ->orWhere('content', 'like', '%' . $request->search . '%')
-                    ->orWhere('excerpt', 'like', '%' . $request->search . '%');
+                $q->where('title', 'like', '%'.$request->search.'%')
+                    ->orWhere('content', 'like', '%'.$request->search.'%')
+                    ->orWhere('excerpt', 'like', '%'.$request->search.'%');
             });
         }
-        
+
         $posts = $query->paginate(12)->withQueryString();
-        
+
         return Inertia::render('blog/Index', [
             'posts' => $posts,
             'categories' => Post::getCategories(),
@@ -45,20 +45,20 @@ class BlogController extends Controller
             'filters' => $request->only(['category', 'tag', 'search']),
         ]);
     }
-    
+
     /**
      * Display a single blog post.
      */
     public function show(Post $post)
     {
         // Only show published posts
-        if (!$post->is_published || ($post->published_at && $post->published_at->isFuture())) {
+        if (! $post->is_published || ($post->published_at && $post->published_at->isFuture())) {
             abort(404);
         }
-        
+
         // Increment view count
         $post->incrementViewCount();
-        
+
         // Get related posts
         $relatedPosts = Post::published()
             ->where('id', '!=', $post->id)
@@ -74,12 +74,13 @@ class BlogController extends Controller
             ->limit(3)
             ->orderBy('published_at', 'desc')
             ->get();
-        
+
         return Inertia::render('blog/Show', [
             'post' => $post->load('author:id,name'),
             'relatedPosts' => $relatedPosts,
         ]);
     }
+
     // Legacy static blog routes
     public function typesOfBets()
     {

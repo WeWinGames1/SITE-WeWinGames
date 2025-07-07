@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Testimonial;
 use App\Services\BetService;
 use App\Services\SimpleCacheService;
-use App\Models\Testimonial;
 use Inertia\Inertia;
 
 class HomeController extends Controller
@@ -23,7 +23,7 @@ class HomeController extends Controller
         $lastMonthNum = $lastMonth->month;
         $profitByYear = $this->betService->getProfitByYear();
         $roiByYear = $this->betService->getROIByYear();
-        
+
         return Inertia::render('Welcome', [
             'roiData' => $this->betService->getTotalROIBySubscriptionLevel(),
             'levelProfitRoiData' => $this->betService->getProfitAndROIByLevel(),
@@ -49,7 +49,7 @@ class HomeController extends Controller
             'testimonials' => SimpleCacheService::rememberQuery(
                 SimpleCacheService::KEY_TESTIMONIALS,
                 SimpleCacheService::TTL_LONG,
-                fn() => Testimonial::forDisplay()->limit(3)->get()
+                fn () => Testimonial::forDisplay()->limit(3)->get()
             ),
         ]);
     }

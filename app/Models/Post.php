@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
-use Illuminate\Database\Eloquent\Builder;
 
 class Post extends Model
 {
@@ -62,7 +62,7 @@ class Post extends Model
 
         // Update slug if title changes and slug wasn't manually set
         static::updating(function ($post) {
-            if ($post->isDirty('title') && !$post->isDirty('slug')) {
+            if ($post->isDirty('title') && ! $post->isDirty('slug')) {
                 $post->slug = static::generateUniqueSlug($post->title, $post->id);
             }
         });
@@ -78,7 +78,7 @@ class Post extends Model
         $count = 1;
 
         while (static::where('slug', $slug)
-            ->when($ignoreId, fn($query) => $query->where('id', '!=', $ignoreId))
+            ->when($ignoreId, fn ($query) => $query->where('id', '!=', $ignoreId))
             ->exists()
         ) {
             $slug = "{$originalSlug}-{$count}";
@@ -146,7 +146,7 @@ class Post extends Model
      */
     public function getStatusAttribute(): string
     {
-        if (!$this->is_published) {
+        if (! $this->is_published) {
             return 'draft';
         }
 
@@ -156,7 +156,7 @@ class Post extends Model
 
         return 'published';
     }
-    
+
     /**
      * Append status to the model.
      */
@@ -173,6 +173,7 @@ class Post extends Model
 
         // Generate excerpt from content
         $plainContent = strip_tags($this->content);
+
         return Str::limit($plainContent, 160);
     }
 
@@ -183,7 +184,7 @@ class Post extends Model
     {
         $wordCount = str_word_count(strip_tags($this->content));
         $wordsPerMinute = 200;
-        
+
         return max(1, ceil($wordCount / $wordsPerMinute));
     }
 
@@ -192,7 +193,7 @@ class Post extends Model
      */
     public function getFeaturedImageUrlAttribute(): ?string
     {
-        if (!$this->featured_image) {
+        if (! $this->featured_image) {
             return null;
         }
 
@@ -202,7 +203,7 @@ class Post extends Model
         }
 
         // Otherwise, assume it's a path and build the URL
-        return asset('storage/' . $this->featured_image);
+        return asset('storage/'.$this->featured_image);
     }
 
     /**

@@ -2,11 +2,11 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\BetRepositoryInterface;
-use App\Repositories\Eloquent\UserRepository;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Eloquent\BetRepository;
+use App\Repositories\Eloquent\UserRepository;
+use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
 {

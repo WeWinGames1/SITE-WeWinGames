@@ -4,20 +4,20 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\StripeProduct;
-use App\Services\StripeService;
 use App\Services\StripePriceVersioningService;
+use App\Services\StripeService;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class StripeProductController extends Controller
 {
     private ?StripeService $stripeService = null;
-    
+
     public function __construct()
     {
         try {
-            $this->stripeService = new StripeService();
+            $this->stripeService = new StripeService;
         } catch (\Exception $e) {
             // Stripe is not configured, but we can still show the page
             $this->stripeService = null;
@@ -33,7 +33,7 @@ class StripeProductController extends Controller
         $products = StripeProduct::where('is_current', true)
             ->ordered()
             ->get();
-        
+
         return Inertia::render('admin/StripeProducts/Index', [
             'products' => $products->map(function ($product) {
                 return [
@@ -91,7 +91,7 @@ class StripeProductController extends Controller
             return redirect()->route('admin.stripe-products.index')
                 ->with('success', 'Product configuration created successfully.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Failed to create product: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Failed to create product: '.$e->getMessage()]);
         }
     }
 
@@ -124,14 +124,14 @@ class StripeProductController extends Controller
                     // Create new price in Stripe (prices are immutable, so we create a new one)
                     $priceData = [
                         'product_id' => $stripeProduct->stripe_product_id,
-                        'unit_amount' => (int)($validated['price'] * 100), // Convert to cents
+                        'unit_amount' => (int) ($validated['price'] * 100), // Convert to cents
                         'currency' => 'usd',
                         'recurring' => [
                             'interval' => $this->billingPeriodToInterval($stripeProduct->billing_period),
                             'interval_count' => 1,
                         ],
                     ];
-                    
+
                     $newPrice = $this->stripeService->createPrice($priceData);
 
                     // Update the stripe_price_id with the new price
@@ -145,14 +145,15 @@ class StripeProductController extends Controller
                 } catch (\Exception $e) {
                     // If Stripe update fails, revert local changes
                     $stripeProduct->update(['price' => $stripeProduct->getOriginal('price')]);
-                    return back()->withErrors(['error' => 'Failed to update Stripe price: ' . $e->getMessage()]);
+
+                    return back()->withErrors(['error' => 'Failed to update Stripe price: '.$e->getMessage()]);
                 }
             }
 
             return redirect()->route('admin.stripe-products.index')
                 ->with('success', 'Product configuration updated successfully.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Failed to update product: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Failed to update product: '.$e->getMessage()]);
         }
     }
 
@@ -162,15 +163,15 @@ class StripeProductController extends Controller
     public function fetchFromStripe()
     {
         try {
-            if (!$this->stripeService) {
+            if (! $this->stripeService) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Stripe API is not configured. Please set STRIPE_SECRET in your .env file.',
                 ], 422);
             }
-            
+
             $products = $this->stripeService->fetchProducts();
-            
+
             return response()->json([
                 'success' => true,
                 'products' => $products,
@@ -193,15 +194,15 @@ class StripeProductController extends Controller
         ]);
 
         try {
-            if (!$this->stripeService) {
+            if (! $this->stripeService) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Stripe API is not configured. Please set STRIPE_SECRET in your .env file.',
                 ], 422);
             }
-            
+
             $prices = $this->stripeService->fetchPricesForProduct($request->product_id);
-            
+
             return response()->json([
                 'success' => true,
                 'prices' => $prices->map(function ($price) {
@@ -234,10 +235,10 @@ class StripeProductController extends Controller
         ]);
 
         try {
-            if (!$this->stripeService) {
+            if (! $this->stripeService) {
                 return back()->withErrors(['error' => 'Stripe API is not configured. Please set STRIPE_SECRET in your .env file.']);
             }
-            
+
             // Verify the product and price exist in Stripe
             $stripeProductData = $this->stripeService->fetchProduct($validated['stripe_product_id']);
             $stripePriceData = $this->stripeService->fetchPrice($validated['stripe_price_id']);
@@ -269,7 +270,7 @@ class StripeProductController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error' => 'Failed to connect to Stripe: ' . $e->getMessage(),
+                'error' => 'Failed to connect to Stripe: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -280,10 +281,10 @@ class StripeProductController extends Controller
     public function createInStripe(Request $request, StripeProduct $stripeProduct)
     {
         try {
-            if (!$this->stripeService) {
+            if (! $this->stripeService) {
                 return back()->withErrors(['error' => 'Stripe API is not configured. Please set STRIPE_SECRET in your .env file.']);
             }
-            
+
             DB::beginTransaction();
 
             // Create product in Stripe
@@ -297,7 +298,7 @@ class StripeProductController extends Controller
             ]);
 
             // Determine recurring interval
-            $interval = match($stripeProduct->billing_period) {
+            $interval = match ($stripeProduct->billing_period) {
                 'daily' => 'day',
                 'weekly' => 'week',
                 'monthly' => 'month',
@@ -339,9 +340,10 @@ class StripeProductController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'error' => 'Failed to create in Stripe: ' . $e->getMessage(),
+                'error' => 'Failed to create in Stripe: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -364,7 +366,7 @@ class StripeProductController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error' => 'Failed to disconnect: ' . $e->getMessage(),
+                'error' => 'Failed to disconnect: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -387,33 +389,33 @@ class StripeProductController extends Controller
             return redirect()->route('admin.stripe-products.index')
                 ->with('success', 'Product configuration deleted successfully.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Failed to delete product: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Failed to delete product: '.$e->getMessage()]);
         }
     }
-    
+
     /**
      * Create a new price version for a product
      */
     public function createPriceVersion(Request $request, StripeProduct $stripeProduct)
     {
         try {
-            if (!$this->stripeService) {
+            if (! $this->stripeService) {
                 return response()->json([
                     'success' => false,
                     'error' => 'Stripe API is not configured.',
                 ], 500);
             }
-            
+
             $validated = $request->validate([
                 'new_price' => 'required|numeric|min:0',
                 'version' => 'nullable|string',
                 'notes' => 'nullable|string',
                 'effective_date' => 'nullable|date',
             ]);
-            
-            $versioningService = new StripePriceVersioningService();
+
+            $versioningService = new StripePriceVersioningService;
             $newProduct = $versioningService->createPriceVersion($stripeProduct, $validated);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'New price version created successfully.',
@@ -427,11 +429,11 @@ class StripeProductController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error' => 'Failed to create price version: ' . $e->getMessage(),
+                'error' => 'Failed to create price version: '.$e->getMessage(),
             ], 500);
         }
     }
-    
+
     /**
      * Get price history for a product
      */
@@ -441,12 +443,12 @@ class StripeProductController extends Controller
             'tier' => 'required|string',
             'billing_period' => 'required|string',
         ]);
-        
+
         $history = StripePriceVersioningService::getPriceHistory(
             $validated['tier'],
             $validated['billing_period']
         );
-        
+
         return response()->json([
             'success' => true,
             'history' => $history,

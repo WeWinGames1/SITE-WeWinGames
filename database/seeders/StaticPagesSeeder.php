@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Page;
+use Illuminate\Database\Seeder;
 
 class StaticPagesSeeder extends Seeder
 {

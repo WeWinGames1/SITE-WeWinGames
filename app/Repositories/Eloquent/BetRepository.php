@@ -7,19 +7,18 @@ use App\Repositories\Contracts\BetRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\DB;
 
 class BetRepository extends BaseRepository implements BetRepositoryInterface
 {
     protected function getModelClass(): Model
     {
-        return new Bet();
+        return new Bet;
     }
 
     public function getRecentBets(int $limit = 10): Collection
     {
         $cacheKey = $this->getCacheKey('getRecentBets', $limit);
-        
+
         return $this->remember($cacheKey, function () use ($limit) {
             return $this->model->with(['user', 'sport', 'game'])
                 ->latest()
@@ -31,7 +30,7 @@ class BetRepository extends BaseRepository implements BetRepositoryInterface
     public function getBetsByStatus(string $status): Collection
     {
         $cacheKey = $this->getCacheKey('getBetsByStatus', $status);
-        
+
         return $this->remember($cacheKey, function () use ($status) {
             return $this->model->where('status', $status)->get();
         }, 600); // Cache for 10 minutes
@@ -40,7 +39,7 @@ class BetRepository extends BaseRepository implements BetRepositoryInterface
     public function getBetsByUser(int $userId): Collection
     {
         $cacheKey = $this->getCacheKey('getBetsByUser', $userId);
-        
+
         return $this->remember($cacheKey, function () use ($userId) {
             return $this->model->where('user_id', $userId)
                 ->with(['sport', 'game'])
@@ -52,7 +51,7 @@ class BetRepository extends BaseRepository implements BetRepositoryInterface
     public function getBetsBySport(int $sportId): Collection
     {
         $cacheKey = $this->getCacheKey('getBetsBySport', $sportId);
-        
+
         return $this->remember($cacheKey, function () use ($sportId) {
             return $this->model->where('sport_id', $sportId)
                 ->with(['user', 'game'])
@@ -70,7 +69,7 @@ class BetRepository extends BaseRepository implements BetRepositoryInterface
     public function getProfitableBets(): Collection
     {
         $cacheKey = $this->getCacheKey('getProfitableBets');
-        
+
         return $this->remember($cacheKey, function () {
             return $this->model->where('profit', '>', 0)
                 ->with(['user', 'sport', 'game'])
@@ -82,7 +81,7 @@ class BetRepository extends BaseRepository implements BetRepositoryInterface
     public function getBetsByDateRange(\DateTime $start, \DateTime $end): Collection
     {
         $cacheKey = $this->getCacheKey('getBetsByDateRange', $start->format('Y-m-d'), $end->format('Y-m-d'));
-        
+
         return $this->remember($cacheKey, function () use ($start, $end) {
             return $this->model->whereBetween('created_at', [$start, $end])
                 ->with(['user', 'sport', 'game'])
@@ -93,7 +92,7 @@ class BetRepository extends BaseRepository implements BetRepositoryInterface
     public function calculateTotalProfit(): float
     {
         $cacheKey = $this->getCacheKey('calculateTotalProfit');
-        
+
         return $this->remember($cacheKey, function () {
             return $this->model->sum('profit') ?? 0.0;
         }, 3600);
@@ -102,7 +101,7 @@ class BetRepository extends BaseRepository implements BetRepositoryInterface
     public function calculateProfitByUser(int $userId): float
     {
         $cacheKey = $this->getCacheKey('calculateProfitByUser', $userId);
-        
+
         return $this->remember($cacheKey, function () use ($userId) {
             return $this->model->where('user_id', $userId)->sum('profit') ?? 0.0;
         }, 1800);
@@ -111,7 +110,7 @@ class BetRepository extends BaseRepository implements BetRepositoryInterface
     public function getBetStatistics(): array
     {
         $cacheKey = $this->getCacheKey('getBetStatistics');
-        
+
         return $this->remember($cacheKey, function () {
             return [
                 'total_bets' => $this->model->count(),
@@ -132,8 +131,9 @@ class BetRepository extends BaseRepository implements BetRepositoryInterface
         if ($totalBets === 0) {
             return 0.0;
         }
-        
+
         $winningBets = $this->model->where('status', 'won')->count();
+
         return round(($winningBets / $totalBets) * 100, 2);
     }
 }

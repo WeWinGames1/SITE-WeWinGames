@@ -23,7 +23,7 @@ return new class extends Migration
             $table->foreignId('assigned_to')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('last_reply_at')->nullable();
             $table->timestamps();
-            
+
             $table->index(['status', 'created_at']);
             $table->index('user_id');
             $table->index('assigned_to');

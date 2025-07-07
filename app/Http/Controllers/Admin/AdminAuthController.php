@@ -7,8 +7,8 @@ use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,10 +21,10 @@ class AdminAuthController extends Controller
     public function create(): Response
     {
         // Ensure session is started
-        if (!session()->isStarted()) {
+        if (! session()->isStarted()) {
             session()->start();
         }
-        
+
         return Inertia::render('admin/Login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),
@@ -38,14 +38,14 @@ class AdminAuthController extends Controller
     {
         // Apply rate limiting specifically for admin login
         $this->ensureIsNotRateLimited($request);
-        
+
         try {
             $request->authenticate();
 
             // Check if the user has admin role
-            if (!$request->user()->hasRole('admin')) {
+            if (! $request->user()->hasRole('admin')) {
                 Auth::guard('web')->logout();
-                
+
                 // Log failed admin access attempt
                 activity()
                     ->withProperties([
@@ -55,7 +55,7 @@ class AdminAuthController extends Controller
                         'reason' => 'User does not have admin role',
                     ])
                     ->log('Failed admin login attempt');
-                
+
                 return redirect()->route('admin.login')->withErrors([
                     'email' => 'You do not have permission to access the admin area.',
                 ]);
@@ -76,7 +76,7 @@ class AdminAuthController extends Controller
             $request->session()->regenerate();
 
             return redirect()->intended(route('admin.dashboard', absolute: false));
-            
+
         } catch (\Exception $e) {
             // Log failed login attempt
             activity()
@@ -87,20 +87,21 @@ class AdminAuthController extends Controller
                     'error' => $e->getMessage(),
                 ])
                 ->log('Failed admin login attempt');
-                
+
             throw $e;
         }
     }
-    
+
     /**
      * Ensure the login request is not rate limited.
      */
     protected function ensureIsNotRateLimited(Request $request): void
     {
         $key = $this->throttleKey($request);
-        
+
         if (! RateLimiter::tooManyAttempts($key, 5)) {
             RateLimiter::hit($key, 900); // 15 minutes
+
             return;
         }
 
@@ -113,7 +114,7 @@ class AdminAuthController extends Controller
             ]),
         ]);
     }
-    
+
     /**
      * Get the rate limiting throttle key for the request.
      */

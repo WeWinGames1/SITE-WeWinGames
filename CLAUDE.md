@@ -206,6 +206,9 @@ STRIPE_SECRET=your_stripe_secret
 # Fix npm PATH if needed (common on production servers)
 export PATH="/opt/nvm/versions/node/v22.17.0/bin:$PATH"
 
+# Main production build commands
+php artisan optimize:clear && npm run build
+
 # Install dependencies
 npm install
 

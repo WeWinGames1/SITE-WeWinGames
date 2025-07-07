@@ -2,14 +2,13 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Bet;
-use App\Models\Team;
-use App\Models\Sport;
 use App\Models\Game;
 use App\Models\Operator;
+use App\Models\Sport;
+use App\Models\Team;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
 class SampleBetsSeeder extends Seeder
@@ -74,7 +73,7 @@ class SampleBetsSeeder extends Seeder
                 ['name' => 'Chelsea', 'sport' => 'Soccer'],
                 ['name' => 'Arsenal', 'sport' => 'Soccer'],
                 ['name' => 'Tottenham Hotspur', 'sport' => 'Soccer'],
-            ]
+            ],
         ];
 
         // Create teams
@@ -86,7 +85,7 @@ class SampleBetsSeeder extends Seeder
                     ['name' => $teamData['name']],
                     [
                         'slug' => Str::slug($teamData['name']),
-                        'sport_id' => $sportModel->id
+                        'sport_id' => $sportModel->id,
                     ]
                 );
                 $teams[$sport][] = $team;
@@ -99,7 +98,7 @@ class SampleBetsSeeder extends Seeder
             'Basketball' => ['NBA', 'NCAA Basketball', 'EuroLeague'],
             'Baseball' => ['MLB', 'Minor League Baseball'],
             'Hockey' => ['NHL', 'AHL', 'KHL'],
-            'Soccer' => ['Premier League', 'La Liga', 'Champions League']
+            'Soccer' => ['Premier League', 'La Liga', 'Champions League'],
         ];
 
         $markets = ['Moneyline', 'Spread', 'Over/Under', 'Player Props', 'Team Props'];
@@ -109,7 +108,7 @@ class SampleBetsSeeder extends Seeder
             'Spread' => ['Home -7.5', 'Away +7.5', 'Home -3.5', 'Away +3.5'],
             'Over/Under' => ['Over 45.5', 'Under 45.5', 'Over 220.5', 'Under 220.5'],
             'Player Props' => ['Player A Over 25.5 Points', 'Player B Under 10.5 Rebounds'],
-            'Team Props' => ['Team Total Over 110.5', 'Team Total Under 105.5']
+            'Team Props' => ['Team Total Over 110.5', 'Team Total Under 105.5'],
         ];
 
         // Create 50 sample bets
@@ -118,26 +117,26 @@ class SampleBetsSeeder extends Seeder
             $sport = array_rand($teams);
             $sportModel = Sport::where('name', $sport)->first();
             $sportTeams = $teams[$sport];
-            
+
             // Pick two random teams
             $teamIndices = array_rand($sportTeams, 2);
             $teamOne = $sportTeams[$teamIndices[0]];
             $teamTwo = $sportTeams[$teamIndices[1]];
-            
+
             // Create a game
             $gameDate = Carbon::now()->addDays(rand(0, 7))->addHours(rand(12, 22));
             $operator = Operator::inRandomOrder()->first();
             $game = Game::create([
-                'title' => 'Game ' . $gameCounter++ . ': ' . $teamOne->name . ' vs ' . $teamTwo->name . ' - ' . $gameDate->format('M d'),
+                'title' => 'Game '.$gameCounter++.': '.$teamOne->name.' vs '.$teamTwo->name.' - '.$gameDate->format('M d'),
                 'game_date' => $gameDate,
                 'sport_id' => $sportModel->id,
                 'operator_id' => $operator->id,
                 'game_name' => 'scheduled',
                 'props' => 'Standard',
-                'line' => rand(-10, 10) > 0 ? '+' . rand(1, 10) : '-' . rand(1, 10),
+                'line' => rand(-10, 10) > 0 ? '+'.rand(1, 10) : '-'.rand(1, 10),
                 'wager_team' => rand(0, 1) ? $teamOne->name : $teamTwo->name,
                 'post_availablity' => $memberships[array_rand($memberships)],
-                'odds' => rand(-150, 150) > 0 ? '+' . rand(100, 300) : '-' . rand(100, 150),
+                'odds' => rand(-150, 150) > 0 ? '+'.rand(100, 300) : '-'.rand(100, 150),
                 'type' => $markets[array_rand($markets)],
                 'subsection' => $leagues[$sport][array_rand($leagues[$sport])],
                 'team1' => $teamOne->name,
@@ -145,21 +144,21 @@ class SampleBetsSeeder extends Seeder
                 'team1_img' => null,
                 'team2_img' => null,
             ]);
-            
+
             $market = $markets[array_rand($markets)];
             $operator = Operator::inRandomOrder()->first();
-            
+
             // Create bet
             Bet::create([
                 'sports' => $sport,
                 'league' => $game->subsection,
-                'matches' => $teamOne->name . ' vs ' . $teamTwo->name,
+                'matches' => $teamOne->name.' vs '.$teamTwo->name,
                 'markets' => $market,
                 'team_one' => $teamOne->name,
                 'team_two' => $teamTwo->name,
                 'tips' => $tips[$market][array_rand($tips[$market])],
                 'betting_date' => Carbon::now()->addDays(rand(0, 7))->format('Y-m-d'),
-                'wager_odds' => rand(-150, 150) > 0 ? '+' . rand(100, 300) : '-' . rand(100, 150),
+                'wager_odds' => rand(-150, 150) > 0 ? '+'.rand(100, 300) : '-'.rand(100, 150),
                 'membership' => $memberships[array_rand($memberships)],
                 'wager_amount' => rand(10, 100),
                 'winning_amount' => null,
@@ -176,24 +175,24 @@ class SampleBetsSeeder extends Seeder
             $sport = array_rand($teams);
             $sportModel = Sport::where('name', $sport)->first();
             $sportTeams = $teams[$sport];
-            
+
             $teamIndices = array_rand($sportTeams, 2);
             $teamOne = $sportTeams[$teamIndices[0]];
             $teamTwo = $sportTeams[$teamIndices[1]];
-            
+
             $gameDate = Carbon::now()->subDays(rand(1, 30))->addHours(rand(12, 22));
             $operator = Operator::inRandomOrder()->first();
             $game = Game::create([
-                'title' => 'Game ' . $gameCounter++ . ': ' . $teamOne->name . ' vs ' . $teamTwo->name . ' - ' . $gameDate->format('M d'),
+                'title' => 'Game '.$gameCounter++.': '.$teamOne->name.' vs '.$teamTwo->name.' - '.$gameDate->format('M d'),
                 'game_date' => $gameDate,
                 'sport_id' => $sportModel->id,
                 'operator_id' => $operator->id,
                 'game_name' => 'completed',
                 'props' => 'Standard',
-                'line' => rand(-10, 10) > 0 ? '+' . rand(1, 10) : '-' . rand(1, 10),
+                'line' => rand(-10, 10) > 0 ? '+'.rand(1, 10) : '-'.rand(1, 10),
                 'wager_team' => rand(0, 1) ? $teamOne->name : $teamTwo->name,
                 'post_availablity' => $memberships[array_rand($memberships)],
-                'odds' => rand(-150, 150) > 0 ? '+' . rand(100, 300) : '-' . rand(100, 150),
+                'odds' => rand(-150, 150) > 0 ? '+'.rand(100, 300) : '-'.rand(100, 150),
                 'type' => $markets[array_rand($markets)],
                 'subsection' => $leagues[$sport][array_rand($leagues[$sport])],
                 'team1' => $teamOne->name,
@@ -201,25 +200,25 @@ class SampleBetsSeeder extends Seeder
                 'team1_img' => null,
                 'team2_img' => null,
             ]);
-            
+
             $market = $markets[array_rand($markets)];
             $operator = Operator::inRandomOrder()->first();
             $statuses = ['Won', 'Lost', 'Push'];
-            
+
             $status = $statuses[array_rand($statuses)];
             $wagerAmount = rand(10, 100);
             $profit = $status === 'Won' ? $wagerAmount * (rand(50, 200) / 100) : ($status === 'Lost' ? -$wagerAmount : 0);
-            
+
             Bet::create([
                 'sports' => $sport,
                 'league' => $game->subsection,
-                'matches' => $teamOne->name . ' vs ' . $teamTwo->name,
+                'matches' => $teamOne->name.' vs '.$teamTwo->name,
                 'markets' => $market,
                 'team_one' => $teamOne->name,
                 'team_two' => $teamTwo->name,
                 'tips' => $tips[$market][array_rand($tips[$market])],
                 'betting_date' => Carbon::now()->subDays(rand(1, 30))->format('Y-m-d'),
-                'wager_odds' => rand(-150, 150) > 0 ? '+' . rand(100, 300) : '-' . rand(100, 150),
+                'wager_odds' => rand(-150, 150) > 0 ? '+'.rand(100, 300) : '-'.rand(100, 150),
                 'membership' => $memberships[array_rand($memberships)],
                 'wager_amount' => $wagerAmount,
                 'winning_amount' => $status === 'Won' ? $wagerAmount + $profit : 0,

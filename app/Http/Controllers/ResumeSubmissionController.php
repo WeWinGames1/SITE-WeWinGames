@@ -31,7 +31,7 @@ class ResumeSubmissionController extends Controller
                 'remoteip' => $request->ip(),
             ]);
 
-            if (!$response->json('success')) {
+            if (! $response->json('success')) {
                 return back()->withErrors(['turnstile_token' => 'Security verification failed. Please try again.']);
             }
         }

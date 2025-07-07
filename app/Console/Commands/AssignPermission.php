@@ -29,21 +29,23 @@ class AssignPermission extends Command
         $user = $this->argument('user');
         $permission = $this->argument('permission');
         $userModel = \App\Models\User::where('email', $user)->first();
-        if (!$userModel) {
+        if (! $userModel) {
             $this->error("User '$user' does not exist.");
+
             return;
         }
         if ($userModel->hasPermissionTo($permission)) {
             $this->error("User '$user' already has the permission '$permission'.");
+
             return;
         }
         $userModel->givePermissionTo($permission);
         $this->info("Permission '$permission' assigned to user '$user' successfully.");
         // Optionally, you can also display the user's permissions after assignment
         $permissions = $userModel->getAllPermissions();
-        $this->info("User '$user' now has the following permissions: " . implode(', ', $permissions->pluck('name')->toArray()));
+        $this->info("User '$user' now has the following permissions: ".implode(', ', $permissions->pluck('name')->toArray()));
         // Optionally, you can also display the user's roles after assignment
         $roles = $userModel->getRoleNames();
-        $this->info("User '$user' has the following roles: " . implode(', ', $roles->toArray()));
+        $this->info("User '$user' has the following roles: ".implode(', ', $roles->toArray()));
     }
 }

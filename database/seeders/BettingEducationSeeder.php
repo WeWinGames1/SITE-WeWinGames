@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Page;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class BettingEducationSeeder extends Seeder
 {
@@ -67,7 +66,7 @@ class BettingEducationSeeder extends Seeder
 
     private function getBetsWagersContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <h2 class="text-2xl font-semibold mt-8 mb-4">Most Common for US sports</h2>
 <p class="mb-4">
     Let's use this extract from a live NHL game from Points Bet to explain the 3 most common forms of US bets or wagers, which are used in our best sports betting picks service.
@@ -146,7 +145,7 @@ HTML;
 
     private function getBettingOddsContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <h2 class="text-2xl font-semibold mt-8 mb-4">American Odds</h2>
 <p class="mb-4">
     American odds are the most common format used in the United States. They are displayed as either positive (+) or negative (-) numbers.
@@ -202,7 +201,7 @@ HTML;
 
     private function getFootballBettingContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <img src="/images/blog/football.jpg" alt="How to bet on Football" class="mb-8 rounded shadow" />
 
 <h2 class="text-2xl font-semibold mt-8 mb-4">Understanding Football Point Spreads</h2>
@@ -263,7 +262,7 @@ HTML;
 
     private function getMoneyManagementContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <h2 class="text-2xl font-semibold mt-8 mb-4">The Importance of Bankroll Management</h2>
 <p class="mb-4">
     Proper bankroll management is the foundation of successful sports betting. Without it, even the best handicappers will eventually go broke. Your bankroll is the amount of money you've set aside specifically for betting - money you can afford to lose.
@@ -314,7 +313,7 @@ HTML;
 
     private function getLineShoppingContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <h2 class="text-2xl font-semibold mt-8 mb-4">What is Line Shopping?</h2>
 <p class="mb-4">
     Line shopping is the practice of comparing odds and lines across multiple sportsbooks to find the best value for your bets. Just like comparing prices when shopping for any product, finding the best odds can significantly impact your long-term profitability.
@@ -372,7 +371,7 @@ HTML;
 
     private function getParlaysContent(): string
     {
-        return <<<HTML
+        return <<<'HTML'
 <h2 class="text-2xl font-semibold mt-8 mb-4">What Are Parlay Bets?</h2>
 <p class="mb-4">
     A parlay combines multiple individual bets into one wager. All selections (called "legs") must win for the parlay to cash. While the potential payouts are attractive, the probability of winning decreases exponentially with each added leg.

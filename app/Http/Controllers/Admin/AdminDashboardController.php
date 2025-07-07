@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bet;
+use App\Models\DiscountCode;
 use App\Models\Post;
 use App\Models\User;
-use App\Models\DiscountCode;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -159,8 +159,8 @@ class AdminDashboardController extends Controller
 
         // Subscription tier breakdown
         $tierBreakdown = User::whereHas('subscriptions', function ($query) {
-                $query->where('stripe_status', 'active');
-            })
+            $query->where('stripe_status', 'active');
+        })
             ->select('override_tier as tier', DB::raw('COUNT(*) as count'))
             ->whereNotNull('override_tier')
             ->groupBy('tier')
@@ -235,7 +235,7 @@ class AdminDashboardController extends Controller
     {
         // Database size
         $dbSize = $this->getDatabaseSize();
-        
+
         // Storage usage
         $storageUsed = $this->getStorageUsage();
         $storageTotal = disk_total_space(storage_path());
@@ -251,7 +251,7 @@ class AdminDashboardController extends Controller
         if (file_exists($logFile)) {
             $log = file_get_contents($logFile);
             $today = Carbon::today()->format('Y-m-d');
-            $recentErrors = substr_count($log, $today . ' ') && substr_count($log, 'ERROR');
+            $recentErrors = substr_count($log, $today.' ') && substr_count($log, 'ERROR');
         }
 
         return [
@@ -318,9 +318,11 @@ class AdminDashboardController extends Controller
         try {
             if (config('database.default') === 'mysql') {
                 $result = DB::select('SELECT SUM(data_length + index_length) as size FROM information_schema.TABLES WHERE table_schema = ?', [config('database.connections.mysql.database')]);
+
                 return $result[0]->size ?? 0;
             } elseif (config('database.default') === 'sqlite') {
                 $path = config('database.connections.sqlite.database');
+
                 return file_exists($path) ? filesize($path) : 0;
             }
         } catch (\Exception $e) {
@@ -341,6 +343,7 @@ class AdminDashboardController extends Controller
                 $size += $file->getSize();
             }
         }
+
         return $size;
     }
 
@@ -350,13 +353,13 @@ class AdminDashboardController extends Controller
     private function formatBytes($bytes, $precision = 2)
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        
+
         $bytes = max($bytes, 0);
         $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
         $pow = min($pow, count($units) - 1);
-        
+
         $bytes /= pow(1024, $pow);
-        
-        return round($bytes, $precision) . ' ' . $units[$pow];
+
+        return round($bytes, $precision).' '.$units[$pow];
     }
 }

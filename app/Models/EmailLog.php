@@ -38,11 +38,17 @@ class EmailLog extends Model
      * Status constants
      */
     const STATUS_PENDING = 'pending';
+
     const STATUS_SENT = 'sent';
+
     const STATUS_FAILED = 'failed';
+
     const STATUS_DELIVERED = 'delivered';
+
     const STATUS_OPENED = 'opened';
+
     const STATUS_CLICKED = 'clicked';
+
     const STATUS_BOUNCED = 'bounced';
 
     /**
@@ -50,7 +56,7 @@ class EmailLog extends Model
      */
     public function getStatusBadgeClassAttribute(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             self::STATUS_PENDING => 'bg-warning',
             self::STATUS_SENT => 'bg-info',
             self::STATUS_FAILED => 'bg-danger',

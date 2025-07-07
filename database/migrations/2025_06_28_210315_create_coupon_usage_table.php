@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('stripe_invoice_id')->nullable();
             $table->string('stripe_coupon_id')->nullable();
             $table->timestamps();
-            
+
             // Indexes
             $table->index('user_id');
             $table->index('coupon_code');

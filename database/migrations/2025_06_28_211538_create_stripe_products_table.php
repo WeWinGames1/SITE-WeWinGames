@@ -24,7 +24,7 @@ return new class extends Migration
             $table->integer('sort_order')->default(0);
             $table->string('badge_text')->nullable(); // e.g., "Best Value"
             $table->timestamps();
-            
+
             // Indexes
             $table->unique(['tier', 'billing_period']);
             $table->index('stripe_product_id');

@@ -27,6 +27,7 @@ class LandingPageService
     public function update(LandingPage $page, array $data)
     {
         $page->update($data);
+
         return $page;
     }
 

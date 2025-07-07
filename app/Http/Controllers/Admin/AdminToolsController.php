@@ -18,7 +18,7 @@ class AdminToolsController extends Controller
 
     public function notifyAll(Request $request)
     {
-        if (!auth()->check() || !auth()->user()->hasRole('admin')) {
+        if (! auth()->check() || ! auth()->user()->hasRole('admin')) {
             abort(403, 'Unauthorized');
         }
 
@@ -40,7 +40,7 @@ class AdminToolsController extends Controller
             case 'all':
                 $users = User::with('roles')->get();
                 break;
-                
+
             case 'tiers':
                 // Get users who have the specified tiers
                 $users = User::where(function ($query) use ($request) {
@@ -62,7 +62,7 @@ class AdminToolsController extends Controller
                     });
                 })->with('roles')->get();
                 break;
-                
+
             case 'users':
                 $users = User::with('roles')->whereIn('id', $request->user_ids)->get();
                 break;
@@ -75,7 +75,7 @@ class AdminToolsController extends Controller
                 $sentCount = $users->count();
             } catch (\Exception $e) {
                 $failedCount = $users->count();
-                \Log::error('Notification sending failed: ' . $e->getMessage());
+                \Log::error('Notification sending failed: '.$e->getMessage());
             }
         }
 
@@ -96,13 +96,13 @@ class AdminToolsController extends Controller
             'success' => true,
             'sent_count' => $sentCount,
             'failed_count' => $failedCount,
-            'message' => "Notification sent to {$sentCount} users"
+            'message' => "Notification sent to {$sentCount} users",
         ]);
     }
 
     public function exportBets()
     {
-        if (!auth()->check() || !auth()->user()->hasRole('admin')) {
+        if (! auth()->check() || ! auth()->user()->hasRole('admin')) {
             abort(403, 'Unauthorized');
         }
 
@@ -113,29 +113,29 @@ class AdminToolsController extends Controller
             'Content-Disposition' => 'attachment; filename="bets_export.csv"',
         ];
 
-        $callback = function() use ($bets) {
+        $callback = function () use ($bets) {
             $handle = fopen('php://output', 'w');
             // CSV header matching the import format (17 columns - now with separate Home/Away)
             fputcsv($handle, [
-                'Sport', 'League', 'Month', 'Date', 'Home Team', 'Away Team', 'Bet Type', 
-                'Wager Type', 'Wager Name', 'odds', 'level', 'code', 'Status', 
-                'ROI(net)', 'Wager', 'Profits', 'Winning Amount'
+                'Sport', 'League', 'Month', 'Date', 'Home Team', 'Away Team', 'Bet Type',
+                'Wager Type', 'Wager Name', 'odds', 'level', 'code', 'Status',
+                'ROI(net)', 'Wager', 'Profits', 'Winning Amount',
             ]);
-            
+
             foreach ($bets as $bet) {
                 // Format date
                 $bettingDate = $bet->betting_date ? \Carbon\Carbon::parse($bet->betting_date) : null;
                 $month = $bettingDate ? $bettingDate->format('F') : '';
                 $date = $bettingDate ? $bettingDate->format('Y-m-d') : '';
-                
+
                 // Format ROI as percentage
-                $roi = $bet->roi ? number_format($bet->roi, 2) . '%' : '0.00%';
-                
+                $roi = $bet->roi ? number_format($bet->roi, 2).'%' : '0.00%';
+
                 // Format monetary values
-                $wager = '$' . number_format($bet->wager_amount ?? 0, 2);
-                $profits = '$' . number_format($bet->profit_amount ?? 0, 2);
-                $winningAmount = '$' . number_format($bet->winning_amount ?? 0, 2);
-                
+                $wager = '$'.number_format($bet->wager_amount ?? 0, 2);
+                $profits = '$'.number_format($bet->profit_amount ?? 0, 2);
+                $winningAmount = '$'.number_format($bet->winning_amount ?? 0, 2);
+
                 fputcsv($handle, [
                     $bet->sports ?? '',                    // Sport
                     $bet->league ?? '',                    // League
@@ -153,7 +153,7 @@ class AdminToolsController extends Controller
                     $roi,                                   // ROI(net)
                     $wager,                                 // Wager
                     $profits,                               // Profits
-                    $winningAmount                          // Winning Amount
+                    $winningAmount,                          // Winning Amount
                 ]);
             }
             fclose($handle);

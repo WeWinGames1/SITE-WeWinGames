@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ResumeSubmission;
 use App\Models\JobPosition;
+use App\Models\ResumeSubmission;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -39,9 +39,9 @@ class ResumeSubmissionController extends Controller
         }
 
         $submissions = $query->orderBy('created_at', 'desc')->paginate(20);
-        
+
         $jobPositions = JobPosition::ordered()->get();
-        
+
         // Get unique positions from submissions for filter
         $submissionPositions = ResumeSubmission::distinct()->pluck('position');
 
@@ -112,7 +112,7 @@ class ResumeSubmissionController extends Controller
     public function updatePosition(Request $request, JobPosition $jobPosition)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255|unique:job_positions,title,' . $jobPosition->id,
+            'title' => 'required|string|max:255|unique:job_positions,title,'.$jobPosition->id,
             'description' => 'nullable|string',
             'is_active' => 'boolean',
             'sort_order' => 'integer',
@@ -128,7 +128,7 @@ class ResumeSubmissionController extends Controller
      */
     public function togglePosition(JobPosition $jobPosition)
     {
-        $jobPosition->update(['is_active' => !$jobPosition->is_active]);
+        $jobPosition->update(['is_active' => ! $jobPosition->is_active]);
 
         return redirect()->back()->with('success', 'Position status updated.');
     }
@@ -140,7 +140,7 @@ class ResumeSubmissionController extends Controller
     {
         // Check if there are submissions for this position
         $count = ResumeSubmission::where('position', $jobPosition->title)->count();
-        
+
         if ($count > 0) {
             return redirect()->back()->withErrors(['position' => 'Cannot delete position with existing submissions.']);
         }

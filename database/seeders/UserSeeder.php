@@ -41,7 +41,7 @@ class UserSeeder extends Seeder
         // In production, you'd use Stripe to create real subscriptions
         $subscriber->subscriptions()->create([
             'type' => 'default',
-            'stripe_id' => 'sub_' . uniqid(),
+            'stripe_id' => 'sub_'.uniqid(),
             'stripe_status' => 'active',
             'stripe_price' => 'price_gold_monthly', // Assuming gold plan
             'quantity' => 1,

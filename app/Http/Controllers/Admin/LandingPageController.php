@@ -20,6 +20,7 @@ class LandingPageController extends Controller
     public function index()
     {
         $pages = $this->pages->all();
+
         return Inertia::render('admin/LandingPagesIndex', ['pages' => $pages]);
     }
 
@@ -41,6 +42,7 @@ class LandingPageController extends Controller
             $data['featured_image'] = $request->file('featured_image')->store('landing_pages', 'public');
         }
         $this->pages->create($data);
+
         return redirect()->route('admin.landing-pages.index');
     }
 
@@ -53,7 +55,7 @@ class LandingPageController extends Controller
     {
         $data = $request->validate([
             'title' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:landing_pages,slug,' . $page->id,
+            'slug' => 'required|string|max:255|unique:landing_pages,slug,'.$page->id,
             'content' => 'required|string',
             'featured_image' => 'nullable|image|max:2048',
             'published' => 'boolean',
@@ -64,12 +66,14 @@ class LandingPageController extends Controller
             unset($data['featured_image']);
         }
         $this->pages->update($page, $data);
+
         return redirect()->route('admin.landing-pages.index');
     }
 
     public function destroy(LandingPage $page)
     {
         $this->pages->delete($page);
+
         return redirect()->route('admin.landing-pages.index');
     }
 }

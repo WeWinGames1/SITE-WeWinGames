@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Spatie\Permission\Models\Role;
+
 class CreateRole extends Command
 {
     /**
@@ -29,6 +30,7 @@ class CreateRole extends Command
         $name = $this->argument('name');
         if (Role::where('name', $name)->exists()) {
             $this->error("Role '$name' already exists.");
+
             return;
         }
         $role = Role::create(['name' => $name]);

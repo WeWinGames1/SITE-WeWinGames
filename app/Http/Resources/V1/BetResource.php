@@ -18,23 +18,23 @@ class BetResource extends JsonResource
             'id' => $this->id,
             'user' => [
                 'id' => $this->user_id,
-                'name' => $this->whenLoaded('user', fn() => $this->user->name),
+                'name' => $this->whenLoaded('user', fn () => $this->user->name),
             ],
             'sport' => [
                 'id' => $this->sport_id,
-                'name' => $this->whenLoaded('sport', fn() => $this->sport->name),
+                'name' => $this->whenLoaded('sport', fn () => $this->sport->name),
             ],
             'game' => [
                 'id' => $this->game_id,
-                'teams' => $this->whenLoaded('game', fn() => [
+                'teams' => $this->whenLoaded('game', fn () => [
                     'home' => $this->game->homeTeam?->name,
                     'away' => $this->game->awayTeam?->name,
                 ]),
-                'date' => $this->whenLoaded('game', fn() => $this->game->game_date),
+                'date' => $this->whenLoaded('game', fn () => $this->game->game_date),
             ],
             'operator' => [
                 'id' => $this->operator_id,
-                'name' => $this->whenLoaded('operator', fn() => $this->operator->name),
+                'name' => $this->whenLoaded('operator', fn () => $this->operator->name),
             ],
             'bet_type' => $this->bet_type,
             'selection' => $this->selection,
@@ -49,7 +49,7 @@ class BetResource extends JsonResource
             'settled_at' => $this->settled_at?->toIso8601String(),
             'created_at' => $this->created_at->toIso8601String(),
             'updated_at' => $this->updated_at->toIso8601String(),
-            
+
             // Legacy fields for backward compatibility
             'sports' => $this->sports,
             'league' => $this->league,

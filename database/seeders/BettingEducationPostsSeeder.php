@@ -15,9 +15,10 @@ class BettingEducationPostsSeeder extends Seeder
     {
         // Get the first admin user to author the posts
         $author = User::first();
-        
-        if (!$author) {
+
+        if (! $author) {
             $this->command->error('No users found. Please run UserSeeder first.');
+
             return;
         }
 

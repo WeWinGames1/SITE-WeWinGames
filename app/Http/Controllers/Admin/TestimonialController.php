@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Testimonial;
 use App\Services\SimpleCacheService;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 class TestimonialController extends Controller
 {
@@ -17,9 +17,9 @@ class TestimonialController extends Controller
     public function index()
     {
         $testimonials = Testimonial::ordered()->paginate(10);
-        
+
         return Inertia::render('admin/Testimonials/Index', [
-            'testimonials' => $testimonials
+            'testimonials' => $testimonials,
         ]);
     }
 
@@ -44,16 +44,16 @@ class TestimonialController extends Controller
             'review_date' => 'required|date',
             'published' => 'boolean',
             'sort_order' => 'integer',
-            'image' => 'nullable|image|max:2048'
+            'image' => 'nullable|image|max:2048',
         ]);
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('testimonials', 'public');
-            $validated['image'] = '/storage/' . $path;
+            $validated['image'] = '/storage/'.$path;
         }
 
         Testimonial::create($validated);
-        
+
         // Clear testimonials cache
         SimpleCacheService::invalidateRelated('testimonial');
 
@@ -67,7 +67,7 @@ class TestimonialController extends Controller
     public function edit(Testimonial $testimonial)
     {
         return Inertia::render('admin/Testimonials/Edit', [
-            'testimonial' => $testimonial
+            'testimonial' => $testimonial,
         ]);
     }
 
@@ -84,7 +84,7 @@ class TestimonialController extends Controller
             'review_date' => 'required|date',
             'published' => 'boolean',
             'sort_order' => 'integer',
-            'image' => 'nullable|image|max:2048'
+            'image' => 'nullable|image|max:2048',
         ]);
 
         if ($request->hasFile('image')) {
@@ -92,13 +92,13 @@ class TestimonialController extends Controller
             if ($testimonial->image && file_exists(public_path($testimonial->image))) {
                 unlink(public_path($testimonial->image));
             }
-            
+
             $path = $request->file('image')->store('testimonials', 'public');
-            $validated['image'] = '/storage/' . $path;
+            $validated['image'] = '/storage/'.$path;
         }
 
         $testimonial->update($validated);
-        
+
         // Clear testimonials cache
         SimpleCacheService::invalidateRelated('testimonial');
 
@@ -115,9 +115,9 @@ class TestimonialController extends Controller
         if ($testimonial->image && file_exists(public_path($testimonial->image))) {
             unlink(public_path($testimonial->image));
         }
-        
+
         $testimonial->delete();
-        
+
         // Clear testimonials cache
         SimpleCacheService::invalidateRelated('testimonial');
 
@@ -133,14 +133,14 @@ class TestimonialController extends Controller
         $validated = $request->validate([
             'testimonials' => 'required|array',
             'testimonials.*.id' => 'required|exists:testimonials,id',
-            'testimonials.*.sort_order' => 'required|integer'
+            'testimonials.*.sort_order' => 'required|integer',
         ]);
 
         foreach ($validated['testimonials'] as $item) {
             Testimonial::where('id', $item['id'])
                 ->update(['sort_order' => $item['sort_order']]);
         }
-        
+
         // Clear testimonials cache
         SimpleCacheService::invalidateRelated('testimonial');
 

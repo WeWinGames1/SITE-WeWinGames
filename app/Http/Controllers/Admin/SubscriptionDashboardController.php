@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\StripeProduct;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use App\Models\User;
 use App\Services\SimpleCacheService;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 use Laravel\Cashier\Subscription;
 
 class SubscriptionDashboardController extends Controller
@@ -21,52 +21,52 @@ class SubscriptionDashboardController extends Controller
     {
         // Get filters
         $filters = $request->only(['status', 'tier', 'renewal_period', 'search']);
-        
+
         // Build query
         $query = User::with(['subscriptions', 'subscriptions.items'])
             ->whereHas('subscriptions');
-        
+
         // Apply search filter
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                    ->orWhere('email', 'like', '%' . $request->search . '%');
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('email', 'like', '%'.$request->search.'%');
             });
         }
-        
+
         // Apply status filter
         if ($request->filled('status')) {
             $query->whereHas('subscriptions', function ($q) use ($request) {
                 $q->where('stripe_status', $request->status);
             });
         }
-        
+
         // Apply tier filter
         if ($request->filled('tier')) {
             $tierPriceIds = StripeProduct::where('tier', $request->tier)
                 ->pluck('stripe_price_id')
                 ->filter()
                 ->toArray();
-                
+
             $query->whereHas('subscriptions.items', function ($q) use ($tierPriceIds) {
                 $q->whereIn('stripe_price', $tierPriceIds);
             });
         }
-        
+
         // Apply renewal period filter
         if ($request->filled('renewal_period')) {
             $days = intval($request->renewal_period);
             $startDate = Carbon::now();
             $endDate = Carbon::now()->addDays($days);
-            
+
             $query->whereHas('subscriptions', function ($q) use ($startDate, $endDate) {
                 $q->whereBetween('current_period_end', [$startDate, $endDate]);
             });
         }
-        
+
         // Get paginated results
         $customers = $query->paginate(50)->withQueryString();
-        
+
         // Pre-load all StripeProducts to avoid N+1 queries
         $priceIds = [];
         foreach ($customers as $user) {
@@ -75,23 +75,23 @@ class SubscriptionDashboardController extends Controller
                 $priceIds[] = $subscription->items->first()->stripe_price;
             }
         }
-        
+
         // Load all products in one query and create a lookup map
         $productMap = StripeProduct::whereIn('stripe_price_id', array_unique($priceIds))
             ->pluck('tier', 'stripe_price_id')
             ->toArray();
-        
+
         // Transform data for frontend
         $customers->through(function ($user) use ($productMap) {
             $subscription = $user->subscriptions->first();
-            
+
             // Get tier from pre-loaded map
             $tier = null;
             if ($subscription && $subscription->items->first()) {
                 $priceId = $subscription->items->first()->stripe_price;
                 $tier = $productMap[$priceId] ?? 'Unknown';
             }
-            
+
             return [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -105,15 +105,15 @@ class SubscriptionDashboardController extends Controller
                 'is_ambassador' => $user->is_ambassador,
                 'is_gifted' => $user->is_gifted,
                 'has_override' => $user->admin_override,
-                'days_until_renewal' => $subscription->current_period_end 
+                'days_until_renewal' => $subscription->current_period_end
                     ? max(0, Carbon::now()->diffInDays(Carbon::parse($subscription->current_period_end), false))
                     : null,
             ];
         });
-        
+
         // Get statistics
         $stats = $this->getSubscriptionStats();
-        
+
         return Inertia::render('admin/Subscriptions/Dashboard', [
             'customers' => $customers,
             'filters' => $filters,
@@ -121,44 +121,46 @@ class SubscriptionDashboardController extends Controller
             'tiers' => ['Bronze', 'Silver', 'Gold', 'Platinum'],
         ]);
     }
-    
+
     /**
      * Export subscriptions to CSV
      */
     public function export(Request $request)
     {
         $ids = $request->input('ids', []);
-        
+
         $query = User::with(['subscriptions', 'subscriptions.items']);
-        
-        if (!empty($ids)) {
+
+        if (! empty($ids)) {
             $query->whereIn('id', $ids);
         } else {
             $query->whereHas('subscriptions');
         }
-        
+
         $users = $query->get();
-        
+
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="subscriptions_export_' . now()->format('Y-m-d') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="subscriptions_export_'.now()->format('Y-m-d').'.csv"',
         ];
-        
-        $callback = function() use ($users) {
+
+        $callback = function () use ($users) {
             $handle = fopen('php://output', 'w');
-            
+
             // CSV header
             fputcsv($handle, [
-                'Name', 'Email', 'Tier', 'Status', 'Started', 'Renews', 
-                'Days Until Renewal', 'Is Ambassador', 'Is Gifted'
+                'Name', 'Email', 'Tier', 'Status', 'Started', 'Renews',
+                'Days Until Renewal', 'Is Ambassador', 'Is Gifted',
             ]);
-            
+
             foreach ($users as $user) {
                 $subscription = $user->subscriptions->first();
-                if (!$subscription) continue;
-                
+                if (! $subscription) {
+                    continue;
+                }
+
                 $tier = $this->getSubscriptionTier($subscription);
-                
+
                 fputcsv($handle, [
                     $user->name,
                     $user->email,
@@ -166,20 +168,20 @@ class SubscriptionDashboardController extends Controller
                     $subscription->stripe_status,
                     $subscription->created_at->format('Y-m-d'),
                     Carbon::parse($subscription->current_period_end)->format('Y-m-d'),
-                    $subscription->current_period_end 
+                    $subscription->current_period_end
                         ? max(0, Carbon::now()->diffInDays(Carbon::parse($subscription->current_period_end), false))
                         : 'N/A',
                     $user->is_ambassador ? 'Yes' : 'No',
                     $user->is_gifted ? 'Yes' : 'No',
                 ]);
             }
-            
+
             fclose($handle);
         };
-        
+
         return response()->stream($callback, 200, $headers);
     }
-    
+
     /**
      * Grant a manual subscription to a user
      */
@@ -191,16 +193,16 @@ class SubscriptionDashboardController extends Controller
             'duration_days' => 'required|integer|min:1',
             'reason' => 'nullable|string',
         ]);
-        
+
         $user = User::find($validated['user_id']);
-        
+
         // Set override fields
         $user->update([
             'admin_override' => true,
             'override_tier' => $validated['tier'],
             'override_expiry' => Carbon::now()->addDays($validated['duration_days']),
         ]);
-        
+
         // Log the action
         activity()
             ->performedOn($user)
@@ -211,34 +213,34 @@ class SubscriptionDashboardController extends Controller
                 'reason' => $validated['reason'],
             ])
             ->log('Granted manual subscription');
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Subscription granted successfully',
         ]);
     }
-    
+
     /**
      * Cancel a user's subscription
      */
     public function cancelSubscription(Request $request, User $user)
     {
         $subscription = $user->subscription();
-        
-        if (!$subscription) {
+
+        if (! $subscription) {
             return response()->json([
                 'success' => false,
                 'message' => 'User has no active subscription',
             ], 404);
         }
-        
+
         try {
             if ($request->input('immediately', false)) {
                 $subscription->cancelNow();
             } else {
                 $subscription->cancel();
             }
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Subscription cancelled successfully',
@@ -246,11 +248,11 @@ class SubscriptionDashboardController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to cancel subscription: ' . $e->getMessage(),
+                'message' => 'Failed to cancel subscription: '.$e->getMessage(),
             ], 500);
         }
     }
-    
+
     /**
      * Get subscription statistics
      */
@@ -263,7 +265,7 @@ class SubscriptionDashboardController extends Controller
                 // Get all stats in a single optimized query
                 $now = now()->toDateTimeString();
                 $thirtyDaysFromNow = now()->addDays(30)->toDateTimeString();
-                
+
                 $baseStats = DB::selectOne('
                     SELECT 
                         COUNT(CASE WHEN stripe_status = "active" THEN 1 END) as active,
@@ -272,7 +274,7 @@ class SubscriptionDashboardController extends Controller
                         COUNT(CASE WHEN stripe_status = "active" AND current_period_end BETWEEN ? AND ? THEN 1 END) as renewals_30_days
                     FROM subscriptions
                 ', [$now, $thirtyDaysFromNow]);
-                
+
                 // Get tier breakdown and MRR in one query
                 $tierData = DB::select('
                     SELECT 
@@ -292,15 +294,15 @@ class SubscriptionDashboardController extends Controller
                     WHERE s.stripe_status = "active"
                     GROUP BY sp.tier
                 ');
-                
+
                 $tierBreakdown = [];
                 $totalMrr = 0;
-                
+
                 foreach ($tierData as $tier) {
                     $tierBreakdown[$tier->tier] = $tier->count;
                     $totalMrr += $tier->revenue;
                 }
-                
+
                 return [
                     'total_active' => $baseStats->active,
                     'total_trialing' => $baseStats->trialing,
@@ -312,19 +314,19 @@ class SubscriptionDashboardController extends Controller
             }
         );
     }
-    
+
     /**
      * Get subscription tier from subscription
      */
     private function getSubscriptionTier($subscription): ?string
     {
-        if (!$subscription || !$subscription->items->first()) {
+        if (! $subscription || ! $subscription->items->first()) {
             return null;
         }
-        
+
         $priceId = $subscription->items->first()->stripe_price;
         $product = StripeProduct::where('stripe_price_id', $priceId)->first();
-        
+
         return $product ? $product->tier : 'Unknown';
     }
 }

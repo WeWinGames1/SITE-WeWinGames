@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use League\Csv\Reader;
 use League\Csv\Statement;
@@ -11,13 +11,19 @@ use League\Csv\Statement;
 class CsvImportService
 {
     private array $requiredColumns = [];
+
     private array $optionalColumns = [];
+
     private array $columnMappings = [];
+
     private array $staticValues = [];
+
     private array $validationRules = [];
+
     private array $errors = [];
+
     private array $warnings = [];
-    
+
     /**
      * Analyze CSV file and return column information
      */
@@ -26,31 +32,34 @@ class CsvImportService
         try {
             $csv = Reader::createFromPath($filePath, 'r');
             $csv->setHeaderOffset(0);
-            
+
             $headers = $csv->getHeader();
             $stmt = Statement::create()->limit(5);
             $records = $stmt->process($csv);
-            
+
             $sampleData = [];
             foreach ($records as $record) {
                 $sampleData[] = $record;
             }
-            
+
+            // Count rows properly
+            $rowCount = iterator_count($csv->getRecords());
+
             return [
                 'success' => true,
                 'headers' => $headers,
                 'sample_data' => $sampleData,
-                'total_rows' => count($csv) - 1, // Minus header row
+                'total_rows' => $rowCount,
                 'detected_mappings' => $this->detectColumnMappings($headers),
             ];
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => 'Failed to analyze CSV: ' . $e->getMessage(),
+                'message' => 'Failed to analyze CSV: '.$e->getMessage(),
             ];
         }
     }
-    
+
     /**
      * Detect possible column mappings based on header names
      */
@@ -76,12 +85,12 @@ class CsvImportService
             'profits' => ['profits', 'profit', 'net gain', 'pnl', 'p&l', 'net gain/loss'],
             'winning_amount' => ['winning amount', 'winning_amount', 'winningamount', 'total returned', 'payout'],
         ];
-        
+
         // First pass: exact matches only (to avoid incorrect fuzzy matches)
         foreach ($headers as $header) {
             $normalized = strtolower(trim($header));
             $normalized = str_replace(['_', '-'], ' ', $normalized); // Normalize underscores and hyphens
-            
+
             foreach ($commonMappings as $field => $variations) {
                 if (in_array($normalized, $variations)) {
                     $mappings[$field] = $header;
@@ -89,31 +98,38 @@ class CsvImportService
                 }
             }
         }
-        
+
         // Special handling for exact case-sensitive matches from the CSV format
         $exactMappings = [
+            // Section/Subsection headers from actual CSV
+            'Section' => 'sport',
+            'Subsection' => 'league',
+            // Standard headers from actual CSV
             'Sport' => 'sport',
-            'League' => 'league', 
+            'League' => 'league',
             'Month' => 'month',
             'Date' => 'game_date',
             'Home Team' => 'home_team',
             'Away Team' => 'away_team',
-            'Game' => 'game',  // For backward compatibility
+            'Game' => 'game',
             'Bet Type' => 'bet_type',
+            'Wager name' => 'wager_name', // exact match from CSV
             'Wager Type' => 'wager_type',
             'Wager Name' => 'wager_name',
-            'odds' => 'odds',
-            'level' => 'level',
-            'code' => 'code',
+            'Odds' => 'odds',
+            'Level' => 'level',
+            'Code' => 'code',
             'Status' => 'status',
             'ROI(net)' => 'roi',
             'Wager' => 'wager',
             'Profits' => 'profits',
-            'Winning Amount' => 'winning_amount'
+            'Winning Amount' => 'winning_amount',
         ];
-        
+
         // Also add lowercase versions (excluding date to avoid conflict)
         $exactMappingsLower = [
+            'section' => 'sport',
+            'subsection' => 'league',
             'sport' => 'sport',
             'league' => 'league',
             'month' => 'month',
@@ -123,57 +139,63 @@ class CsvImportService
             'bet type' => 'bet_type',
             'wager type' => 'wager_type',
             'wager name' => 'wager_name',
+            'odds' => 'odds',
+            'level' => 'level',
+            'code' => 'code',
+            'status' => 'status',
             'roi(net)' => 'roi',
+            'wager' => 'wager',
             'profits' => 'profits',
-            'winning amount' => 'winning_amount'
+            'winning amount' => 'winning_amount',
         ];
-        
+
         foreach ($headers as $header) {
             $trimmedHeader = trim($header);
             $lowerHeader = strtolower($trimmedHeader);
-            
+
             // Try exact case match first
-            if (isset($exactMappings[$trimmedHeader]) && !isset($mappings[$exactMappings[$trimmedHeader]])) {
+            if (isset($exactMappings[$trimmedHeader]) && ! isset($mappings[$exactMappings[$trimmedHeader]])) {
                 $mappings[$exactMappings[$trimmedHeader]] = $header;
             }
             // Then try lowercase match
-            elseif (isset($exactMappingsLower[$lowerHeader]) && !isset($mappings[$exactMappingsLower[$lowerHeader]])) {
+            elseif (isset($exactMappingsLower[$lowerHeader]) && ! isset($mappings[$exactMappingsLower[$lowerHeader]])) {
                 $mappings[$exactMappingsLower[$lowerHeader]] = $header;
             }
         }
-        
+
         // Second pass: fuzzy matches for unmapped fields
         foreach ($headers as $header) {
             $normalized = strtolower(trim($header));
             $normalized = str_replace(['_', '-'], ' ', $normalized);
-            
+
             // Only do fuzzy matching for fields that aren't already mapped
             foreach ($commonMappings as $field => $variations) {
-                if (!isset($mappings[$field]) && $this->fuzzyMatch($normalized, $variations)) {
+                if (! isset($mappings[$field]) && $this->fuzzyMatch($normalized, $variations)) {
                     $mappings[$field] = $header;
                     break;
                 }
             }
         }
-        
+
         return $mappings;
     }
-    
+
     /**
      * Fuzzy match header against variations
      */
     private function fuzzyMatch(string $header, array $variations): bool
     {
         foreach ($variations as $variation) {
-            if (Str::contains($header, $variation) || 
+            if (Str::contains($header, $variation) ||
                 Str::contains($variation, $header) ||
                 levenshtein($header, $variation) <= 2) {
                 return true;
             }
         }
+
         return false;
     }
-    
+
     /**
      * Validate CSV data with column mappings
      */
@@ -183,22 +205,22 @@ class CsvImportService
         $this->staticValues = $staticValues;
         $this->errors = [];
         $this->warnings = [];
-        
+
         try {
             $csv = Reader::createFromPath($filePath, 'r');
             $csv->setHeaderOffset(0);
-            
+
             $validRows = [];
             $invalidRows = [];
             $rowNumber = 1; // Start after header
             $totalRowsProcessed = 0;
-            
+
             foreach ($csv->getRecords() as $record) {
                 $rowNumber++;
                 $totalRowsProcessed++;
                 $mappedData = $this->mapRowData($record);
                 $validation = $this->validateRow($mappedData, $rowNumber);
-                
+
                 if ($validation['valid']) {
                     $validRows[] = [
                         'row' => $rowNumber,
@@ -212,16 +234,16 @@ class CsvImportService
                         'errors' => $validation['errors'],
                     ];
                 }
-                
+
                 // Limit preview to first 100 rows
                 if (count($validRows) + count($invalidRows) >= 100) {
                     break;
                 }
             }
-            
+
             // Count total rows properly
             $totalRows = iterator_count($csv->getRecords());
-            
+
             return [
                 'success' => true,
                 'total_rows' => $totalRows,
@@ -239,18 +261,18 @@ class CsvImportService
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => 'Validation failed: ' . $e->getMessage(),
+                'message' => 'Validation failed: '.$e->getMessage(),
             ];
         }
     }
-    
+
     /**
      * Map row data using column mappings
      */
     private function mapRowData(array $record): array
     {
         $mapped = [];
-        
+
         // First map columns from CSV
         foreach ($this->columnMappings as $field => $csvColumn) {
             if (isset($record[$csvColumn])) {
@@ -258,16 +280,16 @@ class CsvImportService
                 $mapped[$field] = $value;
             }
         }
-        
+
         // Then apply static values (these override any mapped values)
         foreach ($this->staticValues as $field => $value) {
             $mapped[$field] = $value;
         }
-        
+
         // Apply data transformations
         return $this->transformData($mapped);
     }
-    
+
     /**
      * Clean individual values
      */
@@ -275,18 +297,20 @@ class CsvImportService
     {
         if (is_string($value)) {
             $value = trim($value);
+
             return $value === '' ? null : $value;
         }
+
         return $value;
     }
-    
+
     /**
      * Transform data based on field type
      */
     private function transformData(array $data): array
     {
         // Always parse teams from game column when present
-        if (isset($data['game']) && !empty($data['game'])) {
+        if (isset($data['game']) && ! empty($data['game'])) {
             $teams = $this->parseGameColumn($data['game']);
             if ($teams) {
                 $data['home_team'] = $teams['home'];
@@ -297,11 +321,11 @@ class CsvImportService
                 $data['away_team'] = null;
             }
         }
-        
+
         // Parse dates - handle both 'date' and 'game_date' fields
         $dateField = isset($data['date']) ? 'date' : (isset($data['game_date']) ? 'game_date' : null);
-        
-        if ($dateField && !empty($data[$dateField])) {
+
+        if ($dateField && ! empty($data[$dateField])) {
             try {
                 // Try multiple date formats
                 $formats = [
@@ -315,7 +339,7 @@ class CsvImportService
                     'm/d/Y H:i:s',
                     'm/d/Y H:i',
                 ];
-                
+
                 $parsed = false;
                 foreach ($formats as $format) {
                     try {
@@ -327,8 +351,8 @@ class CsvImportService
                         continue;
                     }
                 }
-                
-                if (!$parsed) {
+
+                if (! $parsed) {
                     // Last resort - let Carbon try to parse it
                     $data['game_date'] = \Carbon\Carbon::parse($data[$dateField])->format('Y-m-d H:i:s');
                 }
@@ -336,31 +360,31 @@ class CsvImportService
                 // Keep original value if parse fails
             }
         }
-        
+
         // Parse placed_at date
-        if (isset($data['placed_at']) && !empty($data['placed_at'])) {
+        if (isset($data['placed_at']) && ! empty($data['placed_at'])) {
             try {
                 $data['placed_at'] = \Carbon\Carbon::parse($data['placed_at'])->format('Y-m-d H:i:s');
             } catch (\Exception $e) {
                 // Keep original value if parse fails
             }
         }
-        
+
         // Parse numeric values - keep American odds format
         if (isset($data['odds'])) {
             $data['odds'] = $this->parseNumeric($data['odds'], true); // Keep American odds format
         }
-        
+
         // Handle wager field
         if (isset($data['wager'])) {
             $data['wager'] = $this->parseMonetary($data['wager']);
         }
-        
+
         // Only handle stake if it's explicitly provided in the CSV
-        if (isset($data['stake']) && !isset($data['wager'])) {
+        if (isset($data['stake']) && ! isset($data['wager'])) {
             $data['stake'] = $this->parseMonetary($data['stake']);
         }
-        
+
         // Handle profit/profits fields
         if (isset($data['profits'])) {
             $profitValue = $data['profits'];
@@ -373,7 +397,7 @@ class CsvImportService
         } elseif (isset($data['profit'])) {
             $data['profit'] = $this->parseMonetary($data['profit']);
         }
-        
+
         // Parse winning amount
         if (isset($data['winning_amount'])) {
             $winningValue = $data['winning_amount'];
@@ -384,7 +408,7 @@ class CsvImportService
                 $data['winning_amount'] = $this->parseMonetary($winningValue);
             }
         }
-        
+
         // Parse ROI if provided as percentage
         if (isset($data['roi'])) {
             $roiValue = $data['roi'];
@@ -397,30 +421,30 @@ class CsvImportService
                 $data['roi'] = $this->parseNumeric($roiValue);
             }
         }
-        
+
         // Normalize status
         if (isset($data['status'])) {
             $data['status'] = $this->normalizeStatus($data['status']);
         }
-        
+
         // Parse teams from combined field if needed
-        if (!isset($data['home_team']) && !isset($data['away_team']) && isset($data['teams'])) {
+        if (! isset($data['home_team']) && ! isset($data['away_team']) && isset($data['teams'])) {
             $teams = $this->parseTeams($data['teams']);
             $data['home_team'] = $teams['home'] ?? null;
             $data['away_team'] = $teams['away'] ?? null;
             unset($data['teams']);
         }
-        
+
         // Trim all string values
         foreach ($data as $key => $value) {
             if (is_string($value)) {
                 $data[$key] = trim($value);
             }
         }
-        
+
         return $data;
     }
-    
+
     /**
      * Parse numeric value
      */
@@ -429,23 +453,25 @@ class CsvImportService
         if ($value === null || $value === '') {
             return null;
         }
-        
+
         // Handle American odds
         if (is_string($value) && (str_starts_with($value, '+') || str_starts_with($value, '-'))) {
             if ($keepAmericanOdds) {
                 // Keep American odds as-is
                 $cleaned = preg_replace('/[^0-9+-]/', '', $value);
+
                 return is_numeric($cleaned) ? (float) $cleaned : null;
             } else {
                 return $this->convertAmericanToDecimal($value);
             }
         }
-        
+
         // Remove non-numeric characters except decimal point
         $cleaned = preg_replace('/[^0-9.-]/', '', $value);
+
         return is_numeric($cleaned) ? (float) $cleaned : null;
     }
-    
+
     /**
      * Parse monetary value
      */
@@ -454,37 +480,38 @@ class CsvImportService
         if ($value === null || $value === '') {
             return null;
         }
-        
+
         // Remove currency symbols and thousands separators
         $cleaned = preg_replace('/[^0-9.-]/', '', $value);
+
         return is_numeric($cleaned) ? (float) $cleaned : null;
     }
-    
+
     /**
      * Convert American odds to decimal
      */
     private function convertAmericanToDecimal(string $americanOdds): float
     {
         $odds = (int) $americanOdds;
-        
+
         if ($odds > 0) {
             return ($odds / 100) + 1;
         } else {
             return (100 / abs($odds)) + 1;
         }
     }
-    
+
     /**
      * Normalize status values
      */
     private function normalizeStatus(?string $status): string
     {
-        if (!$status) {
+        if (! $status) {
             return 'pending';
         }
-        
+
         $status = strtolower(trim($status));
-        
+
         $statusMap = [
             'win' => 'won',
             'won' => 'won',
@@ -504,10 +531,10 @@ class CsvImportService
             'cashout' => 'cashout',
             'cash out' => 'cashout',
         ];
-        
+
         return $statusMap[$status] ?? 'pending';
     }
-    
+
     /**
      * Parse teams from combined field
      */
@@ -515,20 +542,21 @@ class CsvImportService
     {
         // Common separators
         $separators = [' @ ', ' vs ', ' v ', ' - ', ' at '];
-        
+
         foreach ($separators as $separator) {
             if (str_contains($teams, $separator)) {
                 $parts = explode($separator, $teams);
+
                 return [
                     'away' => trim($parts[0] ?? ''),
                     'home' => trim($parts[1] ?? ''),
                 ];
             }
         }
-        
+
         return ['home' => $teams, 'away' => ''];
     }
-    
+
     /**
      * Parse game column in format "Away Team @ Home Team"
      */
@@ -541,21 +569,21 @@ class CsvImportService
                 // Clean up team names - remove game numbers like (Game 2)
                 $away = trim($parts[0]);
                 $home = trim($parts[1]);
-                
+
                 // Remove game indicators from home team
                 $home = preg_replace('/\s*\(Game \d+\)\s*/', '', $home);
-                
+
                 return [
                     'away' => $away,
                     'home' => $home,
                 ];
             }
         }
-        
+
         // Try other common separators as fallback
         return $this->parseTeams($game);
     }
-    
+
     /**
      * Validate a single row
      */
@@ -587,31 +615,31 @@ class CsvImportService
             'home_team.required' => 'Unable to parse home team from Game column',
             'away_team.required' => 'Unable to parse away team from Game column',
         ];
-        
+
         $rules = $this->getValidationRules();
         $validator = Validator::make($data, $rules, $messages);
-        
+
         if ($validator->fails()) {
             // Format errors for better display
             $errors = [];
             foreach ($validator->errors()->toArray() as $field => $fieldErrors) {
                 $errors[$field] = implode(', ', $fieldErrors);
             }
-            
+
             return [
                 'valid' => false,
                 'errors' => $errors,
             ];
         }
-        
+
         // Additional business logic validation
         $warnings = [];
-        
+
         // Check for duplicate bets
         if ($this->isDuplicateBet($data)) {
             $warnings[] = 'This bet may be a duplicate';
         }
-        
+
         // Check odds range for American odds
         if (isset($data['odds'])) {
             // American odds can be negative (e.g., -130) or positive (e.g., +150)
@@ -619,18 +647,18 @@ class CsvImportService
                 $warnings[] = 'Unusual odds value';
             }
         }
-        
+
         // Check stake amount
         if (isset($data['stake']) && $data['stake'] > 10000) {
             $warnings[] = 'High stake amount';
         }
-        
+
         return [
             'valid' => true,
             'warnings' => $warnings,
         ];
     }
-    
+
     /**
      * Parse CSV with column mappings for job processing
      */
@@ -638,11 +666,11 @@ class CsvImportService
     {
         // Set column mappings
         $this->columnMappings = $mappings;
-        
+
         // Read and parse CSV file
         $csv = Reader::createFromPath($filePath, 'r');
         $csv->setHeaderOffset(0);
-        
+
         $records = [];
         foreach ($csv->getRecords() as $record) {
             // Map columns according to provided mappings
@@ -652,13 +680,13 @@ class CsvImportService
                     $mappedRecord[$field] = $record[$csvColumn];
                 }
             }
-            
+
             // Transform data (parse dates, clean values, etc.)
             $mappedRecord = $this->transformData($mappedRecord);
-            
+
             $records[] = $mappedRecord;
         }
-        
+
         return $records;
     }
 
@@ -694,7 +722,7 @@ class CsvImportService
             'placed_at' => 'nullable|string',
         ];
     }
-    
+
     /**
      * Check if bet is duplicate
      */
@@ -704,7 +732,7 @@ class CsvImportService
         // For now, return false
         return false;
     }
-    
+
     /**
      * Get required and optional columns
      */
@@ -732,7 +760,7 @@ class CsvImportService
             'optional' => [],
         ];
     }
-    
+
     /**
      * Generate sample CSV template
      */
@@ -756,7 +784,7 @@ class CsvImportService
             'Winning Amount',
             'Profit Amount',
         ];
-        
+
         $sampleData = [
             [
                 'NFL',
@@ -813,16 +841,16 @@ class CsvImportService
                 '-$75',
             ],
         ];
-        
-        $filename = 'bet_import_template_' . now()->format('Y-m-d') . '.csv';
-        $path = 'temp/' . $filename;
-        
-        Storage::disk('local')->put($path, implode(',', $headers) . "\n");
-        
+
+        $filename = 'bet_import_template_'.now()->format('Y-m-d').'.csv';
+        $path = 'temp/'.$filename;
+
+        Storage::disk('local')->put($path, implode(',', $headers)."\n");
+
         foreach ($sampleData as $row) {
-            Storage::disk('local')->append($path, implode(',', $row) . "\n");
+            Storage::disk('local')->append($path, implode(',', $row)."\n");
         }
-        
+
         return Storage::disk('local')->path($path);
     }
 }

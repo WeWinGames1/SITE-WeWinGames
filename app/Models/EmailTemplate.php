@@ -31,11 +31,17 @@ class EmailTemplate extends Model
      * Template keys
      */
     const NEW_REGISTRATION = 'new_registration';
+
     const FORGOT_PASSWORD = 'forgot_password';
+
     const TRIAL_EXPIRING = 'trial_expiring';
+
     const PLAN_RENEWAL = 'plan_renewal';
+
     const PAYMENT_FAILED = 'payment_failed';
+
     const SUBSCRIPTION_CANCELLED = 'subscription_cancelled';
+
     const WELCOME_SUBSCRIBER = 'welcome_subscriber';
 
     /**
@@ -99,7 +105,7 @@ class EmailTemplate extends Model
 
         // Replace variables in subject and body
         foreach ($variables as $key => $value) {
-            $placeholder = '{{' . $key . '}}';
+            $placeholder = '{{'.$key.'}}';
             $subject = str_replace($placeholder, $value, $subject);
             $bodyHtml = str_replace($placeholder, $value, $bodyHtml);
             if ($bodyText) {

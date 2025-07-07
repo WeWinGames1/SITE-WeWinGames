@@ -1,10 +1,10 @@
 <?php
+
 namespace App\Http\Controllers;
 
+use App\Notifications\CareerApplicationSubmitted;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
-use App\Notifications\CareerApplicationSubmitted;
-use Illuminate\Support\Facades\Mail;
 
 class CareerApplicationController extends Controller
 {
@@ -12,11 +12,11 @@ class CareerApplicationController extends Controller
     {
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
-            'last_name'  => 'required|string|max:255',
-            'phone'      => 'required|string|max:255',
-            'email'      => 'nullable|email|max:255',
-            'about'      => 'required|string',
-            'position'   => 'nullable|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'phone' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'about' => 'required|string',
+            'position' => 'nullable|string|max:255',
             // 'resume'     => 'nullable|file|mimes:pdf,doc,docx|max:2048', // Optionally handle file
         ]);
 

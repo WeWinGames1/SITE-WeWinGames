@@ -14,7 +14,7 @@ class BettingEducationController extends Controller
             ->with('author:id,name')
             ->orderBy('published_at', 'desc')
             ->get();
-            
+
         return Inertia::render('BettingEducation', [
             'posts' => $posts->map(function ($post) {
                 return [

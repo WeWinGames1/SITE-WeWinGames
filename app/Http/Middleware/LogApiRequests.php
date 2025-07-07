@@ -2,10 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\LoggingService;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use App\Services\LoggingService;
 
 class LogApiRequests
 {
@@ -21,7 +21,7 @@ class LogApiRequests
     public function handle(Request $request, Closure $next): Response
     {
         $startTime = microtime(true);
-        
+
         // Generate unique request ID
         $requestId = uniqid('req_');
         $request->headers->set('X-Request-ID', $requestId);
@@ -42,8 +42,8 @@ class LogApiRequests
         $this->loggingService->logApiResponse(
             $request->path(),
             $response->getStatusCode(),
-            $response instanceof \Illuminate\Http\JsonResponse 
-                ? $response->getData(true) 
+            $response instanceof \Illuminate\Http\JsonResponse
+                ? $response->getData(true)
                 : []
         );
 
@@ -60,7 +60,7 @@ class LogApiRequests
 
         // Add request ID to response headers
         $response->headers->set('X-Request-ID', $requestId);
-        $response->headers->set('X-Response-Time', round($duration, 2) . 'ms');
+        $response->headers->set('X-Response-Time', round($duration, 2).'ms');
 
         return $response;
     }

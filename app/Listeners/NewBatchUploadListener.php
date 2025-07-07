@@ -6,11 +6,11 @@ use App\Events\NewBatchUpload;
 use App\Services\UserService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Queue\InteractsWithQueue;
 
 class NewBatchUploadListener implements ShouldQueue
 {
     public Collection $users;
+
     /**
      * Create the event listener.
      */
@@ -27,10 +27,10 @@ class NewBatchUploadListener implements ShouldQueue
     {
         //
         foreach ($this->users as $user) {
-          
-                // Notify the user
+
+            // Notify the user
             $user->notify(new \App\Notifications\NewBatchUploadNotification($event->bets));
-            
+
         }
     }
 }

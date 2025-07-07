@@ -8,28 +8,38 @@ class Bet extends Model
 {
     protected $fillable = [
         'user_id',
-        'sports',
+        'sport_id',
+        'game_id',
+        'sport',    // New column name
+        'sports',   // Keep old column name for compatibility
         'league',
         'month',
+        'game',     // New column
         'matches',
+        'bet_type', // New column
         'markets',
         'wager_type',
+        'wager_name', // New column
         'team_one',
         'team_one_logo',
         'team_two',
         'team_two_logo',
         'tips',
         'betting_date',
-        'wager_odds',
+        'game_date',  // New column
+        'odds',       // New column name
+        'wager_odds', // Keep old column name for compatibility
         'membership',
         'level',
         'code',
         'roi',
+        'roi_net',    // New column
         'wager_amount',
         'winning_amount',
         'profit_amount',
+        'profits',    // New column
         'status',
-        'referrer', 
+        'referrer',
         'place_fraction',
     ];
 
@@ -61,6 +71,7 @@ class Bet extends Model
         if (in_array(strtoupper($value), ['UFC', 'MMA'])) {
             return strtoupper($value);
         }
+
         return ucfirst(strtolower($value));
     }
 }

@@ -1,5 +1,7 @@
 <?php
+
 // app/Http/Controllers/Admin/PageController.php
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -20,6 +22,7 @@ class PageController extends Controller
     public function index()
     {
         $pages = $this->pages->all();
+
         return Inertia::render('admin/PagesIndex', ['pages' => $pages->items()]);
     }
 
@@ -43,6 +46,7 @@ class PageController extends Controller
         }
 
         $this->pages->create($data);
+
         return redirect()->route('admin.pages.index');
     }
 
@@ -55,7 +59,7 @@ class PageController extends Controller
     {
         $data = $request->validate([
             'title' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:pages,slug,' . $page->id,
+            'slug' => 'required|string|max:255|unique:pages,slug,'.$page->id,
             'content' => 'required|string',
             'featured_image' => 'nullable|image|max:2048',
             'published' => 'boolean',
@@ -68,12 +72,14 @@ class PageController extends Controller
         }
 
         $this->pages->update($page, $data);
+
         return redirect()->route('admin.pages.index');
     }
 
     public function destroy(Page $page)
     {
         $this->pages->delete($page);
+
         return redirect()->route('admin.pages.index');
     }
 }

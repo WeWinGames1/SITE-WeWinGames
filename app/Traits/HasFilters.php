@@ -15,14 +15,14 @@ trait HasFilters
         if ($request->filled('date_from')) {
             $query->whereDate($dateField, '>=', $request->date_from);
         }
-        
+
         if ($request->filled('date_to')) {
             $query->whereDate($dateField, '<=', $request->date_to);
         }
-        
+
         return $query;
     }
-    
+
     /**
      * Apply search filter to multiple fields
      */
@@ -31,7 +31,7 @@ trait HasFilters
         if ($searchTerm = $request->input('search')) {
             // Escape SQL wildcards to prevent injection
             $searchTerm = str_replace(['%', '_'], ['\%', '\_'], $searchTerm);
-            
+
             $query->where(function ($q) use ($searchTerm, $searchFields) {
                 foreach ($searchFields as $field) {
                     if (str_contains($field, '.')) {
@@ -46,10 +46,10 @@ trait HasFilters
                 }
             });
         }
-        
+
         return $query;
     }
-    
+
     /**
      * Apply sorting to query
      */
@@ -57,20 +57,20 @@ trait HasFilters
     {
         $sortBy = $request->input('sort_by', $defaultSort);
         $sortDirection = $request->input('sort_direction', $defaultDirection);
-        
+
         // Validate sort field
-        if (!in_array($sortBy, $allowedSorts)) {
+        if (! in_array($sortBy, $allowedSorts)) {
             $sortBy = $defaultSort;
         }
-        
+
         // Validate sort direction
-        if (!in_array($sortDirection, ['asc', 'desc'])) {
+        if (! in_array($sortDirection, ['asc', 'desc'])) {
             $sortDirection = $defaultDirection;
         }
-        
+
         return $query->orderBy($sortBy, $sortDirection);
     }
-    
+
     /**
      * Apply status filter
      */
@@ -79,17 +79,17 @@ trait HasFilters
         if ($status = $request->input('status')) {
             $query->where($field, $status);
         }
-        
+
         return $query;
     }
-    
+
     /**
      * Get pagination per page with validation
      */
     protected function getPerPage(Request $request, int $default = 25, int $max = 100): int
     {
         $perPage = (int) $request->input('per_page', $default);
-        
+
         return min(max($perPage, 10), $max);
     }
 }

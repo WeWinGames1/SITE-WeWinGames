@@ -1,12 +1,12 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\BetController;
-use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\PushNotificationController;
+use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\V1\BetApiController;
-use App\Http\Controllers\Api\V1\UserApiController;
 use App\Http\Controllers\Api\V1\PushNotificationController as V1PushNotificationController;
+use App\Http\Controllers\Api\V1\UserApiController;
+use App\Http\Controllers\BetController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,10 +46,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/bets', [BetController::class, 'getAllBets']);
     Route::put('/bets/{bet}', [BetController::class, 'update']);
     Route::delete('/bets/{bet}', [BetController::class, 'destroy']);
-    
+
     // Legacy user endpoint
     Route::get('/user', [UserController::class, 'show']);
-    
+
     // Legacy push notification endpoints
     Route::post('/push/subscribe', [PushNotificationController::class, 'subscribe']);
     Route::post('/push/unsubscribe', [PushNotificationController::class, 'unsubscribe']);

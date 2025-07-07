@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Services\CacheService;
+use Illuminate\Console\Command;
 
 class CacheWarmUpCommand extends Command
 {
@@ -43,19 +43,20 @@ class CacheWarmUpCommand extends Command
 
             // Display cache statistics
             $stats = $cacheService->getStats();
-            if (!empty($stats)) {
+            if (! empty($stats)) {
                 $this->table(
                     ['Metric', 'Value'],
-                    collect($stats)->map(fn($value, $key) => [
+                    collect($stats)->map(fn ($value, $key) => [
                         str_replace('_', ' ', ucfirst($key)),
-                        $value
+                        $value,
                     ])->toArray()
                 );
             }
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $this->error('Cache warm-up failed: ' . $e->getMessage());
+            $this->error('Cache warm-up failed: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

@@ -254,6 +254,13 @@ composer lint
 
 5. **Optimize for production**:
    ```bash
+   # Fix npm PATH if needed (common on production servers)
+   export PATH="/opt/nvm/versions/node/v22.17.0/bin:$PATH"
+   
+   # Main production build commands
+   php artisan optimize:clear && npm run build
+   
+   # Then cache configurations
    php artisan config:cache
    php artisan route:cache
    php artisan view:cache
