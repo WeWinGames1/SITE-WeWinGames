@@ -319,7 +319,7 @@ class BetManagementController extends Controller
             'month' => 'nullable|string|max:50',
             'matches' => 'nullable|string|max:500',
             'markets' => 'nullable|string|max:255',
-            'wager_type' => 'nullable|string|max:50',
+            'wager_type' => 'nullable|string|max:250',
             'team_one' => 'nullable|string|max:255',
             'team_two' => 'nullable|string|max:255',
             'tips' => 'nullable|string|max:500',

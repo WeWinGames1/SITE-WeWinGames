@@ -174,6 +174,7 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
     Route::get('/template', [BetImportWizardController::class, 'downloadTemplate'])->name('template');
     Route::post('/clean', [BetImportWizardController::class, 'cleanCsv'])->name('clean');
     Route::get('/error-report', [BetImportWizardController::class, 'downloadErrorReport'])->name('error-report');
+    Route::post('/download-invalid', [BetImportWizardController::class, 'downloadInvalidRows'])->name('download-invalid');
 });
 
 // CSRF token refresh route

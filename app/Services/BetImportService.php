@@ -570,8 +570,8 @@ class BetImportService
             'league' => 'nullable|string|max:255',
             'month' => 'nullable|string|max:50',
             'bet_type' => 'required|string|max:50',
-            'wager_name' => 'required|string|max:255',
-            'odds' => ['required', 'numeric', 'between:-10000,10000'], // Allow negative odds
+            'wager_name' => 'required|string|max:250',  // Updated to 250
+            'odds' => ['required', 'numeric', 'between:-100000,100000'], // Allow negative odds
             'wager_amount' => 'required|numeric|min:0.01',
             'game_date' => 'required|string', // Changed from 'date' to 'string' for more flexible parsing
             'level' => 'nullable|string|max:50',
@@ -581,10 +581,10 @@ class BetImportService
             'profits' => 'nullable|numeric',
             'winning_amount' => 'nullable|numeric|min:0',
             // Game is required - we'll parse teams from it during import
-            'game' => 'required|string|max:500',
+            'game' => 'required|string|max:250',  // Updated to 250
             'home_team' => 'required|string|max:255',  // Required - parsed from game
             'away_team' => 'nullable|string|max:255',  // Optional for individual sports
-            'wager_type' => 'nullable|string|max:50',
+            'wager_type' => 'nullable|string|max:250',  // Updated to 250
             'operator' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:500',
             'placed_at' => 'nullable|string',

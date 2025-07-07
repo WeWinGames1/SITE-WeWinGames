@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use League\Csv\Reader;
+use League\Csv\Writer;
 use League\Csv\Statement;
 
 class CsvImportService
@@ -212,50 +213,61 @@ class CsvImportService
 
             $validRows = [];
             $invalidRows = [];
+            $allInvalidRows = [];
             $rowNumber = 1; // Start after header
-            $totalRowsProcessed = 0;
+            $totalRows = 0;
+            $validCount = 0;
+            $invalidCount = 0;
 
             foreach ($csv->getRecords() as $record) {
                 $rowNumber++;
-                $totalRowsProcessed++;
+                $totalRows++;
                 $mappedData = $this->mapRowData($record);
                 $validation = $this->validateRow($mappedData, $rowNumber);
 
                 if ($validation['valid']) {
-                    $validRows[] = [
-                        'row' => $rowNumber,
-                        'data' => $mappedData,
-                        'warnings' => $validation['warnings'] ?? [],
-                    ];
+                    $validCount++;
+                    // Only store first 100 valid rows for preview
+                    if (count($validRows) < 100) {
+                        $validRows[] = [
+                            'row' => $rowNumber,
+                            'data' => $mappedData,
+                            'warnings' => $validation['warnings'] ?? [],
+                        ];
+                    }
                 } else {
-                    $invalidRows[] = [
+                    $invalidCount++;
+                    $invalidRowData = [
                         'row' => $rowNumber,
                         'data' => $mappedData,
                         'errors' => $validation['errors'],
                     ];
-                }
-
-                // Limit preview to first 100 rows
-                if (count($validRows) + count($invalidRows) >= 100) {
-                    break;
+                    
+                    // Store ALL invalid rows
+                    $allInvalidRows[] = $invalidRowData;
+                    
+                    // Only store first 100 invalid rows for preview
+                    if (count($invalidRows) < 100) {
+                        $invalidRows[] = $invalidRowData;
+                    }
                 }
             }
-
-            // Count total rows properly
-            $totalRows = iterator_count($csv->getRecords());
 
             return [
                 'success' => true,
                 'total_rows' => $totalRows,
                 'valid_rows' => $validRows,
                 'invalid_rows' => $invalidRows,
+                'all_invalid_rows' => $allInvalidRows,
                 'summary' => [
                     'total' => $totalRows,
-                    'valid' => count($validRows),
-                    'invalid' => count($invalidRows),
+                    'valid' => $validCount,
+                    'invalid' => $invalidCount,
                     'preview_limit' => 100,
-                    'previewed_rows' => count($validRows) + count($invalidRows),
+                    'valid_preview_count' => count($validRows),
+                    'invalid_preview_count' => count($invalidRows),
                     'is_preview' => $totalRows > 100,
+                    'has_more_invalid' => $invalidCount > 100,
                 ],
             ];
         } catch (\Exception $e) {
@@ -288,6 +300,49 @@ class CsvImportService
 
         // Apply data transformations
         return $this->transformData($mapped);
+    }
+
+    /**
+     * Export invalid rows to CSV
+     */
+    public function exportInvalidRows(array $invalidRows): string
+    {
+        if (empty($invalidRows)) {
+            return '';
+        }
+
+        $csv = Writer::createFromString();
+        
+        // Add headers
+        $headers = ['Row', 'Error'];
+        $firstRow = reset($invalidRows);
+        if (isset($firstRow['data']) && is_array($firstRow['data'])) {
+            $headers = array_merge($headers, array_keys($firstRow['data']));
+        }
+        $csv->insertOne($headers);
+        
+        // Add invalid rows
+        foreach ($invalidRows as $row) {
+            $errorMessages = [];
+            foreach ($row['errors'] as $field => $errors) {
+                $errorMessages[] = $field . ': ' . implode(', ', $errors);
+            }
+            
+            $csvRow = [
+                $row['row'],
+                implode(' | ', $errorMessages)
+            ];
+            
+            if (isset($row['data']) && is_array($row['data'])) {
+                foreach (array_keys($firstRow['data']) as $key) {
+                    $csvRow[] = $row['data'][$key] ?? '';
+                }
+            }
+            
+            $csv->insertOne($csvRow);
+        }
+        
+        return $csv->toString();
     }
 
     /**
@@ -700,11 +755,11 @@ class CsvImportService
             'league' => 'required|string|max:255',
             'month' => 'required|string|max:50',
             'game_date' => 'required|string', // Changed from 'date' to 'string' for more flexible parsing
-            'game' => 'required|string|max:500',
+            'game' => 'required|string|max:250',
             'bet_type' => 'required|string|max:50',
-            'wager_type' => 'required|string|max:50',
-            'wager_name' => 'required|string|max:255',
-            'odds' => ['required', 'numeric', 'between:-10000,10000'], // Allow negative odds
+            'wager_type' => 'required|string|max:250',
+            'wager_name' => 'required|string|max:250',
+            'odds' => ['required', 'numeric', 'between:-100000,100000'], // Allow negative odds
             'level' => 'required|string|max:50',
             'code' => 'required|string|max:255',
             'status' => 'required|string|max:50',

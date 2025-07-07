@@ -328,4 +328,41 @@ class BetImportWizardController extends Controller
 
         return Storage::disk('local')->download($reportPath, "import_errors_{$importId}.csv");
     }
+
+    /**
+     * Download all invalid rows as CSV
+     */
+    public function downloadInvalidRows(Request $request)
+    {
+        $request->validate([
+            'file_path' => 'required|string',
+            'column_mappings' => 'required|array',
+            'static_values' => 'nullable|array',
+        ]);
+
+        $filePath = Storage::disk('local')->path($request->file_path);
+        
+        if (!file_exists($filePath)) {
+            return response()->json(['error' => 'File not found'], 404);
+        }
+
+        // Validate the entire file to get all invalid rows
+        $validation = $this->csvImportService->validateImport(
+            $filePath,
+            $request->column_mappings,
+            $request->static_values ?? []
+        );
+
+        if (!$validation['success']) {
+            return response()->json(['error' => $validation['message']], 400);
+        }
+
+        // Export invalid rows
+        $csvContent = $this->csvImportService->exportInvalidRows($validation['all_invalid_rows']);
+        
+        return response($csvContent, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="invalid_rows_' . date('Y-m-d_His') . '.csv"',
+        ]);
+    }
 }
