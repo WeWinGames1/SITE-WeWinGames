@@ -165,18 +165,15 @@ const handleImportConfirmed = async (skipErrors: boolean) => {
         showToast('info', data.message || 'Import queued for processing')
         currentStep.value = 4
       } else {
-        // For immediate imports, show quick success and redirect
+        // For immediate imports, show the import step to display results
         const successCount = data.result?.successCount?.bets || 0
         const errorCount = data.result?.errors?.length || 0
-        showToast('success', `Import completed: ${successCount} successful, ${errorCount} errors`)
         
-        // Show import step briefly for consistency
+        // Show import step to display the completion status
         currentStep.value = 4
         
-        // Auto-redirect after 2 seconds for immediate imports
-        setTimeout(() => {
-          router.visit('/admin')
-        }, 2000)
+        // Don't auto-redirect - let the user see the results and click "View Imported Bets"
+        // The ImportStep component will handle showing the completion status
       }
     } else {
       showToast('error', data.message || 'Import failed')

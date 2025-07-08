@@ -39,7 +39,10 @@
       "Bash(mkdir:*)",
       "Bash(composer:*)",
       "Bash(rm:*)",
-      "Bash(./vendor/bin/pint)"
+      "Bash(./vendor/bin/pint)",
+      "Bash(echo:*)",
+      "Bash(killall:*)",
+      "Bash(sqlite3:*)"
     ],
     "deny": []
   }

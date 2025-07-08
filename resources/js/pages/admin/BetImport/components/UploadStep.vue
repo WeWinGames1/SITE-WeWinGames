@@ -168,9 +168,9 @@ const handleFile = (selectedFile: File) => {
     return
   }
   
-  // Validate file size (10MB)
-  if (selectedFile.size > 10 * 1024 * 1024) {
-    error.value = 'File size must be less than 10MB'
+  // Validate file size (2MB - PHP limit)
+  if (selectedFile.size > 2 * 1024 * 1024) {
+    error.value = 'File size must be less than 2MB'
     return
   }
   
@@ -217,14 +217,28 @@ const uploadFile = async () => {
       error.value = result.message || 'Failed to upload file'
     }
   } catch (err: any) {
-    if (err.response?.data?.message) {
+    console.error('Upload error:', err)
+    console.error('Response:', err.response)
+    
+    if (err.response?.status === 422 && err.response?.data?.errors) {
+      // Display specific validation errors
+      const errors = err.response.data.errors
+      const errorMessages = Object.values(errors).flat()
+      error.value = errorMessages.join(', ')
+    } else if (err.response?.data?.message) {
       error.value = err.response.data.message
     } else if (err.response?.status === 419) {
       error.value = 'Session expired. Please refresh the page and try again.'
+    } else if (err.response?.status === 413) {
+      error.value = 'File too large. Please ensure the file is under 2MB.'
     } else {
       error.value = 'An error occurred while uploading the file'
     }
-    console.error(err)
+    console.error('File details:', file.value ? {
+      name: file.value.name,
+      size: file.value.size,
+      type: file.value.type
+    } : 'No file')
   } finally {
     uploading.value = false
   }

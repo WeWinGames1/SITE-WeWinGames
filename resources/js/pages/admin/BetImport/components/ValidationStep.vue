@@ -105,27 +105,26 @@
           <tbody>
             <tr v-for="row in validRows" :key="row.row">
               <td>{{ row.row }}</td>
-              <td>{{ row.data.sport }}</td>
-              <td>{{ row.data.league || '-' }}</td>
+              <td>{{ row.original?.Sport || row.data.sport || '-' }}</td>
+              <td>{{ row.original?.League || row.data.league || '-' }}</td>
               <td>
-                <div class="small">{{ row.data.away_team || row.data.home_team }}</div>
-                <div v-if="row.data.away_team" class="small">@ {{ row.data.home_team }}</div>
+                <div class="small">{{ row.original?.Game || row.data.game || '-' }}</div>
               </td>
-              <td>{{ formatDate(row.data.game_date) }}</td>
-              <td>{{ row.data.bet_type }}</td>
-              <td>{{ row.data.wager_type || '-' }}</td>
-              <td>{{ row.data.wager_name || '-' }}</td>
-              <td>{{ row.data.odds }}</td>
-              <td>{{ row.data.level }}</td>
-              <td>{{ row.data.code }}</td>
-              <td>${{ row.data.wager || row.data.stake }}</td>
+              <td>{{ row.original?.['Game Date'] || formatDate(row.data.game_date) || '-' }}</td>
+              <td>{{ row.original?.['Bet Type'] || row.data.bet_type || '-' }}</td>
+              <td>{{ row.original?.['Wager Type'] || row.data.wager_type || '-' }}</td>
+              <td>{{ row.original?.['Wager Name'] || row.data.wager_name || '-' }}</td>
+              <td>{{ row.original?.Odds || row.data.odds || '-' }}</td>
+              <td>{{ row.original?.Level || row.data.level || '-' }}</td>
+              <td>{{ row.original?.Code || row.data.code || '-' }}</td>
+              <td>{{ row.original?.Wager || row.data.wager || '-' }}</td>
               <td>
-                <span :class="getStatusClass(row.data.status)" class="badge">
-                  {{ row.data.status }}
+                <span :class="getStatusClass(row.original?.Status || row.data.status)" class="badge">
+                  {{ row.original?.Status || row.data.status || '-' }}
                 </span>
               </td>
-              <td>{{ row.data.roi ? row.data.roi + '%' : '-' }}</td>
-              <td>{{ row.data.profits ? '$' + row.data.profits : '-' }}</td>
+              <td>{{ row.original?.['ROI(net)'] || row.data.roi || '-' }}</td>
+              <td>{{ row.original?.Profits || row.data.profits || '-' }}</td>
               <td class="text-warning">
                 <div v-for="warning in row.warnings" :key="warning" class="small">
                   ⚠️ {{ warning }}
@@ -178,16 +177,28 @@
               </div>
             </div>
             
-            <!-- Show data in a cleaner format -->
+            <!-- Show original CSV data -->
             <div class="border-top pt-3">
-              <h6 class="text-muted mb-2">Row Data:</h6>
+              <h6 class="text-muted mb-2">CSV Row Data:</h6>
               <div class="row g-2">
-                <div v-for="(value, field) in row.data" :key="field" class="col-lg-3 col-md-4 col-6">
-                  <div class="small">
-                    <span class="text-muted">{{ formatFieldName(field) }}:</span>
-                    <div class="fw-medium">{{ value || '-' }}</div>
+                <!-- Show original CSV values if available -->
+                <template v-if="row.original">
+                  <div v-for="(value, column) in row.original" :key="column" class="col-lg-3 col-md-4 col-6">
+                    <div class="small">
+                      <span class="text-muted">{{ column }}:</span>
+                      <div class="fw-medium">{{ value || '-' }}</div>
+                    </div>
                   </div>
-                </div>
+                </template>
+                <!-- Fallback to mapped data if original not available -->
+                <template v-else>
+                  <div v-for="(value, field) in row.data" :key="field" class="col-lg-3 col-md-4 col-6">
+                    <div class="small">
+                      <span class="text-muted">{{ formatFieldName(field) }}:</span>
+                      <div class="fw-medium">{{ value || '-' }}</div>
+                    </div>
+                  </div>
+                </template>
               </div>
             </div>
           </div>
@@ -241,11 +252,13 @@ interface Props {
     valid_rows: Array<{
       row: number
       data: any
+      original?: any
       warnings: string[]
     }>
     invalid_rows: Array<{
       row: number
       data: any
+      original?: any
       errors: Record<string, string[]>
     }>
     summary: {

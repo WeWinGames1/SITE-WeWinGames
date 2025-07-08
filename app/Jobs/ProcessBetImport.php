@@ -24,6 +24,10 @@ class ProcessBetImport implements ShouldQueue
     protected string $importId;
 
     protected int $userId;
+    
+    protected bool $skipErrors;
+    
+    protected array $staticValues;
 
     /**
      * The number of times the job may be attempted.
@@ -49,12 +53,14 @@ class ProcessBetImport implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(string $filePath, array $mappings, string $importId, int $userId)
+    public function __construct(string $filePath, array $mappings, string $importId, int $userId, bool $skipErrors = false, array $staticValues = [])
     {
         $this->filePath = $filePath;
         $this->mappings = $mappings;
         $this->importId = $importId;
         $this->userId = $userId;
+        $this->skipErrors = $skipErrors;
+        $this->staticValues = $staticValues;
     }
 
     /**
@@ -74,93 +80,41 @@ class ProcessBetImport implements ShouldQueue
                 'error_log' => [],
             ]);
 
-            // Parse CSV with mappings
-            $parsedData = $csvService->parseWithMappings($this->filePath, $this->mappings);
-            $totalRows = count($parsedData);
-
-            // Update total count
-            $this->updateProgress(['total' => $totalRows]);
-
-            $successCount = 0;
-            $errorCount = 0;
-            $errorLog = [];
-            $chunkSize = 100;
-
-            // Process in chunks for better memory management
-            foreach (array_chunk($parsedData, $chunkSize) as $chunkIndex => $chunk) {
-                $chunkErrors = [];
-                $chunkSuccesses = 0;
-
-                foreach ($chunk as $index => $row) {
-                    $rowNumber = ($chunkIndex * $chunkSize) + $index + 2; // +2 for header and 0-index
-
-                    try {
-                        // Import the bet
-                        $betService->importSingleBet($row, $this->userId);
-                        $successCount++;
-                        $chunkSuccesses++;
-                    } catch (\Exception $e) {
-                        $errorCount++;
-                        $chunkErrors[] = [
-                            'row' => $rowNumber,
-                            'message' => $e->getMessage(),
-                            'data' => $row,
-                        ];
-
-                        // Keep only first 100 errors in log
-                        if (count($errorLog) < 100) {
-                            $errorLog[] = [
-                                'row' => $rowNumber,
-                                'message' => $e->getMessage(),
-                            ];
-                        }
-                    }
-                }
-
-                // Update progress after each chunk
-                $processed = ($chunkIndex + 1) * $chunkSize;
-                $processed = min($processed, $totalRows); // Don't exceed total
-
-                $this->updateProgress([
-                    'processed' => $processed,
-                    'success' => $successCount,
-                    'errors' => $errorCount,
-                    'percentage' => round(($processed / $totalRows) * 100),
-                    'error_log' => $errorLog,
-                ]);
-
-                // Log chunk results
-                if (count($chunkErrors) > 0) {
-                    Log::warning("Bet import chunk {$chunkIndex} had errors", [
-                        'import_id' => $this->importId,
-                        'chunk_errors' => count($chunkErrors),
-                        'chunk_successes' => $chunkSuccesses,
-                    ]);
-                }
-            }
-
-            // Mark as completed
-            $finalStatus = $errorCount > 0 ? 'completed_with_errors' : 'completed';
-
+            // Get full file path
+            $fullPath = Storage::disk('local')->path($this->filePath);
+            
+            // Set up the bet import service with mappings and options
+            $betService->setColumnMappings($this->mappings);
+            $betService->setStaticValues($this->staticValues);
+            $betService->setSkipErrors($this->skipErrors);
+            
+            // Use the service's import method directly for better consistency
+            $result = $betService->importFromCsv($fullPath);
+            
+            // Update progress with results
             $this->updateProgress([
-                'status' => $finalStatus,
-                'processed' => $totalRows,
+                'status' => 'completed',
+                'total' => $result['processed'] ?? 0,
+                'processed' => $result['processed'] ?? 0,
+                'success' => $result['successCount']['bets'] ?? 0,
+                'errors' => count($result['errors'] ?? []),
                 'percentage' => 100,
+                'error_log' => array_slice($result['errors'] ?? [], 0, 100),
                 'completed_at' => now()->toIso8601String(),
             ]);
-
-            // Store error details for download if any
-            if ($errorCount > 0) {
-                $this->storeErrorReport($errorLog, $parsedData);
+            
+            // Store error report if there are errors
+            if (count($result['errors'] ?? []) > 0) {
+                $this->storeErrorReportFromResults($result['errors']);
             }
-
-            // Log final results
-            Log::info('Bet import completed', [
+            
+            Log::info('Bet import completed via job', [
                 'import_id' => $this->importId,
-                'total' => $totalRows,
-                'success' => $successCount,
-                'errors' => $errorCount,
+                'total' => $result['processed'] ?? 0,
+                'success' => $result['successCount']['bets'] ?? 0,
+                'errors' => count($result['errors'] ?? []),
             ]);
+            
 
         } catch (\Exception $e) {
             Log::error('Bet import failed', [
@@ -177,9 +131,17 @@ class ProcessBetImport implements ShouldQueue
 
             throw $e;
         } finally {
-            // Cleanup uploaded file
-            if (Storage::disk('local')->exists($this->filePath)) {
-                Storage::disk('local')->delete($this->filePath);
+            // Cleanup uploaded file after successful processing
+            try {
+                if (Storage::disk('local')->exists($this->filePath)) {
+                    Storage::disk('local')->delete($this->filePath);
+                }
+            } catch (\Exception $e) {
+                // Log but don't fail if cleanup fails
+                Log::warning('Failed to cleanup import file', [
+                    'file' => $this->filePath,
+                    'error' => $e->getMessage()
+                ]);
             }
         }
     }
@@ -197,6 +159,53 @@ class ProcessBetImport implements ShouldQueue
         Cache::put($key, $updated, now()->addHours(24));
     }
 
+    /**
+     * Store error report from results for download
+     */
+    protected function storeErrorReportFromResults(array $errors): void
+    {
+        $reportPath = "imports/errors/{$this->importId}_errors.csv";
+        
+        $csv = fopen('php://temp', 'w');
+        
+        // Headers
+        fputcsv($csv, ['Row', 'Error', 'Data']);
+        
+        // Error rows
+        foreach ($errors as $error) {
+            $errorMessages = $error['errors'] ?? ['Unknown error'];
+            // Handle nested arrays in error messages
+            if (is_array($errorMessages)) {
+                $flatErrors = [];
+                foreach ($errorMessages as $field => $messages) {
+                    if (is_array($messages)) {
+                        $flatErrors[] = $field . ': ' . implode(', ', $messages);
+                    } else {
+                        $flatErrors[] = $messages;
+                    }
+                }
+                $errorString = implode('; ', $flatErrors);
+            } else {
+                $errorString = (string) $errorMessages;
+            }
+            
+            fputcsv($csv, [
+                $error['line'] ?? 'Unknown',
+                $errorString,
+                json_encode($error['data'] ?? [])
+            ]);
+        }
+        
+        rewind($csv);
+        $csvContent = stream_get_contents($csv);
+        fclose($csv);
+        
+        Storage::disk('local')->put($reportPath, $csvContent);
+        
+        // Store path in cache for download
+        Cache::put("import_error_report_{$this->importId}", $reportPath, now()->addDays(7));
+    }
+    
     /**
      * Store error report for download
      */

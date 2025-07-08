@@ -34,9 +34,32 @@ class BetImportWizardController extends Controller
      */
     public function upload(Request $request)
     {
-        $request->validate([
-            'file' => 'required|file|mimes:csv,txt|max:10240', // 10MB max
+        \Log::info('Bet import upload started', [
+            'has_file' => $request->hasFile('file'),
+            'file_details' => $request->hasFile('file') ? [
+                'name' => $request->file('file')->getClientOriginalName(),
+                'size' => $request->file('file')->getSize(),
+                'mime' => $request->file('file')->getMimeType(),
+                'extension' => $request->file('file')->getClientOriginalExtension(),
+            ] : 'No file uploaded',
         ]);
+
+        try {
+            $request->validate([
+                'file' => 'required|file|mimes:csv,txt|max:2048', // 2MB max (matches PHP limit)
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Bet import validation failed', [
+                'errors' => $e->errors(),
+                'file_details' => $request->hasFile('file') ? [
+                    'name' => $request->file('file')->getClientOriginalName(),
+                    'size' => $request->file('file')->getSize(),
+                    'mime' => $request->file('file')->getMimeType(),
+                    'extension' => $request->file('file')->getClientOriginalExtension(),
+                ] : 'No file uploaded',
+            ]);
+            throw $e;
+        }
 
         try {
             // Store file temporarily
@@ -120,6 +143,13 @@ class BetImportWizardController extends Controller
      */
     public function import(Request $request)
     {
+        \Log::info('Import process started', [
+            'file_id' => $request->input('file_id'),
+            'mappings' => $request->input('mappings'),
+            'static_values' => $request->input('static_values'),
+            'skip_errors' => $request->input('skip_errors'),
+        ]);
+
         $request->validate([
             'file_id' => 'required|string',
             'mappings' => 'required|array',
@@ -145,9 +175,16 @@ class BetImportWizardController extends Controller
             // Get row count from analysis
             $analysis = $this->csvImportService->analyzeCsv($fullPath);
             $rowCount = $analysis['total_rows'];
+            
+            \Log::info('Import decision', [
+                'row_count' => $rowCount,
+                'will_queue' => $rowCount > 100,
+                'skip_errors' => $request->input('skip_errors', false),
+            ]);
 
-            // Determine if we should use queue (more than 100 rows)
-            if ($rowCount > 100) {
+            // Determine if we should use queue (more than 10000 rows)
+            // Temporarily increase threshold to avoid queue issues
+            if ($rowCount > 10000) {
                 // Move file to permanent location for queue processing
                 $newPath = 'imports/'.basename($path);
                 Storage::move($path, $newPath);
@@ -157,7 +194,9 @@ class BetImportWizardController extends Controller
                     $newPath,
                     $request->input('mappings'),
                     $importId,
-                    auth()->id()
+                    auth()->id(),
+                    $request->input('skip_errors', false),
+                    $request->input('static_values', [])
                 );
 
                 // Initialize progress tracking
@@ -184,8 +223,18 @@ class BetImportWizardController extends Controller
                 // Process immediately for small files
                 $this->betImportService->setColumnMappings($request->input('mappings'));
                 $this->betImportService->setStaticValues($request->input('static_values', []));
+                $this->betImportService->setSkipErrors($request->input('skip_errors', false));
                 $result = $this->betImportService->importFromCsv($fullPath);
 
+                // Format error log for display
+                $errorLog = [];
+                foreach (array_slice($result['errors'] ?? [], 0, 100) as $error) {
+                    $errorLog[] = [
+                        'row' => $error['line'] ?? 'Unknown',
+                        'message' => is_array($error['errors']) ? json_encode($error['errors']) : $error['errors']
+                    ];
+                }
+                
                 // Store results in cache for consistency
                 \Illuminate\Support\Facades\Cache::put("import_progress_{$importId}", [
                     'status' => 'completed',
@@ -194,7 +243,7 @@ class BetImportWizardController extends Controller
                     'success' => $result['successCount']['bets'] ?? 0,
                     'errors' => count($result['errors'] ?? []),
                     'percentage' => 100,
-                    'error_log' => array_slice($result['errors'] ?? [], 0, 100),
+                    'error_log' => $errorLog,
                     'completed_at' => now()->toIso8601String(),
                 ], now()->addHours(24));
 

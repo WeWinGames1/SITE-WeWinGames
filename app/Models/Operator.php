@@ -9,4 +9,9 @@ class Operator extends Model
 {
     /** @use HasFactory<\Database\Factories\OperatorFactory> */
     use HasFactory;
+    
+    protected $fillable = [
+        'name',
+        'slug',
+    ];
 }

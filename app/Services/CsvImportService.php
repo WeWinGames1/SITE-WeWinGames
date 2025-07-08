@@ -40,7 +40,12 @@ class CsvImportService
 
             $sampleData = [];
             foreach ($records as $record) {
-                $sampleData[] = $record;
+                // Convert associative array to indexed array based on header order
+                $row = [];
+                foreach ($headers as $header) {
+                    $row[] = $record[$header] ?? '';
+                }
+                $sampleData[] = $row;
             }
 
             // Count rows properly
@@ -232,6 +237,7 @@ class CsvImportService
                         $validRows[] = [
                             'row' => $rowNumber,
                             'data' => $mappedData,
+                            'original' => $record,
                             'warnings' => $validation['warnings'] ?? [],
                         ];
                     }
@@ -240,6 +246,7 @@ class CsvImportService
                     $invalidRowData = [
                         'row' => $rowNumber,
                         'data' => $mappedData,
+                        'original' => $record,
                         'errors' => $validation['errors'],
                     ];
                     

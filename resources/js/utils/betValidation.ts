@@ -50,8 +50,9 @@ export const betValidationRules: ValidationRules = {
   odds: [
     { required: true, message: 'Odds are required' },
     { type: 'number', message: 'Odds must be a number' },
-    { min: 1.01, message: 'Odds must be at least 1.01' },
-    { max: 1000, message: 'Odds cannot exceed 1000' }
+    // American odds can be negative (e.g., -130) or positive (e.g., +150)
+    { min: -10000, message: 'Odds value is too low' },
+    { max: 10000, message: 'Odds value is too high' }
   ],
   stake: [
     { required: true, message: 'Stake is required' },
@@ -66,7 +67,8 @@ export const betValidationRules: ValidationRules = {
   ],
   status: [
     { type: 'string', message: 'Status must be text' },
-    { in: ['pending', 'won', 'lost', 'void', 'push'], message: 'Invalid status value' }
+    // Accept various status values that will be normalized later
+    { in: ['pending', 'won', 'lost', 'void', 'push', 'win', 'loss', 'w', 'l', 'v', 'p', 'placed', 'cashout'], message: 'Invalid status value' }
   ],
   description: [
     { type: 'string', message: 'Description must be text' },
@@ -181,7 +183,21 @@ export function transformBetData(data: Record<string, any>): Record<string, any>
 
   // Normalize status
   if (transformed.status) {
-    transformed.status = transformed.status.toLowerCase()
+    const status = transformed.status.toLowerCase().trim()
+    // Map common variations to standard values
+    const statusMap: Record<string, string> = {
+      'win': 'won',
+      'w': 'won',
+      'loss': 'lost',
+      'lose': 'lost',
+      'l': 'lost',
+      'p': 'push',
+      'v': 'void',
+      'cashout': 'cashout',
+      'cash out': 'cashout',
+      'placed': 'placed'
+    }
+    transformed.status = statusMap[status] || status
   }
 
   return transformed

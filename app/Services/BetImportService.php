@@ -22,6 +22,8 @@ class BetImportService
     private array $columnMappings = [];
 
     private array $staticValues = [];
+    
+    private bool $skipErrors = false;
 
     public function __construct(
         private BetRepositoryInterface $betRepository
@@ -43,6 +45,14 @@ class BetImportService
         $this->staticValues = $staticValues;
     }
 
+    /**
+     * Set whether to skip errors during import
+     */
+    public function setSkipErrors(bool $skipErrors): void
+    {
+        $this->skipErrors = $skipErrors;
+    }
+
     public function importFromCsv(string $filePath): array
     {
         try {
@@ -52,25 +62,44 @@ class BetImportService
             $records = $csv->getRecords();
             $totalRecords = 0;
 
-            DB::beginTransaction();
+            // Only use transaction if not skipping errors
+            if (!$this->skipErrors) {
+                DB::beginTransaction();
+            }
 
             foreach ($records as $offset => $record) {
                 $totalRecords++;
-                $this->processRecord($record, $offset + 2); // +2 because header is line 1
+                
+                if ($this->skipErrors) {
+                    // Process each record in its own transaction when skipping errors
+                    DB::beginTransaction();
+                    try {
+                        $this->processRecord($record, $offset + 2); // +2 because header is line 1
+                        DB::commit();
+                    } catch (\Exception $e) {
+                        DB::rollBack();
+                        // Error is already logged in processRecord
+                    }
+                } else {
+                    $this->processRecord($record, $offset + 2);
+                }
             }
 
-            if (! empty($this->errors)) {
-                DB::rollBack();
+            if (!$this->skipErrors) {
+                if (! empty($this->errors)) {
+                    DB::rollBack();
 
-                return [
-                    'success' => false,
-                    'message' => 'Import failed due to validation errors',
-                    'errors' => $this->errors,
-                    'processed' => $totalRecords,
-                ];
+                    return [
+                        'success' => false,
+                        'message' => 'Import failed due to validation errors',
+                        'errors' => $this->errors,
+                        'processed' => $totalRecords,
+                        'successCount' => $this->successCount,
+                    ];
+                }
+
+                DB::commit();
             }
-
-            DB::commit();
 
             Log::info('CSV import completed successfully', [
                 'file' => $filePath,
@@ -81,11 +110,15 @@ class BetImportService
                 'success' => true,
                 'message' => 'Import completed successfully',
                 'stats' => $this->successCount,
+                'successCount' => $this->successCount,
                 'processed' => $totalRecords,
+                'errors' => $this->errors,
             ];
 
         } catch (\Exception $e) {
-            DB::rollBack();
+            if (!$this->skipErrors) {
+                DB::rollBack();
+            }
 
             Log::error('CSV import failed', [
                 'file' => $filePath,
@@ -97,6 +130,8 @@ class BetImportService
                 'success' => false,
                 'message' => 'Import failed: '.$e->getMessage(),
                 'errors' => $this->errors,
+                'successCount' => $this->successCount,
+                'processed' => $totalRecords ?? 0,
             ];
         }
     }
@@ -131,6 +166,11 @@ class BetImportService
                 'data' => $record,
             ];
 
+            // If skipErrors is false, throw exception to stop processing
+            if (!$this->skipErrors) {
+                throw new \Exception('Validation failed at line ' . $lineNumber);
+            }
+            
             return;
         }
 
@@ -164,17 +204,74 @@ class BetImportService
             $game = null;
 
             if ($homeTeamName) {
-                $homeTeam = Team::firstOrCreate(
-                    ['name' => $homeTeamName, 'sport_id' => $sport->id],
-                    ['slug' => \Str::slug($homeTeamName)]
-                );
+                // Check if team already exists for this sport
+                $homeTeam = Team::where('name', $homeTeamName)
+                    ->where('sport_id', $sport->id)
+                    ->first();
+                    
+                if (!$homeTeam) {
+                    try {
+                        // Generate unique slug if needed
+                        $baseSlug = \Str::slug($homeTeamName);
+                        $slug = $baseSlug;
+                        $counter = 1;
+                        
+                        while (Team::where('slug', $slug)->exists()) {
+                            $slug = $baseSlug . '-' . $counter;
+                            $counter++;
+                        }
+                        
+                        $homeTeam = Team::create([
+                            'name' => $homeTeamName,
+                            'sport_id' => $sport->id,
+                            'slug' => $slug
+                        ]);
+                    } catch (\Illuminate\Database\QueryException $e) {
+                        // Handle race condition - team was created by another process
+                        if (str_contains($e->getMessage(), 'UNIQUE constraint failed')) {
+                            $homeTeam = Team::where('name', $homeTeamName)
+                                ->where('sport_id', $sport->id)
+                                ->first();
+                        } else {
+                            throw $e;
+                        }
+                    }
+                }
 
                 // Only create away team if provided (not required for individual sports)
                 if ($awayTeamName) {
-                    $awayTeam = Team::firstOrCreate(
-                        ['name' => $awayTeamName, 'sport_id' => $sport->id],
-                        ['slug' => \Str::slug($awayTeamName)]
-                    );
+                    $awayTeam = Team::where('name', $awayTeamName)
+                        ->where('sport_id', $sport->id)
+                        ->first();
+                        
+                    if (!$awayTeam) {
+                        try {
+                            // Generate unique slug if needed
+                            $baseSlug = \Str::slug($awayTeamName);
+                            $slug = $baseSlug;
+                            $counter = 1;
+                            
+                            while (Team::where('slug', $slug)->exists()) {
+                                $slug = $baseSlug . '-' . $counter;
+                                $counter++;
+                            }
+                            
+                            $awayTeam = Team::create([
+                                'name' => $awayTeamName,
+                                'sport_id' => $sport->id,
+                                'slug' => $slug
+                            ]);
+                        } catch (\Illuminate\Database\QueryException $e) {
+                            // Handle race condition - team was created by another process
+                            if (str_contains($e->getMessage(), 'UNIQUE constraint failed')) {
+                                $awayTeam = Team::where('name', $awayTeamName)
+                                    ->where('sport_id', $sport->id)
+                                    ->first();
+                            } else {
+                                throw $e;
+                            }
+                        }
+                    }
 
                     // Skip game creation for now due to required fields
                     // $game = Game::create([...]);
@@ -442,6 +539,21 @@ class BetImportService
         } elseif (isset($record['stake'])) {
             $record['wager_amount'] = $this->parseMonetary($record['stake']);
         }
+        
+        // Parse ROI - handle percentage strings
+        if (isset($record['roi'])) {
+            $record['roi'] = $this->parsePercentage($record['roi']);
+        }
+        
+        // Parse profits
+        if (isset($record['profits'])) {
+            $record['profits'] = $this->parseMonetary($record['profits']);
+        }
+        
+        // Parse winning amount  
+        if (isset($record['winning_amount'])) {
+            $record['winning_amount'] = $this->parseMonetary($record['winning_amount']);
+        }
 
         // Trim all string values
         foreach ($record as $key => $value) {
@@ -481,6 +593,26 @@ class BetImportService
         // Remove currency symbols and thousands separators
         $cleaned = preg_replace('/[^0-9.-]/', '', $value);
 
+        return is_numeric($cleaned) ? (float) $cleaned : null;
+    }
+    
+    private function parsePercentage($value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        
+        // Handle string values
+        $value = (string) $value;
+        
+        // Remove percentage sign and whitespace
+        $cleaned = trim(str_replace('%', '', $value));
+        
+        // Handle special cases like "N/A"
+        if (strcasecmp($cleaned, 'n/a') === 0 || strcasecmp($cleaned, 'na') === 0) {
+            return null;
+        }
+        
         return is_numeric($cleaned) ? (float) $cleaned : null;
     }
 
