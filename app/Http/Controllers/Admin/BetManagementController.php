@@ -32,10 +32,10 @@ class BetManagementController extends Controller
 
         $perPage = $this->getPerPage($request, 25, 100);
 
-        // Build optimized query with eager loading
+        // Build optimized query without eager loading team relationships
+        // The team_one and team_two fields should remain as strings
         $query = Bet::query()
-            ->select(['bets.*'])
-            ->with(['teamOne:id,name', 'teamTwo:id,name']);
+            ->select(['bets.*']);
 
         // Apply filters using trait
         $this->applyFilters($query, $request);
@@ -46,6 +46,14 @@ class BetManagementController extends Controller
 
         // Execute query with optimized pagination
         $bets = $query->paginate($perPage)->withQueryString();
+        
+        // Transform bet data to ensure team fields are strings
+        $bets->getCollection()->transform(function ($bet) {
+            // Make sure team_one and team_two remain as strings
+            $bet->team_one = (string) $bet->team_one;
+            $bet->team_two = (string) $bet->team_two;
+            return $bet;
+        });
 
         // Get cached statistics
         $stats = SimpleCacheService::rememberQuery(

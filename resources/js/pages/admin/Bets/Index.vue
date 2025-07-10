@@ -234,6 +234,23 @@ const paginationPages = computed(() => {
 });
 
 // Methods
+function getTeamName(bet: Bet, position: 'one' | 'two'): string {
+    // Simply return the text field value
+    const textField = position === 'one' ? bet.team_one : bet.team_two;
+    
+    // If the field contains a JSON string, parse it
+    if (textField && typeof textField === 'string' && textField.startsWith('{')) {
+        try {
+            const parsed = JSON.parse(textField);
+            return parsed.name || textField;
+        } catch {
+            return textField;
+        }
+    }
+    
+    return textField || '';
+}
+
 function toggleAll() {
     if (allSelected.value) {
         selectedBets.value = [];
@@ -751,10 +768,10 @@ function formatCurrency(amount: number | null | undefined): string {
                                         <td>
                                             <div>
                                                 <div class="fw-medium">
-                                                    {{ bet.teamOne?.name || bet.team_one || bet.tips || 'N/A' }}
+                                                    {{ getTeamName(bet, 'one') || bet.tips || 'N/A' }}
                                                 </div>
-                                                <div v-if="bet.teamTwo?.name || bet.team_two" class="text-muted small">
-                                                    vs {{ bet.teamTwo?.name || bet.team_two }}
+                                                <div v-if="getTeamName(bet, 'two')" class="text-muted small">
+                                                    vs {{ getTeamName(bet, 'two') }}
                                                 </div>
                                                 <div class="mt-1 text-muted small">{{ bet.membership || 'All' }}</div>
                                             </div>

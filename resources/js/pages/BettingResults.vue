@@ -198,6 +198,48 @@ function formatMoney(val: number | undefined) {
                     </div>
                 </div>
             </section>
+
+            <!-- Profits by Year Section: Table left, Chart right -->
+            <section class="py-5" style="background-color: #0a1628;">
+                <div class="container-fluid px-4 px-lg-5">
+                    <h2 class="display-6 fw-bold text-white text-center mb-5">Profits by Year</h2>
+                    <div class="row justify-content-center align-items-start g-4">
+                        <!-- Table on the left -->
+                        <div class="col-12 col-md-6 d-flex justify-content-center">
+                            <div class="w-100" style="max-width: 500px;">
+                                <ProfitsByYearTable :data="props.profitByYearData || []" />
+                            </div>
+                        </div>
+                        <!-- Chart on the right -->
+                        <div class="col-12 col-md-6 d-flex justify-content-center">
+                            <div class="w-100" style="max-width: 500px;">
+                                <ProfitsByYearChart :data="props.profitByYearData || []" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Profits by Month Section: Table left, Chart right -->
+            <section class="py-5" style="background-color: #1a2332;">
+                <div class="container-fluid px-4 px-lg-5">
+                    <h2 class="display-6 fw-bold text-white text-center mb-5">Profits by Month (Last 24 Months)</h2>
+                    <div class="row justify-content-center align-items-start g-4">
+                        <!-- Table on the left -->
+                        <div class="col-12 col-md-6 d-flex justify-content-center">
+                            <div class="w-100" style="max-width: 500px;">
+                                <ProfitsByMonthTable :data="props.profitByMonthData || []" />
+                            </div>
+                        </div>
+                        <!-- Chart on the right -->
+                        <div class="col-12 col-md-6 d-flex justify-content-center">
+                            <div class="w-100" style="max-width: 500px;">
+                                <ProfitsByMonthChart :data="props.profitByMonthData || []" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
     </WelcomeLayout>
 </template>

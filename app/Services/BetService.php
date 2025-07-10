@@ -389,11 +389,8 @@ class BetService
             if ($stat->total_stake > 0) {
                 $roi = round(($stat->total_profit / $stat->total_stake) * 100, 2);
             }
-            $result[$stat->membership] = [
-                'total_stake' => round($stat->total_stake, 2),
-                'total_profit' => round($stat->total_profit, 2),
-                'roi' => $roi,
-            ];
+            // Return just the ROI value for each membership level
+            $result[$stat->membership] = $roi;
         }
 
         return $result;
@@ -427,12 +424,10 @@ class BetService
                 $winRate = round(($stat->wins / $stat->total_bets) * 100, 2);
             }
 
-            $result[$stat->membership] = [
-                'total_bets' => $stat->total_bets,
-                'wins' => $stat->wins,
-                'win_rate' => $winRate,
-                'total_stake' => round($stat->total_stake, 2),
-                'total_profit' => round($stat->total_profit, 2),
+            // Return array format expected by tables
+            $result[] = [
+                'level' => $stat->membership,
+                'profit' => round($stat->total_profit, 2),
                 'roi' => $roi,
             ];
         }
@@ -468,12 +463,10 @@ class BetService
                 $winRate = round(($stat->wins / $stat->total_bets) * 100, 2);
             }
 
-            $result[$stat->sports] = [
-                'total_bets' => $stat->total_bets,
-                'wins' => $stat->wins,
-                'win_rate' => $winRate,
-                'total_stake' => round($stat->total_stake, 2),
-                'total_profit' => round($stat->total_profit, 2),
+            // Return array format expected by tables and charts
+            $result[] = [
+                'sport' => $stat->sports,
+                'profit' => round($stat->total_profit, 2),
                 'roi' => $roi,
             ];
         }
@@ -665,18 +658,18 @@ class BetService
                 $winRate = round(($wins / $totalBets) * 100, 2);
             }
 
-            $result[$year] = [
-                'total_bets' => $totalBets,
-                'wins' => $wins,
-                'win_rate' => $winRate,
-                'total_stake' => round($totalStake, 2),
-                'total_profit' => round($totalProfit, 2),
+            // Return array format expected by tables and charts
+            $result[] = [
+                'year' => $year,
+                'profit' => round($totalProfit, 2),
                 'roi' => $roi,
             ];
         }
 
         // Sort by year descending
-        krsort($result);
+        usort($result, function($a, $b) {
+            return $b['year'] - $a['year'];
+        });
 
         return $result;
     }
@@ -719,23 +712,21 @@ class BetService
                 $winRate = round(($wins / $totalBets) * 100, 2);
             }
 
-            $result[$monthKey] = [
-                'year' => $date->year,
-                'month' => $date->month,
-                'total_bets' => $totalBets,
-                'wins' => $wins,
-                'win_rate' => $winRate,
-                'total_stake' => round($totalStake, 2),
-                'total_profit' => round($totalProfit, 2),
+            // Return array format expected by tables and charts
+            $result[] = [
+                'month' => $date->format('Y-m'),
+                'profit' => round($totalProfit, 2),
                 'roi' => $roi,
             ];
         }
 
         // Sort by month descending
-        krsort($result);
+        usort($result, function($a, $b) {
+            return strcmp($b['month'], $a['month']);
+        });
 
         // Limit to 24 months
-        return array_slice($result, 0, 24, true);
+        return array_slice($result, 0, 24);
     }
 
     /**

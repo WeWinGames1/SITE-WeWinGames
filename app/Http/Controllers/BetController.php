@@ -164,7 +164,7 @@ class BetController extends Controller
     public function bettingResults()
     {
         $thisYear = now()->year;
-        $lastYear = now()->subYear()->year;
+        $lastYear = $thisYear - 1; // Always the full previous year
         $thisMonth = now()->month;
         $lastMonth = now()->copy()->subMonthNoOverflow();
         $lastMonthYear = $lastMonth->year;
