@@ -569,6 +569,63 @@ class CsvImportService
     }
 
     /**
+     * Parse date value to ensure proper formatting
+     */
+    private function parseDate($value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        try {
+            // Handle various date formats
+            $date = null;
+            
+            // Try common date formats
+            $formats = [
+                'm/d/y',      // 1/15/24
+                'm/d/Y',      // 1/15/2024
+                'n/j/y',      // 1/15/24 (without leading zeros)
+                'n/j/Y',      // 1/15/2024 (without leading zeros)
+                'Y-m-d',      // 2024-01-15
+                'd/m/y',      // 15/01/24
+                'd/m/Y',      // 15/01/2024
+                'm-d-y',      // 01-15-24
+                'm-d-Y',      // 01-15-2024
+            ];
+            
+            foreach ($formats as $format) {
+                $parsed = \DateTime::createFromFormat($format, $value);
+                if ($parsed !== false) {
+                    // If year is 2-digit and less than 100, assume 2000s
+                    if ($parsed->format('Y') < 100) {
+                        $parsed->modify('+2000 years');
+                    }
+                    $date = $parsed;
+                    break;
+                }
+            }
+            
+            // If no format matched, try Carbon's parse as fallback
+            if (!$date) {
+                $date = \Carbon\Carbon::parse($value);
+                // Check for 2-digit year issue
+                if ($date->year < 100) {
+                    $date->addYears(2000);
+                }
+            }
+            
+            // Return in MySQL format
+            return $date->format('Y-m-d H:i:s');
+            
+        } catch (\Exception $e) {
+            // If parsing fails, return the original value
+            // This will let MySQL handle it (which might cause the 2-digit year issue)
+            return $value;
+        }
+    }
+
+    /**
      * Normalize status values
      */
     private function normalizeStatus(?string $status): string
