@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bet;
+use App\Models\League;
 use App\Models\Operator;
 use App\Models\Sport;
+use App\Models\Team;
 use App\Models\User;
 use App\Services\SimpleCacheService;
 use App\Traits\HasFilters;
@@ -58,7 +60,7 @@ class BetManagementController extends Controller
             'bets' => $bets,
             'filters' => $request->only([
                 'status', 'sport_id', 'operator_id', 'user_id',
-                'date_from', 'date_to', 'search', 'bet_type',
+                'date_from', 'date_to', 'search', 'bet_type', 'wager_type',
                 'is_featured', 'profit_status',
                 'sort_by', 'sort_direction', 'per_page',
             ]),
@@ -66,7 +68,22 @@ class BetManagementController extends Controller
             'sports' => $filterOptions['sports'],
             'operators' => $filterOptions['operators'],
             'statuses' => ['pending', 'won', 'lost', 'void', 'push'],
-            'betTypes' => ['single', 'parlay', 'prop'],
+            'betTypes' => [
+                'moneyline' => 'Moneyline',
+                'spread' => 'Point Spread',
+                'total' => 'Over/Under (Total)',
+                'prop' => 'Prop Bet',
+                'parlay' => 'Parlay',
+                'futures' => 'Futures',
+            ],
+            'wagerTypes' => [
+                'single' => 'Single Bet',
+                'parlay' => 'Parlay',
+                'round_robin' => 'Round Robin',
+                'teaser' => 'Teaser',
+                'if_bet' => 'If Bet',
+                'reverse' => 'Reverse',
+            ],
         ]);
     }
 
@@ -80,9 +97,12 @@ class BetManagementController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Sport filter by name
+        // Sport filter - convert ID to name
         if ($request->filled('sport_id')) {
-            $query->where('sports', $request->sport_id);
+            $sport = Sport::find($request->sport_id);
+            if ($sport) {
+                $query->where('sports', $sport->name);
+            }
         }
 
         // League filter
@@ -97,6 +117,10 @@ class BetManagementController extends Controller
 
         if ($request->filled('bet_type')) {
             $query->where('bet_type', $request->bet_type);
+        }
+        
+        if ($request->filled('wager_type')) {
+            $query->where('wager_type', $request->wager_type);
         }
 
         if ($request->filled('is_featured')) {
@@ -185,13 +209,13 @@ class BetManagementController extends Controller
         $sports = SimpleCacheService::rememberQuery(
             SimpleCacheService::KEY_SPORTS_LIST,
             SimpleCacheService::TTL_LONG,
-            fn () => Sport::orderBy('name')->pluck('name', 'id')
+            fn () => Sport::orderBy('name')->get(['id', 'name'])->toArray()
         );
 
         $operators = SimpleCacheService::rememberQuery(
             SimpleCacheService::KEY_OPERATORS_LIST,
             SimpleCacheService::TTL_LONG,
-            fn () => Operator::orderBy('name')->pluck('name', 'id')
+            fn () => Operator::orderBy('name')->get(['id', 'name'])->toArray()
         );
 
         return compact('sports', 'operators');
@@ -204,6 +228,7 @@ class BetManagementController extends Controller
     {
         // Get filter options for dropdowns
         $sports = Sport::orderBy('name')->get(['id', 'name']);
+        $leagues = League::with('sport')->orderBy('name')->get(['id', 'name', 'sport_id']);
         $operators = Operator::orderBy('name')->get(['id', 'name']);
         $games = []; // Empty array since we'll use team text fields instead
 
@@ -217,11 +242,23 @@ class BetManagementController extends Controller
             'futures' => 'Futures',
         ];
 
+        // Define wager types
+        $wagerTypes = [
+            'single' => 'Single Bet',
+            'parlay' => 'Parlay',
+            'round_robin' => 'Round Robin',
+            'teaser' => 'Teaser',
+            'if_bet' => 'If Bet',
+            'reverse' => 'Reverse',
+        ];
+
         return Inertia::render('admin/Bets/Create', [
             'sports' => $sports,
+            'leagues' => $leagues,
             'operators' => $operators,
             'games' => $games,
             'betTypes' => $betTypes,
+            'wagerTypes' => $wagerTypes,
         ]);
     }
 
@@ -231,56 +268,88 @@ class BetManagementController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'sport_id' => 'required|exists:sports,id',
-            'operator_id' => 'required|exists:operators,id',
-            'team_one' => 'required|string|max:255',
-            'team_two' => 'required|string|max:255',
-            'selection' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'bet_type' => 'required|in:moneyline,spread,total,prop,parlay,futures',
-            'stake' => 'required|numeric|min:0',
-            'odds' => 'required|numeric',
-            'game_at' => 'required|date',
+            'wager_type' => 'required|string|max:250',
+            'sports' => 'required|string|max:255',
+            'sport_id' => 'nullable|exists:sports,id',
+            'league' => 'nullable|string|max:255',
+            'league_id' => 'nullable|exists:leagues,id',
+            'month' => 'nullable|string|max:50',
+            'team_one' => 'nullable|string|max:255',
+            'team_one_id' => 'nullable|exists:teams,id',
+            'team_two' => 'nullable|string|max:255',
+            'team_two_id' => 'nullable|exists:teams,id',
+            'parlay_teams' => 'nullable|array',
+            'parlay_teams.*.id' => 'nullable|exists:teams,id',
+            'parlay_teams.*.name' => 'nullable|string|max:255',
+            'tips' => 'nullable|string|max:500',
+            'markets' => 'nullable|string|max:255',
+            'betting_date' => 'required|date',
+            'wager_odds' => 'required|numeric',
+            'wager_amount' => 'required|numeric|min:0',
             'status' => 'required|in:pending,won,lost,void,push',
-            'is_featured' => 'boolean',
             'membership' => 'required|in:bronze,silver,gold,platinum',
+            'level' => 'nullable|string|max:50',
+            'code' => 'nullable|string|max:255',
             'referrer' => 'nullable|string|max:255',
+            'place_fraction' => 'nullable|numeric|between:0,1',
         ]);
 
         // Set the user_id to the authenticated admin
         $validated['user_id'] = Auth::id();
 
         // Calculate potential win and profit
-        $validated['potential_win'] = $this->calculatePotentialWin($validated['stake'], $validated['odds']);
-        $validated['profit'] = $this->calculateProfit($validated);
-        $validated['betting_date'] = now();
+        $validated['winning_amount'] = $this->calculatePotentialWin($validated['wager_amount'], $validated['wager_odds']);
+        $validated['profit_amount'] = $this->calculateProfit([
+            'status' => $validated['status'],
+            'stake' => $validated['wager_amount'],
+            'potential_win' => $validated['winning_amount']
+        ]);
 
-        // Map sport_id to sports field
-        $sport = Sport::find($validated['sport_id']);
-        $validated['sports'] = $sport ? $sport->name : '';
+        // Check if this is a parlay
+        $isParlay = $validated['wager_type'] === 'parlay';
+        $validated['is_parlay'] = $isParlay;
 
-        // Map other fields
-        $validated['wager_amount'] = $validated['stake'];
-        $validated['wager_odds'] = $validated['odds'];
-        $validated['tips'] = $validated['selection'];
+        // Handle parlay teams
+        if ($isParlay && isset($validated['parlay_teams'])) {
+            $parlayTeams = $validated['parlay_teams'];
+            unset($validated['parlay_teams']);
+            
+            DB::transaction(function () use ($validated, $parlayTeams) {
+                // Create the bet
+                $bet = Bet::create($validated);
+                
+                // Create parlay team associations
+                foreach ($parlayTeams as $teamData) {
+                    if (!empty($teamData['id'])) {
+                        \App\Models\BetTeam::create([
+                            'bet_id' => $bet->id,
+                            'team_id' => $teamData['id'],
+                        ]);
+                    }
+                }
+                
+                // Clear related caches
+                SimpleCacheService::invalidateRelated('bet');
 
-        // Remove fields that don't exist in bets table
-        unset($validated['sport_id']);
-        unset($validated['operator_id']);
-        unset($validated['stake']);
-        unset($validated['odds']);
-        unset($validated['selection']);
-        unset($validated['game_at']);
+                activity()
+                    ->causedBy(Auth::user())
+                    ->performedOn($bet)
+                    ->log('Created new parlay bet');
+            });
+        } else {
+            // Remove parlay_teams from validated data if not a parlay
+            unset($validated['parlay_teams']);
+            
+            $bet = Bet::create($validated);
 
-        $bet = Bet::create($validated);
+            // Clear related caches
+            SimpleCacheService::invalidateRelated('bet');
 
-        // Clear related caches
-        SimpleCacheService::invalidateRelated('bet');
-
-        activity()
-            ->causedBy(Auth::user())
-            ->performedOn($bet)
-            ->log('Created new bet');
+            activity()
+                ->causedBy(Auth::user())
+                ->performedOn($bet)
+                ->log('Created new bet');
+        }
 
         return redirect()->route('admin.bets.index')
             ->with('success', 'Bet created successfully.');
@@ -293,17 +362,65 @@ class BetManagementController extends Controller
     {
         // Get filter options for dropdowns
         $sports = Sport::orderBy('name')->get(['id', 'name']);
+        $leagues = League::with('sport')->orderBy('name')->get(['id', 'name', 'sport_id']);
         $operators = Operator::orderBy('name')->get(['id', 'name']);
         $users = User::orderBy('name')->get(['id', 'name', 'email']);
 
-        // Load the bet with only existing relationships
-        $bet->load(['user']);
+        // Load the bet with relationships
+        $bet->load(['user', 'teamOne', 'teamTwo', 'parlayTeams.team']);
 
+        // Define bet types
+        $betTypes = [
+            'moneyline' => 'Moneyline',
+            'spread' => 'Point Spread',
+            'total' => 'Over/Under (Total)',
+            'prop' => 'Prop Bet',
+            'parlay' => 'Parlay',
+            'futures' => 'Futures',
+        ];
+
+        // Define wager types
+        $wagerTypes = [
+            'single' => 'Single Bet',
+            'parlay' => 'Parlay',
+            'round_robin' => 'Round Robin',
+            'teaser' => 'Teaser',
+            'if_bet' => 'If Bet',
+            'reverse' => 'Reverse',
+        ];
+
+        // Convert bet to array and ensure team relationships are properly formatted
+        $betArray = $bet->toArray();
+        
+        // Ensure team relationships are properly formatted
+        if ($bet->teamOne) {
+            $betArray['teamOne'] = [
+                'id' => $bet->teamOne->id,
+                'name' => $bet->teamOne->name,
+                'sport_id' => $bet->teamOne->sport_id,
+                'league_id' => $bet->teamOne->league_id,
+                'logo_url' => $bet->teamOne->logo_url,
+            ];
+        }
+        
+        if ($bet->teamTwo) {
+            $betArray['teamTwo'] = [
+                'id' => $bet->teamTwo->id,
+                'name' => $bet->teamTwo->name,
+                'sport_id' => $bet->teamTwo->sport_id,
+                'league_id' => $bet->teamTwo->league_id,
+                'logo_url' => $bet->teamTwo->logo_url,
+            ];
+        }
+        
         return Inertia::render('admin/Bets/Edit', [
-            'bet' => $bet->toArray(), // Convert to array to ensure all fields are included
+            'bet' => $betArray,
             'sports' => $sports,
+            'leagues' => $leagues,
             'operators' => $operators,
             'users' => $users,
+            'betTypes' => $betTypes,
+            'wagerTypes' => $wagerTypes,
         ]);
     }
 
@@ -321,7 +438,9 @@ class BetManagementController extends Controller
             'markets' => 'nullable|string|max:255',
             'wager_type' => 'nullable|string|max:250',
             'team_one' => 'nullable|string|max:255',
+            'team_one_id' => 'nullable|exists:teams,id',
             'team_two' => 'nullable|string|max:255',
+            'team_two_id' => 'nullable|exists:teams,id',
             'tips' => 'nullable|string|max:500',
             'betting_date' => 'required|date',
             'wager_odds' => 'required|numeric',
@@ -335,9 +454,33 @@ class BetManagementController extends Controller
             'code' => 'nullable|string|max:255',
             'referrer' => 'nullable|string|max:255',
             'place_fraction' => 'nullable|numeric|between:0,1',
+            'is_parlay' => 'nullable|boolean',
+            'parlay_teams' => 'nullable|array',
+            'parlay_teams.*.id' => 'nullable|exists:teams,id',
+            'parlay_teams.*.name' => 'nullable|string|max:255',
         ]);
 
-        $bet->update($validated);
+        // Handle parlay teams
+        if ($request->has('is_parlay') && $request->is_parlay && isset($validated['parlay_teams'])) {
+            DB::transaction(function () use ($bet, $validated) {
+                // Update bet
+                $bet->update(array_diff_key($validated, ['parlay_teams' => '']));
+                
+                // Update parlay teams
+                $bet->parlayTeams()->delete();
+                
+                foreach ($validated['parlay_teams'] as $teamData) {
+                    if (!empty($teamData['id'])) {
+                        \App\Models\BetTeam::create([
+                            'bet_id' => $bet->id,
+                            'team_id' => $teamData['id'],
+                        ]);
+                    }
+                }
+            });
+        } else {
+            $bet->update($validated);
+        }
 
         // Clear related caches
         SimpleCacheService::invalidateRelated('bet');

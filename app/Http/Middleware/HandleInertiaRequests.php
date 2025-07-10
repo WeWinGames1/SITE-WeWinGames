@@ -57,11 +57,13 @@ class HandleInertiaRequests extends Middleware
             'stripeKey' => config('cashier.key'),
         ];
 
-        // Include bets only if the user is an admin
+        // Include admin pages only if the user is an admin
         if ($request->user() && $request->user()->hasRole('admin')) {
-            $betService = app(BetService::class);
-            $sharedData['bets'] = $betService->getAllBets();
+            // Only load admin pages for navigation, not all bets
             $sharedData['adminPages'] = \App\Models\Page::orderBy('title')->get(['id', 'title', 'slug']);
+            
+            // Note: Bets should be loaded on specific pages that need them, not globally
+            // This prevents memory exhaustion from loading thousands of records
         }
 
         // Get active Stripe products

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
 
 class Team extends Model
 {
@@ -15,12 +17,18 @@ class Team extends Model
         'name',
         'slug',
         'sport_id',
+        'league_id',
         'logo_url',
         'abbreviation',
         'city',
         'state',
         'country',
+        'description',
         'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     /**
@@ -29,6 +37,22 @@ class Team extends Model
     public function sport(): BelongsTo
     {
         return $this->belongsTo(Sport::class);
+    }
+
+    /**
+     * The league this team belongs to.
+     */
+    public function league(): BelongsTo
+    {
+        return $this->belongsTo(League::class);
+    }
+
+    /**
+     * The aliases for this team.
+     */
+    public function aliases(): HasMany
+    {
+        return $this->hasMany(TeamAlias::class);
     }
 
     /**
@@ -61,5 +85,99 @@ class Team extends Model
     public function betsAsTeamTwo(): HasMany
     {
         return $this->hasMany(Bet::class, 'team_two_id');
+    }
+
+    /**
+     * Boot method to auto-generate slug
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($team) {
+            if (empty($team->slug)) {
+                $team->slug = Str::slug($team->name);
+            }
+        });
+
+        static::updating(function ($team) {
+            if ($team->isDirty('name') && empty($team->slug)) {
+                $team->slug = Str::slug($team->name);
+            }
+        });
+        
+        // Clear cache when teams are updated or deleted
+        static::updated(function ($team) {
+            // Clear all team lookup cache entries
+            Cache::flush(); // Note: In production, use Redis with tags
+        });
+        
+        static::deleted(function ($team) {
+            // Clear all team lookup cache entries
+            Cache::flush(); // Note: In production, use Redis with tags
+        });
+    }
+
+    /**
+     * Find a team by name or alias within a specific sport and league (with caching)
+     */
+    public static function findByNameOrAlias($name, $sportId = null, $leagueId = null)
+    {
+        // Create a unique cache key
+        $cacheKey = 'team_lookup_' . md5(strtolower($name) . '_' . $sportId . '_' . $leagueId);
+        
+        // Cache for 1 hour
+        return Cache::remember($cacheKey, 3600, function () use ($name, $sportId, $leagueId) {
+            $query = static::query();
+
+            if ($sportId) {
+                $query->where('sport_id', $sportId);
+            }
+
+            if ($leagueId) {
+                $query->where('league_id', $leagueId);
+            }
+
+            // First try exact name match
+            $team = $query->where('name', $name)->first();
+
+            if ($team) {
+                return $team;
+            }
+
+            // Then try alias match
+            $alias = TeamAlias::where('alias', $name)->first();
+
+            if ($alias) {
+                $team = $alias->team;
+                
+                // Verify sport and league if specified
+                if ($sportId && $team->sport_id != $sportId) {
+                    return null;
+                }
+                
+                if ($leagueId && $team->league_id != $leagueId) {
+                    return null;
+                }
+                
+                return $team;
+            }
+
+            return null;
+        });
+    }
+
+    /**
+     * Get all names including aliases
+     */
+    public function getAllNames()
+    {
+        $names = [$this->name];
+        
+        foreach ($this->aliases as $alias) {
+            $names[] = $alias->alias;
+        }
+        
+        return $names;
     }
 }

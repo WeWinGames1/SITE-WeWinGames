@@ -12,30 +12,24 @@ const isImpersonating = computed(() => page.props.impersonation?.isImpersonating
 // Simple reactive state for navigation
 const activeParent = computed(() => {
     const currentPath = currentUrl.value;
-    console.log('Current path for activeParent:', currentPath);
     
     for (const item of navigation) {
         if (item.children) {
             const hasActiveChild = item.children.some(child => {
                 const isActive = isActiveRoute(child.href);
-                console.log(`Checking ${child.name} (${child.href}): ${isActive}`);
                 return isActive;
             });
             if (hasActiveChild) {
-                console.log(`Active parent found: ${item.name}`);
                 return item.name;
             }
         }
     }
-    console.log('No active parent found');
     return null;
 });
 
 // Function to update collapse state
 const updateCollapseState = async () => {
     await nextTick();
-    
-    console.log('updateCollapseState called, activeParent:', activeParent.value);
     
     // Close all collapse elements first
     const allCollapses = document.querySelectorAll('.admin-sidebar .collapse');
@@ -53,10 +47,6 @@ const updateCollapseState = async () => {
         const collapseId = `collapse-${activeParent.value.replace(/\s+/g, '-')}`;
         const collapseElement = document.getElementById(collapseId);
         const parentLink = document.querySelector(`[data-bs-target="#${collapseId}"]`);
-        
-        console.log('Trying to expand:', collapseId);
-        console.log('Found collapse element:', !!collapseElement);
-        console.log('Found parent link:', !!parentLink);
         
         if (collapseElement) {
             collapseElement.classList.add('show');
@@ -101,9 +91,10 @@ const navigation: NavItem[] = [
         children: [
             { name: 'Bets', href: route('admin.bets.index'), icon: 'bi-bar-chart' },
             { name: 'Import Bets', href: route('admin.bets.import.index'), icon: 'bi-upload' },
+            { name: 'Sports', href: route('admin.sports.index'), icon: 'bi-dribbble' },
+            { name: 'Leagues', href: route('admin.leagues.index'), icon: 'bi-flag' },
+            { name: 'Teams', href: route('admin.teams.index'), icon: 'bi-people-fill' },
             // { name: 'Games', href: '#', icon: 'bi-calendar-event' }, // TODO: Implement
-            // { name: 'Teams', href: '#', icon: 'bi-people-fill' }, // TODO: Implement
-            // { name: 'Sports', href: '#', icon: 'bi-dribbble' }, // TODO: Implement
             // { name: 'Operators', href: '#', icon: 'bi-building' }, // TODO: Implement
         ],
     },

@@ -10,10 +10,13 @@ use App\Http\Controllers\Admin\BlogPostController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DiscountCodeController;
 use App\Http\Controllers\Admin\LandingPageController;
+use App\Http\Controllers\Admin\LeagueController;
 use App\Http\Controllers\Admin\Notifications\EmailLogController;
 use App\Http\Controllers\Admin\Notifications\EmailTemplateController;
 use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\SportController;
 use App\Http\Controllers\Admin\StripeProductController;
+use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\UnderConstructionController;
 use App\Http\Controllers\BetController;
 use App\Http\Controllers\BettingEducationController;
@@ -114,11 +117,17 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
     // Game Management (TODO)
     // Route::resource('games', Admin\GameManagementController::class);
 
-    // Team Management (TODO)
-    // Route::resource('teams', Admin\TeamManagementController::class);
+    // Sport Management
+    Route::resource('sports', SportController::class);
 
-    // Sport Management (TODO)
-    // Route::resource('sports', Admin\SportManagementController::class);
+    // League Management
+    Route::resource('leagues', LeagueController::class);
+    Route::get('api/sports/{sport}/leagues', [TeamController::class, 'getLeaguesBySport'])->name('api.sports.leagues');
+
+    // Team Management
+    Route::resource('teams', TeamController::class);
+    Route::get('api/teams/search', [\App\Http\Controllers\Api\TeamSearchController::class, 'search'])->name('api.teams.search');
+    Route::post('api/teams/{team}/update-logo', [\App\Http\Controllers\Api\TeamSearchController::class, 'updateLogo'])->name('api.teams.update-logo');
 
     // Operator Management (TODO)
     // Route::resource('operators', Admin\OperatorManagementController::class);

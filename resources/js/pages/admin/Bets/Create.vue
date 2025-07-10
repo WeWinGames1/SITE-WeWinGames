@@ -1,75 +1,158 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, onMounted, nextTick } from 'vue';
+import axios from 'axios';
+
+interface User {
+    id: number;
+    name: string;
+    email: string;
+}
 
 interface Sport {
     id: number;
     name: string;
 }
 
+interface League {
+    id: number;
+    name: string;
+    sport_id: number;
+}
+
 interface Team {
     id: number;
     name: string;
-}
-
-interface Game {
-    id: number;
-    sport: Sport;
-    homeTeam: Team;
-    awayTeam: Team;
-    game_at: string;
-    game_date?: string;
-}
-
-interface Operator {
-    id: number;
-    name: string;
+    sport_id: number;
+    league_id?: number;
+    logo_url?: string;
 }
 
 interface Props {
     sports: Sport[];
-    games: Game[];
-    operators: Operator[];
+    leagues: League[];
     betTypes: Record<string, string>;
+    wagerTypes: Record<string, string>;
 }
 
 const props = defineProps<Props>();
 
+// Modal state
+const showLogoModal = ref(false);
+const logoModalTeam = ref<'one' | 'two'>('one');
+const selectedTeamForLogo = ref<Team | null>(null);
+const logoFile = ref<File | null>(null);
+
+// Teams for logo display
+const teamOne = ref<Team | null>(null);
+const teamTwo = ref<Team | null>(null);
+
 const form = useForm({
-    sport_id: '',
+    wager_type: 'single',
+    sports: '',
+    sport_id: null as number | null,
+    league: '',
+    league_id: null as number | null,
+    month: '',
+    matches: '',
+    markets: '',
     team_one: '',
+    team_one_id: null as number | null,
     team_two: '',
-    operator_id: '',
-    selection: '',
-    description: '',
-    bet_type: '',
-    odds: '',
-    stake: '',
-    potential_win: '',
-    game_at: '',
-    status: 'pending',
-    actual_result: '',
-    profit: 0,
-    is_featured: false,
-    confidence: 5,
+    team_two_id: null as number | null,
+    parlay_teams: [],
+    tips: '',
+    betting_date: new Date().toISOString().slice(0, 16),
+    wager_odds: '',
     membership: 'bronze',
+    level: '',
+    code: '',
+    roi: 0,
+    wager_amount: 0,
+    winning_amount: 0,
+    profit_amount: 0,
+    status: 'pending',
     referrer: '',
+    place_fraction: 0,
 });
 
-// Filtered games based on selected sport
-const filteredGames = computed(() => {
+// Initialize Select2 after component is mounted
+onMounted(() => {
+    nextTick(() => {
+        initializeSelect2();
+    });
+});
+
+// Computed properties
+const filteredLeagues = computed(() => {
     if (!form.sport_id) return [];
-    return props.games.filter(game => game.sport.id === Number(form.sport_id));
+    return props.leagues.filter(league => league.sport_id === form.sport_id);
 });
 
-// Watch for sport change to reset game
-watch(() => form.sport_id, () => {
-    form.game_id = '';
+const isParlay = computed(() => form.wager_type === 'parlay');
+
+const teamOneLogo = computed(() => {
+    if (teamOne.value?.logo_url) {
+        return `/storage/${teamOne.value.logo_url}`;
+    }
+    return null;
+});
+
+const teamTwoLogo = computed(() => {
+    if (teamTwo.value?.logo_url) {
+        return `/storage/${teamTwo.value.logo_url}`;
+    }
+    return null;
+});
+
+// Watch for sport changes to update the sport name and reset league
+watch(() => form.sport_id, (newSportId) => {
+    if (newSportId) {
+        const sport = props.sports.find(s => s.id === newSportId);
+        if (sport) {
+            form.sports = sport.name;
+        }
+    }
+    // Reset league if it doesn't belong to the new sport
+    if (form.league_id) {
+        const league = props.leagues.find(l => l.id === form.league_id);
+        if (!league || league.sport_id !== newSportId) {
+            form.league_id = null;
+            form.league = '';
+        }
+    }
+    
+    // Reinitialize Select2 dropdowns with new sport filter
+    nextTick(() => {
+        initializeSelect2();
+    });
+});
+
+// Watch for league changes to update the league name
+watch(() => form.league_id, (newLeagueId) => {
+    if (newLeagueId) {
+        const league = props.leagues.find(l => l.id === newLeagueId);
+        if (league) {
+            form.league = league.name;
+        }
+    }
+    
+    // Reinitialize Select2 dropdowns with new league filter
+    nextTick(() => {
+        initializeSelect2();
+    });
+});
+
+// Watch for wager type changes to reinitialize Select2
+watch(() => form.wager_type, () => {
+    nextTick(() => {
+        initializeSelect2();
+    });
 });
 
 // Calculate potential win when odds or stake change
-watch([() => form.odds, () => form.stake], () => {
+watch([() => form.wager_odds, () => form.wager_amount], () => {
     calculatePotentialWin();
 });
 
@@ -79,40 +162,228 @@ watch(() => form.status, () => {
 });
 
 function calculatePotentialWin() {
-    const odds = Number(form.odds);
-    const stake = Number(form.stake);
+    const odds = typeof form.wager_odds === 'string' ? parseFloat(form.wager_odds) : form.wager_odds;
+    const stake = Number(form.wager_amount);
     
     if (odds && stake) {
         if (odds > 0) {
-            // Positive odds (underdog)
-            form.potential_win = (stake * odds / 100);
+            // Positive American odds
+            form.winning_amount = stake + (stake * odds / 100);
         } else {
-            // Negative odds (favorite)
-            form.potential_win = (stake * 100 / Math.abs(odds));
+            // Negative American odds
+            form.winning_amount = stake + (stake * 100 / Math.abs(odds));
         }
     } else {
-        form.potential_win = 0;
+        form.winning_amount = 0;
     }
 }
 
 function calculateProfit() {
+    const stake = Number(form.wager_amount);
+    const winning = Number(form.winning_amount);
+    
     if (form.status === 'won') {
-        form.profit = form.potential_win;
+        form.profit_amount = winning - stake;
     } else if (form.status === 'lost') {
-        form.profit = -form.stake;
-    } else if (form.status === 'push') {
-        form.profit = 0;
+        form.profit_amount = -stake;
+    } else if (form.status === 'push' || form.status === 'void') {
+        form.profit_amount = 0;
     }
+}
+
+function initializeSelect2() {
+    // Initialize Select2 for team dropdowns
+    if (!isParlay.value) {
+        initTeamSelect('team_one_select', 'one');
+        initTeamSelect('team_two_select', 'two');
+    }
+}
+
+function initTeamSelect(elementId: string, teamType: 'one' | 'two') {
+    const element = document.getElementById(elementId) as any;
+    if (!element || !window.$) return;
+    
+    const $element = window.$(element);
+    
+    // Destroy existing instance if it exists
+    if ($element.hasClass('select2-hidden-accessible')) {
+        $element.select2('destroy');
+    }
+    
+    $element.select2({
+        ajax: {
+            url: route('admin.api.teams.search'),
+            dataType: 'json',
+            delay: 250,
+            data: function (params: any) {
+                return {
+                    q: params.term,
+                    sport_id: form.sport_id,
+                    league_id: form.league_id,
+                };
+            },
+            processResults: function (data: any) {
+                return {
+                    results: data.results
+                };
+            },
+            cache: true
+        },
+        placeholder: `Search for ${teamType === 'one' ? 'team one' : 'team two'}...`,
+        minimumInputLength: 2,
+        templateResult: formatTeam,
+        templateSelection: formatTeamSelection,
+        allowClear: true,
+        dropdownParent: window.$('.modal').length ? window.$('.modal') : window.$('body')
+    });
+    
+    // Handle selection
+    $element.on('select2:select', function (e: any) {
+        const data = e.params.data;
+        if (teamType === 'one') {
+            form.team_one_id = data.id;
+            form.team_one = data.name;
+            teamOne.value = {
+                id: data.id,
+                name: data.name,
+                sport_id: data.sport_id || form.sport_id!,
+                league_id: data.league_id || form.league_id,
+                logo_url: data.logo_url
+            };
+        } else {
+            form.team_two_id = data.id;
+            form.team_two = data.name;
+            teamTwo.value = {
+                id: data.id,
+                name: data.name,
+                sport_id: data.sport_id || form.sport_id!,
+                league_id: data.league_id || form.league_id,
+                logo_url: data.logo_url
+            };
+        }
+    });
+    
+    // Handle clearing
+    $element.on('select2:clear', function () {
+        if (teamType === 'one') {
+            form.team_one_id = null;
+            form.team_one = '';
+            teamOne.value = null;
+        } else {
+            form.team_two_id = null;
+            form.team_two = '';
+            teamTwo.value = null;
+        }
+    });
+}
+
+function formatTeam(team: any) {
+    if (!team.id) return team.text;
+    
+    const $container = window.$('<div class="d-flex align-items-center">');
+    
+    if (team.logo_url) {
+        $container.append(`<img src="${team.logo_url}" class="me-2" style="width: 30px; height: 30px; object-fit: contain;" />`);
+    } else {
+        $container.append('<div class="me-2" style="width: 30px; height: 30px; background: #e9ecef; border-radius: 4px;"></div>');
+    }
+    
+    const $text = window.$('<div>');
+    $text.append(`<div>${team.name}</div>`);
+    if (team.sport || team.league) {
+        $text.append(`<small class="text-muted">${team.sport || ''} ${team.league ? '• ' + team.league : ''}</small>`);
+    }
+    
+    $container.append($text);
+    return $container;
+}
+
+function formatTeamSelection(team: any) {
+    return team.name || team.text;
+}
+
+function openLogoModal(teamType: 'one' | 'two') {
+    logoModalTeam.value = teamType;
+    
+    // Get the selected team
+    if (teamType === 'one' && form.team_one_id && teamOne.value) {
+        selectedTeamForLogo.value = teamOne.value;
+    } else if (teamType === 'two' && form.team_two_id && teamTwo.value) {
+        selectedTeamForLogo.value = teamTwo.value;
+    } else {
+        return; // No team selected
+    }
+    
+    showLogoModal.value = true;
+}
+
+function handleLogoFileChange(event: Event) {
+    const target = event.target as HTMLInputElement;
+    if (target.files && target.files[0]) {
+        logoFile.value = target.files[0];
+    }
+}
+
+async function uploadLogo() {
+    if (!logoFile.value || !selectedTeamForLogo.value) return;
+    
+    const formData = new FormData();
+    formData.append('logo', logoFile.value);
+    
+    try {
+        const response = await axios.post(
+            route('admin.api.teams.update-logo', selectedTeamForLogo.value.id),
+            formData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            }
+        );
+        
+        if (response.data.success) {
+            // Update the team logo in the local state
+            const logoUrl = response.data.logo_url.replace('/storage/', '');
+            if (logoModalTeam.value === 'one' && teamOne.value) {
+                teamOne.value.logo_url = logoUrl;
+            } else if (logoModalTeam.value === 'two' && teamTwo.value) {
+                teamTwo.value.logo_url = logoUrl;
+            }
+            
+            // Close modal and reset
+            showLogoModal.value = false;
+            logoFile.value = null;
+            selectedTeamForLogo.value = null;
+        }
+    } catch (error) {
+        console.error('Error uploading logo:', error);
+        alert('Failed to upload logo. Please try again.');
+    }
+}
+
+function addParlayTeam() {
+    form.parlay_teams.push({
+        id: null,
+        name: '',
+        sport_id: form.sport_id!,
+        league_id: form.league_id,
+        logo_url: null
+    });
+}
+
+function removeParlayTeam(index: number) {
+    form.parlay_teams.splice(index, 1);
 }
 
 function submit() {
     form.post(route('admin.bets.store'));
 }
 
-function formatGameOption(game: Game): string {
-    const gameDate = game.game_date || game.game_at;
-    const dateStr = gameDate ? new Date(gameDate).toLocaleDateString() : 'No date';
-    return `${game.awayTeam.name} @ ${game.homeTeam.name} - ${dateStr}`;
+// Declare global for TypeScript
+declare global {
+    interface Window {
+        $: any;
+    }
 }
 </script>
 
@@ -120,105 +391,235 @@ function formatGameOption(game: Game): string {
     <AdminLayout>
         <Head title="Create Bet" />
         
-        <div class="p-4">
+        <div class="container-fluid">
             <!-- Header -->
-            <div class="mb-4">
-                <Link
-                    :href="route('admin.bets.index')"
-                    class="btn btn-link text-decoration-none p-0 mb-3"
-                >
-                    <i class="bi bi-arrow-left me-2"></i>
-                    Back to Bets
-                </Link>
-                
-                <h1 class="h2 fw-bold text-dark">Create New Bet</h1>
-                <p class="text-muted small">
-                    Add a new betting pick to the system
-                </p>
+            <div class="row mb-4">
+                <div class="col">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb mb-2">
+                                    <li class="breadcrumb-item">
+                                        <Link :href="route('admin.dashboard')">Dashboard</Link>
+                                    </li>
+                                    <li class="breadcrumb-item">
+                                        <Link :href="route('admin.bets.index')">Bets</Link>
+                                    </li>
+                                    <li class="breadcrumb-item active">Create</li>
+                                </ol>
+                            </nav>
+                            <h1 class="h2 mb-0 text-dark">Create New Bet</h1>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <form @submit.prevent="submit">
+                <!-- Wager Type Card -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="h5 mb-0">Wager Type</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label for="wager_type" class="form-label">Select Wager Type <span class="text-danger">*</span></label>
+                                <select
+                                    id="wager_type"
+                                    v-model="form.wager_type"
+                                    class="form-select form-select-lg"
+                                    :class="{ 'is-invalid': form.errors.wager_type }"
+                                    required
+                                >
+                                    <option value="">Select wager type...</option>
+                                    <option v-for="(label, value) in wagerTypes" :key="value" :value="value">
+                                        {{ label }}
+                                    </option>
+                                </select>
+                                <div v-if="form.errors.wager_type" class="invalid-feedback">
+                                    {{ form.errors.wager_type }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Basic Information -->
                 <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="h5 mb-0">Basic Information</h3>
+                    </div>
                     <div class="card-body">
-                        <h2 class="h5 fw-medium text-dark mb-3">Basic Information</h2>
-                        
                         <div class="row g-3">
                             <!-- Sport -->
-                            <div class="col-md-6">
-                                <label for="sport_id" class="form-label text-dark fw-medium">
-                                    Sport <span class="text-danger">*</span>
-                                </label>
+                            <div class="col-md-4">
+                                <label for="sport_id" class="form-label">Sport <span class="text-danger">*</span></label>
                                 <select
                                     id="sport_id"
                                     v-model="form.sport_id"
                                     class="form-select"
+                                    :class="{ 'is-invalid': form.errors.sport_id || form.errors.sports }"
                                     required
                                 >
-                                    <option value="">Select a sport...</option>
+                                    <option :value="null">Select sport...</option>
                                     <option v-for="sport in sports" :key="sport.id" :value="sport.id">
                                         {{ sport.name }}
                                     </option>
                                 </select>
-                                <div v-if="form.errors.sport_id" class="invalid-feedback d-block">
-                                    {{ form.errors.sport_id }}
+                                <div v-if="form.errors.sport_id || form.errors.sports" class="invalid-feedback">
+                                    {{ form.errors.sport_id || form.errors.sports }}
                                 </div>
                             </div>
 
-                            <!-- Home Team -->
-                            <div class="col-md-6">
-                                <label for="team_one" class="form-label text-dark fw-medium">
-                                    Home Team <span class="text-danger">*</span>
-                                </label>
-                                <input
-                                    id="team_one"
-                                    v-model="form.team_one"
-                                    type="text"
-                                    class="form-control"
-                                    placeholder="e.g., Los Angeles Lakers"
-                                    required
-                                />
-                                <div v-if="form.errors.team_one" class="invalid-feedback d-block">
-                                    {{ form.errors.team_one }}
-                                </div>
-                            </div>
-
-                            <!-- Away Team -->
-                            <div class="col-md-6">
-                                <label for="team_two" class="form-label text-dark fw-medium">
-                                    Away Team <span class="text-danger">*</span>
-                                </label>
-                                <input
-                                    id="team_two"
-                                    v-model="form.team_two"
-                                    type="text"
-                                    class="form-control"
-                                    placeholder="e.g., Boston Celtics"
-                                    required
-                                />
-                                <div v-if="form.errors.team_two" class="invalid-feedback d-block">
-                                    {{ form.errors.team_two }}
-                                </div>
-                            </div>
-
-                            <!-- Operator -->
-                            <div class="col-md-6">
-                                <label for="operator_id" class="form-label text-dark fw-medium">
-                                    Operator <span class="text-danger">*</span>
-                                </label>
+                            <!-- League -->
+                            <div class="col-md-4">
+                                <label for="league_id" class="form-label">League</label>
                                 <select
-                                    id="operator_id"
-                                    v-model="form.operator_id"
+                                    id="league_id"
+                                    v-model="form.league_id"
                                     class="form-select"
-                                    required
+                                    :class="{ 'is-invalid': form.errors.league_id || form.errors.league }"
+                                    :disabled="!form.sport_id"
                                 >
-                                    <option value="">Select an operator...</option>
-                                    <option v-for="operator in operators" :key="operator.id" :value="operator.id">
-                                        {{ operator.name }}
+                                    <option :value="null">Select league...</option>
+                                    <option v-for="league in filteredLeagues" :key="league.id" :value="league.id">
+                                        {{ league.name }}
                                     </option>
                                 </select>
-                                <div v-if="form.errors.operator_id" class="invalid-feedback d-block">
-                                    {{ form.errors.operator_id }}
+                                <div v-if="form.errors.league_id || form.errors.league" class="invalid-feedback">
+                                    {{ form.errors.league_id || form.errors.league }}
+                                </div>
+                            </div>
+
+                            <!-- Month -->
+                            <div class="col-md-4">
+                                <label for="month" class="form-label">Month</label>
+                                <input
+                                    id="month"
+                                    v-model="form.month"
+                                    type="text"
+                                    class="form-control"
+                                    :class="{ 'is-invalid': form.errors.month }"
+                                    placeholder="e.g., January, February"
+                                />
+                                <div v-if="form.errors.month" class="invalid-feedback">
+                                    {{ form.errors.month }}
+                                </div>
+                            </div>
+
+                            <!-- Teams for non-parlay bets -->
+                            <template v-if="!isParlay">
+                                <!-- Team One -->
+                                <div class="col-md-6">
+                                    <label for="team_one_select" class="form-label">Team One / Player</label>
+                                    <div class="input-group">
+                                        <select
+                                            id="team_one_select"
+                                            class="form-control"
+                                            style="width: calc(100% - 50px);"
+                                        >
+                                        </select>
+                                        <button
+                                            v-if="teamOneLogo"
+                                            type="button"
+                                            class="btn btn-outline-secondary"
+                                            @click="openLogoModal('one')"
+                                            title="View/Update Logo"
+                                        >
+                                            <img :src="teamOneLogo" alt="Logo" style="width: 20px; height: 20px; object-fit: contain;">
+                                        </button>
+                                        <button
+                                            v-else-if="form.team_one_id"
+                                            type="button"
+                                            class="btn btn-outline-secondary"
+                                            @click="openLogoModal('one')"
+                                        >
+                                            <i class="bi bi-image"></i>
+                                        </button>
+                                    </div>
+                                    <div v-if="form.errors.team_one || form.errors.team_one_id" class="invalid-feedback d-block">
+                                        {{ form.errors.team_one || form.errors.team_one_id }}
+                                    </div>
+                                </div>
+
+                                <!-- Team Two -->
+                                <div class="col-md-6">
+                                    <label for="team_two_select" class="form-label">Team Two</label>
+                                    <div class="input-group">
+                                        <select
+                                            id="team_two_select"
+                                            class="form-control"
+                                            style="width: calc(100% - 50px);"
+                                        >
+                                        </select>
+                                        <button
+                                            v-if="teamTwoLogo"
+                                            type="button"
+                                            class="btn btn-outline-secondary"
+                                            @click="openLogoModal('two')"
+                                            title="View/Update Logo"
+                                        >
+                                            <img :src="teamTwoLogo" alt="Logo" style="width: 20px; height: 20px; object-fit: contain;">
+                                        </button>
+                                        <button
+                                            v-else-if="form.team_two_id"
+                                            type="button"
+                                            class="btn btn-outline-secondary"
+                                            @click="openLogoModal('two')"
+                                        >
+                                            <i class="bi bi-image"></i>
+                                        </button>
+                                    </div>
+                                    <div v-if="form.errors.team_two || form.errors.team_two_id" class="invalid-feedback d-block">
+                                        {{ form.errors.team_two || form.errors.team_two_id }}
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- Parlay Teams -->
+                            <template v-else>
+                                <div class="col-12">
+                                    <label class="form-label">Parlay Teams</label>
+                                    <div v-for="(team, index) in form.parlay_teams" :key="index" class="mb-2">
+                                        <div class="input-group">
+                                            <input
+                                                v-model="team.name"
+                                                type="text"
+                                                class="form-control"
+                                                :placeholder="`Team ${index + 1}`"
+                                            />
+                                            <button
+                                                type="button"
+                                                class="btn btn-outline-danger"
+                                                @click="removeParlayTeam(index)"
+                                            >
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-primary btn-sm"
+                                        @click="addParlayTeam"
+                                    >
+                                        <i class="bi bi-plus-circle me-1"></i> Add Team
+                                    </button>
+                                </div>
+                            </template>
+
+                            <!-- Betting Date -->
+                            <div class="col-md-6">
+                                <label for="betting_date" class="form-label">Betting Date <span class="text-danger">*</span></label>
+                                <input
+                                    id="betting_date"
+                                    v-model="form.betting_date"
+                                    type="datetime-local"
+                                    class="form-control"
+                                    :class="{ 'is-invalid': form.errors.betting_date }"
+                                    required
+                                />
+                                <div v-if="form.errors.betting_date" class="invalid-feedback">
+                                    {{ form.errors.betting_date }}
                                 </div>
                             </div>
                         </div>
@@ -227,277 +628,253 @@ function formatGameOption(game: Game): string {
 
                 <!-- Bet Details -->
                 <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="h5 mb-0">Bet Details</h3>
+                    </div>
                     <div class="card-body">
-                        <h2 class="h5 fw-medium text-dark mb-3">Bet Details</h2>
-                        
                         <div class="row g-3">
-                            <!-- Selection -->
+                            <!-- Markets -->
                             <div class="col-md-6">
-                                <label for="selection" class="form-label text-dark fw-medium">
-                                    Selection <span class="text-danger">*</span>
-                                </label>
+                                <label for="markets" class="form-label">Markets</label>
                                 <input
-                                    id="selection"
-                                    v-model="form.selection"
+                                    id="markets"
+                                    v-model="form.markets"
                                     type="text"
                                     class="form-control"
-                                    placeholder="e.g., Lakers -5.5"
-                                    required
+                                    :class="{ 'is-invalid': form.errors.markets }"
+                                    placeholder="e.g., Spread, Over/Under, Moneyline"
                                 />
-                                <div v-if="form.errors.selection" class="invalid-feedback d-block">
-                                    {{ form.errors.selection }}
+                                <div v-if="form.errors.markets" class="invalid-feedback">
+                                    {{ form.errors.markets }}
                                 </div>
                             </div>
 
-                            <!-- Bet Type -->
+                            <!-- Tips -->
                             <div class="col-md-6">
-                                <label for="bet_type" class="form-label text-dark fw-medium">
-                                    Bet Type <span class="text-danger">*</span>
-                                </label>
-                                <select
-                                    id="bet_type"
-                                    v-model="form.bet_type"
-                                    class="form-select"
-                                    required
-                                >
-                                    <option value="">Select bet type...</option>
-                                    <option v-for="(label, value) in betTypes" :key="value" :value="value">
-                                        {{ label }}
-                                    </option>
-                                </select>
-                                <div v-if="form.errors.bet_type" class="invalid-feedback d-block">
-                                    {{ form.errors.bet_type }}
+                                <label for="tips" class="form-label">Tips / Selection</label>
+                                <input
+                                    id="tips"
+                                    v-model="form.tips"
+                                    type="text"
+                                    class="form-control"
+                                    :class="{ 'is-invalid': form.errors.tips }"
+                                    placeholder="e.g., Lakers -5.5, Over 220.5"
+                                />
+                                <div v-if="form.errors.tips" class="invalid-feedback">
+                                    {{ form.errors.tips }}
                                 </div>
                             </div>
 
                             <!-- Odds -->
                             <div class="col-md-4">
-                                <label for="odds" class="form-label text-dark fw-medium">
-                                    Odds <span class="text-danger">*</span>
-                                </label>
+                                <label for="wager_odds" class="form-label">Odds <span class="text-danger">*</span></label>
                                 <input
-                                    id="odds"
-                                    v-model.number="form.odds"
-                                    type="number"
-                                    step="any"
+                                    id="wager_odds"
+                                    v-model="form.wager_odds"
+                                    type="text"
                                     class="form-control"
-                                    placeholder="e.g., -110, +200"
+                                    :class="{ 'is-invalid': form.errors.wager_odds }"
+                                    placeholder="e.g., -110, +150"
                                     required
                                 />
-                                <div v-if="form.errors.odds" class="invalid-feedback d-block">
-                                    {{ form.errors.odds }}
+                                <div v-if="form.errors.wager_odds" class="invalid-feedback">
+                                    {{ form.errors.wager_odds }}
                                 </div>
                             </div>
 
-                            <!-- Stake -->
+                            <!-- Wager Amount -->
                             <div class="col-md-4">
-                                <label for="stake" class="form-label text-dark fw-medium">
-                                    Stake <span class="text-danger">*</span>
-                                </label>
+                                <label for="wager_amount" class="form-label">Wager Amount <span class="text-danger">*</span></label>
                                 <input
-                                    id="stake"
-                                    v-model.number="form.stake"
+                                    id="wager_amount"
+                                    v-model.number="form.wager_amount"
                                     type="number"
                                     step="0.01"
                                     min="0"
                                     class="form-control"
-                                    placeholder="0.00"
+                                    :class="{ 'is-invalid': form.errors.wager_amount }"
                                     required
                                 />
-                                <div v-if="form.errors.stake" class="invalid-feedback d-block">
-                                    {{ form.errors.stake }}
+                                <div v-if="form.errors.wager_amount" class="invalid-feedback">
+                                    {{ form.errors.wager_amount }}
                                 </div>
                             </div>
 
-                            <!-- Potential Win -->
+                            <!-- Winning Amount -->
                             <div class="col-md-4">
-                                <label for="potential_win" class="form-label text-dark fw-medium">
-                                    Potential Win <span class="text-danger">*</span>
-                                </label>
+                                <label for="winning_amount" class="form-label">Winning Amount</label>
                                 <input
-                                    id="potential_win"
-                                    v-model.number="form.potential_win"
+                                    id="winning_amount"
+                                    v-model.number="form.winning_amount"
                                     type="number"
                                     step="0.01"
                                     min="0"
                                     class="form-control"
-                                    placeholder="0.00"
-                                    required
+                                    :class="{ 'is-invalid': form.errors.winning_amount }"
+                                    readonly
                                 />
-                                <div v-if="form.errors.potential_win" class="invalid-feedback d-block">
-                                    {{ form.errors.potential_win }}
-                                </div>
-                            </div>
-
-                            <!-- Game Date -->
-                            <div class="col-md-6">
-                                <label for="game_at" class="form-label text-dark fw-medium">
-                                    Game Date/Time <span class="text-danger">*</span>
-                                </label>
-                                <input
-                                    id="game_at"
-                                    v-model="form.game_at"
-                                    type="datetime-local"
-                                    class="form-control"
-                                    required
-                                />
-                                <div v-if="form.errors.game_at" class="invalid-feedback d-block">
-                                    {{ form.errors.game_at }}
+                                <div v-if="form.errors.winning_amount" class="invalid-feedback">
+                                    {{ form.errors.winning_amount }}
                                 </div>
                             </div>
 
                             <!-- Status -->
-                            <div class="col-md-6">
-                                <label for="status" class="form-label text-dark fw-medium">
-                                    Status <span class="text-danger">*</span>
-                                </label>
+                            <div class="col-md-4">
+                                <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
                                 <select
                                     id="status"
                                     v-model="form.status"
                                     class="form-select"
+                                    :class="{ 'is-invalid': form.errors.status }"
                                     required
                                 >
+                                    <option value="">Select status...</option>
                                     <option value="pending">Pending</option>
                                     <option value="won">Won</option>
                                     <option value="lost">Lost</option>
                                     <option value="push">Push</option>
-                                    <option value="cancelled">Cancelled</option>
+                                    <option value="void">Void</option>
                                 </select>
-                                <div v-if="form.errors.status" class="invalid-feedback d-block">
+                                <div v-if="form.errors.status" class="invalid-feedback">
                                     {{ form.errors.status }}
                                 </div>
                             </div>
 
-                            <!-- Description -->
-                            <div class="col-12">
-                                <label for="description" class="form-label text-dark fw-medium">Description</label>
-                                <textarea
-                                    id="description"
-                                    v-model="form.description"
+                            <!-- Profit Amount -->
+                            <div class="col-md-4">
+                                <label for="profit_amount" class="form-label">Profit Amount</label>
+                                <input
+                                    id="profit_amount"
+                                    v-model.number="form.profit_amount"
+                                    type="number"
+                                    step="0.01"
                                     class="form-control"
-                                    rows="3"
-                                    placeholder="Additional details about this bet..."
-                                ></textarea>
-                                <div v-if="form.errors.description" class="invalid-feedback d-block">
-                                    {{ form.errors.description }}
+                                    :class="{ 'is-invalid': form.errors.profit_amount }"
+                                    readonly
+                                />
+                                <div v-if="form.errors.profit_amount" class="invalid-feedback">
+                                    {{ form.errors.profit_amount }}
+                                </div>
+                            </div>
+
+                            <!-- ROI -->
+                            <div class="col-md-4">
+                                <label for="roi" class="form-label">ROI (%)</label>
+                                <input
+                                    id="roi"
+                                    v-model.number="form.roi"
+                                    type="number"
+                                    step="0.01"
+                                    class="form-control"
+                                    :class="{ 'is-invalid': form.errors.roi }"
+                                />
+                                <div v-if="form.errors.roi" class="invalid-feedback">
+                                    {{ form.errors.roi }}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Additional Settings -->
+                <!-- Additional Information -->
                 <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="h5 mb-0">Additional Information</h3>
+                    </div>
                     <div class="card-body">
-                        <h2 class="h5 fw-medium text-dark mb-3">Additional Settings</h2>
-                        
                         <div class="row g-3">
-                            <!-- Actual Result -->
-                            <div class="col-md-6">
-                                <label for="actual_result" class="form-label text-dark fw-medium">Actual Result</label>
-                                <input
-                                    id="actual_result"
-                                    v-model="form.actual_result"
-                                    type="text"
-                                    class="form-control"
-                                    placeholder="Final score or result..."
-                                />
-                                <div v-if="form.errors.actual_result" class="invalid-feedback d-block">
-                                    {{ form.errors.actual_result }}
-                                </div>
-                            </div>
-
-                            <!-- Profit -->
-                            <div class="col-md-6">
-                                <label for="profit" class="form-label text-dark fw-medium">Profit/Loss</label>
-                                <input
-                                    id="profit"
-                                    v-model.number="form.profit"
-                                    type="number"
-                                    step="0.01"
-                                    class="form-control"
-                                    placeholder="0.00"
-                                />
-                                <div v-if="form.errors.profit" class="invalid-feedback d-block">
-                                    {{ form.errors.profit }}
-                                </div>
-                            </div>
-
-                            <!-- Confidence -->
+                            <!-- Membership -->
                             <div class="col-md-4">
-                                <label for="confidence" class="form-label text-dark fw-medium">Confidence (1-10)</label>
-                                <input
-                                    id="confidence"
-                                    v-model.number="form.confidence"
-                                    type="number"
-                                    min="1"
-                                    max="10"
-                                    class="form-control"
-                                    placeholder="5"
-                                />
-                                <div v-if="form.errors.confidence" class="invalid-feedback d-block">
-                                    {{ form.errors.confidence }}
-                                </div>
-                            </div>
-
-                            <!-- Membership Level -->
-                            <div class="col-md-4">
-                                <label for="membership" class="form-label text-dark fw-medium">
-                                    Membership Level <span class="text-danger">*</span>
-                                </label>
+                                <label for="membership" class="form-label">Membership <span class="text-danger">*</span></label>
                                 <select
                                     id="membership"
                                     v-model="form.membership"
                                     class="form-select"
+                                    :class="{ 'is-invalid': form.errors.membership }"
                                     required
                                 >
-                                    <option value="bronze">Bronze (Free)</option>
+                                    <option value="">Select membership...</option>
+                                    <option value="bronze">Bronze</option>
                                     <option value="silver">Silver</option>
                                     <option value="gold">Gold</option>
                                     <option value="platinum">Platinum</option>
                                 </select>
-                                <div v-if="form.errors.membership" class="invalid-feedback d-block">
+                                <div v-if="form.errors.membership" class="invalid-feedback">
                                     {{ form.errors.membership }}
                                 </div>
                             </div>
 
-                            <!-- Featured -->
+                            <!-- Level -->
                             <div class="col-md-4">
-                                <div class="form-check mt-4">
-                                    <input
-                                        id="is_featured"
-                                        v-model="form.is_featured"
-                                        type="checkbox"
-                                        class="form-check-input"
-                                    />
-                                    <label for="is_featured" class="form-check-label">
-                                        Featured Bet
-                                    </label>
+                                <label for="level" class="form-label">Level</label>
+                                <input
+                                    id="level"
+                                    v-model="form.level"
+                                    type="text"
+                                    class="form-control"
+                                    :class="{ 'is-invalid': form.errors.level }"
+                                    placeholder="e.g., 1, 2, 3"
+                                />
+                                <div v-if="form.errors.level" class="invalid-feedback">
+                                    {{ form.errors.level }}
                                 </div>
-                                <div v-if="form.errors.is_featured" class="invalid-feedback d-block">
-                                    {{ form.errors.is_featured }}
+                            </div>
+
+                            <!-- Code -->
+                            <div class="col-md-4">
+                                <label for="code" class="form-label">Code</label>
+                                <input
+                                    id="code"
+                                    v-model="form.code"
+                                    type="text"
+                                    class="form-control"
+                                    :class="{ 'is-invalid': form.errors.code }"
+                                    placeholder="Reference code"
+                                />
+                                <div v-if="form.errors.code" class="invalid-feedback">
+                                    {{ form.errors.code }}
                                 </div>
                             </div>
 
                             <!-- Referrer -->
-                            <div class="col-md-12">
-                                <label for="referrer" class="form-label text-dark fw-medium">Referrer (optional)</label>
+                            <div class="col-md-6">
+                                <label for="referrer" class="form-label">Referrer</label>
                                 <input
                                     id="referrer"
                                     v-model="form.referrer"
                                     type="text"
                                     class="form-control"
-                                    placeholder="e.g., Twitter, Instagram, Email Campaign, etc."
+                                    :class="{ 'is-invalid': form.errors.referrer }"
+                                    placeholder="Referral source"
                                 />
-                                <div v-if="form.errors.referrer" class="invalid-feedback d-block">
+                                <div v-if="form.errors.referrer" class="invalid-feedback">
                                     {{ form.errors.referrer }}
+                                </div>
+                            </div>
+
+                            <!-- Place Fraction -->
+                            <div class="col-md-6">
+                                <label for="place_fraction" class="form-label">Place Fraction (Each Way)</label>
+                                <input
+                                    id="place_fraction"
+                                    v-model.number="form.place_fraction"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    max="1"
+                                    class="form-control"
+                                    :class="{ 'is-invalid': form.errors.place_fraction }"
+                                    placeholder="0.25"
+                                />
+                                <div v-if="form.errors.place_fraction" class="invalid-feedback">
+                                    {{ form.errors.place_fraction }}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Submit Button -->
+                <!-- Submit Buttons -->
                 <div class="d-flex justify-content-end gap-2">
                     <Link
                         :href="route('admin.bets.index')"
@@ -516,5 +893,95 @@ function formatGameOption(game: Game): string {
                 </div>
             </form>
         </div>
+
+        <!-- Logo Upload Modal -->
+        <div v-if="showLogoModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Update Team Logo</h5>
+                        <button type="button" class="btn-close" @click="showLogoModal = false"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div v-if="selectedTeamForLogo">
+                            <p>Update logo for: <strong>{{ selectedTeamForLogo.name }}</strong></p>
+                            
+                            <div v-if="selectedTeamForLogo.logo_url" class="text-center mb-3">
+                                <img 
+                                    :src="`/storage/${selectedTeamForLogo.logo_url}`" 
+                                    :alt="selectedTeamForLogo.name"
+                                    style="max-width: 200px; max-height: 200px;"
+                                />
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="logoFile" class="form-label">Choose new logo</label>
+                                <input 
+                                    type="file" 
+                                    id="logoFile" 
+                                    class="form-control" 
+                                    accept="image/*"
+                                    @change="handleLogoFileChange"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @click="showLogoModal = false">Cancel</button>
+                        <button 
+                            type="button" 
+                            class="btn btn-primary" 
+                            @click="uploadLogo"
+                            :disabled="!logoFile"
+                        >
+                            Upload Logo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </AdminLayout>
 </template>
+
+<style>
+/* Select2 Bootstrap 5 Theme */
+.select2-container--default .select2-selection--single {
+    height: calc(1.5em + .75rem + 2px);
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #212529;
+    padding-left: 0;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: calc(1.5em + .75rem);
+    top: 1px;
+    right: 10px;
+}
+
+.select2-dropdown {
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+}
+
+.select2-search--dropdown .select2-search__field {
+    padding: .375rem .75rem;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+}
+
+.select2-results__option--highlighted[aria-selected] {
+    background-color: #0d6efd;
+}
+</style>

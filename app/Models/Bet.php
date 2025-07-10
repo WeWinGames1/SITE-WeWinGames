@@ -21,8 +21,10 @@ class Bet extends Model
         'wager_type',
         'wager_name', // New column
         'team_one',
+        'team_one_id',
         'team_one_logo',
         'team_two',
+        'team_two_id',
         'team_two_logo',
         'tips',
         'betting_date',
@@ -41,6 +43,13 @@ class Bet extends Model
         'status',
         'referrer',
         'place_fraction',
+        'is_parlay',
+        'parlay_legs',
+    ];
+    
+    protected $casts = [
+        'is_parlay' => 'boolean',
+        'parlay_legs' => 'integer',
     ];
 
     // Relationships
@@ -64,6 +73,29 @@ class Bet extends Model
         return $this->belongsTo(Operator::class);
     }
 
+    public function teamOne()
+    {
+        return $this->belongsTo(Team::class, 'team_one_id');
+    }
+
+    public function teamTwo()
+    {
+        return $this->belongsTo(Team::class, 'team_two_id');
+    }
+    
+    // Parlay relationships
+    public function betTeams()
+    {
+        return $this->hasMany(BetTeam::class)->ordered();
+    }
+    
+    public function parlayTeams()
+    {
+        return $this->belongsToMany(Team::class, 'bet_teams')
+            ->withPivot(['position', 'role', 'spread', 'line', 'team_name'])
+            ->orderBy('bet_teams.position');
+    }
+
     // Accessor for formatted sport name
     public function getSportsAttribute($value)
     {
@@ -73,5 +105,62 @@ class Bet extends Model
         }
 
         return ucfirst(strtolower($value));
+    }
+    
+    // Helper methods for parlays
+    public function addParlayTeam(Team $team, array $attributes = [])
+    {
+        $position = $this->betTeams()->max('position') ?? 0;
+        
+        return $this->betTeams()->create(array_merge([
+            'team_id' => $team->id,
+            'team_name' => $team->name,
+            'position' => $position + 1,
+            'role' => 'parlay',
+        ], $attributes));
+    }
+    
+    public function updateParlayInfo()
+    {
+        $legCount = $this->betTeams()->count();
+        
+        $this->update([
+            'is_parlay' => $legCount > 2,
+            'parlay_legs' => $legCount,
+        ]);
+    }
+    
+    /**
+     * Get all teams involved in the bet (including parlay teams)
+     */
+    public function getAllTeams()
+    {
+        if ($this->is_parlay) {
+            return $this->parlayTeams;
+        }
+        
+        $teams = collect();
+        
+        if ($this->teamOne) {
+            $teams->push($this->teamOne);
+        }
+        
+        if ($this->teamTwo) {
+            $teams->push($this->teamTwo);
+        }
+        
+        return $teams;
+    }
+    
+    /**
+     * Check if this bet involves a specific team
+     */
+    public function involvesTeam($teamId)
+    {
+        if ($this->is_parlay) {
+            return $this->parlayTeams()->where('teams.id', $teamId)->exists();
+        }
+        
+        return $this->team_one_id == $teamId || $this->team_two_id == $teamId;
     }
 }
