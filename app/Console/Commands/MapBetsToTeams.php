@@ -255,7 +255,7 @@ class MapBetsToTeams extends Command
         if ($this->stats['parlays'] > 0) {
             $this->newLine();
             $this->info("Found {$this->stats['parlays']} parlay bets. Run the parlay migration command to process these:");
-            $this->info("php artisan parlays:migrate");
+            $this->info("php artisan bets:migrate-parlays");
         }
     }
     

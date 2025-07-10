@@ -484,6 +484,11 @@ class CsvImportService
             }
         }
 
+        // Parse date fields
+        if (isset($data['game_date'])) {
+            $data['game_date'] = $this->parseDate($data['game_date']);
+        }
+        
         // Normalize status
         if (isset($data['status'])) {
             $data['status'] = $this->normalizeStatus($data['status']);
