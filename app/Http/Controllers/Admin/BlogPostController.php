@@ -49,7 +49,7 @@ class BlogPostController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return Inertia::render('admin/BlogPosts/Index', [
+        return Inertia::render('Admin/BlogPosts/Index', [
             'posts' => $posts,
             'filters' => $request->only(['status', 'category', 'search']),
             'categories' => Post::getCategories(),
@@ -61,7 +61,7 @@ class BlogPostController extends Controller
      */
     public function create()
     {
-        return Inertia::render('admin/BlogPosts/Create', [
+        return Inertia::render('Admin/BlogPosts/Create', [
             'categories' => Post::getCategories(),
             'popularTags' => Post::getPopularTags(),
         ]);
@@ -115,7 +115,7 @@ class BlogPostController extends Controller
      */
     public function edit(Post $post)
     {
-        return Inertia::render('admin/BlogPosts/Edit', [
+        return Inertia::render('Admin/BlogPosts/Edit', [
             'post' => $post->load('author:id,name,email'),
             'categories' => Post::getCategories(),
             'popularTags' => Post::getPopularTags(),

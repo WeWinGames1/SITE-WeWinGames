@@ -544,6 +544,9 @@ function updateSourceCode(event: Event) {
                                         type="datetime-local"
                                         class="form-control"
                                     />
+                                    <div v-if="form.errors.published_at" class="invalid-feedback d-block">
+                                        {{ form.errors.published_at }}
+                                    </div>
                                 </div>
                                 
                                 <div class="d-grid gap-2 mt-3">
@@ -582,6 +585,9 @@ function updateSourceCode(event: Event) {
                                     class="form-control"
                                 />
                                 <div class="text-muted small mt-1">Recommended size: 1200x630px</div>
+                                <div v-if="form.errors.featured_image" class="invalid-feedback d-block">
+                                    {{ form.errors.featured_image }}
+                                </div>
                             </div>
                         </div>
                         
@@ -597,6 +603,9 @@ function updateSourceCode(event: Event) {
                                         {{ label }}
                                     </option>
                                 </select>
+                                <div v-if="form.errors.category" class="invalid-feedback d-block">
+                                    {{ form.errors.category }}
+                                </div>
                             </div>
                         </div>
                         
@@ -656,6 +665,9 @@ function updateSourceCode(event: Event) {
                                         </button>
                                     </div>
                                 </div>
+                                <div v-if="form.errors.tags" class="invalid-feedback d-block">
+                                    {{ form.errors.tags }}
+                                </div>
                             </div>
                         </div>
                         
@@ -682,6 +694,9 @@ function updateSourceCode(event: Event) {
                                         placeholder="Custom title for search engines"
                                     />
                                     <div class="text-muted small mt-1">{{ characterCounts.seoTitle }}/60 characters</div>
+                                    <div v-if="form.errors.seo_title" class="invalid-feedback d-block">
+                                        {{ form.errors.seo_title }}
+                                    </div>
                                 </div>
                                 
                                 <div class="mb-3">
@@ -694,6 +709,9 @@ function updateSourceCode(event: Event) {
                                         placeholder="Meta description for search engines"
                                     ></textarea>
                                     <div class="text-muted small mt-1">{{ characterCounts.seoDescription }}/160 characters</div>
+                                    <div v-if="form.errors.seo_description" class="invalid-feedback d-block">
+                                        {{ form.errors.seo_description }}
+                                    </div>
                                 </div>
                                 
                                 <div>
@@ -705,6 +723,9 @@ function updateSourceCode(event: Event) {
                                         class="form-control"
                                         placeholder="Comma-separated keywords"
                                     />
+                                    <div v-if="form.errors.seo_keywords" class="invalid-feedback d-block">
+                                        {{ form.errors.seo_keywords }}
+                                    </div>
                                 </div>
                             </div>
                         </div>

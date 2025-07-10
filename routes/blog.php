@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 // Dynamic blog routes - using database-driven content
 Route::get('/', [BlogController::class, 'index'])->name('index');
-Route::get('/{slug}', [BlogController::class, 'show'])->name('show');
+Route::get('/{post}', [BlogController::class, 'show'])->name('show');
 
 // Legacy redirects - redirect old URLs to new database-driven posts
 Route::redirect('types-of-bets', '/blog/types-of-bets', 301);

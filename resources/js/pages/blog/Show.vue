@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 interface Author {
     id: number;
@@ -44,6 +44,9 @@ interface Props {
 
 const props = defineProps<Props>();
 
+// Reactive state
+const showCopyNotification = ref(false);
+
 // Computed
 const pageTitle = computed(() => props.post.seo_title || props.post.title);
 const pageDescription = computed(() => props.post.seo_description || props.post.excerpt);
@@ -71,7 +74,10 @@ function shareOnFacebook() {
 
 function copyLink() {
     navigator.clipboard.writeText(shareUrl.value);
-    // You could add a toast notification here
+    showCopyNotification.value = true;
+    setTimeout(() => {
+        showCopyNotification.value = false;
+    }, 3000);
 }
 </script>
 
@@ -159,7 +165,7 @@ function copyLink() {
                 <div class="border-top border-bottom py-4 mb-5" style="border-color: #2e4057 !important;">
                     <div class="d-flex align-items-center justify-content-between">
                         <h3 class="h5 fw-semibold text-white mb-0">Share this article</h3>
-                        <div class="d-flex gap-2">
+                        <div class="d-flex gap-2 position-relative">
                             <button 
                                 @click="shareOnTwitter"
                                 class="btn btn-sm"
@@ -186,6 +192,18 @@ function copyLink() {
                             >
                                 <i class="bi bi-share"></i>
                             </button>
+                            
+                            <!-- Copy notification -->
+                            <Transition name="fade">
+                                <div 
+                                    v-if="showCopyNotification" 
+                                    class="position-absolute end-0 top-100 mt-2 alert alert-success py-2 px-3 d-flex align-items-center"
+                                    style="white-space: nowrap; z-index: 1000;"
+                                >
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                    Link copied to clipboard!
+                                </div>
+                            </Transition>
                         </div>
                     </div>
                 </div>
@@ -341,5 +359,15 @@ function copyLink() {
 .card:hover {
     transform: translateY(-2px);
     border-color: #3e5067 !important;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
 }
 </style>
