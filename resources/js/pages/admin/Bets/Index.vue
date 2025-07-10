@@ -189,6 +189,43 @@ const someSelected = computed(() =>
     selectedBets.value.length > 0 && selectedBets.value.length < props.bets.data.length
 );
 
+// Generate pagination pages with ellipsis
+const paginationPages = computed(() => {
+    const current = props.bets.current_page;
+    const last = props.bets.last_page;
+    const delta = 2;
+    const pages: (number | string)[] = [];
+    
+    // Always show first page
+    pages.push(1);
+    
+    // Calculate range around current page
+    const rangeStart = Math.max(2, current - delta);
+    const rangeEnd = Math.min(last - 1, current + delta);
+    
+    // Add ellipsis if needed before range
+    if (rangeStart > 2) {
+        pages.push('...');
+    }
+    
+    // Add pages in range
+    for (let i = rangeStart; i <= rangeEnd; i++) {
+        pages.push(i);
+    }
+    
+    // Add ellipsis if needed after range
+    if (rangeEnd < last - 1) {
+        pages.push('...');
+    }
+    
+    // Always show last page if there's more than one page
+    if (last > 1) {
+        pages.push(last);
+    }
+    
+    return pages;
+});
+
 // Methods
 function toggleAll() {
     if (allSelected.value) {
@@ -823,13 +860,36 @@ function formatCurrency(amount: number | null | undefined): string {
                                     <div>
                                         <nav>
                                             <ul class="pagination pagination-sm mb-0">
-                                                <li v-for="page in bets.last_page" :key="page" class="page-item" :class="{ active: page === bets.current_page }">
+                                                <li v-if="bets.current_page > 1" class="page-item">
                                                     <Link
-                                                        :href="`?page=${page}`"
+                                                        :href="`?page=${bets.current_page - 1}`"
                                                         preserve-scroll
                                                         class="page-link"
                                                     >
-                                                        {{ page }}
+                                                        Previous
+                                                    </Link>
+                                                </li>
+                                                <template v-for="(page, index) in paginationPages" :key="index">
+                                                    <li v-if="page === '...'" class="page-item disabled">
+                                                        <span class="page-link">...</span>
+                                                    </li>
+                                                    <li v-else class="page-item" :class="{ active: page === bets.current_page }">
+                                                        <Link
+                                                            :href="`?page=${page}`"
+                                                            preserve-scroll
+                                                            class="page-link"
+                                                        >
+                                                            {{ page }}
+                                                        </Link>
+                                                    </li>
+                                                </template>
+                                                <li v-if="bets.current_page < bets.last_page" class="page-item">
+                                                    <Link
+                                                        :href="`?page=${bets.current_page + 1}`"
+                                                        preserve-scroll
+                                                        class="page-link"
+                                                    >
+                                                        Next
                                                     </Link>
                                                 </li>
                                             </ul>
