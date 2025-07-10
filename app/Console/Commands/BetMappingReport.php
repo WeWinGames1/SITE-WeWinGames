@@ -85,24 +85,25 @@ class BetMappingReport extends Command
         $this->info('Mapping by Sport');
         $this->info('================');
         
-        $sports = Sport::withCount([
-            'bets',
-            'bets as mapped_bets_count' => function ($query) {
-                $query->whereNotNull('team_one_id')
-                    ->whereNotNull('team_two_id');
-            }
-        ])->orderBy('bets_count', 'desc')->get();
+        // Get sport breakdown manually since bets use sport name not ID
+        $sportStats = Bet::select('sports', DB::raw('COUNT(*) as total_count'))
+            ->selectRaw('SUM(CASE WHEN team_one_id IS NOT NULL AND team_two_id IS NOT NULL THEN 1 ELSE 0 END) as mapped_count')
+            ->whereNotNull('sports')
+            ->where('sports', '!=', '')
+            ->groupBy('sports')
+            ->orderBy('total_count', 'desc')
+            ->get();
         
         $tableData = [];
-        foreach ($sports as $sport) {
-            $percentage = $sport->bets_count > 0 
-                ? round(($sport->mapped_bets_count / $sport->bets_count) * 100, 2) 
+        foreach ($sportStats as $sport) {
+            $percentage = $sport->total_count > 0 
+                ? round(($sport->mapped_count / $sport->total_count) * 100, 2) 
                 : 0;
                 
             $tableData[] = [
-                $sport->name,
-                number_format($sport->bets_count),
-                number_format($sport->mapped_bets_count),
+                $sport->sports,
+                number_format($sport->total_count),
+                number_format($sport->mapped_count),
                 $percentage . '%'
             ];
         }

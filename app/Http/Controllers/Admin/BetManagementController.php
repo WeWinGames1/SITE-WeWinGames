@@ -34,7 +34,8 @@ class BetManagementController extends Controller
 
         // Build optimized query with eager loading
         $query = Bet::query()
-            ->select(['bets.*']);
+            ->select(['bets.*'])
+            ->with(['teamOne:id,name', 'teamTwo:id,name']);
 
         // Apply filters using trait
         $this->applyFilters($query, $request);

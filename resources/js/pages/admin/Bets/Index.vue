@@ -21,6 +21,11 @@ import {
     ChevronDownIcon
 } from '@heroicons/vue/24/outline';
 
+interface Team {
+    id: number;
+    name: string;
+}
+
 interface Bet {
     id: number;
     sports: string;
@@ -33,6 +38,8 @@ interface Bet {
     team_one_logo?: string;
     team_two?: string;
     team_two_logo?: string;
+    teamOne?: Team;
+    teamTwo?: Team;
     tips?: string;
     betting_date: string;
     wager_odds: number | string;
@@ -743,8 +750,12 @@ function formatCurrency(amount: number | null | undefined): string {
                                         </td>
                                         <td>
                                             <div>
-                                                <div class="fw-medium">{{ bet.team_one || bet.tips || 'N/A' }}</div>
-                                                <div v-if="bet.team_two" class="text-muted small">vs {{ bet.team_two }}</div>
+                                                <div class="fw-medium">
+                                                    {{ bet.teamOne?.name || bet.team_one || bet.tips || 'N/A' }}
+                                                </div>
+                                                <div v-if="bet.teamTwo?.name || bet.team_two" class="text-muted small">
+                                                    vs {{ bet.teamTwo?.name || bet.team_two }}
+                                                </div>
                                                 <div class="mt-1 text-muted small">{{ bet.membership || 'All' }}</div>
                                             </div>
                                         </td>
