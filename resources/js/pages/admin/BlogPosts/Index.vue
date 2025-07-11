@@ -75,14 +75,14 @@ function clearFilters() {
 
 function deletePost(post: Post) {
     if (confirm(`Are you sure you want to delete "${post.title}"?`)) {
-        router.delete(route('admin.blog-posts.destroy', { post: post.id }), {
+        router.delete(route('admin.blog-posts.destroy', post.slug), {
             preserveScroll: true,
         });
     }
 }
 
 function duplicatePost(post: Post) {
-    router.post(route('admin.blog-posts.duplicate', { post: post.id }), {}, {
+    router.post(route('admin.blog-posts.duplicate', post.slug), {}, {
         preserveScroll: true,
     });
 }
@@ -200,7 +200,7 @@ function formatDate(date: string | null): string {
                             <div class="list-group list-group-flush">
                                 <div v-for="post in stats.top_posts" :key="post.id" 
                                      class="list-group-item d-flex justify-content-between align-items-center px-0">
-                                    <Link :href="route('admin.blog-posts.edit', { post: post.id })" 
+                                    <Link :href="route('admin.blog-posts.edit', post.slug)" 
                                           class="text-decoration-none text-truncate me-2">
                                         {{ post.title }}
                                     </Link>
@@ -325,7 +325,7 @@ function formatDate(date: string | null): string {
                                            title="View">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <Link :href="route('admin.blog-posts.edit', { post: post.id })" 
+                                        <Link :href="route('admin.blog-posts.edit', post.slug)" 
                                               class="btn btn-outline-primary"
                                               title="Edit">
                                             <i class="bi bi-pencil"></i>

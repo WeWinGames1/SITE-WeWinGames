@@ -157,6 +157,22 @@ function addPopularTag(tag: string) {
 }
 
 function submit() {
+    // Validate required fields
+    if (!form.title.trim()) {
+        alert('Please enter a title for the blog post.');
+        return;
+    }
+    
+    if (!form.content.trim() || form.content.trim() === '<p></p>') {
+        alert('Please enter content for the blog post.');
+        return;
+    }
+    
+    if (!form.category) {
+        alert('Please select a category for the blog post.');
+        return;
+    }
+    
     form.post(route('admin.blog-posts.store'));
 }
 
@@ -285,7 +301,7 @@ function updateSourceCode(event: Event) {
                         <!-- Content -->
                         <div class="card mb-4">
                             <div class="card-body">
-                                <label class="form-label text-dark fw-medium mb-2">Content</label>
+                                <label class="form-label text-dark fw-medium mb-2">Content <span class="text-danger">*</span></label>
                                 
                                 <!-- Tiptap Editor Toolbar -->
                                 <div v-if="editor" class="border rounded-top bg-light p-2 d-flex flex-wrap align-items-center gap-1">
@@ -518,10 +534,10 @@ function updateSourceCode(event: Event) {
                         <!-- Category -->
                         <div class="card mb-4">
                             <div class="card-header">
-                                <h5 class="card-title mb-0">Category</h5>
+                                <h5 class="card-title mb-0">Category <span class="text-danger">*</span></h5>
                             </div>
                             <div class="card-body">
-                                <select v-model="form.category" class="form-select">
+                                <select v-model="form.category" class="form-select" required>
                                     <option value="">Select Category</option>
                                     <option v-for="(label, value) in categories" :key="value" :value="value">
                                         {{ label }}

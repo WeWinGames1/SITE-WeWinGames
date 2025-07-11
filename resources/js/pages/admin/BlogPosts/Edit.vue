@@ -66,6 +66,8 @@ const newTag = ref('');
 const showSeoFields = ref(false);
 const showSourceCode = ref(false);
 const sourceCode = ref('');
+const errorMessage = ref<string | null>(null);
+const successMessage = ref<string | null>(null);
 
 // Tiptap editor setup
 const editor = useEditor({
@@ -191,7 +193,40 @@ function addPopularTag(tag: string) {
 }
 
 function submit() {
-    form.put(route('admin.blog-posts.update', props.post.id));
+    // Clear previous messages
+    errorMessage.value = null;
+    successMessage.value = null;
+    
+    // Validate required fields
+    if (!form.title.trim()) {
+        errorMessage.value = 'Please enter a title for the blog post.';
+        return;
+    }
+    
+    if (!form.content.trim() || form.content === '<p></p>') {
+        errorMessage.value = 'Please enter content for the blog post.';
+        return;
+    }
+    
+    if (!form.category) {
+        errorMessage.value = 'Please select a category for the blog post.';
+        return;
+    }
+    
+    form.put(route('admin.blog-posts.update', props.post.slug), {
+        onSuccess: () => {
+            successMessage.value = 'Blog post updated successfully!';
+            // Clear success message after 3 seconds
+            setTimeout(() => {
+                successMessage.value = null;
+            }, 3000);
+        },
+        onError: (errors) => {
+            // Get the first error message
+            const firstError = Object.values(errors)[0];
+            errorMessage.value = Array.isArray(firstError) ? firstError[0] : firstError || 'An error occurred while updating the blog post.';
+        },
+    });
 }
 
 function duplicate() {
@@ -275,6 +310,19 @@ function updateSourceCode(event: Event) {
                         Duplicate
                     </button>
                 </div>
+            </div>
+            
+            <!-- Alert Messages -->
+            <div v-if="errorMessage" class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                {{ errorMessage }}
+                <button type="button" class="btn-close" @click="errorMessage = null" aria-label="Close"></button>
+            </div>
+            
+            <div v-if="successMessage" class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                {{ successMessage }}
+                <button type="button" class="btn-close" @click="successMessage = null" aria-label="Close"></button>
             </div>
             
             <form @submit.prevent="submit">
@@ -361,7 +409,7 @@ function updateSourceCode(event: Event) {
                         <!-- Content -->
                         <div class="card mb-4">
                             <div class="card-body">
-                                <label class="form-label text-dark fw-medium mb-2">Content</label>
+                                <label class="form-label text-dark fw-medium mb-2">Content <span class="text-danger">*</span></label>
                                 
                                 <!-- Tiptap Editor Toolbar -->
                                 <div v-if="editor" class="border rounded-top bg-light p-2 d-flex flex-wrap align-items-center gap-1">
@@ -594,10 +642,10 @@ function updateSourceCode(event: Event) {
                         <!-- Category -->
                         <div class="card mb-4">
                             <div class="card-header">
-                                <h5 class="card-title mb-0">Category</h5>
+                                <h5 class="card-title mb-0">Category <span class="text-danger">*</span></h5>
                             </div>
                             <div class="card-body">
-                                <select v-model="form.category" class="form-select">
+                                <select v-model="form.category" class="form-select" required>
                                     <option value="">Select Category</option>
                                     <option v-for="(label, value) in categories" :key="value" :value="value">
                                         {{ label }}

@@ -37,6 +37,8 @@ const form = useForm({
 });
 
 const newAlias = ref('');
+const errorMessage = ref<string | null>(null);
+const successMessage = ref<string | null>(null);
 
 // Filter leagues based on selected sport
 const filteredLeagues = computed(() => {
@@ -68,7 +70,35 @@ function removeAlias(index: number) {
 }
 
 function submit() {
-    form.post(route('admin.teams.store'));
+    // Clear previous messages
+    errorMessage.value = null;
+    successMessage.value = null;
+    
+    // Validate required fields
+    if (!form.name.trim()) {
+        errorMessage.value = 'Please enter a team name.';
+        return;
+    }
+    
+    if (!form.sport_id) {
+        errorMessage.value = 'Please select a sport.';
+        return;
+    }
+    
+    form.post(route('admin.teams.store'), {
+        onSuccess: () => {
+            successMessage.value = 'Team created successfully!';
+            // Clear success message after 3 seconds
+            setTimeout(() => {
+                successMessage.value = null;
+            }, 3000);
+        },
+        onError: (errors) => {
+            // Get the first error message
+            const firstError = Object.values(errors)[0];
+            errorMessage.value = Array.isArray(firstError) ? firstError[0] : firstError || 'An error occurred while creating the team.';
+        },
+    });
 }
 </script>
 
@@ -91,6 +121,19 @@ function submit() {
                         <li class="breadcrumb-item active">Create</li>
                     </ol>
                 </nav>
+            </div>
+
+            <!-- Alert Messages -->
+            <div v-if="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                {{ errorMessage }}
+                <button type="button" class="btn-close" @click="errorMessage = null" aria-label="Close"></button>
+            </div>
+            
+            <div v-if="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                {{ successMessage }}
+                <button type="button" class="btn-close" @click="successMessage = null" aria-label="Close"></button>
             </div>
 
             <!-- Form -->
