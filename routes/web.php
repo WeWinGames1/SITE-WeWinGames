@@ -226,7 +226,8 @@ Route::get('/privacy', function () {
 
 Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin/customers')->name('admin.customers.')->group(function () {
     Route::get('/', [CustomerController::class, 'index'])->name('index');
-    Route::post('/create', [CustomerController::class, 'create'])->name('create');
+    Route::get('/create', [CustomerController::class, 'showCreateForm'])->name('create');
+    Route::post('/create', [CustomerController::class, 'create'])->name('store');
     Route::put('/{user}', [CustomerController::class, 'update'])->name('update');
     Route::post('/{user}/impersonate', [\App\Http\Controllers\Admin\ImpersonationController::class, 'start'])->name('impersonate');
     Route::post('/{user}/password-reset', [CustomerController::class, 'sendPasswordReset'])->name('password-reset');

@@ -431,6 +431,14 @@ class CustomerController extends Controller
     }
 
     /**
+     * Show the form for creating a new customer
+     */
+    public function showCreateForm()
+    {
+        return Inertia::render('admin/CustomerCreate');
+    }
+
+    /**
      * Create a new customer account
      */
     public function create(Request $request)
