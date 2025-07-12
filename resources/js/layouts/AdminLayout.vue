@@ -3,10 +3,12 @@ import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
 import ApplicationLogo from '@/components/AppLogo.vue';
 import ImpersonationBanner from '@/components/ImpersonationBanner.vue';
+import KnowledgebaseSidebar from '@/components/Admin/KnowledgebaseSidebar.vue';
 
 const page = usePage();
 const sidebarOpen = ref(false);
 const userMenuOpen = ref(false);
+const knowledgebaseSidebarOpen = ref(false);
 const isImpersonating = computed(() => page.props.impersonation?.isImpersonating || false);
 
 // Simple reactive state for navigation
@@ -154,6 +156,7 @@ const navigation: NavItem[] = [
         icon: 'bi-gear',
         children: [
             { name: 'Under Construction', href: route('admin.under-construction.index'), icon: 'bi-cone-striped' },
+            { name: 'Knowledgebase', href: route('admin.knowledgebase.index'), icon: 'bi-book' },
             // { name: 'General Settings', href: '#', icon: 'bi-sliders' }, // TODO: Implement
         ],
     },
@@ -353,6 +356,22 @@ function logout() {
                 
                 <slot />
             </main>
+            
+            <!-- Help Button (Fixed bottom right) -->
+            <button
+                type="button"
+                class="btn btn-primary rounded-circle shadow help-button"
+                @click="knowledgebaseSidebarOpen = true"
+                title="Help & Documentation"
+            >
+                <i class="bi bi-question-lg"></i>
+            </button>
+            
+            <!-- Knowledgebase Sidebar -->
+            <KnowledgebaseSidebar 
+                :is-visible="knowledgebaseSidebarOpen"
+                @close="knowledgebaseSidebarOpen = false"
+            />
         </div>
     </div>
 </template>
@@ -628,6 +647,39 @@ function logout() {
     color: #e2e8f0;
     background-color: rgba(148, 163, 184, 0.1);
     padding-left: 1.25rem;
+}
+
+/* Help Button Styles */
+.help-button {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1030;
+    font-size: 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.help-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 20px rgba(0, 123, 255, 0.3);
+}
+
+.help-button i {
+    font-size: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .help-button {
+        bottom: 1rem;
+        right: 1rem;
+        width: 45px;
+        height: 45px;
+    }
 }
 
 .bi-chevron-down {

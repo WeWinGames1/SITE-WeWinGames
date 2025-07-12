@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             // BetSeeder::class,
             LegalPagesSeeder::class,
             TicketCategorySeeder::class,
+            KnowledgebaseSeeder::class,
         ]);
     }
 }

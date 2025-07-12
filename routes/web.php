@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\SportController;
 use App\Http\Controllers\Admin\StripeProductController;
 use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\UnderConstructionController;
+use App\Http\Controllers\Admin\KnowledgebaseController;
 use App\Http\Controllers\BetController;
 use App\Http\Controllers\BettingEducationController;
 use App\Http\Controllers\CustomerDashboardController;
@@ -284,6 +285,15 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/discounts')->
     Route::post('/{discountCode}/deactivate', [DiscountCodeController::class, 'deactivate'])->name('deactivate');
     Route::post('/validate', [DiscountCodeController::class, 'validate'])->name('validate');
 });
+
+// Knowledgebase Routes
+Route::middleware(['auth', AdminMiddleware::class, 'admin.security'])->prefix('admin/knowledgebase')->name('admin.knowledgebase.')->group(function () {
+    Route::get('/', [KnowledgebaseController::class, 'index'])->name('index');
+    Route::get('/api/page', [KnowledgebaseController::class, 'getForPage'])->name('api.page');
+});
+
+// Knowledgebase API route accessible by admins from anywhere (including frontend)
+Route::middleware(['auth'])->get('/api/knowledgebase/page', [KnowledgebaseController::class, 'getForPage'])->name('knowledgebase.api.page');
 
 // Notifications Management Routes
 Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin/notifications')->name('admin.notifications.')->group(function () {

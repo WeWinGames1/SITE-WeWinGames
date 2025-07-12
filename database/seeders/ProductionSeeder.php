@@ -24,6 +24,7 @@ class ProductionSeeder extends Seeder
             LegalPagesSeeder::class,         // Legal/compliance pages
             BettingEducationSeeder::class,   // Educational content
             EmailTemplateSeeder::class,      // Email templates
+            KnowledgebaseSeeder::class,      // Help documentation
 
             // Stripe products (essential for subscriptions)
             StripeProductSeeder::class,      // Subscription tiers

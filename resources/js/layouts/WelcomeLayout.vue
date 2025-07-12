@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import { socialMediaLinks } from '@/config/social';
+import KnowledgebaseSidebar from '@/components/Admin/KnowledgebaseSidebar.vue';
 
 const mobileMenuOpen = ref(false);
 const toggleMobileMenu = () => {
@@ -30,6 +31,12 @@ const page = usePage();
 const auth = computed(() => page.props.auth || null);
 const footerFaqs = computed(() => page.props.footerFaqs || []);
 const isOnFaqPage = computed(() => page.url === '/faq');
+const isAdmin = computed(() => auth.value?.isAdmin || false);
+const knowledgebaseSidebarOpen = ref(false);
+
+const openKnowledgebase = () => {
+    knowledgebaseSidebarOpen.value = true;
+};
 // console.log(auth)
 </script>
 
@@ -315,8 +322,46 @@ const isOnFaqPage = computed(() => page.url === '/faq');
                 </div>
             </section>
         </footer>
+        
+        <!-- Help Button for Admin Users -->
+        <button
+            v-if="isAdmin"
+            type="button"
+            class="btn btn-primary rounded-circle shadow help-button"
+            @click="openKnowledgebase"
+            title="Help & Documentation"
+            style="position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; z-index: 1040;"
+        >
+            <i class="bi bi-question-lg"></i>
+        </button>
+        
+        <!-- Knowledgebase Sidebar -->
+        <KnowledgebaseSidebar 
+            v-if="isAdmin"
+            :isVisible="knowledgebaseSidebarOpen" 
+            @close="knowledgebaseSidebarOpen = false" 
+        />
     </div>
 </template>
+
+<style scoped>
+.help-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.help-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.help-button i {
+    margin: 0;
+}
+</style>
 
 <style scoped>
 /* Custom hover effects */

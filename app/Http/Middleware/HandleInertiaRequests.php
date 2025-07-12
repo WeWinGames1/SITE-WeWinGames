@@ -55,6 +55,7 @@ class HandleInertiaRequests extends Middleware
                 'impersonatorId' => session()->get('impersonator_id'),
             ],
             'stripeKey' => config('cashier.key'),
+            'route_name' => $request->route() ? $request->route()->getName() : null,
         ];
 
         // Include admin pages only if the user is an admin
