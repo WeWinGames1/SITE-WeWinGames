@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Models\Affiliate;
 use App\Models\User;
 use App\Services\RegistrationSecurityService;
+use App\Services\SendGridService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -31,7 +34,7 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(RegisterRequest $request, RegistrationSecurityService $securityService): RedirectResponse
+    public function store(RegisterRequest $request, RegistrationSecurityService $securityService, SendGridService $sendGridService): RedirectResponse
     {
         // Perform security checks
         $securityCheck = $securityService->canRegister($request);
@@ -47,10 +50,26 @@ class RegisteredUserController extends Controller
         // Use database transaction for atomicity
         try {
             $user = DB::transaction(function () use ($request) {
+                // Check for affiliate cookie
+                $affiliateCode = Cookie::get('affiliate_code');
+                $affiliateId = null;
+
+                if ($affiliateCode) {
+                    $affiliate = Affiliate::where('code', $affiliateCode)
+                        ->where('is_active', true)
+                        ->first();
+                    
+                    if ($affiliate) {
+                        $affiliateId = $affiliate->id;
+                    }
+                }
+
                 $user = User::create([
                     'name' => $request->name,
                     'email' => $request->email,
                     'password' => Hash::make($request->password),
+                    'discord_username' => $request->discord_username,
+                    'affiliate_id' => $affiliateId,
                     'registration_ip' => $request->ip(),
                     'registration_user_agent' => $request->userAgent(),
                 ]);
@@ -63,11 +82,21 @@ class RegisteredUserController extends Controller
                     'metadata' => [
                         'registration_ip' => $request->ip(),
                         'registration_date' => now()->toDateTimeString(),
+                        'affiliate_code' => $affiliateCode ?? '',
+                        'discord_username' => $request->discord_username ?? '',
                     ],
                 ]);
 
                 return $user;
             });
+
+            // Sync to SendGrid
+            try {
+                $sendGridService->syncContact($user);
+            } catch (\Exception $e) {
+                \Log::error('Failed to sync user to SendGrid: ' . $e->getMessage());
+                // Don't fail registration if SendGrid sync fails
+            }
 
             // Log successful registration
             $securityService->logRegistrationAttempt($request, true);

@@ -52,6 +52,26 @@ const pageTitle = computed(() => props.post.seo_title || props.post.title);
 const pageDescription = computed(() => props.post.seo_description || props.post.excerpt);
 const shareUrl = computed(() => window.location.href);
 
+// Process content to add img-fluid class to all images
+const processedContent = computed(() => {
+    if (!props.post.content) return '';
+    
+    // Create a temporary div to parse HTML
+    const div = document.createElement('div');
+    div.innerHTML = props.post.content;
+    
+    // Find all images and add img-fluid class
+    const images = div.querySelectorAll('img');
+    images.forEach(img => {
+        img.classList.add('img-fluid');
+        // Also add some styling for better control
+        img.style.maxWidth = '100%';
+        img.style.height = 'auto';
+    });
+    
+    return div.innerHTML;
+});
+
 // Methods
 function formatDate(date: string): string {
     return new Date(date).toLocaleDateString('en-US', {
@@ -159,7 +179,7 @@ function copyLink() {
                 </div>
                 
                 <!-- Article Content -->
-                <div class="article-content mb-5" v-html="post.content"></div>
+                <div class="article-content mb-5" v-html="processedContent"></div>
                 
                 <!-- Share Section -->
                 <div class="border-top border-bottom py-4 mb-5" style="border-color: #2e4057 !important;">

@@ -53,6 +53,17 @@ class RegisterRequest extends FormRequest
                 },
             ],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'discord_username' => [
+                'nullable',
+                'string',
+                'max:255',
+                'regex:/^[a-zA-Z0-9._-]+#[0-9]{4}$/', // Discord username format
+                function ($attribute, $value, $fail) {
+                    if ($value && !preg_match('/^[a-zA-Z0-9._-]+#[0-9]{4}$/', $value)) {
+                        $fail('Please enter a valid Discord username (e.g., username#1234).');
+                    }
+                },
+            ],
             // Honeypot field - should be empty
             'website' => 'present|max:0',
             // Time-based validation

@@ -11,6 +11,7 @@ const turnstileWidget = ref<string | null>(null);
 const form = useForm({
     name: '',
     email: '',
+    discord_username: '',
     password: '',
     password_confirmation: '',
     website: '', // Honeypot field
@@ -106,6 +107,33 @@ const submit = () => {
                                     />
                                     <div v-if="form.errors.email" class="invalid-feedback">
                                         {{ form.errors.email }}
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="discord_username" class="form-label text-white fw-medium">
+                                        Discord Username
+                                        <span class="text-gray-light small">(Optional)</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-dark border-secondary text-gray-light">
+                                            <i class="bi bi-discord"></i>
+                                        </span>
+                                        <input
+                                            id="discord_username"
+                                            type="text"
+                                            class="form-control form-control-lg"
+                                            :class="{ 'is-invalid': form.errors.discord_username }"
+                                            autocomplete="off"
+                                            v-model="form.discord_username"
+                                            placeholder="username#1234"
+                                        />
+                                        <div v-if="form.errors.discord_username" class="invalid-feedback">
+                                            {{ form.errors.discord_username }}
+                                        </div>
+                                    </div>
+                                    <div class="form-text text-gray-light small">
+                                        Enter your Discord username for exclusive community access
                                     </div>
                                 </div>
 

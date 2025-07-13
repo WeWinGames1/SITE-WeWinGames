@@ -286,21 +286,21 @@ function copyUrl(url: string) {
                                 <div class="btn-group btn-group-sm w-100" role="group">
                                     <button 
                                         @click="copyUrl(item.full_url || item.thumb_url || '')" 
-                                        class="btn btn-outline-secondary"
+                                        class="btn btn-sm btn-outline-secondary"
                                         title="Copy URL"
                                     >
                                         <i class="bi bi-link-45deg"></i>
                                     </button>
                                     <button 
                                         @click="previewImage(item)" 
-                                        class="btn btn-outline-primary"
+                                        class="btn btn-sm btn-outline-primary"
                                         title="Preview"
                                     >
                                         <i class="bi bi-eye"></i>
                                     </button>
                                     <button 
                                         @click="confirmDelete(item)" 
-                                        class="btn btn-outline-danger"
+                                        class="btn btn-sm btn-outline-danger"
                                         title="Delete"
                                     >
                                         <i class="bi bi-trash"></i>

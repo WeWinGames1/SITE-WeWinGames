@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import { Head } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import SubscriptionROIChart from '../components/SubscriptionROIChart.vue';
 import SportProfitAndROIChart from '../components/SportProfitAndROIChart.vue';
 import ProfitsByLevelTable from '../components/ProfitsByLevelTable.vue';
@@ -32,9 +33,39 @@ const props = defineProps<{
     profitByYearData?: Array<{ year: number, profit: number }>,
     profitByMonthData?: Array<{ month: string, profit: number }>,
     sportProfitRoiDataLastYear?: Array<{ sport: string, profit: number, roi: number, monthly?: number }>,
-    levelProfitRoiDataLastYear?: Array<{ year: number, profit: number }>,
+    levelProfitRoiDataLastYear?: Array<{ level: string, profit: number, roi: number }>,
     roiDataLastYear?: Record<string, number>,
 }>();
+
+// Sort levels in the order: Bronze, Silver, Gold, Platinum
+const sortedLevelProfitRoiData = computed(() => {
+    const levelOrder = ['Bronze', 'Silver', 'Gold', 'Platinum'];
+    return [...(props.levelProfitRoiData || [])].sort((a, b) => {
+        return levelOrder.indexOf(a.level) - levelOrder.indexOf(b.level);
+    });
+});
+
+// Sort levels for last year in the order: Silver, Gold, Platinum (no Bronze)
+const sortedLevelProfitRoiDataLastYear = computed(() => {
+    const levelOrder = ['Silver', 'Gold', 'Platinum'];
+    return [...(props.levelProfitRoiDataLastYear || [])].sort((a: any, b: any) => {
+        return levelOrder.indexOf(a.level) - levelOrder.indexOf(b.level);
+    });
+});
+
+// Sort sports by profit from lowest to highest
+const sortedSportProfitRoiData = computed(() => {
+    return [...(props.sportProfitRoiData || [])].sort((a, b) => {
+        return a.profit - b.profit;
+    });
+});
+
+// Sort sports by profit from lowest to highest for last year
+const sortedSportProfitRoiDataLastYear = computed(() => {
+    return [...(props.sportProfitRoiDataLastYear || [])].sort((a, b) => {
+        return a.profit - b.profit;
+    });
+});
 
 function formatMoney(val: number | undefined) {
     return (Math.round(val ?? 0)).toLocaleString();
@@ -123,7 +154,7 @@ function formatMoney(val: number | undefined) {
                         <!-- Table on the left -->
                         <div class="col-12 col-md-6 d-flex justify-content-center">
                             <div class="w-100" style="max-width: 500px;">
-                                <ProfitsByLevelTable :data="props.levelProfitRoiData || []" />
+                                <ProfitsByLevelTable :data="sortedLevelProfitRoiData" />
                             </div>
                         </div>
                         <!-- Chart on the right -->
@@ -144,13 +175,13 @@ function formatMoney(val: number | undefined) {
                         <!-- Table on the left -->
                         <div class="col-12 col-md-6 d-flex justify-content-center">
                             <div class="w-100" style="max-width: 500px;">
-                                <ProfitsBySportTable :data="props.sportProfitRoiData || []" />
+                                <ProfitsBySportTable :data="sortedSportProfitRoiData" />
                             </div>
                         </div>
                         <!-- Chart on the right -->
                         <div class="col-12 col-md-6 d-flex justify-content-center">
                             <div class="w-100" style="max-width: 500px;">
-                                <SportProfitAndROIChart :data="props.sportProfitRoiData" />
+                                <SportProfitAndROIChart :data="sortedSportProfitRoiData" />
                             </div>
                         </div>
                     </div>
@@ -165,7 +196,7 @@ function formatMoney(val: number | undefined) {
                         <!-- Table on the left -->
                         <div class="col-12 col-md-6 d-flex justify-content-center">
                             <div class="w-100" style="max-width: 500px;">
-                                <ProfitsByLevelTable :data="props.levelProfitRoiDataLastYear || []" />
+                                <ProfitsByLevelTable :data="sortedLevelProfitRoiDataLastYear" />
                             </div>
                         </div>
                         <!-- Chart on the right -->
@@ -186,13 +217,13 @@ function formatMoney(val: number | undefined) {
                         <!-- Table on the left -->
                         <div class="col-12 col-md-6 d-flex justify-content-center">
                             <div class="w-100" style="max-width: 500px;">
-                                <ProfitsBySportTable :data="props.sportProfitRoiDataLastYear || []" />
+                                <ProfitsBySportTable :data="sortedSportProfitRoiDataLastYear" />
                             </div>
                         </div>
                         <!-- Chart on the right -->
                         <div class="col-12 col-md-6 d-flex justify-content-center">
                             <div class="w-100" style="max-width: 500px;">
-                                <SportProfitAndROIChart :data="props.sportProfitRoiDataLastYear || []" />
+                                <SportProfitAndROIChart :data="sortedSportProfitRoiDataLastYear" />
                             </div>
                         </div>
                     </div>

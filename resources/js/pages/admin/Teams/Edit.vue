@@ -103,8 +103,13 @@ function removeAlias(index: number) {
 }
 
 function submit() {
-    form.post(route('admin.teams.update', props.team.id), {
-        _method: 'put',
+    // When uploading files with Inertia, we need to use post with _method
+    form.transform(data => ({
+        ...data,
+        _method: 'PUT'
+    })).post(route('admin.teams.update', props.team.id), {
+        forceFormData: true, // This ensures multipart/form-data encoding for file uploads
+        preserveScroll: true
     });
 }
 </script>

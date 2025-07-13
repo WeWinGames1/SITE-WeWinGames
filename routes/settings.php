@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Settings\AppearanceController;
 use App\Http\Controllers\Settings\BillingController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
@@ -20,5 +19,4 @@ Route::middleware('auth')->group(function () {
     Route::put('settings/billing', [BillingController::class, 'update'])->name('billing.update');
     Route::post('settings/billing/set-default-payment-method', [BillingController::class, 'setDefaultPaymentMethod'])->name('billing.set-default-payment-method');
     Route::get('settings/billing-portal', [BillingController::class, 'billing_portal'])->name('billing.portal');
-    Route::get('settings/appearance', [AppearanceController::class, 'show'])->name('appearance');
 });

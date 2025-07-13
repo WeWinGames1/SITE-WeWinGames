@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, useForm, Link } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { Editor, EditorContent } from '@tiptap/vue-3';
 import StarterKit from '@tiptap/starter-kit';
+import TiptapLink from '@tiptap/extension-link';
+import Image from '@tiptap/extension-image';
+import MediaPicker from '@/components/MediaPicker.vue';
 import QrcodeVue from 'qrcode.vue';
 
 const props = defineProps<{ page: any | null }>();
@@ -12,18 +15,28 @@ const form = useForm({
     title: props.page?.title || '',
     slug: props.page?.slug || '',
     content: props.page?.content || '',
-    featured_image: null, // for file upload
+    featured_image: null as File | null, // for file upload
+    featured_image_media_id: null as number | null,
     published: props.page?.published ?? true,
 });
 
 const preview = ref(props.page?.featured_image || '');
 const showSourceCode = ref(false);
 const sourceCode = ref('');
+const showMediaPicker = ref(false);
+const showContentMediaPicker = ref(false);
+const fileInputKey = ref(0);
 
 // Tiptap setup
 const editor = ref(new Editor({
     content: form.content,
-    extensions: [StarterKit],
+    extensions: [
+        StarterKit,
+        TiptapLink.configure({
+            openOnClick: false,
+        }),
+        Image,
+    ],
     onUpdate: ({ editor }) => {
         form.content = editor.getHTML();
         if (showSourceCode.value) {
@@ -92,6 +105,74 @@ function updateSourceCode(event: Event) {
     sourceCode.value = target.value;
     form.content = target.value;
 }
+
+// Media picker functions
+function selectFeaturedImage(media: any) {
+    // media can be a single object or array depending on picker mode
+    const selectedMedia = Array.isArray(media) ? media[0] : media;
+    
+    form.featured_image_media_id = selectedMedia.id;
+    preview.value = selectedMedia.full_url;
+    showMediaPicker.value = false;
+    
+    // Clear file input since we're using media library
+    form.featured_image = null;
+    fileInputKey.value++;
+}
+
+function selectContentImage(media: any) {
+    // media can be a single object or array depending on picker mode
+    const selectedMedia = Array.isArray(media) ? media[0] : media;
+    
+    if (editor.value) {
+        // Ask for image size
+        const selectedOption = prompt(
+            'Select image size:\n1. Small (25%)\n2. Medium (50%)\n3. Large (75%)\n4. Full Size (100%)\n\nEnter number (1-4) or percentage (e.g., 60):', 
+            '4'
+        );
+        
+        let width = '100%';
+        if (selectedOption) {
+            switch (selectedOption) {
+                case '1': width = '25%'; break;
+                case '2': width = '50%'; break;
+                case '3': width = '75%'; break;
+                case '4': width = '100%'; break;
+                default:
+                    // Allow custom percentage
+                    const customWidth = parseInt(selectedOption);
+                    if (!isNaN(customWidth) && customWidth > 0 && customWidth <= 100) {
+                        width = customWidth + '%';
+                    }
+            }
+        }
+        
+        // Insert image with Bootstrap classes and custom width
+        const imgHtml = `<div style="width: ${width}; display: inline-block;"><img src="${selectedMedia.full_url}" alt="${selectedMedia.name || 'Image'}" class="img-fluid" /></div>`;
+        editor.value.chain().focus().insertContent(imgHtml).run();
+    }
+    showContentMediaPicker.value = false;
+}
+
+function removeImage() {
+    form.featured_image = null;
+    form.featured_image_media_id = null;
+    preview.value = '';
+    fileInputKey.value++; // Force file input to reset
+}
+
+// Add link function
+const addLink = () => {
+    const url = prompt('Enter URL:');
+    if (url && editor.value) {
+        editor.value.chain().focus().toggleLink({ href: url }).run();
+    }
+};
+
+// Add image function
+const addImage = () => {
+    showContentMediaPicker.value = true;
+};
 </script>
 
 <template>
@@ -244,6 +325,26 @@ function updateSourceCode(event: Event) {
                                     <div class="vr"></div>
                                     <button
                                         type="button"
+                                        @click="addLink"
+                                        :class="{ 'active': editor.isActive('link') }"
+                                        class="btn btn-sm btn-outline-secondary"
+                                        title="Add Link"
+                                        :disabled="showSourceCode"
+                                    >
+                                        <i class="bi bi-link-45deg"></i>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        @click="addImage"
+                                        class="btn btn-sm btn-outline-secondary"
+                                        title="Add Image"
+                                        :disabled="showSourceCode"
+                                    >
+                                        <i class="bi bi-image"></i>
+                                    </button>
+                                    <div class="vr"></div>
+                                    <button
+                                        type="button"
                                         @click="toggleSourceView"
                                         :class="{ 'active': showSourceCode }"
                                         class="btn btn-sm btn-outline-secondary"
@@ -320,13 +421,36 @@ function updateSourceCode(event: Event) {
                             </div>
                             <div class="card-body">
                                 <div v-if="preview" class="mb-3">
-                                    <img :src="preview" alt="Preview" class="img-fluid rounded">
+                                    <div class="position-relative">
+                                        <img :src="preview" alt="Preview" class="img-fluid rounded">
+                                        <button
+                                            type="button"
+                                            @click="removeImage"
+                                            class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2"
+                                        >
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </div>
                                 </div>
+                                
+                                <div class="mb-3">
+                                    <button
+                                        type="button"
+                                        @click="showMediaPicker = true"
+                                        class="btn btn-primary me-2"
+                                    >
+                                        <i class="bi bi-images me-1"></i>
+                                        Choose from Library
+                                    </button>
+                                    <span class="text-muted">or</span>
+                                </div>
+                                
                                 <input
                                     type="file"
                                     @change="handleImageChange"
                                     accept="image/*"
                                     class="form-control"
+                                    :key="fileInputKey"
                                 />
                                 <div class="text-secondary small mt-1">Hero image for the landing page</div>
                             </div>
@@ -392,6 +516,19 @@ function updateSourceCode(event: Event) {
                 </div>
             </form>
         </div>
+        
+        <!-- Media Pickers -->
+        <MediaPicker 
+            :show="showMediaPicker" 
+            @select="selectFeaturedImage"
+            @close="showMediaPicker = false"
+        />
+        
+        <MediaPicker 
+            :show="showContentMediaPicker" 
+            @select="selectContentImage"
+            @close="showContentMediaPicker = false"
+        />
     </AdminLayout>
 </template>
 

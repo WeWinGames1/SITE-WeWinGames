@@ -37,14 +37,23 @@ class PageController extends Controller
             'title' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:pages,slug',
             'content' => 'required|string',
-            'featured_image' => 'nullable|image|max:2048',
+            'featured_image' => 'nullable|image|max:20480',
+            'featured_image_media_id' => 'nullable|integer|exists:media,id',
             'published' => 'boolean',
         ]);
 
-        if ($request->hasFile('featured_image')) {
+        // Handle media library selection
+        if ($request->filled('featured_image_media_id')) {
+            $media = \App\Models\Media::find($request->featured_image_media_id);
+            if ($media) {
+                // Store the direct path reference
+                $data['featured_image'] = 'media/' . $media->id . '/' . $media->file_name;
+            }
+        } elseif ($request->hasFile('featured_image')) {
             $data['featured_image'] = $request->file('featured_image')->store('pages', 'public');
         }
-
+        
+        unset($data['featured_image_media_id']);
         $this->pages->create($data);
 
         return redirect()->route('admin.pages.index');
@@ -61,16 +70,25 @@ class PageController extends Controller
             'title' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:pages,slug,'.$page->id,
             'content' => 'required|string',
-            'featured_image' => 'nullable|image|max:2048',
+            'featured_image' => 'nullable|image|max:20480',
+            'featured_image_media_id' => 'nullable|integer|exists:media,id',
             'published' => 'boolean',
         ]);
 
-        if ($request->hasFile('featured_image')) {
+        // Handle media library selection
+        if ($request->filled('featured_image_media_id')) {
+            $media = \App\Models\Media::find($request->featured_image_media_id);
+            if ($media) {
+                // Store the direct path reference
+                $data['featured_image'] = 'media/' . $media->id . '/' . $media->file_name;
+            }
+        } elseif ($request->hasFile('featured_image')) {
             $data['featured_image'] = $request->file('featured_image')->store('pages', 'public');
         } else {
             unset($data['featured_image']);
         }
-
+        
+        unset($data['featured_image_media_id']);
         $this->pages->update($page, $data);
 
         return redirect()->route('admin.pages.index');

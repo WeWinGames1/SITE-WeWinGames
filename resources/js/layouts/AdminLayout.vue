@@ -121,7 +121,6 @@ const navigation: NavItem[] = [
             { name: 'Landing Pages', href: route('admin.landing-pages.index'), icon: 'bi-window-stack' },
             { name: 'Testimonials', href: route('admin.testimonials.index'), icon: 'bi-chat-quote' },
             { name: 'FAQs', href: route('admin.faqs.index'), icon: 'bi-question-circle' },
-            { name: 'Resume Submissions', href: route('admin.resume-submissions.index'), icon: 'bi-file-earmark-person' },
         ],
     },
     {
@@ -131,6 +130,7 @@ const navigation: NavItem[] = [
         children: [
             { name: 'Stripe Products', href: route('admin.stripe-products.index'), icon: 'bi-credit-card-2-back' },
             { name: 'Discount Codes', href: route('admin.discounts.index'), icon: 'bi-percent' },
+            { name: 'Affiliates', href: route('admin.affiliates.index'), icon: 'bi-people' },
         ],
     },
     {
@@ -139,6 +139,7 @@ const navigation: NavItem[] = [
         icon: 'bi-headset',
         children: [
             { name: 'Support Tickets', href: route('admin.support-tickets.index'), icon: 'bi-ticket-detailed' },
+            { name: 'Resume Submissions', href: route('admin.resume-submissions.index'), icon: 'bi-file-earmark-person' },
             // { name: 'Ticket Categories', href: '#', icon: 'bi-tags' }, // TODO: Implement
         ],
     },

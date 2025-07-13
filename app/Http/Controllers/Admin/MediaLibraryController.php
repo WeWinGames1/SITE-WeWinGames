@@ -28,9 +28,9 @@ class MediaLibraryController extends Controller
         // Transform the collection to ensure URLs are included
         $media->getCollection()->transform(function ($item) {
             return array_merge($item->toArray(), [
-                'full_url' => $item->getUrl(),
-                'thumb_url' => $item->getUrl(),
-                'preview_url' => $item->getUrl(),
+                'full_url' => $item->full_url,
+                'thumb_url' => $item->thumb_url,
+                'preview_url' => $item->preview_url,
             ]);
         });
 
@@ -85,9 +85,9 @@ class MediaLibraryController extends Controller
                     'file_name' => $media->file_name,
                     'mime_type' => $media->mime_type,
                     'size' => $media->size,
-                    'full_url' => Storage::disk('public')->url($storedPath),
-                    'thumb_url' => Storage::disk('public')->url($storedPath), // Same as full for now
-                    'preview_url' => Storage::disk('public')->url($storedPath), // Same as full for now
+                    'full_url' => $media->full_url,
+                    'thumb_url' => $media->thumb_url,
+                    'preview_url' => $media->preview_url,
                     'created_at' => $media->created_at,
                 ];
             } catch (\Exception $e) {
@@ -142,13 +142,10 @@ class MediaLibraryController extends Controller
 
         // Transform the media items to include proper URLs
         $media->getCollection()->transform(function ($item) {
-            $filePath = "media/{$item->id}/{$item->file_name}";
-            $url = Storage::disk('public')->url($filePath);
-            
             return array_merge($item->toArray(), [
-                'full_url' => $url,
-                'thumb_url' => $url,
-                'preview_url' => $url,
+                'full_url' => $item->full_url,
+                'thumb_url' => $item->thumb_url,
+                'preview_url' => $item->preview_url,
             ]);
         });
 

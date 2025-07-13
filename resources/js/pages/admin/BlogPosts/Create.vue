@@ -179,7 +179,38 @@ function selectContentImage(media: any) {
     const selectedMedia = Array.isArray(media) ? media[0] : media;
     
     if (editor.value) {
-        editor.value.chain().focus().setImage({ src: selectedMedia.full_url }).run();
+        // Ask for image size
+        const sizeOptions = [
+            { label: 'Small (25%)', value: '25' },
+            { label: 'Medium (50%)', value: '50' },
+            { label: 'Large (75%)', value: '75' },
+            { label: 'Full Size (100%)', value: '100' }
+        ];
+        
+        const selectedOption = prompt(
+            'Select image size:\n1. Small (25%)\n2. Medium (50%)\n3. Large (75%)\n4. Full Size (100%)\n\nEnter number (1-4) or percentage (e.g., 60):', 
+            '4'
+        );
+        
+        let width = '100%';
+        if (selectedOption) {
+            switch (selectedOption) {
+                case '1': width = '25%'; break;
+                case '2': width = '50%'; break;
+                case '3': width = '75%'; break;
+                case '4': width = '100%'; break;
+                default:
+                    // Allow custom percentage
+                    const customWidth = parseInt(selectedOption);
+                    if (!isNaN(customWidth) && customWidth > 0 && customWidth <= 100) {
+                        width = customWidth + '%';
+                    }
+            }
+        }
+        
+        // Insert image with Bootstrap classes and custom width
+        const imgHtml = `<div style="width: ${width}; display: inline-block;"><img src="${selectedMedia.full_url}" alt="${selectedMedia.name || 'Image'}" class="img-fluid" /></div>`;
+        editor.value.chain().focus().insertContent(imgHtml).run();
     }
     showContentMediaPicker.value = false;
 }

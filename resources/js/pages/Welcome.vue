@@ -384,11 +384,11 @@ const allGroupedBets = computed(() => {
                 <div class="container-fluid">
                     <div class="row g-4">
                         <div class="col-lg-4">
-                            <div class="card bg-dark text-white h-100 shadow text-center">
-                                <div class="card-body d-flex flex-column justify-content-center p-5">
+                            <div class="card bg-dark text-white h-100 shadow">
+                                <div class="card-body d-flex flex-column justify-content-center text-center p-5">
                                     <h3 class="h4 fw-bold mb-4">This Year ({{ props.thisYear || new Date().getFullYear() }})</h3>
                                     <div class="display-4 fw-bold text-primary mb-4">
-                                        ${{ formatMoney(props.thisYearProfit + 20) }}
+                                        ${{ formatMoney(props.thisYearProfit) }}
                                     </div>
                                     <div class="fs-5 text-secondary mb-2">
                                         ROI: <span class="fw-bold text-white">{{ Math.round(props.thisYearROI ?? 0) }}%</span>
@@ -429,9 +429,9 @@ const allGroupedBets = computed(() => {
                                                 <td>15%</td>
                                             </tr>
                                             <tr>
-                                                <td>2025 to date</td>
-                                                <td>$12,600</td>
-                                                <td>40%</td>
+                                                <td>{{ props.thisYear || 2025 }} to date</td>
+                                                <td>${{ formatMoney(props.thisYearProfit) }}</td>
+                                                <td>{{ Math.round(props.thisYearROI ?? 0) }}%</td>
                                             </tr>
                                         </tbody>
                                     </table>

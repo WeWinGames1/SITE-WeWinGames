@@ -36,6 +36,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'admin_override',
         'override_expiry',
         'override_tier',
+        'affiliate_id',
+        'discord_username',
+        'affiliate_bound_at',
+        'affiliate_bound_plan',
     ];
 
     /**
@@ -67,6 +71,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'is_gifted' => 'boolean',
             'admin_override' => 'boolean',
             'override_expiry' => 'date',
+            'affiliate_bound_at' => 'datetime',
         ];
     }
 
@@ -134,5 +139,24 @@ class User extends Authenticatable implements MustVerifyEmail
     public function supportTickets()
     {
         return $this->hasMany(SupportTicket::class);
+    }
+
+    /**
+     * Get the affiliate that referred this user
+     */
+    public function affiliate()
+    {
+        return $this->belongsTo(Affiliate::class);
+    }
+
+    /**
+     * Bind user to affiliate when they upgrade to paid plan
+     */
+    public function bindToAffiliate(Affiliate $affiliate, string $plan = null): void
+    {
+        $this->affiliate_id = $affiliate->id;
+        $this->affiliate_bound_at = now();
+        $this->affiliate_bound_plan = $plan;
+        $this->save();
     }
 }

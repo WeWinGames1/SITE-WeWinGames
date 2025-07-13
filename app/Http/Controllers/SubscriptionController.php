@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Affiliate;
 use App\Models\DiscountCode;
 use App\Models\StripeProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
@@ -127,6 +129,20 @@ class SubscriptionController extends Controller
 
             // Create or get the subscription
             $subscription = $user->newSubscription('default', $priceId);
+            
+            // Add affiliate code to metadata if available
+            $affiliateCode = Cookie::get('affiliate_code');
+            if ($affiliateCode && !$user->affiliate_id) {
+                $affiliate = Affiliate::where('code', $affiliateCode)
+                    ->where('is_active', true)
+                    ->first();
+                
+                if ($affiliate) {
+                    $subscription->withMetadata([
+                        'affiliate_code' => $affiliateCode
+                    ]);
+                }
+            }
 
             // Apply coupon if provided
             if ($request->filled('coupon')) {

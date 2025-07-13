@@ -25,7 +25,7 @@ class Media extends BaseMedia
     {
         // For library items, construct the URL manually
         if ($this->model_type === 'library' || ($this->model_type === null && $this->collection_name === 'library')) {
-            return url('storage/media/' . $this->id . '/' . $this->file_name);
+            return asset('storage/media/' . $this->id . '/' . $this->file_name);
         }
         
         // For other items, use the parent method

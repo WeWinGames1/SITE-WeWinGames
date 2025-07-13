@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\BetImportWizardController;
 use App\Http\Controllers\Admin\BetManagementController;
 use App\Http\Controllers\Admin\BlogPostController;
+use App\Http\Controllers\Admin\BlogCategoryController;
 use App\Http\Controllers\Admin\CacheController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DiscountCodeController;
@@ -339,12 +340,33 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/blog-posts')-
     Route::get('/statistics', [BlogPostController::class, 'statistics'])->name('statistics');
 });
 
+// Blog Category Management Routes
+Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/blog-categories')->name('admin.blog-categories.')->group(function () {
+    Route::get('/', [BlogCategoryController::class, 'index'])->name('index');
+    Route::post('/', [BlogCategoryController::class, 'store'])->name('store');
+    Route::put('/{blogCategory}', [BlogCategoryController::class, 'update'])->name('update');
+    Route::delete('/{blogCategory}', [BlogCategoryController::class, 'destroy'])->name('destroy');
+    Route::post('/update-order', [BlogCategoryController::class, 'updateOrder'])->name('update-order');
+});
+
 // Media Library Routes
 Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/media-library')->name('admin.media-library.')->group(function () {
     Route::get('/', [MediaLibraryController::class, 'index'])->name('index');
     Route::post('/upload', [MediaLibraryController::class, 'store'])->name('store');
     Route::delete('/{media}', [MediaLibraryController::class, 'destroy'])->name('destroy');
     Route::get('/picker', [MediaLibraryController::class, 'picker'])->name('picker');
+});
+
+// Affiliate Management Routes
+Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/affiliates')->name('admin.affiliates.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\AffiliateController::class, 'index'])->name('index');
+    Route::get('/create', [\App\Http\Controllers\Admin\AffiliateController::class, 'create'])->name('create');
+    Route::post('/', [\App\Http\Controllers\Admin\AffiliateController::class, 'store'])->name('store');
+    Route::get('/{affiliate}', [\App\Http\Controllers\Admin\AffiliateController::class, 'show'])->name('show');
+    Route::get('/{affiliate}/edit', [\App\Http\Controllers\Admin\AffiliateController::class, 'edit'])->name('edit');
+    Route::put('/{affiliate}', [\App\Http\Controllers\Admin\AffiliateController::class, 'update'])->name('update');
+    Route::delete('/{affiliate}', [\App\Http\Controllers\Admin\AffiliateController::class, 'destroy'])->name('destroy');
+    Route::get('/{affiliate}/customers', [\App\Http\Controllers\Admin\AffiliateController::class, 'customers'])->name('customers');
 });
 
 // Stripe Webhook - Laravel Cashier

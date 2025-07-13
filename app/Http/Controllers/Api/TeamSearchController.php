@@ -74,7 +74,7 @@ class TeamSearchController extends Controller
     public function updateLogo(Request $request, Team $team)
     {
         $request->validate([
-            'logo' => 'required|image|max:2048',
+            'logo' => 'required|image|max:10240',
         ]);
         
         // Delete old logo if exists

@@ -228,9 +228,6 @@ onMounted(() => {
                         <Link :href="route('password.edit')" class="nav-link">
                             <i class="bi bi-shield-lock me-2"></i>Security
                         </Link>
-                        <Link :href="route('appearance')" class="nav-link">
-                            <i class="bi bi-palette me-2"></i>Appearance
-                        </Link>
                     </nav>
                 </div>
             </div>

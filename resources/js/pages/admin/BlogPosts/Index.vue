@@ -3,6 +3,7 @@ import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import { debounce } from 'lodash';
+import BlogCategoryModal from '@/components/BlogCategoryModal.vue';
 
 interface Author {
     id: number;
@@ -45,6 +46,7 @@ const props = defineProps<Props>();
 // State
 const showStats = ref(false);
 const stats = ref<any>(null);
+const showCategoryModal = ref(false);
 
 // Forms
 const filterForm = useForm({
@@ -130,6 +132,10 @@ function formatDate(date: string | null): string {
                     <p class="text-muted">Create, edit, and manage your blog content</p>
                 </div>
                 <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary" @click="showCategoryModal = true">
+                        <i class="bi bi-tags me-2"></i>
+                        Manage Categories
+                    </button>
                     <button type="button" class="btn btn-outline-primary" @click="loadStats">
                         <i class="bi bi-bar-chart-line me-2"></i>
                         {{ showStats ? 'Hide' : 'Show' }} Statistics
@@ -382,5 +388,11 @@ function formatDate(date: string | null): string {
                 </div>
             </div>
         </div>
+        
+        <!-- Category Management Modal -->
+        <BlogCategoryModal 
+            :show="showCategoryModal" 
+            @close="showCategoryModal = false"
+        />
     </AdminLayout>
 </template>

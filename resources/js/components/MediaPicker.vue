@@ -251,16 +251,21 @@ function formatFileSize(bytes: number): string {
                     <div v-else-if="media.length > 0" class="row g-3">
                         <div v-for="item in media" :key="item.id" class="col-6 col-md-4 col-lg-3">
                             <div 
-                                class="card cursor-pointer" 
-                                :class="{ 'border-primary border-2': isSelected(item) }"
+                                class="card cursor-pointer media-item" 
+                                :class="{ 'selected': isSelected(item) }"
                                 @click="toggleSelection(item)"
                             >
-                                <img 
-                                    :src="item.thumb_url" 
-                                    :alt="item.name"
-                                    class="card-img-top"
-                                    style="height: 150px; object-fit: cover;"
-                                >
+                                <div class="position-relative">
+                                    <img 
+                                        :src="item.thumb_url" 
+                                        :alt="item.name"
+                                        class="card-img-top"
+                                        style="height: 150px; object-fit: cover;"
+                                    >
+                                    <div v-if="isSelected(item)" class="selected-overlay">
+                                        <i class="bi bi-check-circle-fill text-white fs-3"></i>
+                                    </div>
+                                </div>
                                 <div class="card-body p-2">
                                     <p class="mb-0 small text-truncate" :title="item.name">{{ item.name }}</p>
                                     <p class="mb-0 text-muted" style="font-size: 0.75rem;">
@@ -320,5 +325,35 @@ function formatFileSize(bytes: number): string {
 <style scoped>
 .cursor-pointer {
     cursor: pointer;
+}
+
+.media-item {
+    transition: all 0.2s ease;
+}
+
+.media-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.media-item.selected {
+    border: 3px solid var(--bs-primary) !important;
+    box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.25);
+}
+
+.selected-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(var(--bs-primary-rgb), 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.selected-overlay i {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 </style>

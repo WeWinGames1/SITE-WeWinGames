@@ -263,6 +263,21 @@ class Post extends Model implements HasMedia
      */
     public static function getCategories(): array
     {
+        // Try to get categories from database first
+        try {
+            $categories = BlogCategory::active()
+                ->ordered()
+                ->pluck('name', 'slug')
+                ->toArray();
+                
+            if (!empty($categories)) {
+                return $categories;
+            }
+        } catch (\Exception $e) {
+            // Fall back to hardcoded if database is not ready
+        }
+        
+        // Fallback categories
         return [
             'betting-education' => 'Betting Education',
             'sports-analysis' => 'Sports Analysis',
