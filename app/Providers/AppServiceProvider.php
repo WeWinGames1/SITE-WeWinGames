@@ -62,8 +62,7 @@ class AppServiceProvider extends ServiceProvider
         Notification::resolved(function (ChannelManager $service) {
             $service->extend('mail', function ($app) {
                 return new LoggedMailChannel(
-                    $app->make('mail.manager'),
-                    $app->make('markdown')
+                    $app->make('mail.manager')
                 );
             });
         });

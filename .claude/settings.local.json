@@ -42,7 +42,10 @@
       "Bash(./vendor/bin/pint)",
       "Bash(echo:*)",
       "Bash(killall:*)",
-      "Bash(sqlite3:*)"
+      "Bash(sqlite3:*)",
+      "Bash(node:*)",
+      "Bash(npm:*)",
+      "Bash(test:*)"
     ],
     "deny": []
   }
