@@ -44,10 +44,26 @@ class MediaLibraryController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $request->validate([
-            'files' => 'required|array',
-            'files.*' => 'required|image|max:20480', // 20MB max
+        // Log the request for debugging
+        \Log::info('Media upload request', [
+            'files_count' => $request->hasFile('files') ? count($request->file('files')) : 0,
+            'has_files_array' => $request->has('files'),
+            'all_files' => $request->allFiles(),
         ]);
+        
+        try {
+            $request->validate([
+                'files' => 'required|array',
+                'files.*' => 'required|image|max:20480', // 20MB max
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Media upload validation failed', [
+                'errors' => $e->errors(),
+                'request_data' => $request->all(),
+                'files' => $request->allFiles(),
+            ]);
+            throw $e;
+        }
 
         $uploadedMedia = [];
 

@@ -65,9 +65,13 @@ async function uploadFiles() {
     });
 
     try {
+        // Get CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
         const response = await axios.post(route('admin.media-library.store'), formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
+                'X-CSRF-TOKEN': csrfToken,
             },
             onUploadProgress: (progressEvent) => {
                 if (progressEvent.total) {
@@ -84,8 +88,19 @@ async function uploadFiles() {
         fileInputKey.value++;
     } catch (error: any) {
         console.error('Upload error:', error);
+        console.error('Error response:', error.response?.data);
+        
         if (error.response?.status === 413) {
-            alert('File too large. Maximum file size is 2MB. Please use a smaller image.');
+            alert('File too large. Maximum file size is 20MB. Please use a smaller image.');
+        } else if (error.response?.status === 422) {
+            // Validation error - show specific field errors
+            const errors = error.response?.data?.errors;
+            if (errors) {
+                const errorMessages = Object.values(errors).flat().join('\n');
+                alert(`Validation Error:\n${errorMessages}`);
+            } else {
+                alert(`Validation Error: ${error.response?.data?.message || 'Please check your file and try again.'}`);
+            }
         } else if (error.response?.data?.message) {
             alert(error.response.data.message);
         } else {
