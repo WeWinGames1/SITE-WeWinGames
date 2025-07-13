@@ -2,11 +2,19 @@
 
 namespace App\Providers;
 
+use App\Channels\LoggedMailChannel;
+use App\Listeners\LogSendingEmail;
+use App\Listeners\LogSentEmail;
 use App\Services\CacheService;
 use App\Services\RateLimiterService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Mail\Events\MessageSending;
+use Illuminate\Mail\Events\MessageSent;
+use Illuminate\Notifications\ChannelManager;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
@@ -45,6 +53,20 @@ class AppServiceProvider extends ServiceProvider
 
         // Configure model settings
         Model::preventLazyLoading(! $this->app->isProduction());
+
+        // Register email logging event listeners
+        Event::listen(MessageSending::class, LogSendingEmail::class);
+        Event::listen(MessageSent::class, LogSentEmail::class);
+        
+        // Override the default mail channel with our logged version
+        Notification::resolved(function (ChannelManager $service) {
+            $service->extend('mail', function ($app) {
+                return new LoggedMailChannel(
+                    $app->make('mail.manager'),
+                    $app->make('markdown')
+                );
+            });
+        });
 
         // Log slow queries in development
         if ($this->app->isLocal()) {

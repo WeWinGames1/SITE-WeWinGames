@@ -530,4 +530,26 @@ class CustomerController extends Controller
             return back()->with('error', 'Failed to cancel subscription. Please try again.');
         }
     }
+
+    /**
+     * Search customers for API
+     */
+    public function search(Request $request)
+    {
+        $query = $request->get('q', '');
+        
+        if (strlen($query) < 2) {
+            return response()->json(['customers' => []]);
+        }
+
+        $customers = User::where(function ($q) use ($query) {
+            $q->where('name', 'like', '%' . $query . '%')
+              ->orWhere('email', 'like', '%' . $query . '%');
+        })
+        ->orderBy('name')
+        ->limit(20)
+        ->get(['id', 'name', 'email']);
+
+        return response()->json(['customers' => $customers]);
+    }
 }

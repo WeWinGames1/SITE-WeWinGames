@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\BetImportWizardController;
 use App\Http\Controllers\Admin\BetManagementController;
 use App\Http\Controllers\Admin\BlogPostController;
+use App\Http\Controllers\Admin\CacheController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DiscountCodeController;
 use App\Http\Controllers\Admin\LandingPageController;
@@ -96,6 +97,9 @@ Route::prefix('admin')->group(function () {
 // Admin Dashboard
 Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+    
+    // Cache management
+    Route::post('/cache/clear', [CacheController::class, 'clear'])->name('cache.clear');
 
     // Support Ticket Management
     Route::prefix('support-tickets')->name('support-tickets.')->group(function () {
@@ -235,6 +239,11 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
     Route::get('/export', [CustomerController::class, 'export'])->name('export')->middleware('admin.rate_limit:export');
 });
 
+// Admin API routes
+Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin/api')->name('admin.api.')->group(function () {
+    Route::get('/customers/search', [CustomerController::class, 'search'])->name('customers.search');
+});
+
 // Impersonation stop route (accessible when impersonating)
 Route::get('/admin/impersonate/stop', [\App\Http\Controllers\Admin\ImpersonationController::class, 'stop'])
     ->name('admin.impersonate.stop')
@@ -305,6 +314,7 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
         Route::put('/{emailTemplate}', [EmailTemplateController::class, 'update'])->name('update');
         Route::get('/{emailTemplate}/preview', [EmailTemplateController::class, 'preview'])->name('preview');
         Route::post('/{emailTemplate}/reset', [EmailTemplateController::class, 'reset'])->name('reset');
+        Route::post('/{emailTemplate}/send-test', [EmailTemplateController::class, 'sendTest'])->name('send-test');
     });
 
     // Email Logs

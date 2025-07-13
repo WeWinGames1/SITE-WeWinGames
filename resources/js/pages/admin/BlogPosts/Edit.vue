@@ -193,9 +193,10 @@ function addPopularTag(tag: string) {
 }
 
 function submit() {
-    // Clear previous messages
+    // Clear previous messages and errors
     errorMessage.value = null;
     successMessage.value = null;
+    form.clearErrors();
     
     // Validate required fields
     if (!form.title.trim()) {
@@ -213,7 +214,23 @@ function submit() {
         return;
     }
     
-    form.put(route('admin.blog-posts.update', props.post.slug), {
+    // Ensure all form data is properly set
+    form.transform((data) => ({
+        title: data.title,
+        slug: data.slug,
+        excerpt: data.excerpt || '',
+        content: data.content,
+        featured_image: data.featured_image,
+        category: data.category,
+        tags: data.tags || [],
+        is_published: data.is_published,
+        published_at: data.published_at || null,
+        seo_title: data.seo_title || '',
+        seo_description: data.seo_description || '',
+        seo_keywords: data.seo_keywords || '',
+    })).put(route('admin.blog-posts.update', props.post.slug), {
+        preserveScroll: true,
+        preserveState: true,
         onSuccess: () => {
             successMessage.value = 'Blog post updated successfully!';
             // Clear success message after 3 seconds
@@ -222,6 +239,7 @@ function submit() {
             }, 3000);
         },
         onError: (errors) => {
+            console.error('Form errors:', errors);
             // Get the first error message
             const firstError = Object.values(errors)[0];
             errorMessage.value = Array.isArray(firstError) ? firstError[0] : firstError || 'An error occurred while updating the blog post.';

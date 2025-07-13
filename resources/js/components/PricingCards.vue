@@ -15,6 +15,9 @@ interface Plan {
     dailyPrice: string;
     duration: string;
     features: string[];
+    monthlyFeatures?: string[];
+    weeklyFeatures?: string[];
+    dailyFeatures?: string[];
     monthlyLink: string;
     weeklyLink: string;
     dailyLink: string;
@@ -125,7 +128,11 @@ const selectedPeriod = ref<'monthly' | 'weekly' | 'daily'>('monthly');
           
           <!-- Features -->
           <ul class="list-unstyled mb-3 flex-grow-1">
-            <li v-for="feature in plan.features" :key="feature" class="mb-2 d-flex align-items-start">
+            <li v-for="feature in (selectedPeriod === 'monthly' ? (plan.monthlyFeatures || plan.features) : 
+                                  selectedPeriod === 'weekly' ? (plan.weeklyFeatures || plan.features) : 
+                                  (plan.dailyFeatures || plan.features))" 
+                :key="feature" 
+                class="mb-2 d-flex align-items-start">
               <i class="bi bi-check-circle-fill text-success me-2 flex-shrink-0 small" style="margin-top: 2px;"></i>
               <span class="small">{{ feature }}</span>
             </li>

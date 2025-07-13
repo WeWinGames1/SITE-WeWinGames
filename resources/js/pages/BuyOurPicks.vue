@@ -2,82 +2,131 @@
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import PricingCards from '../components/PricingCards.vue';
+import { computed } from 'vue';
+
 const page = usePage<SharedData>();
 const user = page.props.auth.user as User;
 const subscriptions = page.props.subscriptions;
 
-// Use the dynamic Stripe prices from shared props
+// Use the dynamic Stripe prices and products from shared props
 const stripePrices = page.props.stripePrices || {};
-const silver_monthly = stripePrices.silver_monthly;
-const silver_weekly = stripePrices.silver_weekly;
-const silver_daily = stripePrices.silver_daily;
-const gold_monthly = stripePrices.gold_monthly;
-const gold_weekly = stripePrices.gold_weekly;
-const gold_daily = stripePrices.gold_daily;
-const platinum_monthly = stripePrices.platinum_monthly;
-const platinum_weekly = stripePrices.platinum_weekly;
-const platinum_daily = stripePrices.platinum_daily;
-const plans = [
+const stripeProducts = page.props.stripeProducts || {};
+
+// Helper function to get features for a specific tier and billing period
+const getFeatures = (tier: string, billingPeriod: string = 'monthly') => {
+  const products = stripeProducts[billingPeriod];
+  if (!products || !products[tier.toLowerCase()]) {
+    // Return default features if not found
+    return getDefaultFeatures(tier);
+  }
+  return products[tier.toLowerCase()].features || getDefaultFeatures(tier);
+};
+
+// Default features as fallback
+const getDefaultFeatures = (tier: string) => {
+  switch (tier.toLowerCase()) {
+    case 'silver':
+      return [
+        'Over 5 picks a day',
+        'Straight bets',
+        'Favorite picks',
+        'Avg odds -120',
+        '24/7 support',
+      ];
+    case 'gold':
+      return [
+        'All Silver features +',
+        '> 5 gold picks daily',
+        'Best Value Bets',
+        'Avg odds > +100',
+        'Cancel anytime',
+        '24/7 support',
+      ];
+    case 'platinum':
+      return [
+        'All Silver & Gold features +',
+        '5 platinum picks daily',
+        'Parlay & prop bets',
+        'Best tipsters & ROI',
+        'Cancel anytime',
+        '24/7 support',
+      ];
+    default:
+      return [];
+  }
+};
+
+// Get prices from stripeProducts
+const getPrice = (tier: string, billingPeriod: string = 'monthly') => {
+  const products = stripeProducts[billingPeriod];
+  if (!products || !products[tier.toLowerCase()]) {
+    // Return default prices if not found
+    return getDefaultPrice(tier, billingPeriod);
+  }
+  const amount = products[tier.toLowerCase()].amount;
+  return billingPeriod === 'monthly' ? `$${amount}` : amount.toString();
+};
+
+// Default prices as fallback
+const getDefaultPrice = (tier: string, billingPeriod: string) => {
+  const defaults = {
+    silver: { monthly: '$45', weekly: '17', daily: '5' },
+    gold: { monthly: '$65', weekly: '29', daily: '8' },
+    platinum: { monthly: '$80', weekly: '49', daily: '12' },
+  };
+  return defaults[tier.toLowerCase()]?.[billingPeriod] || '$0';
+};
+
+const plans = computed(() => [
   {
     name: 'Silver',
-    price: '$45',
-    monthlyPrice: '$45',
+    price: getPrice('silver', 'monthly'),
+    monthlyPrice: getPrice('silver', 'monthly'),
     duration: '30 days',
-    features: [
-      'Over 5 picks a day',
-      'Straight bets',
-      'Favorite picks',
-      'Avg odds -120',
-      '24/7 support',
-    ],
-    monthlyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: silver_monthly }),
-    weeklyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: silver_weekly }),
-    dailyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: silver_daily }),
-    weeklyPrice: '17',
-    dailyPrice: '5',
+    features: getFeatures('silver', 'monthly'), // Using monthly features as default display
+    monthlyFeatures: getFeatures('silver', 'monthly'),
+    weeklyFeatures: getFeatures('silver', 'weekly'),
+    dailyFeatures: getFeatures('silver', 'daily'),
+    monthlyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: stripePrices.silver_monthly }),
+    weeklyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: stripePrices.silver_weekly }),
+    dailyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: stripePrices.silver_daily }),
+    weeklyPrice: getPrice('silver', 'weekly'),
+    dailyPrice: getPrice('silver', 'daily'),
     highlight: false,
   },
   {
     name: 'Gold',
-    price: '$65',
-    monthlyPrice: '$65',
+    price: getPrice('gold', 'monthly'),
+    monthlyPrice: getPrice('gold', 'monthly'),
     duration: '30 days',
-    features: [
-      'All Silver features +',
-      '> 5 gold picks daily',
-      'Best Value Bets',
-      'Avg odds > +100',
-      'Cancel anytime',
-      '24/7 support',
-    ],
-    monthlyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: gold_monthly }),
-    weeklyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: gold_weekly }),
-    dailyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: gold_daily }),
-    weeklyPrice: '29',
-    dailyPrice: '8',
+    features: getFeatures('gold', 'monthly'), // Using monthly features as default display
+    monthlyFeatures: getFeatures('gold', 'monthly'),
+    weeklyFeatures: getFeatures('gold', 'weekly'),
+    dailyFeatures: getFeatures('gold', 'daily'),
+    monthlyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: stripePrices.gold_monthly }),
+    weeklyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: stripePrices.gold_weekly }),
+    dailyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: stripePrices.gold_daily }),
+    weeklyPrice: getPrice('gold', 'weekly'),
+    dailyPrice: getPrice('gold', 'daily'),
     highlight: true,
   },
   {
     name: 'Platinum',
-    price: '$80',
-    monthlyPrice: '$80',
+    price: getPrice('platinum', 'monthly'),
+    monthlyPrice: getPrice('platinum', 'monthly'),
     duration: '30 days',
-    features: [
-      'All Silver & Gold features +',
-      '5 platinum picks daily',
-      'Parlay & prop bets',
-      'Best tipsters & ROI',
-      'Cancel anytime',
-      '24/7 support',
-    ],
-    monthlyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: platinum_monthly }),
-    weeklyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: platinum_weekly }),
-    dailyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: platinum_daily }),
-    weeklyPrice: '49',
-    dailyPrice: '12',
+    features: getFeatures('platinum', 'monthly'), // Using monthly features as default display
+    monthlyFeatures: getFeatures('platinum', 'monthly'),
+    weeklyFeatures: getFeatures('platinum', 'weekly'),
+    dailyFeatures: getFeatures('platinum', 'daily'),
+    monthlyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: stripePrices.platinum_monthly }),
+    weeklyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: stripePrices.platinum_weekly }),
+    dailyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: stripePrices.platinum_daily }),
+    weeklyPrice: getPrice('platinum', 'weekly'),
+    dailyPrice: getPrice('platinum', 'daily'),
     highlight: false,
   },
-];
+]);
 </script>
 
 <template>

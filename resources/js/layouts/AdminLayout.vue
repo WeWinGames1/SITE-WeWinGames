@@ -10,6 +10,7 @@ const sidebarOpen = ref(false);
 const userMenuOpen = ref(false);
 const knowledgebaseSidebarOpen = ref(false);
 const isImpersonating = computed(() => page.props.impersonation?.isImpersonating || false);
+const isClearingCache = ref(false);
 
 // Simple reactive state for navigation
 const activeParent = computed(() => {
@@ -171,6 +172,37 @@ function isActiveRoute(href: string): boolean {
 
 // No longer needed - using reactive computed property instead
 
+async function clearCache() {
+    if (isClearingCache.value) return;
+    
+    isClearingCache.value = true;
+    
+    try {
+        const response = await fetch(route('admin.cache.clear'), {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Show success message (you can use a toast library here)
+            alert(data.message || 'Cache cleared successfully!');
+        } else {
+            alert(data.message || 'Failed to clear cache');
+        }
+    } catch (error) {
+        console.error('Cache clear error:', error);
+        alert('Failed to clear cache. Please try again.');
+    } finally {
+        isClearingCache.value = false;
+    }
+}
+
 function logout() {
     router.post(route('admin.logout'));
 }
@@ -307,6 +339,17 @@ function logout() {
 
                     <!-- Right side items -->
                     <ul class="navbar-nav ms-auto align-items-center">
+                        <!-- Clear Cache Button -->
+                        <li class="nav-item me-3">
+                            <button 
+                                @click="clearCache"
+                                class="btn btn-link text-dark position-relative p-0"
+                                :disabled="isClearingCache"
+                                title="Clear all caches"
+                            >
+                                <i class="bi fs-5" :class="isClearingCache ? 'bi-arrow-clockwise spin' : 'bi-arrow-clockwise'"></i>
+                            </button>
+                        </li>
                         <!-- Notifications -->
                         <li class="nav-item me-3">
                             <button class="btn btn-link text-dark position-relative p-0">
@@ -377,6 +420,20 @@ function logout() {
 </template>
 
 <style scoped>
+/* Spin animation for cache clear button */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
 /* Admin Main Content - Light Theme */
 .admin-main-content {
     background-color: #f8f9fa;
