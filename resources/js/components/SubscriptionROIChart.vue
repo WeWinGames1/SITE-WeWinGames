@@ -23,14 +23,27 @@ onMounted(() => {
         const ctx = roiChart.value.getContext('2d');
 
         if (ctx) {
+            // Sort the data in the correct order
+            // If Bronze is not in the data, it's Last Year data (Silver, Gold, Platinum only)
+            const dataKeys = Object.keys(props.roiData);
+            const hasBronze = dataKeys.includes('Bronze');
+            const levelOrder = hasBronze 
+                ? ['Bronze', 'Silver', 'Gold', 'Platinum'] 
+                : ['Silver', 'Gold', 'Platinum'];
+            
+            const sortedKeys = dataKeys.sort((a, b) => {
+                return levelOrder.indexOf(a) - levelOrder.indexOf(b);
+            });
+            const sortedValues = sortedKeys.map(key => props.roiData[key]);
+            
             new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: Object.keys(props.roiData),
+                    labels: sortedKeys,
                     datasets: [
                         {
                             label: 'ROI (%)',
-                            data: Object.values(props.roiData),
+                            data: sortedValues,
                             backgroundColor: [
                                 'rgba(244, 210, 3, 0.9)',
                             ],

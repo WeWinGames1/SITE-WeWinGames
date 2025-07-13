@@ -37,6 +37,7 @@ const props = defineProps<{
     roiDataLastYear?: Record<string, number>,
 }>();
 
+
 // Sort levels in the order: Bronze, Silver, Gold, Platinum
 const sortedLevelProfitRoiData = computed(() => {
     const levelOrder = ['Bronze', 'Silver', 'Gold', 'Platinum'];
@@ -53,17 +54,31 @@ const sortedLevelProfitRoiDataLastYear = computed(() => {
     });
 });
 
-// Sort sports by profit from lowest to highest
+// Sort sports by ROI from lowest to highest
 const sortedSportProfitRoiData = computed(() => {
     return [...(props.sportProfitRoiData || [])].sort((a, b) => {
-        return a.profit - b.profit;
+        return a.roi - b.roi;
     });
 });
 
-// Sort sports by profit from lowest to highest for last year
+// Sort sports by ROI from lowest to highest for last year
 const sortedSportProfitRoiDataLastYear = computed(() => {
     return [...(props.sportProfitRoiDataLastYear || [])].sort((a, b) => {
-        return a.profit - b.profit;
+        return a.roi - b.roi;
+    });
+});
+
+// Sort years from oldest to newest (2023, 2024, 2025)
+const sortedProfitByYearData = computed(() => {
+    return [...(props.profitByYearData || [])].sort((a, b) => {
+        return Number(a.year) - Number(b.year);
+    });
+});
+
+// Sort months from oldest to newest (2024-01, 2024-02, ..., 2025-01, 2025-02)
+const sortedProfitByMonthData = computed(() => {
+    return [...(props.profitByMonthData || [])].sort((a, b) => {
+        return a.month.localeCompare(b.month);
     });
 });
 
@@ -238,13 +253,13 @@ function formatMoney(val: number | undefined) {
                         <!-- Table on the left -->
                         <div class="col-12 col-md-6 d-flex justify-content-center">
                             <div class="w-100" style="max-width: 500px;">
-                                <ProfitsByYearTable :data="props.profitByYearData || []" />
+                                <ProfitsByYearTable :data="sortedProfitByYearData" />
                             </div>
                         </div>
                         <!-- Chart on the right -->
                         <div class="col-12 col-md-6 d-flex justify-content-center">
                             <div class="w-100" style="max-width: 500px;">
-                                <ProfitsByYearChart :data="props.profitByYearData || []" />
+                                <ProfitsByYearChart :data="sortedProfitByYearData" />
                             </div>
                         </div>
                     </div>
@@ -259,13 +274,13 @@ function formatMoney(val: number | undefined) {
                         <!-- Table on the left -->
                         <div class="col-12 col-md-6 d-flex justify-content-center">
                             <div class="w-100" style="max-width: 500px;">
-                                <ProfitsByMonthTable :data="props.profitByMonthData || []" />
+                                <ProfitsByMonthTable :data="sortedProfitByMonthData" />
                             </div>
                         </div>
                         <!-- Chart on the right -->
                         <div class="col-12 col-md-6 d-flex justify-content-center">
                             <div class="w-100" style="max-width: 500px;">
-                                <ProfitsByMonthChart :data="props.profitByMonthData || []" />
+                                <ProfitsByMonthChart :data="sortedProfitByMonthData" />
                             </div>
                         </div>
                     </div>

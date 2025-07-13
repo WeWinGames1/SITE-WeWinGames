@@ -379,8 +379,9 @@ class BetService
             $query->whereYear('betting_date', $year);
         }
 
-        $stats = $query->selectRaw('membership, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit')
-            ->groupBy('membership')
+        // Use UPPER() to normalize case-sensitive membership values
+        $stats = $query->selectRaw('UPPER(membership) as membership, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit')
+            ->groupBy(DB::raw('UPPER(membership)'))
             ->get();
 
         $result = [];
@@ -389,8 +390,12 @@ class BetService
             if ($stat->total_stake > 0) {
                 $roi = round(($stat->total_profit / $stat->total_stake) * 100, 2);
             }
+            
+            // Normalize the membership level to proper case (capitalize first letter)
+            $normalizedLevel = ucfirst(strtolower($stat->membership));
+            
             // Return just the ROI value for each membership level
-            $result[$stat->membership] = $roi;
+            $result[$normalizedLevel] = $roi;
         }
 
         return $result;
@@ -407,8 +412,9 @@ class BetService
             $query->whereYear('betting_date', $year);
         }
 
-        $stats = $query->selectRaw("membership, COUNT(*) as total_bets, SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) as wins, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit")
-            ->groupBy('membership')
+        // Use UPPER() to normalize case-sensitive membership values
+        $stats = $query->selectRaw("UPPER(membership) as membership, COUNT(*) as total_bets, SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) as wins, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit")
+            ->groupBy(DB::raw('UPPER(membership)'))
             ->get();
 
         $result = [];
@@ -424,13 +430,24 @@ class BetService
                 $winRate = round(($stat->wins / $stat->total_bets) * 100, 2);
             }
 
+            // Normalize the membership level to proper case (capitalize first letter)
+            $normalizedLevel = ucfirst(strtolower($stat->membership));
+
             // Return array format expected by tables
             $result[] = [
-                'level' => $stat->membership,
+                'level' => $normalizedLevel,
                 'profit' => round($stat->total_profit, 2),
                 'roi' => $roi,
             ];
         }
+
+        // Sort by the expected order: Bronze, Silver, Gold, Platinum
+        $levelOrder = ['Bronze' => 1, 'Silver' => 2, 'Gold' => 3, 'Platinum' => 4];
+        usort($result, function($a, $b) use ($levelOrder) {
+            $orderA = $levelOrder[$a['level']] ?? 999;
+            $orderB = $levelOrder[$b['level']] ?? 999;
+            return $orderA <=> $orderB;
+        });
 
         return $result;
     }

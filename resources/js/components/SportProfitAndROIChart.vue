@@ -18,8 +18,8 @@ let chartInstance: Chart | null = null;
 
 const renderChart = () => {
   if (chartRef.value) {
-    // Sort data by Profit descending
-    const sortedData = [...props.data].sort((a, b) => b.profit - a.profit);
+    // Sort data by ROI ascending (lowest to highest)
+    const sortedData = [...props.data].sort((a, b) => a.roi - b.roi);
 
     // Calculate totals
     const totalProfit = sortedData.reduce((sum, item) => sum + item.profit, 0);
