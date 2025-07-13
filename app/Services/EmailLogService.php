@@ -65,7 +65,14 @@ class EmailLogService
         }
         
         $recipient = array_key_first($to);
-        $recipientName = $to[$recipient] ?? '';
+        $recipientData = $to[$recipient];
+        
+        // Handle both string names and Symfony Address objects
+        if (is_object($recipientData) && method_exists($recipientData, 'getName')) {
+            $recipientName = $recipientData->getName() ?? '';
+        } else {
+            $recipientName = is_string($recipientData) ? $recipientData : '';
+        }
         
         // Extract template key from headers if available
         $templateKey = null;
