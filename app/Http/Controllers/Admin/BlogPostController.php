@@ -83,7 +83,8 @@ class BlogPostController extends Controller
             ],
             'excerpt' => 'nullable|string|max:500',
             'content' => 'required|string',
-            'featured_image' => 'nullable|image|max:5120', // 5MB max
+            'featured_image' => 'nullable|image|max:20480', // 20MB max
+            'featured_image_media_id' => 'nullable|exists:media,id', // For media library selection
             'category' => 'required|string',
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:50',
@@ -94,17 +95,47 @@ class BlogPostController extends Controller
             'seo_keywords' => 'nullable|string|max:255',
         ]);
 
-        // Handle featured image upload
-        if ($request->hasFile('featured_image')) {
-            $path = $request->file('featured_image')->store('posts/featured-images', 'public');
-            $validated['featured_image'] = $path;
-        }
-
         // Set the author
         $validated['user_id'] = auth()->id();
 
+        // Generate slug if not provided
+        if (empty($validated['slug'])) {
+            $validated['slug'] = Post::generateUniqueSlug($validated['title']);
+        }
+
+        // Create the post first (without media library field)
+        $postData = $validated;
+        unset($postData['featured_image_media_id']);
+        
+        // Handle media library selection first
+        if ($request->filled('featured_image_media_id')) {
+            $media = \App\Models\Media::find($request->featured_image_media_id);
+            if ($media) {
+                // For library items, store the direct path reference
+                $mediaPath = 'media/' . $media->id . '/' . $media->file_name;
+                $postData['featured_image'] = $mediaPath;
+            }
+        } elseif ($request->hasFile('featured_image')) {
+            // Handle featured image upload
+            $path = $request->file('featured_image')->store('posts/featured-images', 'public');
+            $postData['featured_image'] = $path;
+        }
+        
         // Create the post
-        $post = Post::create($validated);
+        $post = Post::create($postData);
+        
+        // Handle media library association
+        if ($request->filled('featured_image_media_id')) {
+            $media = \App\Models\Media::find($request->featured_image_media_id);
+            if ($media) {
+                // We don't need to copy library items to the post's media collection
+                // The featured_image field already contains the reference
+            }
+        } elseif ($request->hasFile('featured_image')) {
+            // Also add uploaded image to media library
+            $post->addMediaFromRequest('featured_image')
+                ->toMediaCollection('featured-image');
+        }
 
         return redirect()->route('admin.blog-posts.edit', $post)
             ->with('success', 'Blog post created successfully.');
@@ -115,8 +146,12 @@ class BlogPostController extends Controller
      */
     public function edit(Post $post)
     {
+        // Ensure featured_image_url is included
+        $postData = $post->load('author:id,name,email')->toArray();
+        $postData['featured_image_url'] = $post->featured_image_url;
+        
         return Inertia::render('admin/BlogPosts/Edit', [
-            'post' => $post->load('author:id,name,email'),
+            'post' => $postData,
             'categories' => Post::getCategories(),
             'popularTags' => Post::getPopularTags(),
         ]);
@@ -138,7 +173,8 @@ class BlogPostController extends Controller
             ],
             'excerpt' => 'nullable|string|max:500',
             'content' => 'required|string',
-            'featured_image' => 'nullable|image|max:5120', // 5MB max
+            'featured_image' => 'nullable|image|max:20480', // 20MB max
+            'featured_image_media_id' => 'nullable|exists:media,id', // For media library selection
             'category' => 'required|string',
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:50',
@@ -149,19 +185,53 @@ class BlogPostController extends Controller
             'seo_keywords' => 'nullable|string|max:255',
         ]);
 
-        // Handle featured image upload
-        if ($request->hasFile('featured_image')) {
+        // Update the post (without media library field)
+        $postData = $validated;
+        unset($postData['featured_image_media_id']);
+        
+        // Handle media library selection first
+        if ($request->filled('featured_image_media_id')) {
+            $media = \App\Models\Media::find($request->featured_image_media_id);
+            if ($media) {
+                // Delete old image if exists
+                if ($post->featured_image && Storage::disk('public')->exists($post->featured_image)) {
+                    Storage::disk('public')->delete($post->featured_image);
+                }
+                
+                // For library items, store the direct path reference
+                $mediaPath = 'media/' . $media->id . '/' . $media->file_name;
+                $postData['featured_image'] = $mediaPath;
+                
+                // Clear any existing media collection
+                $post->clearMediaCollection('featured-image');
+                
+                // We don't copy library items - just reference them directly
+            }
+        } elseif ($request->hasFile('featured_image')) {
+            // Handle featured image upload
             // Delete old image if exists
             if ($post->featured_image && Storage::disk('public')->exists($post->featured_image)) {
                 Storage::disk('public')->delete($post->featured_image);
             }
 
             $path = $request->file('featured_image')->store('posts/featured-images', 'public');
-            $validated['featured_image'] = $path;
+            $postData['featured_image'] = $path;
+            
+            // Update the post first to save the path
+            $post->update($postData);
+            
+            // Also add uploaded image to media library
+            $post->clearMediaCollection('featured-image');
+            $post->addMediaFromRequest('featured_image')
+                ->toMediaCollection('featured-image');
+            
+            // Return early since we already updated
+            return redirect()->route('admin.blog-posts.edit', $post)
+                ->with('success', 'Blog post updated successfully.');
         }
 
         // Update the post
-        $post->update($validated);
+        $post->update($postData);
 
         return redirect()->route('admin.blog-posts.edit', $post)
             ->with('success', 'Blog post updated successfully.');

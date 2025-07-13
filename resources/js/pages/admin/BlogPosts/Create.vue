@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, useForm, Link } from '@inertiajs/vue3';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useEditor, EditorContent } from '@tiptap/vue-3';
 import StarterKit from '@tiptap/starter-kit';
 import TiptapLink from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
+import MediaPicker from '@/components/MediaPicker.vue';
 
 interface Props {
     categories: Record<string, string>;
@@ -15,6 +16,16 @@ interface Props {
 
 const props = defineProps<Props>();
 
+// Helper function to format date for datetime-local input
+const formatDateForInput = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
 // Form
 const form = useForm({
     title: '',
@@ -22,6 +33,7 @@ const form = useForm({
     excerpt: '',
     content: '',
     featured_image: null as File | null,
+    featured_image_media_id: null as number | null,
     category: '',
     tags: [] as string[],
     is_published: false,
@@ -38,6 +50,9 @@ const newTag = ref('');
 const showSeoFields = ref(false);
 const showSourceCode = ref(false);
 const sourceCode = ref('');
+const showMediaPicker = ref(false);
+const showContentMediaPicker = ref(false);
+const fileInputKey = ref(0);
 
 // Tiptap editor setup
 const editor = useEditor({
@@ -90,6 +105,14 @@ function updateSeoDescription() {
     }
 }
 
+// Watch is_published to set default publish date
+watch(() => form.is_published, (newValue) => {
+    if (newValue && !form.published_at) {
+        // Set current date/time when toggling to published
+        form.published_at = formatDateForInput(new Date());
+    }
+});
+
 // Add link function
 const addLink = () => {
     const url = prompt('Enter URL:');
@@ -105,10 +128,7 @@ const removeLink = () => {
 
 // Add image function
 const addImage = () => {
-    const url = prompt('Enter image URL:');
-    if (url) {
-        editor.value?.chain().focus().setImage({ src: url }).run();
-    }
+    showContentMediaPicker.value = true;
 };
 
 // Computed
@@ -136,7 +156,32 @@ function handleImageChange(event: Event) {
 
 function removeImage() {
     form.featured_image = null;
+    form.featured_image_media_id = null;
     featuredImagePreview.value = null;
+    fileInputKey.value++; // Force file input to reset
+}
+
+function selectFeaturedImage(media: any) {
+    // media can be a single object or array depending on picker mode
+    const selectedMedia = Array.isArray(media) ? media[0] : media;
+    
+    form.featured_image_media_id = selectedMedia.id;
+    featuredImagePreview.value = selectedMedia.full_url;
+    showMediaPicker.value = false;
+    
+    // Clear file input since we're using media library
+    form.featured_image = null;
+    fileInputKey.value++;
+}
+
+function selectContentImage(media: any) {
+    // media can be a single object or array depending on picker mode
+    const selectedMedia = Array.isArray(media) ? media[0] : media;
+    
+    if (editor.value) {
+        editor.value.chain().focus().setImage({ src: selectedMedia.full_url }).run();
+    }
+    showContentMediaPicker.value = false;
 }
 
 function addTag() {
@@ -518,13 +563,27 @@ function updateSourceCode(event: Event) {
                                         Remove Image
                                     </button>
                                 </div>
-                                <input
-                                    type="file"
-                                    @change="handleImageChange"
-                                    accept="image/*"
-                                    class="form-control"
-                                />
-                                <div class="text-muted small mt-1">Recommended size: 1200x630px</div>
+                                <div class="d-flex gap-2">
+                                    <input
+                                        type="file"
+                                        @change="handleImageChange"
+                                        accept="image/*"
+                                        class="form-control"
+                                        :key="fileInputKey"
+                                    />
+                                    <button 
+                                        type="button" 
+                                        @click="showMediaPicker = true"
+                                        class="btn btn-outline-primary"
+                                    >
+                                        <i class="bi bi-images"></i>
+                                        Choose
+                                    </button>
+                                </div>
+                                <div class="text-muted small mt-1">
+                                    <i class="bi bi-info-circle"></i>
+                                    Upload new or choose from media library • 1200x630px • Max 20MB
+                                </div>
                                 <div v-if="form.errors.featured_image" class="invalid-feedback d-block">
                                     {{ form.errors.featured_image }}
                                 </div>
@@ -675,6 +734,19 @@ function updateSourceCode(event: Event) {
                 </div>
             </form>
         </div>
+        
+        <!-- Media Pickers -->
+        <MediaPicker 
+            :show="showMediaPicker" 
+            @select="selectFeaturedImage"
+            @close="showMediaPicker = false"
+        />
+        
+        <MediaPicker 
+            :show="showContentMediaPicker" 
+            @select="selectContentImage"
+            @close="showContentMediaPicker = false"
+        />
     </AdminLayout>
 </template>
 

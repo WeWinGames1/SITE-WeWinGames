@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\StripeProductController;
 use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\UnderConstructionController;
 use App\Http\Controllers\Admin\KnowledgebaseController;
+use App\Http\Controllers\Admin\MediaLibraryController;
 use App\Http\Controllers\BetController;
 use App\Http\Controllers\BettingEducationController;
 use App\Http\Controllers\CustomerDashboardController;
@@ -336,6 +337,14 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/blog-posts')-
     Route::post('/{post}/duplicate', [BlogPostController::class, 'duplicate'])->name('duplicate');
     Route::post('/upload-image', [BlogPostController::class, 'uploadImage'])->name('upload-image');
     Route::get('/statistics', [BlogPostController::class, 'statistics'])->name('statistics');
+});
+
+// Media Library Routes
+Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/media-library')->name('admin.media-library.')->group(function () {
+    Route::get('/', [MediaLibraryController::class, 'index'])->name('index');
+    Route::post('/upload', [MediaLibraryController::class, 'store'])->name('store');
+    Route::delete('/{media}', [MediaLibraryController::class, 'destroy'])->name('destroy');
+    Route::get('/picker', [MediaLibraryController::class, 'picker'])->name('picker');
 });
 
 // Stripe Webhook - Laravel Cashier

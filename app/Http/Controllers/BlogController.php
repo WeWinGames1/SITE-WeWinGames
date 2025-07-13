@@ -38,6 +38,13 @@ class BlogController extends Controller
 
         $posts = $query->paginate(12)->withQueryString();
 
+        // Transform posts to include featured_image_url
+        $posts->through(function ($post) {
+            $postArray = $post->toArray();
+            $postArray['featured_image_url'] = $post->featured_image_url;
+            return $postArray;
+        });
+
         return Inertia::render('blog/Index', [
             'posts' => $posts,
             'categories' => Post::getCategories(),
@@ -73,10 +80,21 @@ class BlogController extends Controller
             ->with('author:id,name')
             ->limit(3)
             ->orderBy('published_at', 'desc')
-            ->get();
+            ->get()
+            ->map(function ($relatedPost) {
+                $data = $relatedPost->toArray();
+                $data['featured_image_url'] = $relatedPost->featured_image_url;
+                return $data;
+            });
 
+        // Ensure all attributes are loaded
+        $postData = $post->load('author:id,name')->toArray();
+        
+        // Ensure featured_image_url is included
+        $postData['featured_image_url'] = $post->featured_image_url;
+        
         return Inertia::render('blog/Show', [
-            'post' => $post->load('author:id,name'),
+            'post' => $postData,
             'relatedPosts' => $relatedPosts,
         ]);
     }

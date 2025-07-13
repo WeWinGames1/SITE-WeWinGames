@@ -7,10 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Post extends Model
+class Post extends Model implements HasMedia
 {
-    use HasFactory;
+    use HasFactory, InteractsWithMedia;
 
     protected $fillable = [
         'title',
@@ -158,9 +161,9 @@ class Post extends Model
     }
 
     /**
-     * Append status to the model.
+     * Append status and featured_image_url to the model.
      */
-    protected $appends = ['status'];
+    protected $appends = ['status', 'featured_image_url', 'reading_time'];
 
     /**
      * Get the excerpt or generate from content.
@@ -189,10 +192,46 @@ class Post extends Model
     }
 
     /**
+     * Register media collections.
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('featured-image')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+    }
+
+    /**
+     * Register media conversions.
+     */
+    public function registerMediaConversions(Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->width(400)
+            ->height(300)
+            ->sharpen(10)
+            ->optimize()
+            ->nonQueued();
+
+        $this->addMediaConversion('preview')
+            ->width(1200)
+            ->height(630)
+            ->optimize()
+            ->nonQueued();
+    }
+
+    /**
      * Get the featured image URL.
      */
     public function getFeaturedImageUrlAttribute(): ?string
     {
+        // First check if media library has an image
+        $media = $this->getFirstMedia('featured-image');
+        if ($media) {
+            return $media->getUrl();
+        }
+
+        // Fall back to old featured_image field
         if (! $this->featured_image) {
             return null;
         }
@@ -200,6 +239,11 @@ class Post extends Model
         // If it's already a full URL, return it
         if (filter_var($this->featured_image, FILTER_VALIDATE_URL)) {
             return $this->featured_image;
+        }
+
+        // Check if this is a media library reference (media/{id}/{filename})
+        if (str_starts_with($this->featured_image, 'media/')) {
+            return asset('storage/'.$this->featured_image);
         }
 
         // Otherwise, assume it's a path and build the URL

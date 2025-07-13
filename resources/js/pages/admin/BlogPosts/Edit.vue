@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { Head, useForm, Link } from '@inertiajs/vue3';
+import { Head, useForm, Link, router } from '@inertiajs/vue3';
 import { ref, computed, onMounted } from 'vue';
 import { useEditor, EditorContent } from '@tiptap/vue-3';
 import StarterKit from '@tiptap/starter-kit';
 import TiptapLink from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
+import MediaPicker from '@/components/MediaPicker.vue';
 
 interface Author {
     id: number;
@@ -43,6 +44,19 @@ interface Props {
 
 const props = defineProps<Props>();
 
+// Helper function to format date for datetime-local input
+const formatDateForInput = (dateString: string | null): string => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    // Format as YYYY-MM-DDTHH:mm
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
 // Form
 const form = useForm({
     title: props.post.title,
@@ -50,10 +64,11 @@ const form = useForm({
     excerpt: props.post.excerpt,
     content: props.post.content,
     featured_image: null as File | null,
+    featured_image_media_id: null as number | null,
     category: props.post.category,
     tags: props.post.tags,
     is_published: props.post.is_published,
-    published_at: props.post.published_at || '',
+    published_at: formatDateForInput(props.post.published_at),
     seo_title: props.post.seo_title || '',
     seo_description: props.post.seo_description || '',
     seo_keywords: props.post.seo_keywords || '',
@@ -68,6 +83,9 @@ const showSourceCode = ref(false);
 const sourceCode = ref('');
 const errorMessage = ref<string | null>(null);
 const successMessage = ref<string | null>(null);
+const fileInputKey = ref(0); // Key to force file input reset
+const showMediaPicker = ref(false);
+const showContentMediaPicker = ref(false);
 
 // Tiptap editor setup
 const editor = useEditor({
@@ -141,10 +159,7 @@ const removeLink = () => {
 
 // Add image function
 const addImage = () => {
-    const url = prompt('Enter image URL:');
-    if (url) {
-        editor.value?.chain().focus().setImage({ src: url }).run();
-    }
+    showContentMediaPicker.value = true;
 };
 
 // Computed
@@ -159,6 +174,22 @@ const characterCounts = computed(() => ({
 function handleImageChange(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file) {
+        // Check file size (20MB = 20 * 1024 * 1024 bytes)
+        const maxSize = 20 * 1024 * 1024; // 20MB
+        if (file.size > maxSize) {
+            errorMessage.value = `File size exceeds 20MB limit. Please choose a smaller image. (Current size: ${(file.size / 1024 / 1024).toFixed(2)}MB)`;
+            // Reset the file input
+            (event.target as HTMLInputElement).value = '';
+            return;
+        }
+        
+        // Check file type
+        if (!file.type.startsWith('image/')) {
+            errorMessage.value = 'Please select a valid image file (JPG, PNG, GIF, etc.)';
+            (event.target as HTMLInputElement).value = '';
+            return;
+        }
+        
         form.featured_image = file;
         
         // Create preview
@@ -172,7 +203,32 @@ function handleImageChange(event: Event) {
 
 function removeImage() {
     form.featured_image = null;
+    form.featured_image_media_id = null;
     featuredImagePreview.value = null;
+    fileInputKey.value++; // Force file input to reset
+}
+
+function selectFeaturedImage(media: any) {
+    // media can be a single object or array depending on picker mode
+    const selectedMedia = Array.isArray(media) ? media[0] : media;
+    
+    form.featured_image_media_id = selectedMedia.id;
+    featuredImagePreview.value = selectedMedia.full_url;
+    showMediaPicker.value = false;
+    
+    // Clear file input since we're using media library
+    form.featured_image = null;
+    fileInputKey.value++;
+}
+
+function selectContentImage(media: any) {
+    // media can be a single object or array depending on picker mode
+    const selectedMedia = Array.isArray(media) ? media[0] : media;
+    
+    if (editor.value) {
+        editor.value.chain().focus().setImage({ src: selectedMedia.full_url }).run();
+    }
+    showContentMediaPicker.value = false;
 }
 
 function addTag() {
@@ -199,12 +255,12 @@ function submit() {
     form.clearErrors();
     
     // Validate required fields
-    if (!form.title.trim()) {
+    if (!form.title || !form.title.trim()) {
         errorMessage.value = 'Please enter a title for the blog post.';
         return;
     }
     
-    if (!form.content.trim() || form.content === '<p></p>') {
+    if (!form.content || !form.content.trim() || form.content === '<p></p>') {
         errorMessage.value = 'Please enter content for the blog post.';
         return;
     }
@@ -214,36 +270,60 @@ function submit() {
         return;
     }
     
-    // Ensure all form data is properly set
-    form.transform((data) => ({
-        title: data.title,
-        slug: data.slug,
-        excerpt: data.excerpt || '',
-        content: data.content,
-        featured_image: data.featured_image,
-        category: data.category,
-        tags: data.tags || [],
-        is_published: data.is_published,
-        published_at: data.published_at || null,
-        seo_title: data.seo_title || '',
-        seo_description: data.seo_description || '',
-        seo_keywords: data.seo_keywords || '',
-    })).put(route('admin.blog-posts.update', props.post.slug), {
+    // For file uploads with PUT requests, we need to use POST with _method
+    // Reset the form with current values to ensure they're properly bound
+    const currentData = {
+        title: form.title,
+        slug: form.slug || '',
+        excerpt: form.excerpt || '',
+        content: form.content,
+        category: form.category,
+        tags: form.tags || [],
+        is_published: form.is_published,
+        published_at: form.published_at || '',
+        seo_title: form.seo_title || '',
+        seo_description: form.seo_description || '',
+        seo_keywords: form.seo_keywords || '',
+        featured_image: form.featured_image,
+        featured_image_media_id: form.featured_image_media_id,
+        _method: 'PUT'
+    };
+    
+    // Create a new form instance with the data
+    const updateForm = useForm(currentData);
+    
+    // Submit the form
+    updateForm.post(route('admin.blog-posts.update', props.post.slug), {
+        forceFormData: true, // This ensures multipart/form-data encoding
         preserveScroll: true,
-        preserveState: true,
-        onSuccess: () => {
+        onSuccess: (page) => {
             successMessage.value = 'Blog post updated successfully!';
+            // Update the original form with any changes
+            Object.assign(form, updateForm.data());
+            // Update the featured image preview if the post has a featured image
+            if (page.props.post && page.props.post.featured_image_url) {
+                featuredImagePreview.value = page.props.post.featured_image_url;
+            }
+            // Clear the file input
+            form.featured_image = null;
+            fileInputKey.value++;
             // Clear success message after 3 seconds
             setTimeout(() => {
                 successMessage.value = null;
             }, 3000);
         },
         onError: (errors) => {
-            console.error('Form errors:', errors);
+            console.error('Form validation errors:', errors);
+            // Copy errors back to original form
+            form.errors = errors;
             // Get the first error message
             const firstError = Object.values(errors)[0];
             errorMessage.value = Array.isArray(firstError) ? firstError[0] : firstError || 'An error occurred while updating the blog post.';
         },
+        onFinish: () => {
+            // Re-enable form after submission
+            form.processing = false;
+        }
     });
 }
 
@@ -635,22 +715,67 @@ function updateSourceCode(event: Event) {
                             </div>
                             <div class="card-body">
                                 <div v-if="featuredImagePreview" class="mb-3">
-                                    <img :src="featuredImagePreview" alt="Preview" class="img-fluid rounded">
-                                    <button
-                                        type="button"
-                                        @click="removeImage"
-                                        class="btn btn-sm btn-outline-danger mt-2"
+                                    <!-- Thumbnail -->
+                                    <div class="position-relative">
+                                        <img 
+                                            :src="featuredImagePreview" 
+                                            alt="Featured image preview" 
+                                            class="img-fluid rounded shadow-sm"
+                                            style="max-height: 200px; width: 100%; object-fit: cover;"
+                                        >
+                                        <!-- Overlay buttons -->
+                                        <div class="position-absolute top-0 end-0 p-2">
+                                            <div class="btn-group" role="group">
+                                                <a 
+                                                    :href="featuredImagePreview" 
+                                                    target="_blank"
+                                                    class="btn btn-sm btn-primary"
+                                                    title="View full size"
+                                                >
+                                                    <i class="bi bi-eye"></i> Preview
+                                                </a>
+                                                <button
+                                                    type="button"
+                                                    @click="removeImage"
+                                                    class="btn btn-sm btn-danger"
+                                                    title="Remove image"
+                                                >
+                                                    <i class="bi bi-trash"></i> Remove
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="text-muted small mt-2">
+                                        <i class="bi bi-info-circle"></i>
+                                        Upload a new image to replace the current one
+                                    </div>
+                                </div>
+                                <div v-else class="text-center py-4 bg-light rounded mb-3">
+                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                    <p class="text-muted mt-2 mb-0">No featured image</p>
+                                </div>
+                                
+                                <div class="d-flex gap-2">
+                                    <input
+                                        type="file"
+                                        @change="handleImageChange"
+                                        accept="image/*"
+                                        class="form-control"
+                                        :key="fileInputKey"
+                                    />
+                                    <button 
+                                        type="button" 
+                                        @click="showMediaPicker = true"
+                                        class="btn btn-outline-primary"
                                     >
-                                        Remove Image
+                                        <i class="bi bi-images"></i>
+                                        Choose
                                     </button>
                                 </div>
-                                <input
-                                    type="file"
-                                    @change="handleImageChange"
-                                    accept="image/*"
-                                    class="form-control"
-                                />
-                                <div class="text-muted small mt-1">Recommended size: 1200x630px</div>
+                                <div class="text-muted small mt-1">
+                                    <i class="bi bi-info-circle"></i>
+                                    Upload new or choose from media library • 1200x630px • Max 20MB
+                                </div>
                                 <div v-if="form.errors.featured_image" class="invalid-feedback d-block">
                                     {{ form.errors.featured_image }}
                                 </div>
@@ -800,6 +925,19 @@ function updateSourceCode(event: Event) {
                 </div>
             </form>
         </div>
+        
+        <!-- Media Pickers -->
+        <MediaPicker 
+            :show="showMediaPicker" 
+            @select="selectFeaturedImage"
+            @close="showMediaPicker = false"
+        />
+        
+        <MediaPicker 
+            :show="showContentMediaPicker" 
+            @select="selectContentImage"
+            @close="showContentMediaPicker = false"
+        />
     </AdminLayout>
 </template>
 
