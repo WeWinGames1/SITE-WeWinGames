@@ -8,6 +8,7 @@ import TiptapLink from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import MediaPicker from '@/components/MediaPicker.vue';
+import { useToast } from '@/composables/useToast';
 
 interface Author {
     id: number;
@@ -43,6 +44,9 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+// Initialize toast
+const { showToast } = useToast();
 
 // Helper function to format date for datetime-local input
 const formatDateForInput = (dateString: string | null): string => {
@@ -82,7 +86,6 @@ const showSeoFields = ref(false);
 const showSourceCode = ref(false);
 const sourceCode = ref('');
 const errorMessage = ref<string | null>(null);
-const successMessage = ref<string | null>(null);
 const fileInputKey = ref(0); // Key to force file input reset
 const showMediaPicker = ref(false);
 const showContentMediaPicker = ref(false);
@@ -282,7 +285,6 @@ function addPopularTag(tag: string) {
 function submit() {
     // Clear previous messages and errors
     errorMessage.value = null;
-    successMessage.value = null;
     form.clearErrors();
     
     // Validate required fields
@@ -328,7 +330,7 @@ function submit() {
         forceFormData: true, // This ensures multipart/form-data encoding
         preserveScroll: true,
         onSuccess: (page) => {
-            successMessage.value = 'Blog post updated successfully!';
+            showToast('success', 'Blog post updated successfully!');
             // Update the original form with any changes
             Object.assign(form, updateForm.data());
             // Update the featured image preview if the post has a featured image
@@ -338,10 +340,6 @@ function submit() {
             // Clear the file input
             form.featured_image = null;
             fileInputKey.value++;
-            // Clear success message after 3 seconds
-            setTimeout(() => {
-                successMessage.value = null;
-            }, 3000);
         },
         onError: (errors) => {
             console.error('Form validation errors:', errors);
@@ -448,11 +446,6 @@ function updateSourceCode(event: Event) {
                 <button type="button" class="btn-close" @click="errorMessage = null" aria-label="Close"></button>
             </div>
             
-            <div v-if="successMessage" class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                <i class="bi bi-check-circle-fill me-2"></i>
-                {{ successMessage }}
-                <button type="button" class="btn-close" @click="successMessage = null" aria-label="Close"></button>
-            </div>
             
             <form @submit.prevent="submit">
                 <div class="row">

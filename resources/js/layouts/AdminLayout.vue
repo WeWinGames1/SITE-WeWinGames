@@ -4,6 +4,7 @@ import { Link, usePage, router } from '@inertiajs/vue3';
 import ApplicationLogo from '@/components/AppLogo.vue';
 import ImpersonationBanner from '@/components/ImpersonationBanner.vue';
 import KnowledgebaseSidebar from '@/components/Admin/KnowledgebaseSidebar.vue';
+import ToastContainer from '@/components/ToastContainer.vue';
 
 const page = usePage();
 const sidebarOpen = ref(false);
@@ -418,6 +419,9 @@ function logout() {
                 @close="knowledgebaseSidebarOpen = false"
             />
         </div>
+        
+        <!-- Toast Container -->
+        <ToastContainer />
     </div>
 </template>
 

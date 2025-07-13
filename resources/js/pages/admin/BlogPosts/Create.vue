@@ -8,6 +8,7 @@ import TiptapLink from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import MediaPicker from '@/components/MediaPicker.vue';
+import { useToast } from '@/composables/useToast';
 
 interface Props {
     categories: Record<string, string>;
@@ -15,6 +16,9 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+// Initialize toast
+const { showToast } = useToast();
 
 // Helper function to format date for datetime-local input
 const formatDateForInput = (date: Date): string => {
@@ -249,7 +253,18 @@ function submit() {
         return;
     }
     
-    form.post(route('admin.blog-posts.store'));
+    form.post(route('admin.blog-posts.store'), {
+        onSuccess: () => {
+            showToast('success', 'Blog post created successfully!');
+        },
+        onError: (errors) => {
+            console.error('Form validation errors:', errors);
+            // Get the first error message
+            const firstError = Object.values(errors)[0];
+            const errorMessage = Array.isArray(firstError) ? firstError[0] : firstError || 'An error occurred while creating the blog post.';
+            showToast('error', errorMessage);
+        }
+    });
 }
 
 function toggleSourceView() {
