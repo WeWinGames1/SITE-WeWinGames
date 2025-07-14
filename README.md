@@ -79,6 +79,11 @@ WeWinGames is a comprehensive sports betting information and picks service built
    TURNSTILE_SECRET_KEY=0x4AAAAAABjA9iC5axcso_Tat1vZ1G-JsZc
    TURNSTILE_ENABLED=true
    
+   # Push Notifications (Web Push)
+   VAPID_PUBLIC_KEY=your_vapid_public_key
+   VAPID_PRIVATE_KEY=your_vapid_private_key
+   VAPID_SUBJECT=mailto:admin@wewingames.com
+   
    # Production Settings (CRITICAL)
    APP_DEBUG=false  # Must be false in production
    APP_ENV=production
@@ -129,6 +134,27 @@ After seeding, you can login with:
 
 - **Admin**: admin@wewingames.test / password
 - **Subscriber**: subscriber@wewingames.test / password
+
+## Push Notifications Setup
+
+### Generate VAPID Keys
+```bash
+# Install web-push library globally or locally
+npm install -g web-push
+
+# Generate VAPID keys
+web-push generate-vapid-keys
+
+# Or if installed locally
+npx web-push generate-vapid-keys
+```
+
+Add the generated keys to your `.env` file:
+```env
+VAPID_PUBLIC_KEY=your_generated_public_key
+VAPID_PRIVATE_KEY=your_generated_private_key
+VAPID_SUBJECT=mailto:admin@yourdomain.com
+```
 
 ## Migration Best Practices
 
@@ -246,6 +272,11 @@ composer lint
    TURNSTILE_ENABLED=true
    TURNSTILE_SITE_KEY=your_site_key
    TURNSTILE_SECRET_KEY=your_secret_key
+   
+   # Push Notifications
+   VAPID_PUBLIC_KEY=your_vapid_public_key
+   VAPID_PRIVATE_KEY=your_vapid_private_key
+   VAPID_SUBJECT=mailto:admin@yourdomain.com
    ```
 
 4. **Database setup**:
@@ -254,6 +285,7 @@ composer lint
    php artisan db:seed --class=UserSeeder
    php artisan db:seed --class=StripeProductSeeder
    php artisan db:seed --class=TicketCategorySeeder
+   php artisan db:seed --class=TestimonialSeeder
    ```
 
 5. **Optimize for production**:
@@ -309,8 +341,33 @@ php artisan queue:work --daemon
 - **Analytics Integration**: Google Analytics and Tag Manager for tracking
 - **Bot Protection**: Cloudflare Turnstile for form protection
 - **Support System**: Full-featured ticket system for customer support
+- **Push Notifications**: Web Push API support with admin management
+- **Testimonials**: Dynamic testimonials system with Google reviews integration
 
 ## Recent Updates (January 2025)
+
+### Push Notifications
+- **Web Push API**: Full support for browser push notifications
+- **Admin Dashboard**: Send notifications from `/admin/notifications/push`
+- **User Preferences**: Users can enable/disable in profile settings
+- **Targeting Options**: Send to all users, push-enabled only, or by subscription tier
+- **Service Worker**: Enhanced SW with notification click handling
+- **Debug Tools**: Comprehensive debug page at `/admin/notifications/push/debug`
+
+### Content Management
+- **Testimonials System**: Dynamic testimonials with Google reviews
+- **Blog Integration**: Betting education page merged with blog template
+- **Conditional Content**: "Stay Updated" box shows based on auth/notification status
+
+### Email System Improvements
+- **SendGrid Integration**: Fixed LoggedMailChannel for email verification
+- **Email Logging**: Comprehensive email activity tracking
+- **CSP Headers**: Fixed Inter font loading from rsms.me
+
+### Bug Fixes
+- **419 CSRF Error**: Fixed on team image uploads
+- **Email Verification**: Fixed 500 error on resend
+- **Validation Errors**: Improved error handling for form submissions
 
 ### Analytics & Tracking
 - **Google Analytics**: Integrated with automatic page view tracking

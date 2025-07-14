@@ -89,6 +89,8 @@ Located at `/admin`, provides:
 - System settings
 - Stripe product management
 - Tier-based notification system
+- Push notification management
+- Testimonials management
 
 ## Development Commands
 
@@ -153,6 +155,9 @@ php artisan test --coverage
 - `pages` - CMS pages
 - `posts` - Blog posts
 - `notifications` - Enhanced with tier targeting
+- `push_subscriptions` - Web Push API subscriptions
+- `push_notification_logs` - Push notification history
+- `testimonials` - Customer testimonials and reviews
 
 ## API Routes
 
@@ -172,6 +177,12 @@ php artisan test --coverage
 - `GET /api/user` - Current user
 - `PUT /api/user/profile` - Update profile
 - `POST /api/user/subscription` - Manage subscription
+
+### Push Notifications API
+- `POST /api/push/subscribe` - Subscribe to push notifications
+- `DELETE /api/push/unsubscribe` - Unsubscribe from push notifications
+- `POST /admin/notifications/push/send` - Send push notification (admin)
+- `POST /admin/notifications/push/test` - Send test notification (admin)
 
 ## Environment Variables
 
@@ -197,6 +208,12 @@ MAIL_PORT=1025
 
 STRIPE_KEY=your_stripe_key
 STRIPE_SECRET=your_stripe_secret
+STRIPE_WEBHOOK_SECRET=your_webhook_secret
+
+# Push Notifications
+VAPID_PUBLIC_KEY=your_vapid_public_key
+VAPID_PRIVATE_KEY=your_vapid_private_key
+VAPID_SUBJECT=mailto:admin@wewingames.com
 ```
 
 ## Deployment
@@ -261,6 +278,9 @@ php artisan db:seed --class=ProductionSeeder
 
 # Or for development (includes sample data):
 php artisan db:seed
+
+# Seed testimonials
+php artisan db:seed --class=TestimonialSeeder
 
 # Email configuration
 # To disable email sending (logs emails instead), set:
@@ -574,7 +594,41 @@ php artisan db:seed --class=SampleBlogPostsSeeder
 
 # Seed Stripe products (all tiers and billing periods)
 php artisan db:seed --class=StripeProductSeeder
+
+# Seed testimonials with Google reviews
+php artisan db:seed --class=TestimonialSeeder
 ```
+
+### Push Notifications Setup
+
+#### Generate VAPID Keys
+```bash
+# Install web-push library
+npm install -g web-push
+
+# Generate VAPID keys
+web-push generate-vapid-keys
+
+# Or if installed locally
+npx web-push generate-vapid-keys
+```
+
+Add the generated keys to your `.env` file:
+```env
+VAPID_PUBLIC_KEY=your_generated_public_key
+VAPID_PRIVATE_KEY=your_generated_private_key
+VAPID_SUBJECT=mailto:admin@yourdomain.com
+```
+
+#### Push Notification Features
+1. **User Preferences**: Users can enable push notifications in their profile settings
+2. **Admin Dashboard**: Send notifications from `/admin/notifications/push`
+3. **Targeting Options**: 
+   - All users with push enabled
+   - Push notification subscribers only
+   - Specific subscription tiers (Silver, Gold, Platinum)
+4. **Debug Tools**: Available at `/admin/notifications/push/debug`
+5. **Service Worker**: Enhanced with notification click handling and navigation
 
 ### Stripe Product Management
 
@@ -794,6 +848,58 @@ npm run format
 
 ## Recent Updates (January 2025)
 
+### Push Notifications Implementation
+1. **Web Push API Integration**:
+   - Complete push notification system with service worker
+   - User subscription management in profile settings
+   - Admin interface for sending notifications
+   - Support for targeted notifications by tier
+   - Debug tools for troubleshooting
+
+2. **Features Added**:
+   - Push subscription storage and management
+   - Notification history tracking
+   - Icon selection for notifications
+   - Click-through URL support
+   - Test notification functionality
+
+3. **Admin Dashboard** (`/admin/notifications/push`):
+   - View notification history
+   - Send new notifications
+   - Target specific user groups
+   - Debug page for testing
+
+### Content Management Updates
+1. **Testimonials System**:
+   - Dynamic testimonials management
+   - Google reviews integration
+   - Database-driven content
+   - Admin CRUD interface
+
+2. **Blog Enhancements**:
+   - Merged betting education with blog template
+   - Custom headers support
+   - Conditional "Stay Updated" box
+   - Author/date removal option
+
+### Email System Fixes
+1. **SendGrid Integration**:
+   - Fixed LoggedMailChannel for email verification
+   - Proper handling of Symfony Address objects
+   - Comprehensive email logging
+
+2. **CSP Headers**:
+   - Added rsms.me for Inter font support
+   - Fixed font loading issues
+
+### Bug Fixes
+1. **419 CSRF Error**: Fixed on team image uploads with proper error handling
+2. **Email Verification**: Fixed 500 error on resend functionality
+3. **Form Validation**: Improved error messages and handling
+4. **TypeScript Errors**: Fixed null checks in notification components
+
+## Recent Updates (January 2025)
+
 ### Analytics Integration
 
 1. **Google Analytics**:
@@ -981,6 +1087,11 @@ GOOGLE_TAG_MANAGER_ID=GTM-PQDDCG6L
 TURNSTILE_ENABLED=true
 TURNSTILE_SITE_KEY=0x4AAAAAABjA9oaFF9BSsznw
 TURNSTILE_SECRET_KEY=0x4AAAAAABjA9iC5axcso_Tat1vZ1G-JsZc
+
+# Push Notifications
+VAPID_PUBLIC_KEY=your_vapid_public_key
+VAPID_PRIVATE_KEY=your_vapid_private_key
+VAPID_SUBJECT=mailto:admin@yourdomain.com
 
 # Notifications (Optional)
 SLACK_BOT_USER_OAUTH_TOKEN=your_token

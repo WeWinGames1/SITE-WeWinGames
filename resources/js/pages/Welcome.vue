@@ -7,7 +7,7 @@ import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import PricingCards from '../components/PricingCards.vue';
 import ProfitsByLevelTable from '@/components/ProfitsByLevelTable.vue';
 import ProfitsBySportTable from '@/components/ProfitsBySportTable.vue';
-import GoogleReviews from '@/components/GoogleReviews.vue'; // <-- Import your new component
+import TestimonialsCarousel from '@/components/TestimonialsCarousel.vue';
 import AffiliateLinks from '@/components/AffiliateLinks.vue';
 import { onMounted, onBeforeUnmount, computed, ref } from 'vue';
 function formatMoney(val: number | undefined) {
@@ -540,9 +540,9 @@ const allGroupedBets = computed(() => {
                 </div>
             </section>
 
-            <!-- Google Reviews Section -->
+            <!-- Testimonials Section -->
             <section class="py-5 animate-section-fadein" style="background-color: var(--bs-gray-dark);">
-                <GoogleReviews :testimonials="props.testimonials" />
+                <TestimonialsCarousel :testimonials="props.testimonials" />
             </section>
 
             <!-- Free Picks Section -->
