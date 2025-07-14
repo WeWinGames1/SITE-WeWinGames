@@ -181,7 +181,7 @@ async function clearCache() {
     isClearingCache.value = true;
     
     try {
-        const response = await fetch(route('admin.cache.clear'), {
+        const response = await fetch('/admin/cache/clear', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',

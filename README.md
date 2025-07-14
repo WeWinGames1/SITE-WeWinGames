@@ -135,6 +135,25 @@ After seeding, you can login with:
 - **Admin**: admin@wewingames.test / password
 - **Subscriber**: subscriber@wewingames.test / password
 
+## Cloudflare Cache Management
+
+The admin panel includes integrated Cloudflare cache purging. When you click "Clear All Cache" in the admin panel:
+
+1. **Laravel caches are cleared**: config, routes, views, and application cache
+2. **Cloudflare cache is purged**: If enabled, all cached content on Cloudflare is purged
+
+### Setting up Cloudflare API:
+1. Get your API credentials from Cloudflare dashboard:
+   - Global API Key from My Profile > API Tokens
+   - Zone ID from your domain's overview page
+2. Add to your `.env` file:
+   ```env
+   CLOUDFLARE_ENABLED=true
+   CLOUDFLARE_EMAIL=your@email.com
+   CLOUDFLARE_API_KEY=your_global_api_key
+   CLOUDFLARE_ZONE_ID=your_zone_id
+   ```
+
 ## Push Notifications Setup
 
 ### Generate VAPID Keys
@@ -231,7 +250,15 @@ composer lint
    export PATH="/opt/nvm/versions/node/v22.17.0/bin:$PATH"
    
    composer install --optimize-autoloader --no-dev
-   npm ci && npm run build
+   
+   # Install npm dependencies with reduced concurrency for production servers
+   npm ci --maxsockets 1
+   
+   # Or if updating packages
+   npm update --maxsockets 1
+   
+   # Then build
+   npm run build
    ```
 
 2. **Environment configuration**:
@@ -277,6 +304,12 @@ composer lint
    VAPID_PUBLIC_KEY=your_vapid_public_key
    VAPID_PRIVATE_KEY=your_vapid_private_key
    VAPID_SUBJECT=mailto:admin@yourdomain.com
+   
+   # Cloudflare API (for cache purging)
+   CLOUDFLARE_ENABLED=true
+   CLOUDFLARE_EMAIL=your_cloudflare_email
+   CLOUDFLARE_API_KEY=your_cloudflare_api_key
+   CLOUDFLARE_ZONE_ID=your_cloudflare_zone_id
    ```
 
 4. **Database setup**:
@@ -292,6 +325,9 @@ composer lint
    ```bash
    # IMPORTANT: Always set npm PATH first on production servers
    export PATH="/opt/nvm/versions/node/v22.17.0/bin:$PATH"
+   
+   # Update npm packages with reduced concurrency
+   npm update --maxsockets 1
    
    # Main production build commands
    php artisan optimize:clear && npm run build
@@ -344,6 +380,26 @@ php artisan queue:work --daemon
 - **Push Notifications**: Web Push API support with admin management
 - **Testimonials**: Dynamic testimonials system with Google reviews integration
 
+## NPM Commands for Production Servers
+
+When working with npm on production servers with file descriptor limits, always use the `--maxsockets 1` flag:
+
+```bash
+# Install dependencies
+npm install --maxsockets 1
+
+# Update packages
+npm update --maxsockets 1
+
+# Install a specific package
+npm install package-name --maxsockets 1
+
+# Clean install
+npm ci --maxsockets 1
+```
+
+This prevents the "EMFILE: too many open files" error common on restricted production environments.
+
 ## Recent Updates (January 2025)
 
 ### Push Notifications
@@ -390,6 +446,7 @@ php artisan queue:work --daemon
 - **Composables**: New composables for Google Analytics and Tag Manager
 - **Route Organization**: Cleaned up route definitions and naming
 - **Performance**: Optimized asset loading and caching strategies
+- **Cache Management**: Integrated Cloudflare cache purging with admin panel
 
 ## Project Structure
 

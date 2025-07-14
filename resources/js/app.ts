@@ -1,3 +1,4 @@
+import '../css/app.css';
 import 'bootstrap';
 import * as bootstrap from 'bootstrap';
 

@@ -214,6 +214,12 @@ STRIPE_WEBHOOK_SECRET=your_webhook_secret
 VAPID_PUBLIC_KEY=your_vapid_public_key
 VAPID_PRIVATE_KEY=your_vapid_private_key
 VAPID_SUBJECT=mailto:admin@wewingames.com
+
+# Cloudflare API (for cache purging)
+CLOUDFLARE_ENABLED=false
+CLOUDFLARE_EMAIL=your_cloudflare_email
+CLOUDFLARE_API_KEY=your_cloudflare_api_key
+CLOUDFLARE_ZONE_ID=your_cloudflare_zone_id
 ```
 
 ## Deployment
@@ -226,18 +232,24 @@ export PATH="/opt/nvm/versions/node/v22.17.0/bin:$PATH"
 # Main production build commands
 php artisan optimize:clear && npm run build
 
-# Install dependencies
-npm install
+# Install dependencies with reduced concurrency (RECOMMENDED for production)
+npm install --maxsockets 1
+
+# Update packages with reduced concurrency
+npm update --maxsockets 1
 
 # If you get "EMFILE: too many open files" error:
-# Option 1: Clear cache and retry
-npm cache clean --force
-npm install
+# Option 1: Use reduced concurrency (RECOMMENDED)
+npm update --maxsockets 1
 
-# Option 2: If ulimit is restricted, use temporary cache
+# Option 2: Clear cache and retry with reduced concurrency
+npm cache clean --force
+npm install --maxsockets 1
+
+# Option 3: If ulimit is restricted, use temporary cache
 npm install --prefer-offline false --cache /tmp/npm-cache --maxsockets 1
 
-# Option 3: Increase file limit and reduce concurrency (if allowed)
+# Option 4: Increase file limit and reduce concurrency (if allowed)
 ulimit -n 4096
 npm install --maxsockets 3
 
@@ -897,6 +909,12 @@ npm run format
 2. **Email Verification**: Fixed 500 error on resend functionality
 3. **Form Validation**: Improved error messages and handling
 4. **TypeScript Errors**: Fixed null checks in notification components
+5. **Cache Clear 403 Error**: Fixed admin cache clearing route and added Cloudflare integration
+
+### Cache Management
+1. **Admin Cache Clear**: Fixed 403 error by correcting route path
+2. **Cloudflare Integration**: Added automatic Cloudflare cache purging when clearing Laravel cache
+3. **Configuration**: New Cloudflare API settings in config/cloudflare.php
 
 ## Recent Updates (January 2025)
 
