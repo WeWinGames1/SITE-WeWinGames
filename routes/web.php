@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\LandingPageController;
 use App\Http\Controllers\Admin\LeagueController;
 use App\Http\Controllers\Admin\Notifications\EmailLogController;
 use App\Http\Controllers\Admin\Notifications\EmailTemplateController;
+use App\Http\Controllers\Admin\Notifications\PushNotificationController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\SportController;
 use App\Http\Controllers\Admin\StripeProductController;
@@ -31,6 +32,7 @@ use App\Http\Controllers\StaticPageController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/pick/{id}', [BetController::class, 'showPick'])->name('pick.show');
@@ -324,6 +326,16 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
         Route::get('/', [EmailLogController::class, 'index'])->name('index');
         Route::get('/{emailLog}', [EmailLogController::class, 'show'])->name('show');
         Route::post('/{emailLog}/resend', [EmailLogController::class, 'resend'])->name('resend');
+    });
+    // Push Notifications
+    Route::prefix('push')->name('push.')->group(function () {
+        Route::get('/', [PushNotificationController::class, 'index'])->name('index');
+        Route::get('/create', [PushNotificationController::class, 'create'])->name('create');
+        Route::post('/send', [PushNotificationController::class, 'send'])->name('send');
+        Route::post('/test', [PushNotificationController::class, 'test'])->name('test');
+        Route::get('/debug', function () {
+            return Inertia::render('admin/Notifications/PushNotifications/Debug');
+        })->name('debug');
     });
 });
 

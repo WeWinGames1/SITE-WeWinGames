@@ -115,6 +115,7 @@ class HandleInertiaRequests extends Middleware
                 'GOOGLE_TAG_MANAGER_ID' => config('google.tag_manager.container_id'),
                 'TURNSTILE_ENABLED' => config('services.turnstile.enabled'),
                 'TURNSTILE_SITE_KEY' => config('services.turnstile.site_key'),
+                'VAPID_PUBLIC_KEY' => config('webpush.vapid.public_key'),
             ],
             'social' => [
                 'links' => config('social.links'),

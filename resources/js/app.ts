@@ -20,6 +20,23 @@ if (typeof window !== 'undefined') {
     if (token) {
         axios.defaults.headers.common['X-CSRF-TOKEN'] = token;
     }
+    
+    // Add global error interceptor for debugging
+    axios.interceptors.response.use(
+        response => response,
+        error => {
+            if (error.response?.status === 422) {
+                console.error('Validation Error Details:', {
+                    url: error.config?.url,
+                    method: error.config?.method,
+                    data: error.config?.data,
+                    errors: error.response?.data?.errors,
+                    message: error.response?.data?.message
+                });
+            }
+            return Promise.reject(error);
+        }
+    );
 }
 
 // Extend ImportMeta interface for Vite...

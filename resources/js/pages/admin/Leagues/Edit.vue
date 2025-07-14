@@ -35,7 +35,20 @@ const form = useForm({
 });
 
 function submit() {
-    form.put(route('admin.leagues.update', props.league.id));
+    console.log('Submitting league update:', {
+        id: props.league.id,
+        data: form.data(),
+        route: route('admin.leagues.update', props.league.id)
+    });
+    
+    form.put(route('admin.leagues.update', props.league.id), {
+        onError: (errors) => {
+            console.error('League update errors:', errors);
+        },
+        onSuccess: () => {
+            console.log('League updated successfully');
+        }
+    });
 }
 </script>
 

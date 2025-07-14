@@ -10,7 +10,19 @@ const form = useForm({
 });
 
 function submit() {
-    form.post(route('admin.sports.store'));
+    console.log('Submitting sport create:', {
+        data: form.data(),
+        route: route('admin.sports.store')
+    });
+    
+    form.post(route('admin.sports.store'), {
+        onError: (errors) => {
+            console.error('Sport create errors:', errors);
+        },
+        onSuccess: () => {
+            console.log('Sport created successfully');
+        }
+    });
 }
 </script>
 

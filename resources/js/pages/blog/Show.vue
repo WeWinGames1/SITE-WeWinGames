@@ -137,14 +137,6 @@ function copyLink() {
                     
                     <div class="d-flex flex-wrap align-items-center gap-3 text-gray-light mb-4">
                         <span class="d-flex align-items-center">
-                            <i class="bi bi-person me-2"></i>
-                            {{ post.author.name }}
-                        </span>
-                        <span class="d-flex align-items-center">
-                            <i class="bi bi-calendar me-2"></i>
-                            {{ formatDate(post.published_at) }}
-                        </span>
-                        <span class="d-flex align-items-center">
                             <i class="bi bi-clock me-2"></i>
                             {{ post.reading_time }} min read
                         </span>
@@ -250,11 +242,8 @@ function copyLink() {
                                             {{ relatedPost.excerpt }}
                                         </p>
                                         <div class="d-flex align-items-center small text-muted">
-                                            <i class="bi bi-calendar me-1"></i>
-                                            {{ formatDate(relatedPost.published_at) }}
-                                            <span class="mx-2">•</span>
                                             <i class="bi bi-clock me-1"></i>
-                                            {{ relatedPost.reading_time }} min
+                                            {{ relatedPost.reading_time }} min read
                                         </div>
                                     </div>
                                 </Link>

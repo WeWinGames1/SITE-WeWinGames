@@ -45,7 +45,8 @@
       "Bash(sqlite3:*)",
       "Bash(node:*)",
       "Bash(npm:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(openssl ecparam:*)"
     ],
     "deny": []
   }

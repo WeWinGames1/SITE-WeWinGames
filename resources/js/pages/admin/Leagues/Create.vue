@@ -23,7 +23,19 @@ const form = useForm({
 });
 
 function submit() {
-    form.post(route('admin.leagues.store'));
+    console.log('Submitting league create:', {
+        data: form.data(),
+        route: route('admin.leagues.store')
+    });
+    
+    form.post(route('admin.leagues.store'), {
+        onError: (errors) => {
+            console.error('League create errors:', errors);
+        },
+        onSuccess: () => {
+            console.log('League created successfully');
+        }
+    });
 }
 </script>
 

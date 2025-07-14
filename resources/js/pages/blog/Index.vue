@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
-import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 interface Author {
     id: number;
@@ -35,39 +35,65 @@ interface Props {
         tag?: string;
         search?: string;
     };
+    customHeader?: {
+        title: string;
+        subtitle: string;
+        description: string;
+    };
 }
 
 const props = defineProps<Props>();
+const page = usePage();
+
+// Debug custom header
+console.log('Blog Index - Custom Header:', props.customHeader);
+console.log('Current path:', window.location.pathname);
 
 // Forms
 const searchForm = useForm({
     search: props.filters.search || '',
 });
 
+// User and notification preferences
+const user = computed(() => page.props.auth.user?.data || null);
+const isAuthenticated = computed(() => !!user.value);
+const hasEmailNotifications = computed(() => user.value?.notification_preferences?.email ?? false);
+const hasPushNotifications = computed(() => user.value?.notification_preferences?.push ?? false);
+const shouldShowStayUpdated = computed(() => {
+    // Show if not authenticated OR if authenticated but doesn't have both notifications enabled
+    return !isAuthenticated.value || !(hasEmailNotifications.value && hasPushNotifications.value);
+});
+
+// Determine the current route
+const currentRoute = computed(() => {
+    const path = window.location.pathname;
+    return path === '/betting-education' ? 'betting-tips' : 'blog.index';
+});
+
 // Methods
 function search() {
-    searchForm.get(route('blog.index'), {
+    searchForm.get(route(currentRoute.value), {
         preserveState: true,
         preserveScroll: true,
     });
 }
 
 function filterByCategory(category: string) {
-    router.get(route('blog.index'), { category }, {
+    router.get(route(currentRoute.value), { category }, {
         preserveState: true,
         preserveScroll: true,
     });
 }
 
 function filterByTag(tag: string) {
-    router.get(route('blog.index'), { tag }, {
+    router.get(route(currentRoute.value), { tag }, {
         preserveState: true,
         preserveScroll: true,
     });
 }
 
 function clearFilters() {
-    router.get(route('blog.index'));
+    router.get(route(currentRoute.value));
 }
 
 function formatDate(date: string): string {
@@ -81,17 +107,21 @@ function formatDate(date: string): string {
 
 <template>
     <WelcomeLayout>
-        <Head title="Blog - Sports Betting Insights & Tips" />
+        <Head :title="props.customHeader ? props.customHeader.title : 'Blog - Sports Betting Insights & Tips'" />
         
         <!-- Hero Section -->
         <section class="position-relative text-white py-5" style="background: linear-gradient(180deg, #1e3a5f 0%, #0a1628 100%);">
             <div class="container-fluid px-4 px-lg-5">
                 <div class="text-center">
                     <h1 class="display-3 fw-bold mb-4">
-                        Sports Betting Blog
+                        {{ props.customHeader ? props.customHeader.title : 'Sports Betting Blog' }}
                     </h1>
-                    <p class="fs-4 mb-5 mx-auto" style="max-width: 800px; color: #a8b9d5;">
-                        Expert insights, betting strategies, and the latest sports betting news to help you make informed decisions
+                    <p v-if="props.customHeader?.subtitle" class="fs-4 mb-4 text-primary">
+                        {{ props.customHeader.subtitle }}
+                    </p>
+                    <p class="fs-5 mb-5 mx-auto" style="max-width: 800px; color: #a8b9d5;">
+                        <span v-if="props.customHeader" v-html="props.customHeader.description.replace('We Win Games', '<span class=\'fw-bold text-primary\'>We Win Games</span>')"></span>
+                        <span v-else>Expert insights, betting strategies, and the latest sports betting news to help you make informed decisions</span>
                     </p>
                     
                     <!-- Search Bar -->
@@ -175,21 +205,11 @@ function formatDate(date: string): string {
                                             {{ post.excerpt }}
                                         </p>
                                         
-                                        <div class="d-flex justify-content-between align-items-center small text-muted">
-                                            <div class="d-flex align-items-center">
-                                                <i class="bi bi-person me-1"></i>
-                                                {{ post.author.name }}
-                                            </div>
-                                            <div class="d-flex gap-3">
-                                                <span class="d-flex align-items-center">
-                                                    <i class="bi bi-calendar me-1"></i>
-                                                    {{ formatDate(post.published_at) }}
-                                                </span>
-                                                <span class="d-flex align-items-center">
-                                                    <i class="bi bi-eye me-1"></i>
-                                                    {{ post.views_count }}
-                                                </span>
-                                            </div>
+                                        <div class="d-flex justify-content-end align-items-center small text-muted">
+                                            <span class="d-flex align-items-center">
+                                                <i class="bi bi-eye me-1"></i>
+                                                {{ post.views_count }} views
+                                            </span>
                                         </div>
                                         
                                         <div v-if="post.tags.length > 0" class="mt-3 d-flex flex-wrap gap-1">
@@ -269,12 +289,15 @@ function formatDate(date: string): string {
                     </div>
                     
                     <!-- Newsletter CTA -->
-                    <div class="card text-white" style="background: linear-gradient(135deg, #6366F1 0%, #7C3AED 100%); border: none;">
+                    <div v-if="shouldShowStayUpdated" class="card text-white" style="background: linear-gradient(135deg, #6366F1 0%, #7C3AED 100%); border: none;">
                         <div class="card-body">
                             <h3 class="h5 fw-bold mb-2">Stay Updated</h3>
                             <p class="mb-3 opacity-90">Get the latest betting tips and insights delivered to your inbox.</p>
-                            <Link href="/register" class="btn btn-white text-primary fw-semibold w-100">
-                                Subscribe Now
+                            <Link 
+                                :href="isAuthenticated ? route('profile.edit') : route('register')" 
+                                class="btn btn-white text-primary fw-semibold w-100"
+                            >
+                                {{ isAuthenticated ? 'Manage Notifications' : 'Subscribe Now' }}
                             </Link>
                         </div>
                     </div>

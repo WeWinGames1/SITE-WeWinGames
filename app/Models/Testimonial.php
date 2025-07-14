@@ -24,6 +24,8 @@ class Testimonial extends Model
         'sort_order' => 'integer',
     ];
 
+    protected $appends = ['initials', 'formatted_date'];
+
     /**
      * Get the initials from the name
      */

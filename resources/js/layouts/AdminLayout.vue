@@ -151,7 +151,7 @@ const navigation: NavItem[] = [
         children: [
             { name: 'Email Templates', href: route('admin.notifications.email-templates.index'), icon: 'bi-envelope' },
             { name: 'Email Logs', href: route('admin.notifications.email-logs.index'), icon: 'bi-clock-history' },
-            // { name: 'Send Notification', href: '#', icon: 'bi-send' }, // TODO: Implement notification sending
+            { name: 'Push Notifications', href: route('admin.notifications.push.index'), icon: 'bi-bell-fill' },
         ],
     },
     {

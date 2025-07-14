@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 import { PlusIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import axios from 'axios';
 
 interface Sport {
     id: number;
@@ -103,13 +104,19 @@ function removeAlias(index: number) {
 }
 
 function submit() {
-    // When uploading files with Inertia, we need to use post with _method
-    form.transform(data => ({
-        ...data,
-        _method: 'PUT'
-    })).post(route('admin.teams.update', props.team.id), {
-        forceFormData: true, // This ensures multipart/form-data encoding for file uploads
-        preserveScroll: true
+    // Use POST with _method for file uploads to avoid CSRF issues
+    form.post(route('admin.teams.update', props.team.id), {
+        _method: 'PUT',
+        forceFormData: true,
+        preserveScroll: true,
+        onError: (errors) => {
+            console.error('Form submission errors:', errors);
+            // If we get a 419 error, it's likely a session issue
+            if (errors.message && errors.message.includes('419')) {
+                alert('Your session has expired. Please refresh the page and try again.');
+                window.location.reload();
+            }
+        }
     });
 }
 </script>

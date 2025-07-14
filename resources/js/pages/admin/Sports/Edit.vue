@@ -26,7 +26,20 @@ const form = useForm({
 });
 
 function submit() {
-    form.put(route('admin.sports.update', props.sport.id));
+    console.log('Submitting sport update:', {
+        id: props.sport.id,
+        data: form.data(),
+        route: route('admin.sports.update', props.sport.id)
+    });
+    
+    form.put(route('admin.sports.update', props.sport.id), {
+        onError: (errors) => {
+            console.error('Sport update errors:', errors);
+        },
+        onSuccess: () => {
+            console.log('Sport updated successfully');
+        }
+    });
 }
 </script>
 
