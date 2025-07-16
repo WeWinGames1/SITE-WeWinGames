@@ -35,6 +35,14 @@ class CsvImportService
             $csv->setHeaderOffset(0);
 
             $headers = $csv->getHeader();
+            
+            // Log the raw headers for debugging
+            \Log::info('CSV Headers (raw)', [
+                'headers' => $headers,
+                'headers_with_length' => array_map(function($h) { 
+                    return $h . ' (length: ' . strlen($h) . ')'; 
+                }, $headers)
+            ]);
             $stmt = Statement::create()->limit(5);
             $records = $stmt->process($csv);
 
@@ -77,16 +85,16 @@ class CsvImportService
             'sport' => ['sport', 'sports', 'sport_name', 'category', 'sport_type'],
             'league' => ['league', 'competition', 'tournament', 'division', 'conference', 'comp', 'championship', 'event'],
             'month' => ['month', 'month_name'],
-            'game_date' => ['date', 'game_date', 'match_date', 'event_date', 'betting_date', 'gamedate', 'game date', 'kickoff'],
+            'game_date' => ['date', 'game_date', 'match_date', 'event_date', 'betting_date', 'gamedate', 'game date', 'game date ', 'game date :', 'kickoff'],
             'game' => ['game', 'games', 'match', 'matchup', 'fixture', 'contest', 'game/player'],
             'bet_type' => ['bet type', 'bet_type', 'bettype', 'type', 'market', 'markets', 'bet_market'],
             'wager_type' => ['wager type', 'wager_type', 'wagertype', 'wagering_type', 'bet style'],
             'wager_name' => ['wager name', 'wager_name', 'wagername', 'selection', 'pick', 'bet', 'tip', 'tips', 'bet description'],
             'odds' => ['odds', 'american odds', 'price', 'wager_odds', 'line', 'betting_odds'],
             'level' => ['level', 'tier', 'membership', 'subscription_level', 'confidence level', 'plan'],
-            'code' => ['code', 'tracking code', 'source code', 'capper', 'referrer_code', 'affiliate_code'],
+            'code' => ['code', 'tracking code', 'source code', 'capper', 'referrer', 'referrer_code', 'affiliate_code'],
             'status' => ['status', 'result', 'outcome', 'bet_status', 'bet outcome'],
-            'roi' => ['roi(net)', 'roi', 'roi_net', 'return on investment', 'net_roi'],
+            'roi' => ['roi(net)', 'roi', 'roi %', 'roi_net', 'return on investment', 'net_roi'],
             'wager' => ['wager', 'stake', 'wager_amount', 'wager amount', 'amount staked', 'bet_amount'],
             'profits' => ['profits', 'profit', 'net gain', 'pnl', 'p&l', 'net gain/loss'],
             'winning_amount' => ['winning amount', 'winning_amount', 'winningamount', 'total returned', 'payout'],
@@ -94,7 +102,11 @@ class CsvImportService
 
         // First pass: exact matches only (to avoid incorrect fuzzy matches)
         foreach ($headers as $header) {
-            $normalized = strtolower(trim($header));
+            // Clean the header: remove trailing colons and normalize
+            $cleaned = trim($header);
+            $cleaned = rtrim($cleaned, ':'); // Remove trailing colon
+            $cleaned = trim($cleaned); // Trim again after removing colon
+            $normalized = strtolower($cleaned);
             $normalized = str_replace(['_', '-'], ' ', $normalized); // Normalize underscores and hyphens
 
             foreach ($commonMappings as $field => $variations) {
@@ -112,9 +124,13 @@ class CsvImportService
             'Subsection' => 'league',
             // Standard headers from actual CSV
             'Sport' => 'sport',
+            'Sports' => 'sport',
             'League' => 'league',
             'Month' => 'month',
             'Date' => 'game_date',
+            'Game Date' => 'game_date',
+            'Game Date ' => 'game_date',  // With trailing space
+            'Game Date :' => 'game_date',
             'Home Team' => 'home_team',
             'Away Team' => 'away_team',
             'Game' => 'game',
@@ -123,12 +139,18 @@ class CsvImportService
             'Wager Type' => 'wager_type',
             'Wager Name' => 'wager_name',
             'Odds' => 'odds',
+            'Wager Odds' => 'odds',
             'Level' => 'level',
+            'Membership' => 'level',
             'Code' => 'code',
+            'Referrer' => 'code',
             'Status' => 'status',
             'ROI(net)' => 'roi',
+            'ROI %' => 'roi',
             'Wager' => 'wager',
+            'Wager Amount' => 'wager',
             'Profits' => 'profits',
+            'Profit Amount' => 'profits',
             'Winning Amount' => 'winning_amount',
         ];
 
@@ -139,6 +161,7 @@ class CsvImportService
             'sport' => 'sport',
             'league' => 'league',
             'month' => 'month',
+            'game date ' => 'game_date',  // With trailing space
             'home team' => 'home_team',
             'away team' => 'away_team',
             'game' => 'game',
@@ -148,10 +171,16 @@ class CsvImportService
             'odds' => 'odds',
             'level' => 'level',
             'code' => 'code',
+            'referrer' => 'code',
             'status' => 'status',
             'roi(net)' => 'roi',
+            'roi %' => 'roi',
             'wager' => 'wager',
+            'wager amount' => 'wager',
+            'wager odds' => 'odds',
+            'membership' => 'level',
             'profits' => 'profits',
+            'profit amount' => 'profits',
             'winning amount' => 'winning_amount',
         ];
 
@@ -167,11 +196,24 @@ class CsvImportService
             elseif (isset($exactMappingsLower[$lowerHeader]) && ! isset($mappings[$exactMappingsLower[$lowerHeader]])) {
                 $mappings[$exactMappingsLower[$lowerHeader]] = $header;
             }
+            
+            // Special handling for headers with spaces before colons (e.g., "Game Date :")
+            $headerWithoutColon = rtrim($trimmedHeader, ' :');
+            $lowerWithoutColon = strtolower($headerWithoutColon);
+            if (isset($exactMappings[$headerWithoutColon]) && ! isset($mappings[$exactMappings[$headerWithoutColon]])) {
+                $mappings[$exactMappings[$headerWithoutColon]] = $header;
+            } elseif (isset($exactMappingsLower[$lowerWithoutColon]) && ! isset($mappings[$exactMappingsLower[$lowerWithoutColon]])) {
+                $mappings[$exactMappingsLower[$lowerWithoutColon]] = $header;
+            }
         }
 
         // Second pass: fuzzy matches for unmapped fields
         foreach ($headers as $header) {
-            $normalized = strtolower(trim($header));
+            // Clean the header: remove trailing colons
+            $cleaned = trim($header);
+            $cleaned = rtrim($cleaned, ':');
+            $cleaned = trim($cleaned);
+            $normalized = strtolower($cleaned);
             $normalized = str_replace(['_', '-'], ' ', $normalized);
 
             // Only do fuzzy matching for fields that aren't already mapped
@@ -211,10 +253,23 @@ class CsvImportService
         $this->staticValues = $staticValues;
         $this->errors = [];
         $this->warnings = [];
+        
+        // Debug logging
+        \Log::info('CsvImportService: Column mappings received', [
+            'mappings' => $columnMappings,
+            'static_values' => $staticValues
+        ]);
 
         try {
             $csv = Reader::createFromPath($filePath, 'r');
             $csv->setHeaderOffset(0);
+            
+            // Get headers for debugging
+            $csvHeaders = $csv->getHeader();
+            \Log::info('CsvImportService: validateImport - CSV Headers', [
+                'headers' => $csvHeaders,
+                'first_record_keys' => array_keys(iterator_to_array($csv->getRecords())[0] ?? [])
+            ]);
 
             $validRows = [];
             $invalidRows = [];
@@ -228,6 +283,20 @@ class CsvImportService
                 $rowNumber++;
                 $totalRows++;
                 $mappedData = $this->mapRowData($record);
+                
+                // Debug row 5 specifically (the one with the error)
+                if ($rowNumber == 5) {
+                    \Log::error('Debug Row 5 - CSV Import Issue', [
+                        'row_number' => $rowNumber,
+                        'raw_record' => $record,
+                        'record_keys' => array_keys($record),
+                        'column_mappings' => $this->columnMappings,
+                        'mapped_data_before_transform' => $mappedData,
+                        'has_game_date' => isset($mappedData['game_date']),
+                        'game_date_value' => $mappedData['game_date'] ?? 'NOT SET',
+                    ]);
+                }
+                
                 $validation = $this->validateRow($mappedData, $rowNumber);
 
                 if ($validation['valid']) {
@@ -294,10 +363,33 @@ class CsvImportService
 
         // First map columns from CSV
         foreach ($this->columnMappings as $field => $csvColumn) {
+            // Try exact match first
             if (isset($record[$csvColumn])) {
                 $value = $this->cleanValue($record[$csvColumn]);
                 $mapped[$field] = $value;
+            } 
+            // If not found, try with trimmed column name
+            else {
+                $trimmedColumn = trim($csvColumn);
+                foreach ($record as $recordKey => $recordValue) {
+                    if (trim($recordKey) === $trimmedColumn) {
+                        $value = $this->cleanValue($recordValue);
+                        $mapped[$field] = $value;
+                        break;
+                    }
+                }
             }
+        }
+        
+        // Debug first row mapping
+        static $debugged = false;
+        if (!$debugged) {
+            \Log::info('CsvImportService: First row mapping debug', [
+                'raw_record' => $record,
+                'column_mappings' => $this->columnMappings,
+                'mapped_data' => $mapped
+            ]);
+            $debugged = true;
         }
 
         // Then apply static values (these override any mapped values)
@@ -306,7 +398,18 @@ class CsvImportService
         }
 
         // Apply data transformations
-        return $this->transformData($mapped);
+        $transformed = $this->transformData($mapped);
+        
+        // Debug first row after transformation
+        static $debuggedTransform = false;
+        if (!$debuggedTransform) {
+            \Log::info('CsvImportService: First row after transformation', [
+                'transformed_data' => $transformed
+            ]);
+            $debuggedTransform = true;
+        }
+        
+        return $transformed;
     }
 
     /**
@@ -388,38 +491,10 @@ class CsvImportService
         $dateField = isset($data['date']) ? 'date' : (isset($data['game_date']) ? 'game_date' : null);
 
         if ($dateField && ! empty($data[$dateField])) {
-            try {
-                // Try multiple date formats
-                $formats = [
-                    'Y-m-d H:i:s',
-                    'Y-m-d',
-                    'm/d/Y',
-                    'd/m/Y',
-                    'm-d-Y',
-                    'd-m-Y',
-                    'Y/m/d',
-                    'm/d/Y H:i:s',
-                    'm/d/Y H:i',
-                ];
-
-                $parsed = false;
-                foreach ($formats as $format) {
-                    try {
-                        $date = \Carbon\Carbon::createFromFormat($format, $data[$dateField]);
-                        $data['game_date'] = $date->format('Y-m-d H:i:s');
-                        $parsed = true;
-                        break;
-                    } catch (\Exception $e) {
-                        continue;
-                    }
-                }
-
-                if (! $parsed) {
-                    // Last resort - let Carbon try to parse it
-                    $data['game_date'] = \Carbon\Carbon::parse($data[$dateField])->format('Y-m-d H:i:s');
-                }
-            } catch (\Exception $e) {
-                // Keep original value if parse fails
+            // Use the parseDate method which handles more formats including 2-digit years
+            $parsedDate = $this->parseDate($data[$dateField]);
+            if ($parsedDate !== null) {
+                $data['game_date'] = $parsedDate;
             }
         }
 
@@ -742,6 +817,17 @@ class CsvImportService
 
         $rules = $this->getValidationRules();
         $validator = Validator::make($data, $rules, $messages);
+        
+        // Debug validation for problematic rows
+        static $debuggedValidation = 0;
+        if ($validator->fails() && $debuggedValidation < 3) {
+            \Log::info('CsvImportService: Validation failed for row ' . $rowNumber, [
+                'data' => $data,
+                'errors' => $validator->errors()->toArray(),
+                'rules' => $rules
+            ]);
+            $debuggedValidation++;
+        }
 
         if ($validator->fails()) {
             // Format errors for better display
