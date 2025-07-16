@@ -42,7 +42,10 @@ class GenericAdminNotification extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject($this->title)
             ->greeting('Hello!')
-            ->line($this->body);
+            ->view('emails.generic-notification', [
+                'body' => $this->body,
+                'title' => $this->title,
+            ]);
     }
 
     public function toWebPush($notifiable, $notification)

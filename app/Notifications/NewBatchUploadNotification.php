@@ -2,11 +2,14 @@
 
 namespace App\Notifications;
 
+use App\Mail\TemplatedEmail;
+use App\Models\EmailTemplate;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Mail;
 use NotificationChannels\WebPush\WebPushChannel;
 use NotificationChannels\WebPush\WebPushMessage;
 
@@ -54,6 +57,50 @@ class NewBatchUploadNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
+        // Try to use the email template from database
+        $template = EmailTemplate::where('key', EmailTemplate::NEW_BATCH_UPLOAD)
+            ->where('is_active', true)
+            ->first();
+
+        if ($template) {
+            // Filter bets the user can view
+            $viewableBets = $this->bets->filter(function ($bet) use ($notifiable) {
+                return $notifiable->can('view', $bet);
+            });
+
+            // Format bets for template
+            $betsHtml = '';
+            foreach ($viewableBets as $bet) {
+                $betsHtml .= '<div style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 15px;">';
+                $betsHtml .= '<h4 style="color: #0d6efd; margin-top: 0;">' . $bet->team_one . ' vs ' . $bet->team_two . '</h4>';
+                $betsHtml .= '<p><strong>Sport:</strong> ' . $bet->sports . '</p>';
+                $betsHtml .= '<p><strong>League:</strong> ' . $bet->league . '</p>';
+                $betsHtml .= '<p><strong>Markets:</strong> ' . $bet->markets . '</p>';
+                $betsHtml .= '<p><strong>Tips:</strong> ' . $bet->tips . '</p>';
+                $betsHtml .= '<p><strong>Wager Odds:</strong> <span style="color: #198754; font-weight: 600;">' . $bet->wager_odds . '</span></p>';
+                $betsHtml .= '<p><strong>Membership:</strong> ' . $bet->membership . '</p>';
+                $betsHtml .= '<p><strong>Wager Amount:</strong> $' . number_format($bet->wager_amount, 2) . '</p>';
+                $betsHtml .= '<p><strong>Betting Date:</strong> ' . $bet->betting_date . '</p>';
+                $betsHtml .= '</div>';
+            }
+
+            // Prepare data for template variables
+            $data = [
+                'user_name' => $notifiable->name,
+                'bets_count' => $viewableBets->count(),
+                'bets_details' => $betsHtml,
+                'view_bets_url' => url('/todays-tips'),
+                'app_name' => config('app.name', 'WeWinGames'),
+            ];
+
+            // Send using the templated email system
+            Mail::to($notifiable)->send(new TemplatedEmail($template, $data));
+            
+            // Return a dummy MailMessage to satisfy the return type
+            return (new MailMessage)->subject('New Bet Picks Available');
+        }
+
+        // Fallback to default message if template not found
         $mail = (new MailMessage)
             ->subject('New Bet Picks Available')
             ->greeting('Hello!')

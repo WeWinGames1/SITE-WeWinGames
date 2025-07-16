@@ -43,6 +43,12 @@ class EmailTemplate extends Model
     const SUBSCRIPTION_CANCELLED = 'subscription_cancelled';
 
     const WELCOME_SUBSCRIBER = 'welcome_subscriber';
+    
+    const NEW_BET_PICK = 'new_bet_pick';
+    
+    const NEW_BATCH_UPLOAD = 'new_batch_upload';
+    
+    const CAREER_APPLICATION = 'career_application';
 
     /**
      * Get default templates
