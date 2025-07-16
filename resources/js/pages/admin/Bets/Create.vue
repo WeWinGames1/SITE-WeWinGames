@@ -59,11 +59,14 @@ const form = useForm({
     markets: '',
     team_one: '',
     team_one_id: null as number | null,
+    team_one_is_new: false,
     team_two: '',
     team_two_id: null as number | null,
+    team_two_is_new: false,
     parlay_teams: [],
     tips: '',
     betting_date: new Date().toISOString().slice(0, 16),
+    game_date: new Date().toISOString().slice(0, 16),
     wager_odds: '',
     membership: 'bronze',
     level: '',
@@ -91,6 +94,10 @@ const filteredLeagues = computed(() => {
 });
 
 const isParlay = computed(() => form.wager_type === 'parlay');
+
+const canSelectTeams = computed(() => {
+    return form.sport_id !== null && form.league_id !== null;
+});
 
 const teamOneLogo = computed(() => {
     if (teamOne.value?.logo_url) {
@@ -223,43 +230,112 @@ function initTeamSelect(elementId: string, teamType: 'one' | 'two') {
                 };
             },
             processResults: function (data: any) {
+                // Add option to create new team if no results or search term doesn't match
+                const results = data.results || [];
+                const searchTerm = data.q || '';
+                
+                // Check if search term exactly matches any result
+                const exactMatch = results.some((team: any) => 
+                    team.name.toLowerCase() === searchTerm.toLowerCase()
+                );
+                
+                // Add "create new" option if search term exists and no exact match
+                if (searchTerm && searchTerm.length >= 2 && !exactMatch) {
+                    results.unshift({
+                        id: `new:${searchTerm}`,
+                        name: searchTerm,
+                        text: `Add "${searchTerm}" as new team/player`,
+                        isNew: true
+                    });
+                }
+                
                 return {
-                    results: data.results
+                    results: results
                 };
             },
             cache: true
         },
-        placeholder: `Search for ${teamType === 'one' ? 'team one' : 'team two'}...`,
+        placeholder: `Search or enter ${teamType === 'one' ? 'team one/player' : 'team two'} name...`,
         minimumInputLength: 2,
         templateResult: formatTeam,
         templateSelection: formatTeamSelection,
         allowClear: true,
+        tags: true,
+        createTag: function (params: any) {
+            const term = params.term?.trim();
+            if (!term || term.length < 2) {
+                return null;
+            }
+            
+            return {
+                id: `new:${term}`,
+                name: term,
+                text: term,
+                isNew: true
+            };
+        },
         dropdownParent: window.$('.modal').length ? window.$('.modal') : window.$('body')
     });
     
     // Handle selection
     $element.on('select2:select', function (e: any) {
         const data = e.params.data;
+        
+        // Check if this is a new team/player
+        const isNewTeam = data.isNew || (typeof data.id === 'string' && data.id.startsWith('new:'));
+        
         if (teamType === 'one') {
-            form.team_one_id = data.id;
-            form.team_one = data.name;
-            teamOne.value = {
-                id: data.id,
-                name: data.name,
-                sport_id: data.sport_id || form.sport_id!,
-                league_id: data.league_id || form.league_id,
-                logo_url: data.logo_url
-            };
+            if (isNewTeam) {
+                // For new teams, store the name and set ID to null
+                form.team_one_id = null;
+                form.team_one = data.name || data.text;
+                form.team_one_is_new = true;
+                teamOne.value = {
+                    id: null,
+                    name: data.name || data.text,
+                    sport_id: form.sport_id!,
+                    league_id: form.league_id,
+                    logo_url: null,
+                    isNew: true
+                };
+            } else {
+                form.team_one_id = data.id;
+                form.team_one = data.name;
+                form.team_one_is_new = false;
+                teamOne.value = {
+                    id: data.id,
+                    name: data.name,
+                    sport_id: data.sport_id || form.sport_id!,
+                    league_id: data.league_id || form.league_id,
+                    logo_url: data.logo_url
+                };
+            }
         } else {
-            form.team_two_id = data.id;
-            form.team_two = data.name;
-            teamTwo.value = {
-                id: data.id,
-                name: data.name,
-                sport_id: data.sport_id || form.sport_id!,
-                league_id: data.league_id || form.league_id,
-                logo_url: data.logo_url
-            };
+            if (isNewTeam) {
+                // For new teams, store the name and set ID to null
+                form.team_two_id = null;
+                form.team_two = data.name || data.text;
+                form.team_two_is_new = true;
+                teamTwo.value = {
+                    id: null,
+                    name: data.name || data.text,
+                    sport_id: form.sport_id!,
+                    league_id: form.league_id,
+                    logo_url: null,
+                    isNew: true
+                };
+            } else {
+                form.team_two_id = data.id;
+                form.team_two = data.name;
+                form.team_two_is_new = false;
+                teamTwo.value = {
+                    id: data.id,
+                    name: data.name,
+                    sport_id: data.sport_id || form.sport_id!,
+                    league_id: data.league_id || form.league_id,
+                    logo_url: data.logo_url
+                };
+            }
         }
     });
     
@@ -268,10 +344,12 @@ function initTeamSelect(elementId: string, teamType: 'one' | 'two') {
         if (teamType === 'one') {
             form.team_one_id = null;
             form.team_one = '';
+            form.team_one_is_new = false;
             teamOne.value = null;
         } else {
             form.team_two_id = null;
             form.team_two = '';
+            form.team_two_is_new = false;
             teamTwo.value = null;
         }
     });
@@ -280,21 +358,43 @@ function initTeamSelect(elementId: string, teamType: 'one' | 'two') {
 function formatTeam(team: any) {
     if (!team.id) return team.text;
     
+    // Check if this is a new team option
+    const isNewTeam = team.isNew || (typeof team.id === 'string' && team.id.startsWith('new:'));
+    
     const $container = window.$('<div class="d-flex align-items-center">');
     
-    if (team.logo_url) {
-        $container.append(`<img src="${team.logo_url}" class="me-2" style="width: 30px; height: 30px; object-fit: contain;" />`);
+    if (isNewTeam) {
+        // Show special formatting for new team option
+        $container.append('<div class="me-2" style="width: 30px; height: 30px; background: #28a745; border-radius: 4px; display: flex; align-items: center; justify-content: center;"><i class="bi bi-plus text-white"></i></div>');
+        
+        const $text = window.$('<div>');
+        if (team.text && team.text.includes('Add "')) {
+            // This is the "Add as new" option
+            $text.append(`<div>${team.text}</div>`);
+            $text.append('<small class="text-dark fw-bold">Will be created as new team/player</small>');
+        } else {
+            // This is a typed tag
+            $text.append(`<div>Add "${team.name || team.text}" as new team/player</div>`);
+            $text.append('<small class="text-dark fw-bold">Will be created as new team/player</small>');
+        }
+        $container.append($text);
     } else {
-        $container.append('<div class="me-2" style="width: 30px; height: 30px; background: #e9ecef; border-radius: 4px;"></div>');
+        // Existing team formatting
+        if (team.logo_url) {
+            $container.append(`<img src="${team.logo_url}" class="me-2" style="width: 30px; height: 30px; object-fit: contain;" />`);
+        } else {
+            $container.append('<div class="me-2" style="width: 30px; height: 30px; background: #e9ecef; border-radius: 4px;"></div>');
+        }
+        
+        const $text = window.$('<div>');
+        $text.append(`<div>${team.name}</div>`);
+        if (team.sport || team.league) {
+            $text.append(`<small class="text-muted">${team.sport || ''} ${team.league ? '• ' + team.league : ''}</small>`);
+        }
+        
+        $container.append($text);
     }
     
-    const $text = window.$('<div>');
-    $text.append(`<div>${team.name}</div>`);
-    if (team.sport || team.league) {
-        $text.append(`<small class="text-muted">${team.sport || ''} ${team.league ? '• ' + team.league : ''}</small>`);
-    }
-    
-    $container.append($text);
     return $container;
 }
 
@@ -509,8 +609,16 @@ declare global {
 
                             <!-- Teams for non-parlay bets -->
                             <template v-if="!isParlay">
+                                <!-- Sport and League Selection Notice -->
+                                <div v-if="!canSelectTeams" class="col-12">
+                                    <div class="alert alert-info mb-3">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Please select a <strong>Sport</strong> and <strong>League</strong> first to enable team/player selection.
+                                    </div>
+                                </div>
+                                
                                 <!-- Team One -->
-                                <div class="col-md-6">
+                                <div v-if="canSelectTeams" class="col-md-6">
                                     <label for="team_one_select" class="form-label">Team One / Player</label>
                                     <div class="input-group">
                                         <select
@@ -543,7 +651,7 @@ declare global {
                                 </div>
 
                                 <!-- Team Two -->
-                                <div class="col-md-6">
+                                <div v-if="canSelectTeams" class="col-md-6">
                                     <label for="team_two_select" class="form-label">Team Two</label>
                                     <div class="input-group">
                                         <select
@@ -620,6 +728,22 @@ declare global {
                                 />
                                 <div v-if="form.errors.betting_date" class="invalid-feedback">
                                     {{ form.errors.betting_date }}
+                                </div>
+                            </div>
+                            
+                            <!-- Game Date -->
+                            <div class="col-md-6">
+                                <label for="game_date" class="form-label">Game Date <span class="text-danger">*</span></label>
+                                <input
+                                    id="game_date"
+                                    v-model="form.game_date"
+                                    type="datetime-local"
+                                    class="form-control"
+                                    :class="{ 'is-invalid': form.errors.game_date }"
+                                    required
+                                />
+                                <div v-if="form.errors.game_date" class="invalid-feedback">
+                                    {{ form.errors.game_date }}
                                 </div>
                             </div>
                         </div>

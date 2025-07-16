@@ -13,7 +13,8 @@
         <li><strong>Sport:</strong> The sport being bet on (e.g., Baseball, Combat Sports, Golf)</li>
         <li><strong>League:</strong> The league or event name (e.g., MLB, UFC, PGA)</li>
         <li><strong>Month:</strong> Calendar month the bet is placed or settles</li>
-        <li><strong>Date:</strong> Date of the event or bet (MM/DD/YYYY)</li>
+        <li><strong>Betting Date:</strong> Date when the bet was placed (MM/DD/YYYY)</li>
+        <li><strong>Game Date:</strong> Date of the actual game/event (MM/DD/YYYY)</li>
         <li><strong>Game:</strong> The specific matchup or contest (e.g., Yankees @ Red Sox, Dustin Poirier vs. Islam Makhachev)</li>
         <li><strong>Bet Type:</strong> General type of bet (Moneyline, Spread, Player Prop, etc)</li>
         <li><strong>Wager Type:</strong> Specific betting style (Straight, Outright, Each Way, Parlay)</li>
@@ -314,7 +315,8 @@ const formatFieldName = (field: string): string => {
     'sport': 'Sport',
     'league': 'League',
     'month': 'Month',
-    'date': 'Date',
+    'betting_date': 'Betting Date',
+    'game_date': 'Game Date',
     'game': 'Game',
     'home_team': 'Home Team',
     'away_team': 'Away Team',
@@ -329,7 +331,6 @@ const formatFieldName = (field: string): string => {
     'wager': 'Wager',
     'profits': 'Profits',
     'winning_amount': 'Winning Amount',
-    'game_date': 'Game Date',
     'selection': 'Selection/Pick',
     'stake': 'Stake/Wager Amount',
     'operator': 'Sportsbook/Operator',

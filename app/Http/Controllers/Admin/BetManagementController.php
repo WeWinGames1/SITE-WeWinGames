@@ -285,14 +285,17 @@ class BetManagementController extends Controller
             'month' => 'nullable|string|max:50',
             'team_one' => 'nullable|string|max:255',
             'team_one_id' => 'nullable|exists:teams,id',
+            'team_one_is_new' => 'nullable|boolean',
             'team_two' => 'nullable|string|max:255',
             'team_two_id' => 'nullable|exists:teams,id',
+            'team_two_is_new' => 'nullable|boolean',
             'parlay_teams' => 'nullable|array',
             'parlay_teams.*.id' => 'nullable|exists:teams,id',
             'parlay_teams.*.name' => 'nullable|string|max:255',
             'tips' => 'nullable|string|max:500',
             'markets' => 'nullable|string|max:255',
             'betting_date' => 'required|date',
+            'game_date' => 'required|date',
             'wager_odds' => 'required|numeric',
             'wager_amount' => 'required|numeric|min:0',
             'status' => 'required|in:pending,won,lost,void,push',
@@ -305,6 +308,44 @@ class BetManagementController extends Controller
 
         // Set the user_id to the authenticated admin
         $validated['user_id'] = Auth::id();
+        
+        // Handle new team creation
+        DB::transaction(function () use (&$validated, $request) {
+            // Create team one if it's new
+            if ($request->boolean('team_one_is_new') && !empty($validated['team_one']) && empty($validated['team_one_id'])) {
+                $teamOne = \App\Models\Team::create([
+                    'name' => $validated['team_one'],
+                    'sport_id' => $validated['sport_id'],
+                    'league_id' => $validated['league_id'],
+                    'is_active' => true,
+                ]);
+                $validated['team_one_id'] = $teamOne->id;
+                
+                activity()
+                    ->causedBy(Auth::user())
+                    ->performedOn($teamOne)
+                    ->log('Created new team/player via bet creation');
+            }
+            
+            // Create team two if it's new
+            if ($request->boolean('team_two_is_new') && !empty($validated['team_two']) && empty($validated['team_two_id'])) {
+                $teamTwo = \App\Models\Team::create([
+                    'name' => $validated['team_two'],
+                    'sport_id' => $validated['sport_id'],
+                    'league_id' => $validated['league_id'],
+                    'is_active' => true,
+                ]);
+                $validated['team_two_id'] = $teamTwo->id;
+                
+                activity()
+                    ->causedBy(Auth::user())
+                    ->performedOn($teamTwo)
+                    ->log('Created new team/player via bet creation');
+            }
+        });
+        
+        // Remove the is_new flags from validated data
+        unset($validated['team_one_is_new'], $validated['team_two_is_new']);
 
         // Calculate potential win and profit
         $validated['winning_amount'] = $this->calculatePotentialWin($validated['wager_amount'], $validated['wager_odds']);
@@ -441,17 +482,22 @@ class BetManagementController extends Controller
         $validated = $request->validate([
             'user_id' => 'nullable|exists:users,id',
             'sports' => 'required|string|max:255',
+            'sport_id' => 'nullable|exists:sports,id',
             'league' => 'nullable|string|max:255',
+            'league_id' => 'nullable|exists:leagues,id',
             'month' => 'nullable|string|max:50',
             'matches' => 'nullable|string|max:500',
             'markets' => 'nullable|string|max:255',
             'wager_type' => 'nullable|string|max:250',
             'team_one' => 'nullable|string|max:255',
             'team_one_id' => 'nullable|exists:teams,id',
+            'team_one_is_new' => 'nullable|boolean',
             'team_two' => 'nullable|string|max:255',
             'team_two_id' => 'nullable|exists:teams,id',
+            'team_two_is_new' => 'nullable|boolean',
             'tips' => 'nullable|string|max:500',
             'betting_date' => 'required|date',
+            'game_date' => 'required|date',
             'wager_odds' => 'required|numeric',
             'wager_amount' => 'required|numeric|min:0',
             'winning_amount' => 'nullable|numeric|min:0',
@@ -468,6 +514,44 @@ class BetManagementController extends Controller
             'parlay_teams.*.id' => 'nullable|exists:teams,id',
             'parlay_teams.*.name' => 'nullable|string|max:255',
         ]);
+        
+        // Handle new team creation
+        DB::transaction(function () use (&$validated, $request) {
+            // Create team one if it's new
+            if ($request->boolean('team_one_is_new') && !empty($validated['team_one']) && empty($validated['team_one_id'])) {
+                $teamOne = \App\Models\Team::create([
+                    'name' => $validated['team_one'],
+                    'sport_id' => $validated['sport_id'] ?? null,
+                    'league_id' => $validated['league_id'] ?? null,
+                    'is_active' => true,
+                ]);
+                $validated['team_one_id'] = $teamOne->id;
+                
+                activity()
+                    ->causedBy(Auth::user())
+                    ->performedOn($teamOne)
+                    ->log('Created new team/player via bet update');
+            }
+            
+            // Create team two if it's new
+            if ($request->boolean('team_two_is_new') && !empty($validated['team_two']) && empty($validated['team_two_id'])) {
+                $teamTwo = \App\Models\Team::create([
+                    'name' => $validated['team_two'],
+                    'sport_id' => $validated['sport_id'] ?? null,
+                    'league_id' => $validated['league_id'] ?? null,
+                    'is_active' => true,
+                ]);
+                $validated['team_two_id'] = $teamTwo->id;
+                
+                activity()
+                    ->causedBy(Auth::user())
+                    ->performedOn($teamTwo)
+                    ->log('Created new team/player via bet update');
+            }
+        });
+        
+        // Remove the is_new flags from validated data
+        unset($validated['team_one_is_new'], $validated['team_two_is_new']);
 
         // Handle parlay teams
         if ($request->has('is_parlay') && $request->is_parlay && isset($validated['parlay_teams'])) {

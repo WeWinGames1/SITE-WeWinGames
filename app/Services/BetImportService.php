@@ -307,7 +307,8 @@ class BetImportService
                 'team_two' => $awayTeamName ?? '',
                 'team_two_logo' => $awayTeam ? $awayTeam->logo : null,
                 'tips' => $record['wager_name'] ?? $record['selection'] ?? '',
-                'betting_date' => $record['game_date'],
+                'betting_date' => $record['betting_date'] ?? $record['game_date'],
+                'game_date' => $record['game_date'] ?? $record['betting_date'],
                 'odds' => (float) $record['odds'], // New column
                 'wager_odds' => (float) $record['odds'], // Keep old column for compatibility
                 'wager_amount' => (float) ($record['wager_amount'] ?? $record['stake'] ?? 0),
@@ -430,8 +431,7 @@ class BetImportService
                 $betData['roi_net'] = $betData['roi'];
             }
             
-            // Also set game_date and profits for compatibility
-            $betData['game_date'] = $betData['betting_date'];
+            // Also set profits for compatibility
             $betData['profits'] = $betData['profit_amount'];
 
             // Create the bet directly using the model

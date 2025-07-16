@@ -85,7 +85,8 @@ class CsvImportService
             'sport' => ['sport', 'sports', 'sport_name', 'category', 'sport_type'],
             'league' => ['league', 'competition', 'tournament', 'division', 'conference', 'comp', 'championship', 'event'],
             'month' => ['month', 'month_name'],
-            'game_date' => ['date', 'game_date', 'match_date', 'event_date', 'betting_date', 'gamedate', 'game date', 'game date ', 'game date :', 'kickoff'],
+            'game_date' => ['date', 'game_date', 'match_date', 'event_date', 'gamedate', 'game date', 'game date ', 'game date :', 'kickoff'],
+            'betting_date' => ['betting_date', 'betting date', 'bet_date', 'placed_date', 'placed_at'],
             'game' => ['game', 'games', 'match', 'matchup', 'fixture', 'contest', 'game/player'],
             'bet_type' => ['bet type', 'bet_type', 'bettype', 'type', 'market', 'markets', 'bet_market'],
             'wager_type' => ['wager type', 'wager_type', 'wagertype', 'wagering_type', 'bet style'],
@@ -131,6 +132,8 @@ class CsvImportService
             'Game Date' => 'game_date',
             'Game Date ' => 'game_date',  // With trailing space
             'Game Date :' => 'game_date',
+            'Betting Date' => 'betting_date',
+            'Betting Date:' => 'betting_date',
             'Home Team' => 'home_team',
             'Away Team' => 'away_team',
             'Game' => 'game',
@@ -162,6 +165,7 @@ class CsvImportService
             'league' => 'league',
             'month' => 'month',
             'game date ' => 'game_date',  // With trailing space
+            'betting date' => 'betting_date',
             'home team' => 'home_team',
             'away team' => 'away_team',
             'game' => 'game',
@@ -498,6 +502,14 @@ class CsvImportService
             }
         }
 
+        // Parse betting_date
+        if (isset($data['betting_date']) && ! empty($data['betting_date'])) {
+            $parsedDate = $this->parseDate($data['betting_date']);
+            if ($parsedDate !== null) {
+                $data['betting_date'] = $parsedDate;
+            }
+        }
+        
         // Parse placed_at date
         if (isset($data['placed_at']) && ! empty($data['placed_at'])) {
             try {
@@ -793,7 +805,8 @@ class CsvImportService
             'sport.required' => 'Sport is required',
             'league.required' => 'League is required',
             'month.required' => 'Month is required',
-            'game_date.required' => 'Date is required',
+            'betting_date.required' => 'Betting Date is required',
+            'game_date.required' => 'Game Date is required',
             'game.required' => 'Game is required',
             'bet_type.required' => 'Bet Type is required',
             'wager_type.required' => 'Wager Type is required',
@@ -926,6 +939,7 @@ class CsvImportService
             'home_team' => 'required|string|max:255',
             'away_team' => 'nullable|string|max:255',
             // Optional fields
+            'betting_date' => 'nullable|string', // Optional as CSV might only have game_date
             'stake' => 'nullable|numeric|min:0|max:100000',
             'operator' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:500',
@@ -953,7 +967,8 @@ class CsvImportService
                 'sport' => 'The sport being bet on (e.g., Baseball, Combat Sports, Golf)',
                 'league' => 'The league or event name (e.g., MLB, UFC, PGA)',
                 'month' => 'Calendar month the bet is placed or settles',
-                'game_date' => 'Date of the event or bet (MM/DD/YYYY)',
+                'betting_date' => 'Date when the bet was placed (MM/DD/YYYY)',
+                'game_date' => 'Date of the actual game/event (MM/DD/YYYY)',
                 'game' => 'The specific matchup or contest (e.g., Yankees @ Red Sox, Dustin Poirier vs. Islam Makhachev)',
                 'bet_type' => 'General type of bet (Moneyline, Spread, Player Prop, etc)',
                 'wager_type' => 'Specific betting style (Straight, Outright, Each Way, Parlay)',
@@ -979,7 +994,7 @@ class CsvImportService
         $headers = [
             'Sports',
             'League',
-            'Date/Time',
+            'Game Date',
             'Betting Date',
             'Matches',
             'Time',

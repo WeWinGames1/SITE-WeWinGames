@@ -52,6 +52,7 @@ interface Bet {
     parlayTeams?: BetTeam[];
     tips?: string;
     betting_date: string;
+    game_date: string;
     wager_odds: number | string;
     membership: string;
     level?: string;
@@ -106,6 +107,7 @@ const form = useForm({
     })) || [],
     tips: props.bet.tips || '',
     betting_date: props.bet.betting_date ? new Date(props.bet.betting_date).toISOString().slice(0, 16) : '',
+    game_date: props.bet.game_date ? new Date(props.bet.game_date).toISOString().slice(0, 16) : '',
     wager_odds: props.bet.wager_odds || '',
     membership: String(props.bet.membership || 'bronze').toLowerCase(),
     level: props.bet.level || '',
@@ -741,6 +743,22 @@ declare global {
                                 />
                                 <div v-if="form.errors.betting_date" class="invalid-feedback">
                                     {{ form.errors.betting_date }}
+                                </div>
+                            </div>
+
+                            <!-- Game Date -->
+                            <div class="col-md-6">
+                                <label for="game_date" class="form-label">Game Date <span class="text-danger">*</span></label>
+                                <input
+                                    id="game_date"
+                                    v-model="form.game_date"
+                                    type="datetime-local"
+                                    class="form-control"
+                                    :class="{ 'is-invalid': form.errors.game_date }"
+                                    required
+                                />
+                                <div v-if="form.errors.game_date" class="invalid-feedback">
+                                    {{ form.errors.game_date }}
                                 </div>
                             </div>
                         </div>
