@@ -180,30 +180,20 @@ async function clearCache() {
     
     isClearingCache.value = true;
     
-    try {
-        const response = await fetch('/admin/cache/clear', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            // Show success message (you can use a toast library here)
-            alert(data.message || 'Cache cleared successfully!');
-        } else {
-            alert(data.message || 'Failed to clear cache');
+    // Use Inertia's router instead of fetch for proper CSRF handling
+    router.post('/admin/cache/clear', {}, {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: () => {
+            // The page will be refreshed with the flash message
+            isClearingCache.value = false;
+        },
+        onError: (errors) => {
+            console.error('Cache clear error:', errors);
+            alert('Failed to clear cache. Please check your permissions.');
+            isClearingCache.value = false;
         }
-    } catch (error) {
-        console.error('Cache clear error:', error);
-        alert('Failed to clear cache. Please try again.');
-    } finally {
-        isClearingCache.value = false;
-    }
+    });
 }
 
 function logout() {
