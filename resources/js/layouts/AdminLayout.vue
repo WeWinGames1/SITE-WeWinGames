@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
+import axios from 'axios';
 import ApplicationLogo from '@/components/AppLogo.vue';
 import ImpersonationBanner from '@/components/ImpersonationBanner.vue';
 import KnowledgebaseSidebar from '@/components/Admin/KnowledgebaseSidebar.vue';
@@ -180,20 +181,28 @@ async function clearCache() {
     
     isClearingCache.value = true;
     
-    // Use Inertia's router instead of fetch for proper CSRF handling
-    router.post('/admin/cache/clear', {}, {
-        preserveState: true,
-        preserveScroll: true,
-        onSuccess: () => {
-            // The page will be refreshed with the flash message
-            isClearingCache.value = false;
-        },
-        onError: (errors) => {
-            console.error('Cache clear error:', errors);
-            alert('Failed to clear cache. Please check your permissions.');
-            isClearingCache.value = false;
+    // Use axios for AJAX request instead of Inertia router
+    try {
+        const response = await axios.post('/admin/cache/clear');
+        
+        if (response.data.success) {
+            alert(response.data.message || 'Cache cleared successfully!');
+            // Optionally reload the page to reflect cache clear
+            // window.location.reload();
+        } else {
+            alert(response.data.message || 'Failed to clear cache');
         }
-    });
+    } catch (error) {
+        console.error('Cache clear error:', error);
+        if (error.response && error.response.status === 403) {
+            alert('Unauthorized. Please login as admin.');
+            window.location.href = '/admin/login';
+        } else {
+            alert('Failed to clear cache. Please try again.');
+        }
+    } finally {
+        isClearingCache.value = false;
+    }
 }
 
 function logout() {

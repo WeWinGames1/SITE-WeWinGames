@@ -53,12 +53,7 @@ class CacheController extends Controller
                 ])
                 ->log('Admin cleared all caches');
 
-            // For Inertia requests, redirect back with flash message
-            if ($request->header('X-Inertia')) {
-                return redirect()->back()->with('success', 'All caches cleared successfully!' . $cloudflareMessage);
-            }
-            
-            // For API requests, return JSON
+            // Always return JSON for this endpoint
             return response()->json([
                 'success' => true,
                 'message' => 'All caches cleared successfully!' . $cloudflareMessage
@@ -69,12 +64,7 @@ class CacheController extends Controller
                 'user' => auth()->id(),
             ]);
 
-            // For Inertia requests, redirect back with error message
-            if ($request->header('X-Inertia')) {
-                return redirect()->back()->with('error', 'Failed to clear some caches. Please check the logs.');
-            }
-            
-            // For API requests, return JSON
+            // Always return JSON for this endpoint
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to clear some caches. Please check the logs.'
