@@ -16,8 +16,10 @@ interface Bet {
 const bets = ref<Bet[]>([]);
 const loading = ref(true);
 const tickerContainer = ref<HTMLElement | null>(null);
+const tickerWrapper = ref<HTMLElement | null>(null);
 const animationId = ref<number | null>(null);
 const position = ref(0);
+const containerWidth = ref(0);
 
 // Fetch last 10 bets
 const fetchBets = async () => {
@@ -47,21 +49,25 @@ const getLevelClass = (level: string) => {
 
 // Animation logic
 const startAnimation = () => {
-    if (!tickerContainer.value) return;
+    if (!tickerContainer.value || !tickerWrapper.value) return;
     
     const animate = () => {
-        position.value -= 1;
-        const tickerWidth = tickerContainer.value?.scrollWidth || 0;
-        const containerWidth = tickerContainer.value?.offsetWidth || 0;
+        position.value -= 0.8; // Animation speed
         
-        // Reset position when ticker has scrolled completely
-        if (Math.abs(position.value) >= tickerWidth / 2) {
+        // Get the width of one set of ticker items
+        const firstTickerItems = tickerContainer.value?.querySelector('.ticker-items');
+        const itemsWidth = firstTickerItems?.offsetWidth || 0;
+        
+        // Reset position when first set has completely scrolled out of view
+        if (position.value <= -itemsWidth) {
             position.value = 0;
         }
         
         animationId.value = requestAnimationFrame(animate);
     };
     
+    // Start from position 0
+    position.value = 0;
     animate();
 };
 
@@ -77,8 +83,17 @@ const viewAllPicks = () => {
     router.visit('/todays-bets');
 };
 
+// Resize handler
+const handleResize = () => {
+    // No need to restart animation on resize since container handles overflow
+};
+
 onMounted(() => {
     fetchBets();
+    
+    // Add resize listener
+    window.addEventListener('resize', handleResize);
+    
     setTimeout(() => {
         if (bets.value.length > 0) {
             startAnimation();
@@ -88,11 +103,12 @@ onMounted(() => {
 
 onUnmounted(() => {
     stopAnimation();
+    window.removeEventListener('resize', handleResize);
 });
 </script>
 
 <template>
-    <div class="ticker-wrapper" v-if="!loading && bets.length > 0">
+    <div ref="tickerWrapper" class="ticker-wrapper" v-if="!loading && bets.length > 0">
         <div class="ticker-container" @click="viewAllPicks">
             <div 
                 ref="tickerContainer"
@@ -131,11 +147,13 @@ onUnmounted(() => {
 <style scoped>
 .ticker-wrapper {
     position: relative;
-    overflow: hidden;
+    overflow: hidden; /* This creates the visible window */
     background-color: rgba(0, 0, 0, 0.2);
-    padding: 5px 0;
+    padding: 5px 10px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    flex: 1; /* Take all available flex space */
+    height: 30px; /* Fixed height */
 }
 
 .ticker-wrapper:hover {
@@ -143,27 +161,40 @@ onUnmounted(() => {
 }
 
 .ticker-container {
-    overflow: hidden;
+    overflow: hidden; /* Essential: hides overflow content */
     white-space: nowrap;
+    width: 100%;
+    height: 100%;
+    position: relative;
 }
 
 .ticker-content {
-    display: inline-flex;
-    padding-left: 100%;
+    position: absolute; /* Key: absolutely positioned */
+    top: 0;
+    left: 0;
+    display: flex;
+    white-space: nowrap;
+    will-change: transform;
+    height: 100%;
+    align-items: center;
 }
 
 .ticker-items {
-    display: inline-flex;
-    padding-right: 50px;
+    display: flex;
+    white-space: nowrap;
+    flex-shrink: 0;
+    align-items: center;
+    height: 100%;
 }
 
 .ticker-item {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    margin-right: 40px;
-    font-size: 13px;
+    gap: 6px;
+    margin-right: 20px;
+    font-size: 12px;
     color: #fff;
+    flex-shrink: 0;
 }
 
 .ticker-item .badge {
