@@ -53,6 +53,43 @@ class BetImportService
         $this->skipErrors = $skipErrors;
     }
 
+    /**
+     * Format date for MySQL
+     */
+    private function formatDateForMysql($dateValue): ?string
+    {
+        if (empty($dateValue)) {
+            return null;
+        }
+
+        try {
+            // If already in Y-m-d format, return as is
+            if (preg_match('/^\d{4}-\d{2}-\d{2}/', $dateValue)) {
+                return $dateValue;
+            }
+
+            // Try parsing with Carbon - it handles many formats
+            return \Carbon\Carbon::parse($dateValue)->format('Y-m-d H:i:s');
+        } catch (\Exception $e) {
+            // If Carbon fails, try manual parsing for MM-DD-YYYY format
+            if (preg_match('/^(\d{1,2})-(\d{1,2})-(\d{4})$/', $dateValue, $matches)) {
+                $month = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+                $day = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+                $year = $matches[3];
+                return "$year-$month-$day 00:00:00";
+            }
+
+            // Log the error for debugging
+            \Log::warning('Failed to parse date in BetImportService', [
+                'value' => $dateValue,
+                'error' => $e->getMessage()
+            ]);
+
+            // Return null if we can't parse it
+            return null;
+        }
+    }
+
     public function importFromCsv(string $filePath): array
     {
         try {
@@ -307,8 +344,8 @@ class BetImportService
                 'team_two' => $awayTeamName ?? '',
                 'team_two_logo' => $awayTeam ? $awayTeam->logo : null,
                 'tips' => $record['wager_name'] ?? $record['selection'] ?? '',
-                'betting_date' => $record['betting_date'] ?? $record['game_date'],
-                'game_date' => $record['game_date'] ?? $record['betting_date'],
+                'betting_date' => $this->formatDateForMysql($record['betting_date'] ?? $record['game_date']),
+                'game_date' => $this->formatDateForMysql($record['game_date'] ?? $record['betting_date']),
                 'odds' => (float) $record['odds'], // New column
                 'wager_odds' => (float) $record['odds'], // Keep old column for compatibility
                 'wager_amount' => (float) ($record['wager_amount'] ?? $record['stake'] ?? 0),

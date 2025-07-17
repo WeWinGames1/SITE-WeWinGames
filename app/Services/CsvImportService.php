@@ -668,17 +668,26 @@ class CsvImportService
             // Handle various date formats
             $date = null;
             
+            // Log the input value for debugging
+            static $loggedDates = 0;
+            if ($loggedDates < 5) {
+                \Log::info('Parsing date value', ['input' => $value, 'type' => gettype($value)]);
+                $loggedDates++;
+            }
+            
             // Try common date formats
             $formats = [
-                'm/d/y',      // 1/15/24
-                'm/d/Y',      // 1/15/2024
-                'n/j/y',      // 1/15/24 (without leading zeros)
-                'n/j/Y',      // 1/15/2024 (without leading zeros)
-                'Y-m-d',      // 2024-01-15
-                'd/m/y',      // 15/01/24
-                'd/m/Y',      // 15/01/2024
-                'm-d-y',      // 01-15-24
-                'm-d-Y',      // 01-15-2024
+                'm-d-Y',      // 07-16-2025 (with leading zeros)
+                'n-j-Y',      // 7-16-2025 (without leading zeros)
+                'm/d/Y',      // 07/16/2025
+                'n/j/Y',      // 7/16/2025
+                'm/d/y',      // 07/16/25
+                'n/j/y',      // 7/16/25
+                'Y-m-d',      // 2025-07-16
+                'd/m/Y',      // 16/07/2025
+                'd/m/y',      // 16/07/25
+                'm-d-y',      // 07-16-25
+                'n-j-y',      // 7-16-25
             ];
             
             foreach ($formats as $format) {
