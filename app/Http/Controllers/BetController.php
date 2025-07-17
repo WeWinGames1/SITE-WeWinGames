@@ -155,6 +155,7 @@ class BetController extends Controller
         return Inertia::render('TodaysBets', [
             'roiData' => $this->betService->getTotalROIBySubscriptionLevel(),
             'freeBets' => $this->betService->getTodaysBets(),
+            'sportPreferences' => \App\Models\SportPreference::active()->get(),
         ]);
     }
 
@@ -212,6 +213,18 @@ class BetController extends Controller
 
         return Inertia::render('BetPickShow', [
             'bet' => $bet,
+        ]);
+    }
+
+    /**
+     * Get ticker bets - last 10 bets with preferred sports prioritized.
+     */
+    public function getTickerBets()
+    {
+        $bets = $this->betService->getTickerBets();
+
+        return response()->json([
+            'bets' => $bets,
         ]);
     }
 }

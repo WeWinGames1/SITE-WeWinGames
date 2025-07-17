@@ -92,14 +92,49 @@ const canViewBet = (bet) => {
     }
 };
 
+// Get sport preferences from page props (passed from backend)
+const sportPreferences = page.props.sportPreferences || [];
+
+// Function to get sport priority (lower number = higher priority)
+const getSportPriority = (sport) => {
+    const preference = sportPreferences.find(pref => pref.sport_name === sport);
+    return preference ? preference.priority : 999; // Non-preferred sports get low priority
+};
+
 // Split bets into viewable and covered
-const viewableBets = bets
+let viewableBets = bets
     .filter(bet => canViewBet(bet))
     .map(bet => ({ ...bet, isCovered: false }));
+
+// For guests/free users, limit to 2 bronze picks from preferred sports
+if (userSubscriptionType === 'free' || isGuest) {
+    const bronzeBets = viewableBets.filter(bet => 
+        (bet.membership?.toLowerCase() || 'bronze') === 'bronze'
+    );
+    
+    // Sort bronze bets by sport preferences
+    const sortedBronzeBets = bronzeBets.sort((a, b) => {
+        const priorityA = getSportPriority(a.sports);
+        const priorityB = getSportPriority(b.sports);
+        return priorityA - priorityB;
+    });
+    
+    // Take only the first 2 bronze picks
+    const limitedBronzeBets = sortedBronzeBets.slice(0, 2);
+    
+    // Keep non-bronze bets (if any) and add limited bronze bets
+    viewableBets = [
+        ...viewableBets.filter(bet => (bet.membership?.toLowerCase() || 'bronze') !== 'bronze'),
+        ...limitedBronzeBets
+    ];
+}
 
 const coveredBets = bets
     .filter(bet => !canViewBet(bet))
     .map(bet => ({ ...bet, isCovered: true }));
+
+// Calculate how many picks are hidden for free users
+const hiddenPicksCount = bets.filter(bet => !canViewBet(bet)).length;
 // Group bets by sport
 const groupedBets = computed(() => {
   return viewableBets.reduce((acc, bet) => {
@@ -315,6 +350,38 @@ const getMembershipBadgeStyle = (membership: string) => {
                     <div class="text-center mb-5">
                         <h2 class="display-4 fw-bold text-white mb-4">Today's Picks</h2>
                         <p class="fs-5 text-gray-light mb-5">Expert analysis and betting recommendations</p>
+                    </div>
+                    
+                    <!-- Registration Prompt for Free Users (showing missing picks) -->
+                    <div v-if="(userSubscriptionType === 'free' || isGuest) && hiddenPicksCount > 0" class="mb-5">
+                        <div class="card border-warning" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);">
+                            <div class="card-body text-center py-4">
+                                <div class="mb-3">
+                                    <i class="bi bi-eye-slash text-warning display-6"></i>
+                                </div>
+                                <h5 class="text-white mb-3">
+                                    {{ hiddenPicksCount }} More {{ hiddenPicksCount === 1 ? 'Pick' : 'Picks' }} Available!
+                                </h5>
+                                <p class="text-light mb-4">
+                                    You're viewing {{ viewableBets.length }} of {{ bets.length }} total picks. 
+                                    {{ isGuest ? 'Register' : 'Upgrade' }} to unlock all premium betting picks and increase your winning potential.
+                                </p>
+                                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                                    <Link v-if="isGuest" href="/register" class="btn btn-warning btn-lg px-4">
+                                        <i class="bi bi-person-plus me-2"></i>
+                                        Register Free
+                                    </Link>
+                                    <Link v-else href="/buy-our-picks" class="btn btn-warning btn-lg px-4">
+                                        <i class="bi bi-arrow-up-circle me-2"></i>
+                                        Upgrade Now
+                                    </Link>
+                                    <Link v-if="isGuest" href="/login" class="btn btn-outline-light">
+                                        <i class="bi bi-box-arrow-in-right me-2"></i>
+                                        Login
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Use the same GroupedBetCards component as home page -->

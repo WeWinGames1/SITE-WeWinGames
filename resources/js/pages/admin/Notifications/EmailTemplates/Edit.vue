@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { useEditor, EditorContent } from '@tiptap/vue-3';
+import StarterKit from '@tiptap/starter-kit';
+import TiptapLink from '@tiptap/extension-link';
+import Image from '@tiptap/extension-image';
+import Placeholder from '@tiptap/extension-placeholder';
 
 interface EmailTemplate {
     id: number;
@@ -33,9 +38,36 @@ const form = useForm({
 const showPreview = ref(false);
 const previewLoading = ref(false);
 const previewData = ref<any>(null);
+const showSourceCode = ref(false);
+const sourceCode = ref('');
 
 const availableVariablesText = computed(() => {
     return props.template.available_variables.map(v => `{{${v}}}`).join(', ');
+});
+
+// Rich text editor setup
+const editor = useEditor({
+    content: props.template.body_html,
+    extensions: [
+        StarterKit.configure({
+            heading: { levels: [1, 2, 3] },
+        }),
+        TiptapLink.configure({ openOnClick: false }),
+        Image,
+        Placeholder.configure({
+            placeholder: 'Start writing your email template...',
+        }),
+    ],
+    onUpdate: ({ editor }) => {
+        form.body_html = editor.getHTML();
+        if (showSourceCode.value) {
+            sourceCode.value = editor.getHTML();
+        }
+    },
+});
+
+onBeforeUnmount(() => {
+    editor.value?.destroy();
 });
 
 function updateTemplate() {
@@ -67,21 +99,91 @@ function resetToDefault() {
 }
 
 function insertVariable(variable: string) {
-    const textarea = document.getElementById('body_html') as HTMLTextAreaElement;
-    if (textarea) {
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const text = form.body_html;
-        const before = text.substring(0, start);
-        const after = text.substring(end, text.length);
-        form.body_html = before + `{{${variable}}}` + after;
-        
-        // Set cursor position after inserted text
-        setTimeout(() => {
-            textarea.selectionStart = textarea.selectionEnd = start + variable.length + 4;
-            textarea.focus();
-        }, 0);
+    if (showSourceCode.value) {
+        // Insert into source code textarea
+        const textarea = document.getElementById('sourceCodeTextarea') as HTMLTextAreaElement;
+        if (textarea) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = sourceCode.value;
+            const before = text.substring(0, start);
+            const after = text.substring(end, text.length);
+            sourceCode.value = before + `{{${variable}}}` + after;
+            
+            // Update form and editor
+            form.body_html = sourceCode.value;
+            editor.value?.commands.setContent(sourceCode.value);
+            
+            // Set cursor position after inserted text
+            setTimeout(() => {
+                textarea.selectionStart = textarea.selectionEnd = start + variable.length + 4;
+                textarea.focus();
+            }, 0);
+        }
+    } else {
+        // Insert into rich text editor
+        if (editor.value) {
+            editor.value.chain().focus().insertContent(`{{${variable}}}`).run();
+        }
     }
+}
+
+function toggleSourceView() {
+    showSourceCode.value = !showSourceCode.value;
+    if (showSourceCode.value) {
+        // Switch to source mode - shows raw HTML
+        sourceCode.value = editor.value?.getHTML() || '';
+    } else {
+        // Switch back to visual mode - preserves HTML changes
+        if (editor.value) {
+            editor.value.commands.setContent(sourceCode.value);
+            form.body_html = sourceCode.value;
+        }
+    }
+}
+
+function updateSourceCode() {
+    form.body_html = sourceCode.value;
+}
+
+// Rich text editor toolbar functions
+function toggleBold() {
+    editor.value?.chain().focus().toggleBold().run();
+}
+
+function toggleItalic() {
+    editor.value?.chain().focus().toggleItalic().run();
+}
+
+function toggleStrike() {
+    editor.value?.chain().focus().toggleStrike().run();
+}
+
+function setHeading(level: 1 | 2 | 3) {
+    editor.value?.chain().focus().toggleHeading({ level }).run();
+}
+
+function setParagraph() {
+    editor.value?.chain().focus().setParagraph().run();
+}
+
+function toggleBulletList() {
+    editor.value?.chain().focus().toggleBulletList().run();
+}
+
+function toggleOrderedList() {
+    editor.value?.chain().focus().toggleOrderedList().run();
+}
+
+function addLink() {
+    const url = prompt('Enter URL:');
+    if (url) {
+        editor.value?.chain().focus().setLink({ href: url }).run();
+    }
+}
+
+function removeLink() {
+    editor.value?.chain().focus().unsetLink().run();
 }
 </script>
 
@@ -173,18 +275,162 @@ function insertVariable(variable: string) {
 
                         <!-- HTML Content -->
                         <div class="card mb-4">
-                            <div class="card-header bg-light">
-                                <h5 class="mb-0">HTML Content</h5>
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Email Content</h5>
+                                <button 
+                                    type="button"
+                                    @click="toggleSourceView"
+                                    class="btn btn-sm btn-outline-secondary"
+                                >
+                                    <i class="bi" :class="showSourceCode ? 'bi-eye' : 'bi-code'"></i>
+                                    {{ showSourceCode ? 'Visual Editor' : 'Source Code' }}
+                                </button>
                             </div>
-                            <div class="card-body">
+                            
+                            <!-- Rich Text Editor -->
+                            <div v-if="!showSourceCode" class="card-body p-0">
+                                <!-- Toolbar -->
+                                <div class="border-bottom p-2 d-flex flex-wrap gap-1">
+                                    <!-- Text Formatting -->
+                                    <div class="btn-group" role="group">
+                                        <button 
+                                            type="button"
+                                            @click="toggleBold"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            :class="{ active: editor?.isActive('bold') }"
+                                            title="Bold"
+                                        >
+                                            <i class="bi bi-type-bold"></i>
+                                        </button>
+                                        <button 
+                                            type="button"
+                                            @click="toggleItalic"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            :class="{ active: editor?.isActive('italic') }"
+                                            title="Italic"
+                                        >
+                                            <i class="bi bi-type-italic"></i>
+                                        </button>
+                                        <button 
+                                            type="button"
+                                            @click="toggleStrike"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            :class="{ active: editor?.isActive('strike') }"
+                                            title="Strikethrough"
+                                        >
+                                            <i class="bi bi-type-strikethrough"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- Headings -->
+                                    <div class="btn-group" role="group">
+                                        <button 
+                                            type="button"
+                                            @click="setParagraph"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            :class="{ active: editor?.isActive('paragraph') }"
+                                            title="Paragraph"
+                                        >
+                                            P
+                                        </button>
+                                        <button 
+                                            type="button"
+                                            @click="setHeading(1)"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            :class="{ active: editor?.isActive('heading', { level: 1 }) }"
+                                            title="Heading 1"
+                                        >
+                                            H1
+                                        </button>
+                                        <button 
+                                            type="button"
+                                            @click="setHeading(2)"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            :class="{ active: editor?.isActive('heading', { level: 2 }) }"
+                                            title="Heading 2"
+                                        >
+                                            H2
+                                        </button>
+                                        <button 
+                                            type="button"
+                                            @click="setHeading(3)"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            :class="{ active: editor?.isActive('heading', { level: 3 }) }"
+                                            title="Heading 3"
+                                        >
+                                            H3
+                                        </button>
+                                    </div>
+
+                                    <!-- Lists -->
+                                    <div class="btn-group" role="group">
+                                        <button 
+                                            type="button"
+                                            @click="toggleBulletList"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            :class="{ active: editor?.isActive('bulletList') }"
+                                            title="Bullet List"
+                                        >
+                                            <i class="bi bi-list-ul"></i>
+                                        </button>
+                                        <button 
+                                            type="button"
+                                            @click="toggleOrderedList"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            :class="{ active: editor?.isActive('orderedList') }"
+                                            title="Numbered List"
+                                        >
+                                            <i class="bi bi-list-ol"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- Links -->
+                                    <div class="btn-group" role="group">
+                                        <button 
+                                            type="button"
+                                            @click="addLink"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            :class="{ active: editor?.isActive('link') }"
+                                            title="Add Link"
+                                        >
+                                            <i class="bi bi-link"></i>
+                                        </button>
+                                        <button 
+                                            type="button"
+                                            @click="removeLink"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            title="Remove Link"
+                                            :disabled="!editor?.isActive('link')"
+                                        >
+                                            <i class="bi bi-link-45deg"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Editor Content -->
+                                <div class="p-3">
+                                    <editor-content 
+                                        :editor="editor" 
+                                        class="tiptap-editor"
+                                        :class="{ 'is-invalid': form.errors.body_html }"
+                                    />
+                                    <div v-if="form.errors.body_html" class="invalid-feedback">
+                                        {{ form.errors.body_html }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Source Code Editor -->
+                            <div v-else class="card-body">
                                 <div class="mb-3">
                                     <textarea 
-                                        v-model="form.body_html" 
+                                        v-model="sourceCode"
+                                        @input="updateSourceCode"
+                                        id="sourceCodeTextarea"
                                         class="form-control font-monospace"
                                         :class="{ 'is-invalid': form.errors.body_html }"
-                                        id="body_html"
                                         rows="15"
-                                        required
+                                        placeholder="Enter HTML source code..."
                                     ></textarea>
                                     <div v-if="form.errors.body_html" class="invalid-feedback">
                                         {{ form.errors.body_html }}
@@ -366,5 +612,102 @@ code {
     background-color: rgba(13, 110, 253, 0.1);
     padding: 0.125rem 0.25rem;
     border-radius: 0.25rem;
+}
+
+/* Tiptap Editor Styles */
+.tiptap-editor {
+    min-height: 300px;
+    max-height: 500px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.tiptap-editor:focus {
+    outline: none;
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.tiptap-editor.is-invalid {
+    border-color: #dc3545;
+}
+
+.tiptap-editor.is-invalid:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+}
+
+/* Editor content styles */
+.tiptap-editor h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.tiptap-editor h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.tiptap-editor h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.tiptap-editor p {
+    margin-bottom: 0.75rem;
+}
+
+.tiptap-editor ul,
+.tiptap-editor ol {
+    margin-bottom: 0.75rem;
+    padding-left: 1.5rem;
+}
+
+.tiptap-editor li {
+    margin-bottom: 0.25rem;
+}
+
+.tiptap-editor a {
+    color: #0d6efd;
+    text-decoration: underline;
+}
+
+.tiptap-editor a:hover {
+    color: #0a58ca;
+}
+
+.tiptap-editor strong {
+    font-weight: 600;
+}
+
+.tiptap-editor em {
+    font-style: italic;
+}
+
+.tiptap-editor s {
+    text-decoration: line-through;
+}
+
+/* Placeholder styles */
+.tiptap-editor .is-editor-empty:first-child::before {
+    color: #6c757d;
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+}
+
+/* Toolbar button active state */
+.btn.active {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
 }
 </style>

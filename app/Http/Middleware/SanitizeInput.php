@@ -19,6 +19,8 @@ class SanitizeInput
         'content', // Rich text editor content
         'html',
         'markdown',
+        'body_html', // Email template HTML content
+        'body_text', // Email template plain text content
     ];
 
     /**

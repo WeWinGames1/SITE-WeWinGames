@@ -42,10 +42,13 @@ class EmailTemplateController extends Controller
             'subject' => 'required|string|max:255',
             'from_email' => 'nullable|email|max:255',
             'from_name' => 'nullable|string|max:255',
-            'body_html' => 'required|string',
+            'body_html' => 'required|string|min:1',
             'body_text' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
+        
+        // Don't strip HTML tags from body_html - preserve rich content
+        // The frontend Tiptap editor already sanitizes dangerous content
 
         $emailTemplate->update($validated);
 

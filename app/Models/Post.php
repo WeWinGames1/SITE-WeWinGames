@@ -247,7 +247,9 @@ class Post extends Model implements HasMedia
         }
 
         // Otherwise, assume it's a path and build the URL
-        return asset('storage/'.$this->featured_image);
+        // Remove leading slash to prevent double slashes in URL
+        $imagePath = ltrim($this->featured_image, '/');
+        return asset('storage/'.$imagePath);
     }
 
     /**

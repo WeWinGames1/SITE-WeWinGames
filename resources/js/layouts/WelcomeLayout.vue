@@ -4,6 +4,7 @@ import { ref, computed, onMounted } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import { socialMediaLinks } from '@/config/social';
 import KnowledgebaseSidebar from '@/components/Admin/KnowledgebaseSidebar.vue';
+import BetsTicker from '@/components/BetsTicker.vue';
 
 const mobileMenuOpen = ref(false);
 const toggleMobileMenu = () => {
@@ -57,6 +58,10 @@ const openKnowledgebase = () => {
                             <a :href="socialMediaLinks.twitter" target="_blank" rel="noopener" class="text-white opacity-75"><i class="bi bi-twitter"></i></a>
                             <a href="#" class="text-white opacity-75"><i class="bi bi-telegram"></i></a>
                         </div>
+                    </div>
+                    <!-- Ticker in the center -->
+                    <div class="flex-grow-1 mx-4 d-none d-lg-block">
+                        <BetsTicker />
                     </div>
                     <div class="d-flex align-items-center gap-2">
                         <span class="text-white small me-2">English</span>

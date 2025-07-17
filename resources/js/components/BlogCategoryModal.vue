@@ -46,10 +46,19 @@ watch(() => props.show, (newValue) => {
 async function loadCategories() {
     loading.value = true;
     try {
-        const response = await axios.get(route('admin.blog-categories.index'));
+        // Get CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
+        const response = await axios.get(route('admin.blog-categories.index'), {
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
         categories.value = response.data;
     } catch (error) {
         console.error('Error loading categories:', error);
+        console.error('Response:', error.response?.data);
     } finally {
         loading.value = false;
     }
@@ -88,10 +97,16 @@ function cancelEdit() {
 
 async function submit() {
     try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        const headers = {
+            'X-CSRF-TOKEN': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
+        };
+        
         if (isEditing.value) {
-            await axios.put(route('admin.blog-categories.update', editingCategory.value!.id), form.data());
+            await axios.put(route('admin.blog-categories.update', editingCategory.value!.id), form.data(), { headers });
         } else {
-            await axios.post(route('admin.blog-categories.store'), form.data());
+            await axios.post(route('admin.blog-categories.store'), form.data(), { headers });
         }
         await loadCategories();
         cancelEdit();
@@ -110,7 +125,13 @@ async function deleteCategory(category: Category) {
     }
     
     try {
-        await axios.delete(route('admin.blog-categories.destroy', category.id));
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        await axios.delete(route('admin.blog-categories.destroy', category.id), {
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
         await loadCategories();
     } catch (error: any) {
         if (error.response?.status === 422) {

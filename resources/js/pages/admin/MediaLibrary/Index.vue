@@ -142,9 +142,15 @@ async function deleteMedia() {
         router.reload({ only: ['media'] });
         showDeleteModal.value = false;
         mediaToDelete.value = null;
-    } catch (error) {
+    } catch (error: any) {
         console.error('Delete error:', error);
-        alert('Error deleting media. Please try again.');
+        
+        // Show detailed error message from backend
+        const errorMessage = error.response?.data?.message || 'Error deleting media. Please try again.';
+        alert(errorMessage);
+        
+        showDeleteModal.value = false;
+        mediaToDelete.value = null;
     }
 }
 

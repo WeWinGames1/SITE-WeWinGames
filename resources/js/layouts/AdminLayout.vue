@@ -97,6 +97,7 @@ const navigation: NavItem[] = [
             { name: 'Bets', href: route('admin.bets.index'), icon: 'bi-bar-chart' },
             { name: 'Import Bets', href: route('admin.bets.import.index'), icon: 'bi-upload' },
             { name: 'Sports', href: route('admin.sports.index'), icon: 'bi-dribbble' },
+            { name: 'Sport Preferences', href: route('admin.sport-preferences.index'), icon: 'bi-list-ol' },
             { name: 'Leagues', href: route('admin.leagues.index'), icon: 'bi-flag' },
             { name: 'Teams', href: route('admin.teams.index'), icon: 'bi-people-fill' },
             // { name: 'Games', href: '#', icon: 'bi-calendar-event' }, // TODO: Implement

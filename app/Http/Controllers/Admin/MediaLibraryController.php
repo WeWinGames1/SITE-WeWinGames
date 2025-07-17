@@ -124,18 +124,104 @@ class MediaLibraryController extends Controller
      */
     public function destroy(Media $media): JsonResponse
     {
-        // Delete the file from storage
-        $filePath = "media/{$media->id}/{$media->file_name}";
-        if (Storage::disk('public')->exists($filePath)) {
-            Storage::disk('public')->delete($filePath);
+        try {
+            \Log::info('Attempting to delete media', [
+                'media_id' => $media->id,
+                'file_name' => $media->file_name,
+                'collection' => $media->collection_name,
+                'model_type' => $media->model_type,
+            ]);
+
+            // Check if media is being used by other models
+            $usage = $this->checkMediaUsage($media);
+            if (!empty($usage)) {
+                \Log::warning('Media is still in use', [
+                    'media_id' => $media->id,
+                    'usage' => $usage,
+                ]);
+                
+                return response()->json([
+                    'message' => 'Cannot delete media - it is currently being used by: ' . implode(', ', $usage),
+                ], 422);
+            }
+
+            // Try to delete the file from storage
+            $filePath = "media/{$media->id}/{$media->file_name}";
+            if (Storage::disk('public')->exists($filePath)) {
+                if (!Storage::disk('public')->delete($filePath)) {
+                    \Log::error('Failed to delete media file from storage', [
+                        'media_id' => $media->id,
+                        'file_path' => $filePath,
+                    ]);
+                    
+                    return response()->json([
+                        'message' => 'Failed to delete media file from storage',
+                    ], 500);
+                }
+                \Log::info('Media file deleted from storage', ['file_path' => $filePath]);
+            } else {
+                \Log::warning('Media file not found in storage', [
+                    'media_id' => $media->id,
+                    'file_path' => $filePath,
+                ]);
+            }
+            
+            // Also try to delete the entire media directory if it exists and is empty
+            $mediaDir = "media/{$media->id}";
+            if (Storage::disk('public')->exists($mediaDir)) {
+                $files = Storage::disk('public')->files($mediaDir);
+                if (empty($files)) {
+                    Storage::disk('public')->deleteDirectory($mediaDir);
+                    \Log::info('Empty media directory deleted', ['directory' => $mediaDir]);
+                }
+            }
+            
+            // Delete the media record from database
+            $media->delete();
+            
+            \Log::info('Media deleted successfully', ['media_id' => $media->id]);
+
+            return response()->json([
+                'message' => 'Media deleted successfully',
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error deleting media', [
+                'media_id' => $media->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            return response()->json([
+                'message' => 'Error deleting media: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Check if media is being used by other models.
+     */
+    private function checkMediaUsage(Media $media): array
+    {
+        $usage = [];
+        
+        // Check if used by blog posts
+        if ($media->collection_name === 'featured-image') {
+            $posts = \App\Models\Post::where('featured_image', 'like', "%{$media->id}%")->count();
+            if ($posts > 0) {
+                $usage[] = "blog posts ({$posts})";
+            }
         }
         
-        // Delete the media record
-        $media->delete();
-
-        return response()->json([
-            'message' => 'Media deleted successfully',
-        ]);
+        // Check if used in blog post content
+        $postsWithContent = \App\Models\Post::where('content', 'like', "%{$media->getUrl()}%")->count();
+        if ($postsWithContent > 0) {
+            $usage[] = "blog post content ({$postsWithContent})";
+        }
+        
+        // You can add more usage checks here for other models
+        
+        return $usage;
     }
 
     /**

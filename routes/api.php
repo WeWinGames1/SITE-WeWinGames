@@ -36,6 +36,15 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:api'])->group(functio
 
 /*
 |--------------------------------------------------------------------------
+| Public API Routes
+|--------------------------------------------------------------------------
+*/
+
+// Ticker endpoint - no auth required
+Route::get('/ticker-bets', [BetController::class, 'getTickerBets']);
+
+/*
+|--------------------------------------------------------------------------
 | Legacy API Routes - Maintained for backward compatibility
 |--------------------------------------------------------------------------
 */

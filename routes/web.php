@@ -128,6 +128,14 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
 
     // Sport Management
     Route::resource('sports', SportController::class);
+    
+    // Sport Preferences
+    Route::prefix('sport-preferences')->name('sport-preferences.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SportPreferenceController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\SportPreferenceController::class, 'store'])->name('store');
+        Route::put('/', [\App\Http\Controllers\Admin\SportPreferenceController::class, 'update'])->name('update');
+        Route::delete('/{sportPreference}', [\App\Http\Controllers\Admin\SportPreferenceController::class, 'destroy'])->name('destroy');
+    });
 
     // League Management
     Route::resource('leagues', LeagueController::class);

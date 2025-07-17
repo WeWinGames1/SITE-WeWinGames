@@ -773,4 +773,28 @@ class BetService
             ->get()
             ->toArray();
     }
+
+    /**
+     * Get ticker bets - last 10 bets with preferred sports prioritized.
+     */
+    public function getTickerBets()
+    {
+        // Get preferred sports from sport_preferences table
+        $preferredSports = \App\Models\SportPreference::active()
+            ->pluck('sport_name')
+            ->toArray();
+
+        // Get the last 10 bets, prioritizing preferred sports
+        $query = Bet::query()
+            ->select('id', 'sport', 'game', 'wager_name', 'odds', 'level', 'game_date', 'betting_date')
+            ->whereIn('status', ['pending', 'won', 'lost'])
+            ->orderByRaw('CASE WHEN sport IN (' . 
+                implode(',', array_map(function($sport) { return "'" . addslashes($sport) . "'"; }, $preferredSports)) . 
+                ') THEN 0 ELSE 1 END')
+            ->orderBy('betting_date', 'desc')
+            ->orderBy('game_date', 'desc')
+            ->limit(10);
+
+        return $query->get();
+    }
 }
