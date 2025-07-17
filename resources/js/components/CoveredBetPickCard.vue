@@ -14,7 +14,7 @@
                 </div>
                 <div class="text-end">
                     <p class="text-white small mb-0">{{ bet.league || 'Premier League' }}</p>
-                    <p class="text-gray-light small mb-0">Date: {{ formatDate(bet.betting_date) }}</p>
+                    <p class="text-gray-light small mb-0">Date: {{ formatDate(bet.game_date || bet.betting_date) }}</p>
                 </div>
             </div>
         </div>

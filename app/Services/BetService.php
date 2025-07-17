@@ -521,11 +521,20 @@ class BetService
 
     /**
      * Get today's bets
+     * Shows bets where:
+     * - betting_date = today OR
+     * - game_date >= today
      */
     public function getTodaysBets(): \Illuminate\Database\Eloquent\Collection
     {
-        return Bet::whereDate('betting_date', today())
-            ->orderBy('betting_date', 'desc')
+        $today = today()->toDateString();
+        
+        return Bet::where(function ($query) use ($today) {
+                $query->whereDate('betting_date', $today)
+                      ->orWhereDate('game_date', '>=', $today);
+            })
+            ->orderBy('game_date', 'asc')
+            ->orderBy('betting_date', 'asc')
             ->get();
     }
 

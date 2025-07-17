@@ -95,7 +95,8 @@ const coveredGroupedBets = computed(() => {
 
 // Helper function to categorize bets by date
 const categorizeBet = (bet) => {
-    const betDate = new Date(bet.betting_date || bet.game_at);
+    // Use game_date if available, otherwise fall back to betting_date
+    const betDate = new Date(bet.game_date || bet.betting_date || bet.game_at);
     const today = new Date();
     const endOfWeek = new Date();
     endOfWeek.setDate(today.getDate() + (7 - today.getDay())); // Next Sunday

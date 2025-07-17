@@ -15,7 +15,7 @@
         </div>
         
         <!-- Date -->
-        <div class="text-white small mb-3">Date: {{ formatDate(bet.betting_date) }}</div>
+        <div class="text-white small mb-3">Date: {{ formatDate(bet.game_date || bet.betting_date) }}</div>
         
         <!-- Teams - Side by Side -->
         <div class="teams-section mb-3">
