@@ -8,12 +8,36 @@ import GroupedBetCards from '@/components/GroupedBetCards.vue';
 const page = usePage();
 const auth = page.props.auth || null;
 const bets = page.props.freeBets || [];
+const isGuest = !auth?.user; // Check if user is not logged in
 
 // Sports filter
 const selectedSport = ref('all');
 const sports = computed(() => {
     const sportSet = new Set(bets.map(bet => bet.sports));
     return Array.from(sportSet);
+});
+
+// Date filter
+const selectedDate = ref('all');
+const today = new Date().toDateString();
+
+// Get unique game dates from bets
+const gameDates = computed(() => {
+    const dateSet = new Set();
+    bets.forEach(bet => {
+        const gameDate = bet.game_date || bet.betting_date;
+        if (gameDate) {
+            const date = new Date(gameDate).toDateString();
+            dateSet.add(date);
+        }
+    });
+    
+    // Convert to array and sort chronologically
+    const datesArray = Array.from(dateSet).sort((a, b) => {
+        return new Date(a) - new Date(b);
+    });
+    
+    return datesArray;
 });
 
 const sportIcons = {
@@ -116,9 +140,27 @@ const categorizeBet = (bet) => {
 // Combine all bets for grouping
 const allGroupedBets = computed(() => {
   // Merge all bets
-  const all = [...viewableBets, ...coveredBets].filter(
+  let all = [...viewableBets, ...coveredBets].filter(
     (bet, idx, arr) => arr.findIndex(b => b.id === bet.id) === idx
   );
+  
+  // Apply guest restriction - only show today's game_date for guests
+  if (isGuest) {
+    all = all.filter(bet => {
+      const gameDate = bet.game_date || bet.betting_date;
+      if (!gameDate) return false;
+      return new Date(gameDate).toDateString() === today;
+    });
+  }
+  
+  // Filter by selected date
+  if (selectedDate.value !== 'all') {
+    all = all.filter(bet => {
+      const gameDate = bet.game_date || bet.betting_date;
+      if (!gameDate) return false;
+      return new Date(gameDate).toDateString() === selectedDate.value;
+    });
+  }
   
   // Filter by selected sport
   const filtered = selectedSport.value === 'all' 
@@ -175,6 +217,26 @@ const formatBetDate = (date: string) => {
     });
 };
 
+// Format date for filter button display
+const formatFilterDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const options = { month: 'short', day: 'numeric' };
+    
+    // Check if it's today
+    if (dateString === today) {
+        return 'Today';
+    }
+    
+    // Check if it's tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    if (dateString === tomorrow.toDateString()) {
+        return 'Tomorrow';
+    }
+    
+    return date.toLocaleDateString('en-US', options);
+};
+
 const getMembershipBadgeStyle = (membership: string) => {
     switch (membership.toLowerCase()) {
         case 'silver':
@@ -216,6 +278,32 @@ const getMembershipBadgeStyle = (membership: string) => {
                         >
                             <span class="me-2">{{ sportIcons[sport] || '🏆' }}</span>
                             {{ sport }}
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Date Filter Bar (only show if not guest or if dates exist) -->
+            <section v-if="!isGuest && gameDates.length > 1" class="py-2" style="background-color: #1a2332;">
+                <div class="container">
+                    <div class="d-flex align-items-center gap-3 overflow-auto pb-2" style="scrollbar-width: thin;">
+                        <span class="text-white small fw-bold">Game Date:</span>
+                        <button 
+                            @click="selectedDate = 'all'"
+                            class="btn btn-sm px-3 py-1 text-nowrap"
+                            :class="selectedDate === 'all' ? 'btn-info text-dark' : 'btn-outline-info'"
+                        >
+                            All Dates
+                        </button>
+                        <button 
+                            v-for="date in gameDates" 
+                            :key="date"
+                            @click="selectedDate = date"
+                            class="btn btn-sm px-3 py-1 text-nowrap"
+                            :class="selectedDate === date ? 'btn-info text-dark' : 'btn-outline-info'"
+                        >
+                            <i class="bi bi-calendar-event me-1"></i>
+                            {{ formatFilterDate(date) }}
                         </button>
                     </div>
                 </div>

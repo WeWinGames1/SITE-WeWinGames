@@ -44,7 +44,7 @@ const getSportIcon = (sport: string) => {
       <!-- Bet Cards Grid -->
       <div class="row g-3">
         <div
-          v-for="(bet, index) in bets.slice(0, 4)"
+          v-for="(bet, index) in bets"
           :key="bet.id"
           class="col-12 col-md-6 col-lg-3"
         >
