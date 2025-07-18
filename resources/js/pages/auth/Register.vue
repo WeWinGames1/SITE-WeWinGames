@@ -22,23 +22,22 @@ const form = useForm({
 });
 
 onMounted(() => {
-    // Check if Turnstile is enabled from backend config
-    if (window.turnstileConfig) {
-        turnstileEnabled.value = window.turnstileConfig.enabled;
-        turnstileSiteKey.value = window.turnstileConfig.siteKey;
-        
-        if (turnstileEnabled.value && window.turnstile) {
-            // Render Turnstile widget
-            turnstileWidget.value = window.turnstile.render('#cf-turnstile', {
-                sitekey: turnstileSiteKey.value,
-                callback: function(token: string) {
-                    form['cf-turnstile-response'] = token;
-                },
-                'expired-callback': function() {
-                    form['cf-turnstile-response'] = '';
-                },
-            });
-        }
+    // Check if Turnstile is enabled from Inertia shared data
+    const pageProps = page.props as any;
+    turnstileEnabled.value = pageProps.env?.TURNSTILE_ENABLED || false;
+    turnstileSiteKey.value = pageProps.env?.TURNSTILE_SITE_KEY || '';
+    
+    if (turnstileEnabled.value && turnstileSiteKey.value && window.turnstile) {
+        // Render Turnstile widget
+        turnstileWidget.value = window.turnstile.render('#cf-turnstile', {
+            sitekey: turnstileSiteKey.value,
+            callback: function(token: string) {
+                form['cf-turnstile-response'] = token;
+            },
+            'expired-callback': function() {
+                form['cf-turnstile-response'] = '';
+            },
+        });
     }
 });
 
