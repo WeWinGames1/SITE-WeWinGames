@@ -307,7 +307,7 @@ function initTeamSelect(elementId: string, teamType: 'one' | 'two') {
     if (teamType === 'one' && form.team_one_id) {
         // Get team name from various sources
         let teamName = '';
-        let teamId = form.team_one_id;
+        const teamId = form.team_one_id;
         
         // First try the team relationship
         if (props.bet.teamOne && typeof props.bet.teamOne === 'object' && props.bet.teamOne.name) {
@@ -333,7 +333,7 @@ function initTeamSelect(elementId: string, teamType: 'one' | 'two') {
     } else if (teamType === 'two' && form.team_two_id) {
         // Get team name from various sources
         let teamName = '';
-        let teamId = form.team_two_id;
+        const teamId = form.team_two_id;
         
         // First try the team relationship
         if (props.bet.teamTwo && typeof props.bet.teamTwo === 'object' && props.bet.teamTwo.name) {

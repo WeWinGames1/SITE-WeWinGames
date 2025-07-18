@@ -32,6 +32,8 @@ const props = withDefaults(defineProps<Props>(), {
 const page = usePage();
 const auth = computed(() => page.props.auth);
 
+const homeUrl = computed(() => route('home'));
+
 const isCurrentRoute = computed(() => (url: string) => page.url === url);
 
 const activeItemStyles = computed(
@@ -66,7 +68,7 @@ const rightNavItems: NavItem[] = [
                         <SheetContent side="left" class="w-[300px] p-6">
                             <SheetTitle class="sr-only">Navigation Menu</SheetTitle>
                             <SheetHeader class="flex justify-start text-left">
-                                <Link :href="route('home')" class="flex items-center gap-x-2">
+                                <Link :href="homeUrl" class="flex items-center gap-x-2">
                                     
                                 <AppLogoIcon class="size-6 fill-current text-black dark:text-white" />
                                 </Link>
@@ -102,7 +104,7 @@ const rightNavItems: NavItem[] = [
                     </Sheet>
                 </div>
 
-                <Link :href="route('home')" class="flex items-center gap-x-2">
+                <Link :href="homeUrl" class="flex items-center gap-x-2">
                     <AppLogo />
                 </Link>
 

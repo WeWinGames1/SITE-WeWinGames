@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
+import { computed } from 'vue';
 
 defineProps<{
     status?: string;
@@ -9,6 +10,9 @@ defineProps<{
 
 const page = usePage();
 const isLocal = page.props.env?.APP_ENV === 'local';
+
+const passwordResetUrl = computed(() => route('password.request'));
+const registerUrl = computed(() => route('register'));
 
 const form = useForm({
     email: '',
@@ -102,7 +106,7 @@ function fillCredentials(email: string, password: string) {
                                     <div class="mb-4">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             <label for="password" class="form-label text-white fw-medium mb-0">Password</label>
-                                            <a v-if="canResetPassword" :href="route('password.request')" class="text-warning text-decoration-none small">
+                                            <a v-if="canResetPassword" :href="passwordResetUrl" class="text-warning text-decoration-none small">
                                                 Forgot password?
                                             </a>
                                         </div>
@@ -153,7 +157,7 @@ function fillCredentials(email: string, password: string) {
 
                                 <div class="text-center mt-4">
                                     <p class="text-gray-light mb-2">Don't have an account?</p>
-                                    <a :href="route('register')" class="btn btn-outline-warning btn-lg w-100">
+                                    <a :href="registerUrl" class="btn btn-outline-warning btn-lg w-100">
                                         <i class="bi bi-person-plus me-2"></i>
                                         Create Account
                                     </a>

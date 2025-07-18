@@ -4,12 +4,16 @@ import { DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSep
 import type { User } from '@/types';
 import { Link } from '@inertiajs/vue3';
 import { LogOut, Settings } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 interface Props {
     user: User;
 }
 
 defineProps<Props>();
+
+const profileEditUrl = computed(() => route('profile.edit'));
+const logoutUrl = computed(() => route('logout'));
 </script>
 
 <template>
@@ -21,7 +25,7 @@ defineProps<Props>();
     <DropdownMenuSeparator />
     <DropdownMenuGroup>
         <DropdownMenuItem :as-child="true">
-            <Link class="block w-full" :href="route('profile.edit')" as="button">
+            <Link class="block w-full" :href="profileEditUrl" as="button">
                 <Settings class="mr-2 h-4 w-4" />
                 Settings
             </Link>
@@ -29,7 +33,7 @@ defineProps<Props>();
     </DropdownMenuGroup>
     <DropdownMenuSeparator />
     <DropdownMenuItem :as-child="true">
-        <Link class="block w-full" method="post" :href="route('logout')" as="button">
+        <Link class="block w-full" method="post" :href="logoutUrl" as="button">
             <LogOut class="mr-2 h-4 w-4" />
             Log out
         </Link>

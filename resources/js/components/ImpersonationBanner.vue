@@ -4,6 +4,7 @@ import { computed } from 'vue';
 
 const page = usePage();
 const isImpersonating = computed(() => page.props.impersonation?.isImpersonating || false);
+const stopImpersonateUrl = computed(() => route('admin.impersonate.stop'));
 </script>
 
 <template>
@@ -17,7 +18,7 @@ const isImpersonating = computed(() => page.props.impersonation?.isImpersonating
                     </span>
                 </div>
                 <Link 
-                    :href="route('admin.impersonate.stop')" 
+                    :href="stopImpersonateUrl" 
                     class="btn btn-sm btn-dark"
                 >
                     <i class="bi bi-box-arrow-right me-1"></i>

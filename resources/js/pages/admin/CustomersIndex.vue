@@ -308,7 +308,7 @@ function updatePlanPreview() {
   const interval = parts[1].toLowerCase();
   
   // Calculate next billing date
-  let nextBilling = new Date();
+  const nextBilling = new Date();
   switch (interval) {
     case 'daily':
       nextBilling.setDate(nextBilling.getDate() + 1);

@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 
 const page = usePage();
 const turnstileEnabled = ref(false);
 const turnstileSiteKey = ref('');
 const turnstileWidget = ref<string | null>(null);
+
+const loginUrl = computed(() => route('login'));
 
 const form = useForm({
     name: '',
@@ -214,7 +216,7 @@ const submit = () => {
 
                             <div class="text-center mt-4">
                                 <p class="text-gray-light mb-2">Already have an account?</p>
-                                <a :href="route('login')" class="btn btn-outline-primary btn-lg w-100">
+                                <a :href="loginUrl" class="btn btn-outline-primary btn-lg w-100">
                                     <i class="bi bi-box-arrow-in-right me-2"></i>
                                     Sign In
                                 </a>
