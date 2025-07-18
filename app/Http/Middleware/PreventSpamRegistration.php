@@ -74,6 +74,8 @@ class PreventSpamRegistration
             Log::warning('Registration blocked - Suspicious request pattern', [
                 'ip' => $ip,
                 'user_agent' => $userAgent,
+                'headers' => $request->headers->all(),
+                'method' => $request->method(),
             ]);
 
             return response()->json([
@@ -135,12 +137,14 @@ class PreventSpamRegistration
             return true;
         }
 
-        // Check for rapid successive requests
-        $recentKey = "recent_registration_check:{$request->ip()}";
-        if (Cache::has($recentKey)) {
-            return true;
+        // Check for rapid successive requests - only on POST
+        if ($request->isMethod('POST')) {
+            $recentKey = "recent_registration_check:{$request->ip()}";
+            if (Cache::has($recentKey)) {
+                return true;
+            }
+            Cache::put($recentKey, true, 5); // 5 seconds
         }
-        Cache::put($recentKey, true, 5); // 5 seconds
 
         return false;
     }

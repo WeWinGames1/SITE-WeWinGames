@@ -134,6 +134,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Alias for getCurrentTier() for backward compatibility
+     */
+    public function currentTier(): ?string
+    {
+        return $this->getCurrentTier();
+    }
+
+    /**
      * Get the user's support tickets
      */
     public function supportTickets()

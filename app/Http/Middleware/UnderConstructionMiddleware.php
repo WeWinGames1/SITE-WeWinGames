@@ -23,8 +23,8 @@ class UnderConstructionMiddleware
             return $next($request);
         }
 
-        // Only allow logout route - block all other auth routes including login and password reset
-        if ($request->is('logout')) {
+        // Allow logout and registration routes
+        if ($request->is('logout') || $request->is('register')) {
             return $next($request);
         }
 

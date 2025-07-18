@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -150,5 +151,79 @@ class CloudflareService
                 'message' => 'Cloudflare API error: ' . $e->getMessage()
             ];
         }
+    }
+
+    /**
+     * Get the real IP address from Cloudflare headers
+     *
+     * @param Request $request
+     * @return string
+     */
+    public function getRealIp(Request $request): string
+    {
+        // Check for Cloudflare's CF-Connecting-IP header first
+        if ($request->hasHeader('CF-Connecting-IP')) {
+            return $request->header('CF-Connecting-IP');
+        }
+
+        // Fallback to X-Forwarded-For
+        if ($request->hasHeader('X-Forwarded-For')) {
+            $ips = explode(',', $request->header('X-Forwarded-For'));
+            return trim($ips[0]);
+        }
+
+        // Fallback to standard IP
+        return $request->ip();
+    }
+
+    /**
+     * Check if request is suspicious based on Cloudflare signals
+     *
+     * @param Request $request
+     * @return bool
+     */
+    public function isSuspiciousRequest(Request $request): bool
+    {
+        // Check Cloudflare threat score (if available)
+        $threatScore = $request->header('CF-Threat-Score');
+        if ($threatScore && (int)$threatScore > 30) {
+            return true;
+        }
+
+        // Check if it's a known bot
+        if ($request->hasHeader('CF-Bot-Management')) {
+            $botScore = json_decode($request->header('CF-Bot-Management'), true);
+            if (isset($botScore['score']) && $botScore['score'] < 30) {
+                return true;
+            }
+        }
+
+        // Check country (optional - you can customize this)
+        $country = $request->header('CF-IPCountry');
+        $blockedCountries = config('cloudflare.blocked_countries', []);
+        if ($country && in_array($country, $blockedCountries)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Get security summary from Cloudflare headers
+     *
+     * @param Request $request
+     * @return array
+     */
+    public function getSecuritySummary(Request $request): array
+    {
+        return [
+            'ip' => $this->getRealIp($request),
+            'country' => $request->header('CF-IPCountry', 'Unknown'),
+            'threat_score' => $request->header('CF-Threat-Score', 'N/A'),
+            'ray_id' => $request->header('CF-Ray', 'N/A'),
+            'visitor_scheme' => $request->header('CF-Visitor', 'N/A'),
+            'user_agent' => $request->userAgent(),
+            'is_tor' => $request->header('CF-Tor-Exit') === 'true',
+        ];
     }
 }
