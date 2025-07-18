@@ -1,0 +1,24 @@
+Sports,League,Month,Game Date ,Betting Date,Game,Bet Type,Wager Type,Wager Name,Wager Odds,Membership,Referrer,Status,ROI %,Wager Amount,Winning Amount,Profit Amount
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Jon Rahm @ The Open Championship,Outright EW,Outright EW,Jon Rahm 10pl (1/5),1200,Gold,Golf Brad,Pending,1200%,$10,$130,$120
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Justin Thomas @ The Open Championship,Outright EW,Outright EW,Justin Thomas 8pl (1/5),5500,Platinum,Golf Brad,Pending,5500%,$10,$560,$550
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Justin Rose @ The Open Championship,Outright EW,Outright EW,Justin Rose 8pl (1/5),6600,Platinum,Golf Brad,Pending,6600%,$10,$670,$660
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Tom McKibbin @ The Open Championship,Outright EW,Outright EW,Tom McKibbin 10pl (1/5),11000,Platinum,Golf Brad,Pending,11000%,$10,"$1,110","$1,100"
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Rickie Fowler @ The Open Championship,Outright EW,Outright EW,Rickie Fowler 8pl (1/5),15000,Platinum,Golf Brad,Pending,15000%,$10,"$1,510","$1,500"
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Christiaan Bezuidenhout @ The Open Championship,Outright EW,Outright EW,Bezuidenhout 7pl (1/4),20000,Platinum,Golf Brad,Pending,20000%,$10,"$2,010","$2,000"
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Lucas Glover @ The Open Championship,Outright EW,Outright EW,Lucas Glover 7pl (1/4),25000,Platinum,Golf Brad,Pending,25000%,$10,"$2,510","$2,500"
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Tommy Fleetwood @ The Open Championship,Outright EW,Outright EW,Tommy Fleetwood 7pl (1/5),2500,Gold,Golf Nich,Pending,2500%,$10,$260,$250
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Shane Lowry @ The Open Championship,Outright EW,Outright EW,Shane Lowry 7pl (1/5),3000,Gold,Golf Nich,Pending,3000%,$10,$310,$300
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Robert MacIntyre @ The Open Championship,Outright EW,Outright EW,Bobby MacIntyre 7pl (1/5),3300,Platinum,Golf Nich,Pending,3300%,$10,$340,$330
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Matt Fitzpatrick @ The Open Championship,Outright EW,Outright EW,Matt Fitzpatrick 7pl (1/5),4500,Platinum,Golf Nich,Pending,4500%,$10,$460,$450
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Patrick Reed @ The Open Championship,Outright EW,Outright EW,Patrick Reed 7pl (1/5),8000,Platinum,Golf Nich,Pending,8000%,$10,$810,$800
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Ryan Fox @ The Open Championship,Outright EW,Outright EW,Ryan Fox 10pl (1/5),6000,Platinum,Golf Nich,Pending,6000%,$10,$610,$600
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Cameron Smith @ The Open Championship,First Round Leader,First Round Leader,Cameron Smith FRL 5pl (1/4),10000,Platinum,Golf Brad,Pending,10000%,$10,"$1,010","$1,000"
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Dustin Johnson @ The Open Championship,First Round Leader,First Round Leader,Dustin Johnson FRL 6pl (1/5),11000,Platinum,Golf Brad,Pending,11000%,$10,"$1,120","$1,110"
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Lucas Herbert @ The Open Championship,First Round Leader,First Round Leader,Lucas Herbert FRL 5pl (1/4),12500,Platinum,Golf Brad,Pending,12500%,$10,"$1,260","$1,250"
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Lucas Glover @ The Open Championship,First Round Leader,First Round Leader,Lucas Glover FRL 6pl (1/5),12500,Platinum,Golf Brad,Pending,12500%,$10,"$1,260","$1,250"
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Lucas Herbert @ The Open Championship,3 Ball,3 Ball,Herbert to beat Riley/Clarke,-105,Bronze,Golf Brad,Pending,95%,$10,$20,$10
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Matti Schmid @ The Open Championship,3 Ball,3 Ball,Schmid to beat Johnston/Teder,-162,Bronze,Golf Brad,Pending,62%,$10,$16,$6
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Daniel Brown @ The Open Championship,3 Ball,3 Ball,Brown to beat Hillier/Johnson,138,Gold,Golf Brad,Pending,138%,$10,$24,$14
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Si Woo Kim @ The Open Championship,3 Ball,3 Ball,Kim to beat Imahira/Cave,-175,Silver,Golf Brad,Pending,57%,$10,$16,$6
+Golf,PGA Tour,July,2025-07-20,2025-07-16,John Catlin @ The Open Championship,3 Ball,3 Ball,Catlin to beat Campbell/Jones,120,Gold,Golf Brad,Pending,120%,$10,$22,$12
+Golf,PGA Tour,July,2025-07-20,2025-07-16,Matsuyama/Echavarria/Åberg Top Nationality @ The Open Championship,Special (Treble),Special (Treble),"Matsuyama (JPN), Echavarria (SAM), Åberg (SWE)",1212,Bronze,Golf Brad,Pending,12120%,$10,"$13,130","$13,120"
