@@ -2,7 +2,6 @@
 import { ref, computed } from 'vue';
 import { useForm, router } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { DraggableWrapper, DraggableItem } from '@/components/Admin/DraggableWrapper';
 
 interface SportPreference {
     id?: number;
@@ -31,7 +30,29 @@ const updateForm = useForm({
     preferences: preferences.value
 });
 
-// Update priorities after drag and drop
+// Move sport up in the list (lower priority number = higher in list)
+const moveUp = (index: number) => {
+    if (index === 0) return;
+    
+    const temp = preferences.value[index];
+    preferences.value[index] = preferences.value[index - 1];
+    preferences.value[index - 1] = temp;
+    
+    updatePriorities();
+};
+
+// Move sport down in the list
+const moveDown = (index: number) => {
+    if (index === preferences.value.length - 1) return;
+    
+    const temp = preferences.value[index];
+    preferences.value[index] = preferences.value[index + 1];
+    preferences.value[index + 1] = temp;
+    
+    updatePriorities();
+};
+
+// Update priorities after reordering
 const updatePriorities = () => {
     preferences.value.forEach((pref, index) => {
         pref.priority = index;
@@ -97,7 +118,7 @@ const savePreferences = () => {
                         </div>
                         <div class="card-body">
                             <p class="text-muted mb-4">
-                                Drag and drop sports to reorder them. The order determines which sports' picks are shown first in the ticker and on the public pages.
+                                Use the arrow buttons to reorder sports. The order determines which sports' picks are shown first in the ticker and on the public pages.
                             </p>
 
                             <!-- Add new sport form -->
@@ -140,18 +161,31 @@ const savePreferences = () => {
 
                             <!-- Sport preferences list -->
                             <div v-if="preferences.length > 0">
-                                <DraggableWrapper 
-                                    v-model="preferences" 
-                                    @update:modelValue="updatePriorities"
-                                    class="list-group"
-                                >
-                                    <DraggableItem 
+                                <div class="list-group">
+                                    <div 
                                         v-for="(preference, index) in preferences" 
                                         :key="preference.sport_name"
                                         class="list-group-item d-flex justify-content-between align-items-center"
                                     >
                                         <div class="d-flex align-items-center">
-                                            <i class="bi bi-grip-vertical me-3 text-muted" style="cursor: move;"></i>
+                                            <div class="btn-group btn-group-sm me-3">
+                                                <button 
+                                                    @click="moveUp(index)" 
+                                                    :disabled="index === 0"
+                                                    class="btn btn-outline-secondary"
+                                                    title="Move up"
+                                                >
+                                                    <i class="bi bi-arrow-up"></i>
+                                                </button>
+                                                <button 
+                                                    @click="moveDown(index)" 
+                                                    :disabled="index === preferences.length - 1"
+                                                    class="btn btn-outline-secondary"
+                                                    title="Move down"
+                                                >
+                                                    <i class="bi bi-arrow-down"></i>
+                                                </button>
+                                            </div>
                                             <span class="badge bg-secondary me-3">{{ index + 1 }}</span>
                                             <strong>{{ preference.sport_name }}</strong>
                                         </div>
@@ -176,8 +210,8 @@ const savePreferences = () => {
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
-                                    </DraggableItem>
-                                </DraggableWrapper>
+                                    </div>
+                                </div>
 
                                 <div class="mt-4">
                                     <button 
