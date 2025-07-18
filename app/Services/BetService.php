@@ -520,20 +520,50 @@ class BetService
     }
 
     /**
-     * Get today's bets
+     * Get today's bets filtered by user's subscription tier
      * Shows bets where:
      * - betting_date = today OR
      * - game_date >= today
+     * Filters based on user's subscription level
      */
     public function getTodaysBets(): \Illuminate\Database\Eloquent\Collection
     {
         $today = today()->toDateString();
+        $user = auth()->user();
         
-        return Bet::where(function ($query) use ($today) {
+        $query = Bet::where(function ($query) use ($today) {
                 $query->whereDate('betting_date', $today)
                       ->orWhereDate('game_date', '>=', $today);
-            })
-            ->orderBy('game_date', 'asc')
+            });
+        
+        // Apply tier-based filtering if user is authenticated
+        if ($user) {
+            $userTier = $user->getCurrentTier() ?? 'Bronze';
+            
+            // Determine which levels to show based on user's tier
+            $visibleLevels = [];
+            switch (strtolower($userTier)) {
+                case 'platinum':
+                    $visibleLevels = ['Bronze', 'Silver', 'Gold', 'Platinum'];
+                    break;
+                case 'gold':
+                    $visibleLevels = ['Bronze', 'Silver', 'Gold'];
+                    break;
+                case 'silver':
+                    $visibleLevels = ['Bronze', 'Silver'];
+                    break;
+                default: // Bronze or no subscription
+                    $visibleLevels = ['Bronze'];
+                    break;
+            }
+            
+            $query->whereIn('level', $visibleLevels);
+        } else {
+            // Non-authenticated users only see Bronze picks
+            $query->where('level', 'Bronze');
+        }
+        
+        return $query->orderBy('game_date', 'asc')
             ->orderBy('betting_date', 'asc')
             ->get();
     }
@@ -775,26 +805,121 @@ class BetService
     }
 
     /**
-     * Get ticker bets - last 10 bets with preferred sports prioritized.
+     * Get ticker bets - Shows different content based on user authentication status.
+     * - Public users: Only see older/expired picks
+     * - Logged in users: See current picks based on their tier, filled with older picks if needed
      */
     public function getTickerBets()
     {
+        $user = auth()->user();
+        $now = now();
+        $bets = collect();
+
         // Get preferred sports from sport_preferences table
         $preferredSports = \App\Models\SportPreference::active()
+            ->orderBy('priority', 'asc')
             ->pluck('sport_name')
             ->toArray();
 
-        // Get the last 10 bets, prioritizing preferred sports
-        $query = Bet::query()
-            ->select('id', 'sport', 'game', 'wager_name', 'odds', 'level', 'game_date', 'betting_date')
-            ->whereIn('status', ['pending', 'won', 'lost'])
-            ->orderByRaw('CASE WHEN sport IN (' . 
-                implode(',', array_map(function($sport) { return "'" . addslashes($sport) . "'"; }, $preferredSports)) . 
-                ') THEN 0 ELSE 1 END')
-            ->orderBy('betting_date', 'desc')
-            ->orderBy('game_date', 'desc')
-            ->limit(10);
+        if (!$user) {
+            // PUBLIC USER: Only show older/expired picks
+            $bets = Bet::query()
+                ->select('id', 'sport', 'game', 'wager_name', 'odds', 'level', 'game_date', 'betting_date')
+                ->whereIn('status', ['won', 'lost']) // Only settled bets
+                ->where('game_date', '<', $now) // Only past games
+                ->when(!empty($preferredSports), function ($query) use ($preferredSports) {
+                    // Sort by preferred sports using a CASE statement with safe bindings
+                    $cases = [];
+                    $bindings = [];
+                    foreach ($preferredSports as $index => $sport) {
+                        $cases[] = "WHEN sport = ? THEN " . $index;
+                        $bindings[] = $sport;
+                    }
+                    $caseStatement = "CASE " . implode(" ", $cases) . " ELSE 999 END";
+                    return $query->orderByRaw($caseStatement, $bindings);
+                })
+                ->orderBy('game_date', 'desc')
+                ->limit(10)
+                ->get();
+        } else {
+            // LOGGED IN USER: Show current picks based on tier
+            $userTier = $user->getCurrentTier() ?? 'Bronze';
+            
+            // Determine which levels to show based on user's tier
+            $visibleLevels = [];
+            switch (strtolower($userTier)) {
+                case 'platinum':
+                    $visibleLevels = ['Bronze', 'Silver', 'Gold', 'Platinum'];
+                    break;
+                case 'gold':
+                    $visibleLevels = ['Bronze', 'Silver', 'Gold'];
+                    break;
+                case 'silver':
+                    $visibleLevels = ['Bronze', 'Silver'];
+                    break;
+                default: // Bronze or no subscription
+                    $visibleLevels = ['Bronze'];
+                    break;
+            }
 
-        return $query->get();
+            // First, get current (pending) picks
+            $currentBets = Bet::query()
+                ->select('id', 'sport', 'game', 'wager_name', 'odds', 'level', 'game_date', 'betting_date')
+                ->where('status', 'pending')
+                ->where(function($query) use ($visibleLevels) {
+                    $query->whereIn('level', $visibleLevels)
+                          ->orWhereIn('level', array_map('strtolower', $visibleLevels));
+                })
+                ->where('game_date', '>=', $now) // Future games
+                ->when(!empty($preferredSports), function ($query) use ($preferredSports) {
+                    // Sort by preferred sports using a CASE statement with safe bindings
+                    $cases = [];
+                    $bindings = [];
+                    foreach ($preferredSports as $index => $sport) {
+                        $cases[] = "WHEN sport = ? THEN " . $index;
+                        $bindings[] = $sport;
+                    }
+                    $caseStatement = "CASE " . implode(" ", $cases) . " ELSE 999 END";
+                    return $query->orderByRaw($caseStatement, $bindings);
+                })
+                ->orderBy('game_date', 'asc')
+                ->limit(10)
+                ->get();
+
+            $bets = $currentBets;
+
+            // If we have less than 10 current picks, fill with older picks
+            if ($currentBets->count() < 10) {
+                $needed = 10 - $currentBets->count();
+                
+                $olderBets = Bet::query()
+                    ->select('id', 'sport', 'game', 'wager_name', 'odds', 'level', 'game_date', 'betting_date')
+                    ->whereIn('status', ['won', 'lost']) // Settled bets
+                    ->where(function($query) use ($visibleLevels) {
+                    $query->whereIn('level', $visibleLevels)
+                          ->orWhereIn('level', array_map('strtolower', $visibleLevels));
+                })
+                    ->where('game_date', '<', $now) // Past games
+                    ->whereNotIn('id', $currentBets->pluck('id')) // Exclude already selected
+                    ->when(!empty($preferredSports), function ($query) use ($preferredSports) {
+                        // Sort by preferred sports using a CASE statement with safe bindings
+                        $cases = [];
+                        $bindings = [];
+                        foreach ($preferredSports as $index => $sport) {
+                            $cases[] = "WHEN sport = ? THEN " . $index;
+                            $bindings[] = $sport;
+                        }
+                        $caseStatement = "CASE " . implode(" ", $cases) . " ELSE 999 END";
+                        return $query->orderByRaw($caseStatement, $bindings);
+                    })
+                    ->orderBy('game_date', 'desc')
+                    ->limit($needed)
+                    ->get();
+
+                $bets = $currentBets->concat($olderBets);
+            }
+        }
+
+        return $bets;
     }
 }

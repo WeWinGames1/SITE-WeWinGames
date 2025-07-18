@@ -24,7 +24,7 @@ class SportPreferenceController extends Controller
             ->sort()
             ->values();
         
-        return Inertia::render('Admin/SportPreferences', [
+        return Inertia::render('admin/SportPreferences', [
             'preferences' => $preferences,
             'availableSports' => $allSports,
         ]);

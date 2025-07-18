@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
-import { route } from 'ziggy-js';
 import axios from 'axios';
 import ApplicationLogo from '@/components/AppLogo.vue';
 import ImpersonationBanner from '@/components/ImpersonationBanner.vue';
@@ -30,7 +29,7 @@ function isActiveRoute(href: string): boolean {
 const activeParent = computed(() => {
     const currentPath = currentUrl.value;
     
-    for (const item of navigation.value) {
+    for (const item of navigation) {
         if (item.children) {
             const hasActiveChild = item.children.some(child => {
                 const isActive = isActiveRoute(child.href);
@@ -93,92 +92,91 @@ watch(currentUrl, () => {
     updateCollapseState();
 });
 
-// Use a computed property to ensure reactive updates
-const navigation = computed<NavItem[]>(() => [
-        {
-            name: 'Dashboard',
-            href: route('admin.dashboard'),
-            icon: 'bi-speedometer2',
-        },
-        {
-            name: 'Betting Management',
-            href: '#',
-            icon: 'bi-trophy',
-            children: [
-                { name: 'Bets', href: route('admin.bets.index'), icon: 'bi-bar-chart' },
-                { name: 'Import Bets', href: route('admin.bets.import.index'), icon: 'bi-upload' },
-                { name: 'Sports', href: route('admin.sports.index'), icon: 'bi-dribbble' },
-                { name: 'Sport Preferences', href: route('admin.sport-preferences.index'), icon: 'bi-list-ol' },
-                { name: 'Leagues', href: route('admin.leagues.index'), icon: 'bi-flag' },
-                { name: 'Teams', href: route('admin.teams.index'), icon: 'bi-people-fill' },
-                // { name: 'Games', href: '#', icon: 'bi-calendar-event' }, // TODO: Implement
-                // { name: 'Operators', href: '#', icon: 'bi-building' }, // TODO: Implement
-            ],
-        },
-        {
-            name: 'User Management',
-            href: '#',
-            icon: 'bi-people',
-            children: [
-                { name: 'Customers', href: route('admin.customers.index'), icon: 'bi-person' },
-                { name: 'Admin Users', href: route('admin.admins.index'), icon: 'bi-shield-check' },
-            ],
-        },
-        {
-            name: 'Content Management',
-            href: '#',
-            icon: 'bi-file-text',
-            children: [
-                { name: 'Blog Posts', href: route('admin.blog-posts.index'), icon: 'bi-newspaper' },
-                { name: 'Media Library', href: route('admin.media-library.index'), icon: 'bi-images' },
-                { name: 'Pages', href: route('admin.pages.index'), icon: 'bi-file-earmark-text' },
-                { name: 'Landing Pages', href: route('admin.landing-pages.index'), icon: 'bi-window-stack' },
-                { name: 'Testimonials', href: route('admin.testimonials.index'), icon: 'bi-chat-quote' },
-                { name: 'FAQs', href: route('admin.faqs.index'), icon: 'bi-question-circle' },
-            ],
-        },
-        {
-            name: 'E-commerce',
-            href: '#',
-            icon: 'bi-cart',
-            children: [
-                { name: 'Stripe Products', href: route('admin.stripe-products.index'), icon: 'bi-credit-card-2-back' },
-                { name: 'Discount Codes', href: route('admin.discounts.index'), icon: 'bi-percent' },
-                { name: 'Affiliates', href: route('admin.affiliates.index'), icon: 'bi-people' },
-            ],
-        },
-        {
-            name: 'Support System',
-            href: '#',
-            icon: 'bi-headset',
-            children: [
-                { name: 'Support Tickets', href: route('admin.support-tickets.index'), icon: 'bi-ticket-detailed' },
-                { name: 'Resume Submissions', href: route('admin.resume-submissions.index'), icon: 'bi-file-earmark-person' },
-                // { name: 'Ticket Categories', href: '#', icon: 'bi-tags' }, // TODO: Implement
-            ],
-        },
-        {
-            name: 'Notifications',
-            href: '#',
-            icon: 'bi-bell',
-            children: [
-                { name: 'Email Templates', href: route('admin.notifications.email-templates.index'), icon: 'bi-envelope' },
-                { name: 'Email Logs', href: route('admin.notifications.email-logs.index'), icon: 'bi-clock-history' },
-                { name: 'Push Notifications', href: route('admin.notifications.push.index'), icon: 'bi-bell-fill' },
-            ],
-        },
-        {
-            name: 'Settings',
-            href: '#',
-            icon: 'bi-gear',
-            children: [
-                { name: 'Under Construction', href: route('admin.under-construction.index'), icon: 'bi-cone-striped' },
-                { name: 'Knowledgebase', href: route('admin.knowledgebase.index'), icon: 'bi-book' },
-                // { name: 'General Settings', href: '#', icon: 'bi-sliders' }, // TODO: Implement
-            ],
-        },
-    ]
-);
+// Use hardcoded paths to avoid initialization issues
+const navigation: NavItem[] = [
+    {
+        name: 'Dashboard',
+        href: '/admin',
+        icon: 'bi-speedometer2',
+    },
+    {
+        name: 'Betting Management',
+        href: '#',
+        icon: 'bi-trophy',
+        children: [
+            { name: 'Bets', href: '/admin/bets', icon: 'bi-bar-chart' },
+            { name: 'Import Bets', href: '/admin/bets/import', icon: 'bi-upload' },
+            { name: 'Sports', href: '/admin/sports', icon: 'bi-dribbble' },
+            { name: 'Sport Preferences', href: '/admin/sport-preferences', icon: 'bi-list-ol' },
+            { name: 'Leagues', href: '/admin/leagues', icon: 'bi-flag' },
+            { name: 'Teams', href: '/admin/teams', icon: 'bi-people-fill' },
+            // { name: 'Games', href: '#', icon: 'bi-calendar-event' }, // TODO: Implement
+            // { name: 'Operators', href: '#', icon: 'bi-building' }, // TODO: Implement
+        ],
+    },
+    {
+        name: 'User Management',
+        href: '#',
+        icon: 'bi-people',
+        children: [
+            { name: 'Customers', href: '/admin/customers', icon: 'bi-person' },
+            { name: 'Admin Users', href: '/admin/admins', icon: 'bi-shield-check' },
+        ],
+    },
+    {
+        name: 'Content Management',
+        href: '#',
+        icon: 'bi-file-text',
+        children: [
+            { name: 'Blog Posts', href: '/admin/blog-posts', icon: 'bi-newspaper' },
+            { name: 'Media Library', href: '/admin/media-library', icon: 'bi-images' },
+            { name: 'Pages', href: '/admin/pages', icon: 'bi-file-earmark-text' },
+            { name: 'Landing Pages', href: '/admin/landing-pages', icon: 'bi-window-stack' },
+            { name: 'Testimonials', href: '/admin/testimonials', icon: 'bi-chat-quote' },
+            { name: 'FAQs', href: '/admin/faqs', icon: 'bi-question-circle' },
+        ],
+    },
+    {
+        name: 'E-commerce',
+        href: '#',
+        icon: 'bi-cart',
+        children: [
+            { name: 'Stripe Products', href: '/admin/stripe-products', icon: 'bi-credit-card-2-back' },
+            { name: 'Discount Codes', href: '/admin/discounts', icon: 'bi-percent' },
+            { name: 'Affiliates', href: '/admin/affiliates', icon: 'bi-people' },
+        ],
+    },
+    {
+        name: 'Support System',
+        href: '#',
+        icon: 'bi-headset',
+        children: [
+            { name: 'Support Tickets', href: '/admin/support-tickets', icon: 'bi-ticket-detailed' },
+            { name: 'Resume Submissions', href: '/admin/resume-submissions', icon: 'bi-file-earmark-person' },
+            // { name: 'Ticket Categories', href: '#', icon: 'bi-tags' }, // TODO: Implement
+        ],
+    },
+    {
+        name: 'Notifications',
+        href: '#',
+        icon: 'bi-bell',
+        children: [
+            { name: 'Email Templates', href: '/admin/notifications/email-templates', icon: 'bi-envelope' },
+            { name: 'Email Logs', href: '/admin/notifications/email-logs', icon: 'bi-clock-history' },
+            { name: 'Push Notifications', href: '/admin/notifications/push', icon: 'bi-bell-fill' },
+        ],
+    },
+    {
+        name: 'Settings',
+        href: '#',
+        icon: 'bi-gear',
+        children: [
+            { name: 'Under Construction', href: '/admin/under-construction', icon: 'bi-cone-striped' },
+            { name: 'Knowledgebase', href: '/admin/knowledgebase', icon: 'bi-book' },
+            // { name: 'General Settings', href: '#', icon: 'bi-sliders' }, // TODO: Implement
+        ],
+    },
+];
 
 // No longer needed - using reactive computed property instead
 
@@ -212,7 +210,7 @@ async function clearCache() {
 }
 
 function logout() {
-    router.post(route('admin.logout'));
+    router.post('/admin/logout');
 }
 </script>
 
