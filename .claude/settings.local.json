@@ -47,7 +47,8 @@
       "Bash(npm:*)",
       "Bash(test:*)",
       "Bash(openssl ecparam:*)",
-      "Bash(npx vue-tsc:*)"
+      "Bash(npx vue-tsc:*)",
+      "Bash(jq:*)"
     ],
     "deny": []
   }

@@ -493,7 +493,155 @@ function removeParlayTeam(index: number) {
     form.parlay_teams.splice(index, 1);
 }
 
+function validateForm(): boolean {
+    // Clear previous errors
+    form.clearErrors();
+    
+    let isValid = true;
+    const errors: Record<string, string> = {};
+    
+    // Required fields validation
+    if (!form.sports || !form.sports.trim()) {
+        errors.sports = 'The sports field is required.';
+        isValid = false;
+    } else if (form.sports.length > 255) {
+        errors.sports = 'The sports may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    if (!form.betting_date) {
+        errors.betting_date = 'The betting date field is required.';
+        isValid = false;
+    }
+    
+    if (!form.game_date) {
+        errors.game_date = 'The game date field is required.';
+        isValid = false;
+    }
+    
+    if (!form.wager_odds && form.wager_odds !== 0) {
+        errors.wager_odds = 'The wager odds field is required.';
+        isValid = false;
+    } else if (isNaN(Number(form.wager_odds))) {
+        errors.wager_odds = 'The wager odds must be a number.';
+        isValid = false;
+    }
+    
+    if (form.wager_amount === null || form.wager_amount === undefined || form.wager_amount === '') {
+        errors.wager_amount = 'The wager amount field is required.';
+        isValid = false;
+    } else if (form.wager_amount < 0) {
+        errors.wager_amount = 'The wager amount must be at least 0.';
+        isValid = false;
+    }
+    
+    if (!form.status) {
+        errors.status = 'The status field is required.';
+        isValid = false;
+    } else if (!['pending', 'won', 'lost', 'void', 'push'].includes(form.status)) {
+        errors.status = 'The selected status is invalid.';
+        isValid = false;
+    }
+    
+    if (!form.membership) {
+        errors.membership = 'The membership field is required.';
+        isValid = false;
+    } else if (!['bronze', 'silver', 'gold', 'platinum'].includes(form.membership)) {
+        errors.membership = 'The selected membership is invalid.';
+        isValid = false;
+    }
+    
+    // Optional fields validation
+    if (form.league && form.league.length > 255) {
+        errors.league = 'The league may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    if (form.month && form.month.length > 50) {
+        errors.month = 'The month may not be greater than 50 characters.';
+        isValid = false;
+    }
+    
+    if (form.matches && form.matches.length > 500) {
+        errors.matches = 'The matches may not be greater than 500 characters.';
+        isValid = false;
+    }
+    
+    if (form.markets && form.markets.length > 255) {
+        errors.markets = 'The markets may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    if (form.wager_type && form.wager_type.length > 250) {
+        errors.wager_type = 'The wager type may not be greater than 250 characters.';
+        isValid = false;
+    }
+    
+    if (form.team_one && form.team_one.length > 255) {
+        errors.team_one = 'The team one may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    if (form.team_two && form.team_two.length > 255) {
+        errors.team_two = 'The team two may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    if (form.tips && form.tips.length > 500) {
+        errors.tips = 'The tips may not be greater than 500 characters.';
+        isValid = false;
+    }
+    
+    if (form.level && form.level.length > 50) {
+        errors.level = 'The level may not be greater than 50 characters.';
+        isValid = false;
+    }
+    
+    if (form.code && form.code.length > 255) {
+        errors.code = 'The code may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    if (form.referrer && form.referrer.length > 255) {
+        errors.referrer = 'The referrer may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    if (form.winning_amount !== null && form.winning_amount !== undefined && form.winning_amount < 0) {
+        errors.winning_amount = 'The winning amount must be at least 0.';
+        isValid = false;
+    }
+    
+    if (form.place_fraction !== null && form.place_fraction !== undefined) {
+        if (form.place_fraction < 0 || form.place_fraction > 1) {
+            errors.place_fraction = 'The place fraction must be between 0 and 1.';
+            isValid = false;
+        }
+    }
+    
+    // Parlay teams validation
+    if (form.parlay_teams && form.parlay_teams.length > 0) {
+        for (let i = 0; i < form.parlay_teams.length; i++) {
+            if (form.parlay_teams[i].name && form.parlay_teams[i].name.length > 255) {
+                errors[`parlay_teams.${i}.name`] = 'Each team name may not be greater than 255 characters.';
+                isValid = false;
+            }
+        }
+    }
+    
+    // Set errors if any
+    if (!isValid) {
+        form.setError(errors);
+    }
+    
+    return isValid;
+}
+
 function submit() {
+    if (!validateForm()) {
+        return;
+    }
+    
     form.put(route('admin.bets.update', props.bet.id));
 }
 

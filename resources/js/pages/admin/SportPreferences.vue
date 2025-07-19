@@ -62,7 +62,17 @@ const updatePriorities = () => {
 
 // Add new sport preference
 const addSport = () => {
-    if (!newSport.value) return;
+    if (!newSport.value || newSport.value.trim() === '') {
+        // Could add error display here if needed
+        return;
+    }
+    
+    // Check if sport already exists
+    const sportExists = preferences.value.some(p => p.sport_name === newSport.value);
+    if (sportExists) {
+        // Sport already in preferences
+        return;
+    }
     
     preferences.value.push({
         sport_name: newSport.value,
@@ -87,8 +97,58 @@ const toggleActive = (index: number) => {
     updateForm.preferences = preferences.value;
 };
 
+// Validate form before submission
+const validateForm = (): boolean => {
+    // Clear previous errors
+    updateForm.clearErrors();
+    
+    let isValid = true;
+    const errors: Record<string, string> = {};
+    
+    // Validate preferences array
+    if (!updateForm.preferences || updateForm.preferences.length === 0) {
+        errors['preferences'] = 'At least one sport preference is required.';
+        isValid = false;
+    } else {
+        // Validate each preference
+        updateForm.preferences.forEach((preference, index) => {
+            // Validate sport_name
+            if (!preference.sport_name || preference.sport_name.trim() === '') {
+                errors[`preferences.${index}.sport_name`] = 'Sport name is required.';
+                isValid = false;
+            }
+            
+            // Validate priority
+            if (preference.priority === undefined || preference.priority === null) {
+                errors[`preferences.${index}.priority`] = 'Priority is required.';
+                isValid = false;
+            } else if (preference.priority < 0) {
+                errors[`preferences.${index}.priority`] = 'Priority must be 0 or greater.';
+                isValid = false;
+            }
+            
+            // Validate is_active
+            if (preference.is_active === undefined || preference.is_active === null) {
+                errors[`preferences.${index}.is_active`] = 'Active status is required.';
+                isValid = false;
+            }
+        });
+    }
+    
+    // Set errors if any
+    if (!isValid) {
+        updateForm.setError(errors);
+    }
+    
+    return isValid;
+};
+
 // Save all preferences
 const savePreferences = () => {
+    if (!validateForm()) {
+        return;
+    }
+    
     updateForm.put(route('admin.sport-preferences.update'), {
         preserveScroll: true,
         onSuccess: () => {
@@ -214,6 +274,16 @@ const savePreferences = () => {
                                 </div>
 
                                 <div class="mt-4">
+                                    <!-- Display general errors -->
+                                    <div v-if="updateForm.errors && Object.keys(updateForm.errors).length > 0" class="alert alert-danger mb-3">
+                                        <h6 class="alert-heading">Please fix the following errors:</h6>
+                                        <ul class="mb-0">
+                                            <li v-for="(error, key) in updateForm.errors" :key="key">
+                                                {{ error }}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    
                                     <button 
                                         @click="savePreferences" 
                                         :disabled="updateForm.processing"

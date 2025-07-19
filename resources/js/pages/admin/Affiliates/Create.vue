@@ -12,7 +12,66 @@ const form = useForm({
     is_active: true,
 });
 
+function validateForm(): boolean {
+    // Clear previous errors
+    form.clearErrors();
+    
+    let isValid = true;
+    const errors: Record<string, string> = {};
+    
+    // Required fields validation
+    if (!form.name || !form.name.trim()) {
+        errors.name = 'The name field is required.';
+        isValid = false;
+    } else if (form.name.length > 255) {
+        errors.name = 'The name may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    // Optional fields validation
+    if (form.code && form.code.length > 255) {
+        errors.code = 'The code may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    if (form.email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(form.email)) {
+            errors.email = 'The email must be a valid email address.';
+            isValid = false;
+        } else if (form.email.length > 255) {
+            errors.email = 'The email may not be greater than 255 characters.';
+            isValid = false;
+        }
+    }
+    
+    if (form.phone && form.phone.length > 255) {
+        errors.phone = 'The phone may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    // Commission rate validation
+    if (form.commission_rate === null || form.commission_rate === undefined || form.commission_rate === '') {
+        errors.commission_rate = 'The commission rate field is required.';
+        isValid = false;
+    } else if (form.commission_rate < 0 || form.commission_rate > 100) {
+        errors.commission_rate = 'The commission rate must be between 0 and 100.';
+        isValid = false;
+    }
+    
+    // Set errors if any
+    if (!isValid) {
+        form.setError(errors);
+    }
+    
+    return isValid;
+}
+
 function submit() {
+    if (!validateForm()) {
+        return;
+    }
+    
     form.post(route('admin.affiliates.store'));
 }
 </script>
@@ -55,6 +114,7 @@ function submit() {
                                         :class="{ 'is-invalid': form.errors.name }"
                                         id="name"
                                         required
+                                        maxlength="255"
                                     />
                                     <div v-if="form.errors.name" class="invalid-feedback">
                                         {{ form.errors.name }}
@@ -72,6 +132,7 @@ function submit() {
                                         class="form-control"
                                         :class="{ 'is-invalid': form.errors.code }"
                                         id="code"
+                                        maxlength="255"
                                         placeholder="e.g., PARTNER123"
                                     />
                                     <div v-if="form.errors.code" class="invalid-feedback">
@@ -92,6 +153,7 @@ function submit() {
                                                 class="form-control"
                                                 :class="{ 'is-invalid': form.errors.email }"
                                                 id="email"
+                                                maxlength="255"
                                             />
                                             <div v-if="form.errors.email" class="invalid-feedback">
                                                 {{ form.errors.email }}
@@ -107,6 +169,7 @@ function submit() {
                                                 class="form-control"
                                                 :class="{ 'is-invalid': form.errors.phone }"
                                                 id="phone"
+                                                maxlength="255"
                                             />
                                             <div v-if="form.errors.phone" class="invalid-feedback">
                                                 {{ form.errors.phone }}

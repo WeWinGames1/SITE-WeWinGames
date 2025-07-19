@@ -37,7 +37,79 @@ function removeImage() {
     if (input) input.value = '';
 }
 
+function validateForm(): boolean {
+    // Clear previous errors
+    form.clearErrors();
+    
+    let isValid = true;
+    const errors: Record<string, string> = {};
+    
+    // Required fields validation
+    if (!form.name || !form.name.trim()) {
+        errors.name = 'The name field is required.';
+        isValid = false;
+    } else if (form.name.length > 255) {
+        errors.name = 'The name may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    if (form.title && form.title.length > 255) {
+        errors.title = 'The title may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    if (!form.stars || form.stars < 1 || form.stars > 5) {
+        errors.stars = 'The stars must be between 1 and 5.';
+        isValid = false;
+    }
+    
+    if (!form.review || !form.review.trim()) {
+        errors.review = 'The review field is required.';
+        isValid = false;
+    }
+    
+    if (!form.review_date) {
+        errors.review_date = 'The review date field is required.';
+        isValid = false;
+    }
+    
+    // File validation
+    if (form.image) {
+        const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+        if (form.image.size > maxSize) {
+            errors.image = 'The image may not be greater than 2MB.';
+            isValid = false;
+        }
+        
+        // Check file type
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/svg+xml', 'image/webp'];
+        if (!allowedTypes.includes(form.image.type)) {
+            errors.image = 'The image must be an image file (jpeg, png, gif, svg, webp).';
+            isValid = false;
+        }
+    }
+    
+    // Numeric validation
+    if (form.sort_order !== null && form.sort_order !== undefined) {
+        if (!Number.isInteger(form.sort_order)) {
+            errors.sort_order = 'The sort order must be an integer.';
+            isValid = false;
+        }
+    }
+    
+    // Set errors if any
+    if (!isValid) {
+        form.setError(errors);
+    }
+    
+    return isValid;
+}
+
 function submit() {
+    if (!validateForm()) {
+        return;
+    }
+    
     form.post(route('admin.testimonials.store'));
 }
 </script>
@@ -81,6 +153,7 @@ function submit() {
                                             :class="{ 'is-invalid': form.errors.name }"
                                             v-model="form.name"
                                             required
+                                            maxlength="255"
                                             placeholder="John Doe"
                                         />
                                         <div v-if="form.errors.name" class="invalid-feedback">
@@ -95,6 +168,7 @@ function submit() {
                                             class="form-control"
                                             :class="{ 'is-invalid': form.errors.title }"
                                             v-model="form.title"
+                                            maxlength="255"
                                             placeholder="CEO at Company (optional)"
                                         />
                                         <div v-if="form.errors.title" class="invalid-feedback">

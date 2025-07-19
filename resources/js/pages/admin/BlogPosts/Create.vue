@@ -236,20 +236,101 @@ function addPopularTag(tag: string) {
     }
 }
 
-function submit() {
-    // Validate required fields
-    if (!form.title.trim()) {
-        alert('Please enter a title for the blog post.');
-        return;
+function validateForm(): boolean {
+    // Clear previous errors
+    form.clearErrors();
+    
+    let isValid = true;
+    const errors: Record<string, string> = {};
+    
+    // Required fields validation
+    if (!form.title || !form.title.trim()) {
+        errors.title = 'The title field is required.';
+        isValid = false;
+    } else if (form.title.length > 255) {
+        errors.title = 'The title may not be greater than 255 characters.';
+        isValid = false;
     }
     
-    if (!form.content.trim() || form.content.trim() === '<p></p>') {
-        alert('Please enter content for the blog post.');
-        return;
+    if (!form.content || form.content.trim() === '' || form.content.trim() === '<p></p>') {
+        errors.content = 'The content field is required.';
+        isValid = false;
     }
     
     if (!form.category) {
-        alert('Please select a category for the blog post.');
+        errors.category = 'The category field is required.';
+        isValid = false;
+    }
+    
+    // Optional fields validation
+    if (form.slug) {
+        if (form.slug.length > 255) {
+            errors.slug = 'The slug may not be greater than 255 characters.';
+            isValid = false;
+        } else if (!/^[a-z0-9-]+$/.test(form.slug)) {
+            errors.slug = 'The slug may only contain lowercase letters, numbers, and hyphens.';
+            isValid = false;
+        }
+    }
+    
+    if (form.excerpt && form.excerpt.length > 500) {
+        errors.excerpt = 'The excerpt may not be greater than 500 characters.';
+        isValid = false;
+    }
+    
+    // File validation
+    if (form.featured_image) {
+        const maxSize = 20 * 1024 * 1024; // 20MB in bytes
+        if (form.featured_image.size > maxSize) {
+            errors.featured_image = 'The featured image may not be greater than 20MB.';
+            isValid = false;
+        }
+        
+        // Check file type
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/svg+xml', 'image/webp'];
+        if (!allowedTypes.includes(form.featured_image.type)) {
+            errors.featured_image = 'The featured image must be an image file (jpeg, png, gif, svg, webp).';
+            isValid = false;
+        }
+    }
+    
+    // Tags validation
+    if (form.tags && form.tags.length > 0) {
+        for (let i = 0; i < form.tags.length; i++) {
+            if (form.tags[i].length > 50) {
+                errors[`tags.${i}`] = 'Each tag may not be greater than 50 characters.';
+                isValid = false;
+            }
+        }
+    }
+    
+    // SEO fields validation
+    if (form.seo_title && form.seo_title.length > 60) {
+        errors.seo_title = 'The SEO title may not be greater than 60 characters.';
+        isValid = false;
+    }
+    
+    if (form.seo_description && form.seo_description.length > 160) {
+        errors.seo_description = 'The SEO description may not be greater than 160 characters.';
+        isValid = false;
+    }
+    
+    if (form.seo_keywords && form.seo_keywords.length > 255) {
+        errors.seo_keywords = 'The SEO keywords may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    // Set errors if any
+    if (!isValid) {
+        form.setError(errors);
+    }
+    
+    return isValid;
+}
+
+function submit() {
+    if (!validateForm()) {
+        showToast('error', 'Please fix the validation errors before submitting.');
         return;
     }
     
@@ -325,6 +406,7 @@ function updateSourceCode(event: Event) {
                                     type="text"
                                     class="form-control" 
                                     placeholder="Enter post title"
+                                    maxlength="255"
                                     @blur="updateSeoTitle"
                                     @input="updateSlug"
                                     required 
@@ -379,6 +461,7 @@ function updateSourceCode(event: Event) {
                                     id="excerpt" 
                                     class="form-control"
                                     rows="3"
+                                    maxlength="500"
                                     placeholder="Brief description of the post"
                                     @blur="updateSeoDescription"
                                 ></textarea>

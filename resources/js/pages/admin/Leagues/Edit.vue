@@ -34,7 +34,46 @@ const form = useForm({
     is_active: props.league.is_active,
 });
 
+function validateForm(): boolean {
+    // Clear previous errors
+    form.clearErrors();
+    
+    let isValid = true;
+    const errors: Record<string, string> = {};
+    
+    // Required fields validation
+    if (!form.name || !form.name.trim()) {
+        errors.name = 'The name field is required.';
+        isValid = false;
+    } else if (form.name.length > 255) {
+        errors.name = 'The name may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    if (!form.sport_id) {
+        errors.sport_id = 'The sport field is required.';
+        isValid = false;
+    }
+    
+    // Optional fields validation
+    if (form.abbreviation && form.abbreviation.length > 10) {
+        errors.abbreviation = 'The abbreviation may not be greater than 10 characters.';
+        isValid = false;
+    }
+    
+    // Set errors if any
+    if (!isValid) {
+        form.setError(errors);
+    }
+    
+    return isValid;
+}
+
 function submit() {
+    if (!validateForm()) {
+        return;
+    }
+    
     console.log('Submitting league update:', {
         id: props.league.id,
         data: form.data(),
@@ -88,6 +127,7 @@ function submit() {
                                         :class="{ 'is-invalid': form.errors.name }"
                                         id="name"
                                         required
+                                        maxlength="255"
                                     />
                                     <div v-if="form.errors.name" class="invalid-feedback">
                                         {{ form.errors.name }}
@@ -121,6 +161,7 @@ function submit() {
                                         class="form-control"
                                         :class="{ 'is-invalid': form.errors.abbreviation }"
                                         id="abbreviation"
+                                        maxlength="10"
                                         placeholder="e.g., NBA, NFL, MLB"
                                     />
                                     <div v-if="form.errors.abbreviation" class="invalid-feedback">

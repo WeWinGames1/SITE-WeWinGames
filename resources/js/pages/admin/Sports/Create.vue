@@ -9,15 +9,58 @@ const form = useForm({
     is_active: true,
 });
 
+const errorMessage = ref<string | null>(null);
+
+function validateForm(): boolean {
+    // Clear previous errors
+    form.clearErrors();
+    
+    let isValid = true;
+    const errors: Record<string, string> = {};
+    
+    // Required field validation
+    if (!form.name || !form.name.trim()) {
+        errors.name = 'The name field is required.';
+        isValid = false;
+    } else if (form.name.length > 255) {
+        errors.name = 'The name may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    // Note: We can't check uniqueness on client side, server will handle it
+    
+    // Set errors if any
+    if (!isValid) {
+        form.setError(errors);
+    }
+    
+    return isValid;
+}
+
 function submit() {
     console.log('Submitting sport create:', {
         data: form.data(),
         route: route('admin.sports.store')
     });
     
+    // Clear previous messages
+    errorMessage.value = null;
+    
+    if (!validateForm()) {
+        errorMessage.value = 'Please fix the validation errors before submitting.';
+        return;
+    }
+    
     form.post(route('admin.sports.store'), {
         onError: (errors) => {
             console.error('Sport create errors:', errors);
+            // Handle unique constraint error
+            if (errors.name && errors.name.includes('already been taken')) {
+                errorMessage.value = 'A sport with this name already exists. Please choose a different name.';
+            } else {
+                const firstError = Object.values(errors)[0];
+                errorMessage.value = Array.isArray(firstError) ? firstError[0] : firstError || 'An error occurred while creating the sport.';
+            }
         },
         onSuccess: () => {
             console.log('Sport created successfully');
@@ -47,6 +90,13 @@ function submit() {
                 </nav>
             </div>
 
+            <!-- Alert Messages -->
+            <div v-if="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                {{ errorMessage }}
+                <button type="button" class="btn-close" @click="errorMessage = null" aria-label="Close"></button>
+            </div>
+
             <!-- Form -->
             <div class="row">
                 <div class="col-lg-8">
@@ -61,6 +111,7 @@ function submit() {
                                         class="form-control"
                                         :class="{ 'is-invalid': form.errors.name }"
                                         id="name"
+                                        maxlength="255"
                                         required
                                     />
                                     <div v-if="form.errors.name" class="invalid-feedback">

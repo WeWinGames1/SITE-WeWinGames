@@ -13,29 +13,68 @@ const form = useForm({
 const errorMessage = ref<string | null>(null);
 const successMessage = ref<string | null>(null);
 
+function validateForm(): boolean {
+    // Clear previous errors
+    form.clearErrors();
+    
+    let isValid = true;
+    const errors: Record<string, string> = {};
+    
+    // Required fields validation
+    if (!form.name || !form.name.trim()) {
+        errors.name = 'The name field is required.';
+        isValid = false;
+    } else if (form.name.length > 255) {
+        errors.name = 'The name may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    if (!form.email || !form.email.trim()) {
+        errors.email = 'The email field is required.';
+        isValid = false;
+    } else {
+        // Email format validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(form.email)) {
+            errors.email = 'The email must be a valid email address.';
+            isValid = false;
+        } else if (form.email.length > 255) {
+            errors.email = 'The email may not be greater than 255 characters.';
+            isValid = false;
+        }
+    }
+    
+    if (!form.password) {
+        errors.password = 'The password field is required.';
+        isValid = false;
+    } else if (form.password.length < 8) {
+        errors.password = 'The password must be at least 8 characters.';
+        isValid = false;
+    }
+    
+    if (!form.password_confirmation) {
+        errors.password_confirmation = 'The password confirmation field is required.';
+        isValid = false;
+    } else if (form.password !== form.password_confirmation) {
+        errors.password_confirmation = 'The password confirmation does not match.';
+        isValid = false;
+    }
+    
+    // Set errors if any
+    if (!isValid) {
+        form.setError(errors);
+    }
+    
+    return isValid;
+}
+
 function submit() {
     // Clear previous messages
     errorMessage.value = null;
     successMessage.value = null;
     
-    // Validate required fields
-    if (!form.name.trim()) {
-        errorMessage.value = 'Please enter a name.';
-        return;
-    }
-    
-    if (!form.email.trim()) {
-        errorMessage.value = 'Please enter an email address.';
-        return;
-    }
-    
-    if (!form.password) {
-        errorMessage.value = 'Please enter a password.';
-        return;
-    }
-    
-    if (form.password !== form.password_confirmation) {
-        errorMessage.value = 'Password confirmation does not match.';
+    if (!validateForm()) {
+        errorMessage.value = 'Please fix the validation errors before submitting.';
         return;
     }
     
@@ -100,6 +139,7 @@ function submit() {
                                                 id="name"
                                                 v-model="form.name"
                                                 placeholder="Enter customer name"
+                                                maxlength="255"
                                                 required
                                             />
                                             <div v-if="form.errors.name" class="invalid-feedback">
@@ -118,6 +158,7 @@ function submit() {
                                                 id="email"
                                                 v-model="form.email"
                                                 placeholder="Enter email address"
+                                                maxlength="255"
                                                 required
                                             />
                                             <div v-if="form.errors.email" class="invalid-feedback">

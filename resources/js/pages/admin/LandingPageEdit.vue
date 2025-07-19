@@ -62,7 +62,67 @@ function handleImageChange(event: Event) {
     }
 }
 
+function validateForm(): boolean {
+    // Clear previous errors
+    form.clearErrors();
+    
+    let isValid = true;
+    const errors: Record<string, string> = {};
+    
+    // Required fields validation
+    if (!form.title || !form.title.trim()) {
+        errors.title = 'The title field is required.';
+        isValid = false;
+    } else if (form.title.length > 255) {
+        errors.title = 'The title may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    if (!form.slug || !form.slug.trim()) {
+        errors.slug = 'The slug field is required.';
+        isValid = false;
+    } else if (form.slug.length > 255) {
+        errors.slug = 'The slug may not be greater than 255 characters.';
+        isValid = false;
+    } else if (!/^[a-z0-9-]+$/.test(form.slug)) {
+        errors.slug = 'The slug may only contain lowercase letters, numbers, and hyphens.';
+        isValid = false;
+    }
+    
+    if (!form.content || !form.content.trim()) {
+        errors.content = 'The content field is required.';
+        isValid = false;
+    }
+    
+    // File validation
+    if (form.featured_image) {
+        const maxSize = 20 * 1024 * 1024; // 20MB in bytes
+        if (form.featured_image.size > maxSize) {
+            errors.featured_image = 'The featured image may not be greater than 20MB.';
+            isValid = false;
+        }
+        
+        // Check file type
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/svg+xml', 'image/webp'];
+        if (!allowedTypes.includes(form.featured_image.type)) {
+            errors.featured_image = 'The featured image must be an image file (jpeg, png, gif, svg, webp).';
+            isValid = false;
+        }
+    }
+    
+    // Set errors if any
+    if (!isValid) {
+        form.setError(errors);
+    }
+    
+    return isValid;
+}
+
 function submit() {
+    if (!validateForm()) {
+        return;
+    }
+    
     if (props.page) {
         form.put(route('admin.landing-pages.update', props.page.id));
     } else {
@@ -213,6 +273,7 @@ const addImage = () => {
                                     placeholder="Enter landing page title"
                                     @input="generateSlug"
                                     required 
+                                    maxlength="255"
                                 />
                                 <div v-if="form.errors.title" class="invalid-feedback d-block">
                                     {{ form.errors.title }}
@@ -235,6 +296,7 @@ const addImage = () => {
                                     placeholder="campaign-landing-page"
                                     pattern="[a-z0-9-]+"
                                     required
+                                    maxlength="255"
                                 />
                                 <div class="text-secondary small mt-1">Only lowercase letters, numbers, and hyphens allowed</div>
                                 <div v-if="form.errors.slug" class="invalid-feedback d-block">
@@ -450,9 +512,13 @@ const addImage = () => {
                                     @change="handleImageChange"
                                     accept="image/*"
                                     class="form-control"
+                                    :class="{ 'is-invalid': form.errors.featured_image }"
                                     :key="fileInputKey"
                                 />
                                 <div class="text-secondary small mt-1">Hero image for the landing page</div>
+                                <div v-if="form.errors.featured_image" class="invalid-feedback d-block">
+                                    {{ form.errors.featured_image }}
+                                </div>
                             </div>
                         </div>
 

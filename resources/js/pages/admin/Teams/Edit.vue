@@ -103,7 +103,87 @@ function removeAlias(index: number) {
     form.aliases.splice(index, 1);
 }
 
+function validateForm(): boolean {
+    // Clear previous errors
+    form.clearErrors();
+    
+    let isValid = true;
+    const errors: Record<string, string> = {};
+    
+    // Required fields validation
+    if (!form.name || !form.name.trim()) {
+        errors.name = 'The name field is required.';
+        isValid = false;
+    } else if (form.name.length > 255) {
+        errors.name = 'The name may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    if (!form.sport_id) {
+        errors.sport_id = 'The sport field is required.';
+        isValid = false;
+    }
+    
+    // Optional fields validation
+    if (form.abbreviation && form.abbreviation.length > 10) {
+        errors.abbreviation = 'The abbreviation may not be greater than 10 characters.';
+        isValid = false;
+    }
+    
+    if (form.city && form.city.length > 100) {
+        errors.city = 'The city may not be greater than 100 characters.';
+        isValid = false;
+    }
+    
+    if (form.state && form.state.length > 100) {
+        errors.state = 'The state may not be greater than 100 characters.';
+        isValid = false;
+    }
+    
+    if (form.country && form.country.length > 100) {
+        errors.country = 'The country may not be greater than 100 characters.';
+        isValid = false;
+    }
+    
+    // File validation
+    if (form.logo) {
+        const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+        if (form.logo.size > maxSize) {
+            errors.logo = 'The logo may not be greater than 10MB.';
+            isValid = false;
+        }
+        
+        // Check file type
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/svg+xml', 'image/webp'];
+        if (!allowedTypes.includes(form.logo.type)) {
+            errors.logo = 'The logo must be an image file (jpeg, png, gif, svg, webp).';
+            isValid = false;
+        }
+    }
+    
+    // Aliases validation
+    if (form.aliases && form.aliases.length > 0) {
+        for (let i = 0; i < form.aliases.length; i++) {
+            if (form.aliases[i].length > 255) {
+                errors[`aliases.${i}`] = 'Each alias may not be greater than 255 characters.';
+                isValid = false;
+            }
+        }
+    }
+    
+    // Set errors if any
+    if (!isValid) {
+        form.setError(errors);
+    }
+    
+    return isValid;
+}
+
 function submit() {
+    if (!validateForm()) {
+        return;
+    }
+    
     // Use POST with _method for file uploads to avoid CSRF issues
     form.post(route('admin.teams.update', props.team.id), {
         _method: 'PUT',
@@ -160,6 +240,7 @@ function submit() {
                                             :class="{ 'is-invalid': form.errors.name }"
                                             id="name"
                                             required
+                                            maxlength="255"
                                         />
                                         <div v-if="form.errors.name" class="invalid-feedback">
                                             {{ form.errors.name }}
@@ -174,6 +255,7 @@ function submit() {
                                             class="form-control"
                                             :class="{ 'is-invalid': form.errors.abbreviation }"
                                             id="abbreviation"
+                                            maxlength="10"
                                             placeholder="e.g., LAL, NYY"
                                         />
                                         <div v-if="form.errors.abbreviation" class="invalid-feedback">
@@ -235,6 +317,7 @@ function submit() {
                                             class="form-control"
                                             :class="{ 'is-invalid': form.errors.city }"
                                             id="city"
+                                            maxlength="100"
                                         />
                                         <div v-if="form.errors.city" class="invalid-feedback">
                                             {{ form.errors.city }}
@@ -249,6 +332,7 @@ function submit() {
                                             class="form-control"
                                             :class="{ 'is-invalid': form.errors.state }"
                                             id="state"
+                                            maxlength="100"
                                         />
                                         <div v-if="form.errors.state" class="invalid-feedback">
                                             {{ form.errors.state }}
@@ -263,6 +347,7 @@ function submit() {
                                             class="form-control"
                                             :class="{ 'is-invalid': form.errors.country }"
                                             id="country"
+                                            maxlength="100"
                                         />
                                         <div v-if="form.errors.country" class="invalid-feedback">
                                             {{ form.errors.country }}

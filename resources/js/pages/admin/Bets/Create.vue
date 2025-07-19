@@ -120,6 +120,9 @@ watch(() => form.sport_id, (newSportId) => {
         if (sport) {
             form.sports = sport.name;
         }
+    } else {
+        // Clear sport name if no sport selected
+        form.sports = '';
     }
     // Reset league if it doesn't belong to the new sport
     if (form.league_id) {
@@ -475,8 +478,79 @@ function removeParlayTeam(index: number) {
     form.parlay_teams.splice(index, 1);
 }
 
+function validateForm(): boolean {
+    // Clear previous errors
+    form.clearErrors();
+    
+    let isValid = true;
+    const errors: Record<string, string> = {};
+    
+    // Required fields validation
+    if (!form.wager_type) {
+        errors.wager_type = 'The wager type field is required.';
+        isValid = false;
+    }
+    
+    if (!form.sports || !form.sport_id) {
+        errors.sports = 'The sport field is required.';
+        isValid = false;
+    }
+    
+    if (!form.betting_date) {
+        errors.betting_date = 'The betting date field is required.';
+        isValid = false;
+    }
+    
+    if (!form.game_date) {
+        errors.game_date = 'The game date field is required.';
+        isValid = false;
+    }
+    
+    if (!form.wager_odds) {
+        errors.wager_odds = 'The odds field is required.';
+        isValid = false;
+    }
+    
+    if (form.wager_amount === null || form.wager_amount === undefined || form.wager_amount < 0) {
+        errors.wager_amount = 'The wager amount must be at least 0.';
+        isValid = false;
+    }
+    
+    if (!form.status) {
+        errors.status = 'The status field is required.';
+        isValid = false;
+    }
+    
+    if (!form.membership) {
+        errors.membership = 'The membership field is required.';
+        isValid = false;
+    }
+    
+    // Numeric validation
+    if (form.wager_odds && isNaN(parseFloat(form.wager_odds as string))) {
+        errors.wager_odds = 'The odds must be a number.';
+        isValid = false;
+    }
+    
+    if (form.place_fraction !== null && form.place_fraction !== undefined) {
+        if (form.place_fraction < 0 || form.place_fraction > 1) {
+            errors.place_fraction = 'The place fraction must be between 0 and 1.';
+            isValid = false;
+        }
+    }
+    
+    // Set errors if any
+    if (!isValid) {
+        form.setError(errors);
+    }
+    
+    return isValid;
+}
+
 function submit() {
-    form.post(route('admin.bets.store'));
+    if (validateForm()) {
+        form.post(route('admin.bets.store'));
+    }
 }
 
 // Declare global for TypeScript
@@ -515,6 +589,15 @@ declare global {
             </div>
 
             <form @submit.prevent="submit">
+                <!-- Validation Errors Alert -->
+                <div v-if="form.hasErrors" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                    <strong>Validation Error!</strong> Please fix the following errors:
+                    <ul class="mb-0 mt-2">
+                        <li v-for="(error, field) in form.errors" :key="field">{{ error }}</li>
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
                 <!-- Wager Type Card -->
                 <div class="card mb-4">
                     <div class="card-header">

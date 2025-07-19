@@ -39,9 +39,61 @@ function handleCategoryChange() {
     }
 }
 
+function validateForm(): boolean {
+    // Clear previous errors
+    form.clearErrors();
+    
+    let isValid = true;
+    const errors: Record<string, string> = {};
+    
+    // Required fields validation
+    if (!form.question || !form.question.trim()) {
+        errors.question = 'The question field is required.';
+        isValid = false;
+    } else if (form.question.length > 500) {
+        errors.question = 'The question may not be greater than 500 characters.';
+        isValid = false;
+    }
+    
+    if (!form.answer || !form.answer.trim()) {
+        errors.answer = 'The answer field is required.';
+        isValid = false;
+    }
+    
+    // Optional fields validation
+    if (form.category && form.category.length > 100) {
+        errors.category = 'The category may not be greater than 100 characters.';
+        isValid = false;
+    }
+    
+    if (newCategory.value && newCategory.value.length > 100) {
+        errors.category = 'The category may not be greater than 100 characters.';
+        isValid = false;
+    }
+    
+    // Numeric validation
+    if (form.sort_order !== null && form.sort_order !== undefined) {
+        if (!Number.isInteger(form.sort_order)) {
+            errors.sort_order = 'The sort order must be an integer.';
+            isValid = false;
+        }
+    }
+    
+    // Set errors if any
+    if (!isValid) {
+        form.setError(errors);
+    }
+    
+    return isValid;
+}
+
 function submit() {
     if (showNewCategory.value && newCategory.value) {
         form.category = newCategory.value;
+    }
+    
+    if (!validateForm()) {
+        return;
     }
     
     form.put(route('admin.faqs.update', props.faq.id));
@@ -85,6 +137,7 @@ function submit() {
                                         class="form-control"
                                         :class="{ 'is-invalid': form.errors.question }"
                                         placeholder="Enter the question"
+                                        maxlength="500"
                                         required
                                     >
                                     <InputError class="mt-2" :message="form.errors.question" />

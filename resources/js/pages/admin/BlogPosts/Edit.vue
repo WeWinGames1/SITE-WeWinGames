@@ -282,24 +282,102 @@ function addPopularTag(tag: string) {
     }
 }
 
-function submit() {
-    // Clear previous messages and errors
-    errorMessage.value = null;
+function validateForm(): boolean {
+    // Clear previous errors
     form.clearErrors();
+    errorMessage.value = null;
     
-    // Validate required fields
+    let isValid = true;
+    const errors: Record<string, string> = {};
+    
+    // Required fields validation
     if (!form.title || !form.title.trim()) {
-        errorMessage.value = 'Please enter a title for the blog post.';
-        return;
+        errors.title = 'The title field is required.';
+        isValid = false;
+    } else if (form.title.length > 255) {
+        errors.title = 'The title may not be greater than 255 characters.';
+        isValid = false;
     }
     
     if (!form.content || !form.content.trim() || form.content === '<p></p>') {
-        errorMessage.value = 'Please enter content for the blog post.';
-        return;
+        errors.content = 'The content field is required.';
+        isValid = false;
     }
     
     if (!form.category) {
-        errorMessage.value = 'Please select a category for the blog post.';
+        errors.category = 'The category field is required.';
+        isValid = false;
+    }
+    
+    // Optional fields validation
+    if (form.slug) {
+        if (form.slug.length > 255) {
+            errors.slug = 'The slug may not be greater than 255 characters.';
+            isValid = false;
+        } else if (!/^[a-z0-9-]+$/.test(form.slug)) {
+            errors.slug = 'The slug may only contain lowercase letters, numbers, and hyphens.';
+            isValid = false;
+        }
+    }
+    
+    if (form.excerpt && form.excerpt.length > 500) {
+        errors.excerpt = 'The excerpt may not be greater than 500 characters.';
+        isValid = false;
+    }
+    
+    if (form.seo_title && form.seo_title.length > 60) {
+        errors.seo_title = 'The seo title may not be greater than 60 characters.';
+        isValid = false;
+    }
+    
+    if (form.seo_description && form.seo_description.length > 160) {
+        errors.seo_description = 'The seo description may not be greater than 160 characters.';
+        isValid = false;
+    }
+    
+    if (form.seo_keywords && form.seo_keywords.length > 255) {
+        errors.seo_keywords = 'The seo keywords may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    // Tags validation
+    if (form.tags && form.tags.length > 0) {
+        for (let i = 0; i < form.tags.length; i++) {
+            if (form.tags[i].length > 50) {
+                errors[`tags.${i}`] = 'Each tag may not be greater than 50 characters.';
+                isValid = false;
+            }
+        }
+    }
+    
+    // File validation
+    if (form.featured_image) {
+        const maxSize = 20 * 1024 * 1024; // 20MB in bytes
+        if (form.featured_image.size > maxSize) {
+            errors.featured_image = 'The featured image may not be greater than 20MB.';
+            isValid = false;
+        }
+        
+        // Check file type
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/svg+xml', 'image/webp'];
+        if (!allowedTypes.includes(form.featured_image.type)) {
+            errors.featured_image = 'The featured image must be an image file (jpeg, png, gif, svg, webp).';
+            isValid = false;
+        }
+    }
+    
+    // Set errors if any
+    if (!isValid) {
+        form.setError(errors);
+        const firstError = Object.values(errors)[0];
+        errorMessage.value = firstError;
+    }
+    
+    return isValid;
+}
+
+function submit() {
+    if (!validateForm()) {
         return;
     }
     

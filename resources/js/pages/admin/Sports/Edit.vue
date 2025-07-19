@@ -25,7 +25,35 @@ const form = useForm({
     is_active: props.sport.is_active,
 });
 
+function validateForm(): boolean {
+    // Clear previous errors
+    form.clearErrors();
+    
+    let isValid = true;
+    const errors: Record<string, string> = {};
+    
+    // Required fields validation
+    if (!form.name || !form.name.trim()) {
+        errors.name = 'The name field is required.';
+        isValid = false;
+    } else if (form.name.length > 255) {
+        errors.name = 'The name may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    // Set errors if any
+    if (!isValid) {
+        form.setError(errors);
+    }
+    
+    return isValid;
+}
+
 function submit() {
+    if (!validateForm()) {
+        return;
+    }
+    
     console.log('Submitting sport update:', {
         id: props.sport.id,
         data: form.data(),
@@ -79,6 +107,7 @@ function submit() {
                                         :class="{ 'is-invalid': form.errors.name }"
                                         id="name"
                                         required
+                                        maxlength="255"
                                     />
                                     <div v-if="form.errors.name" class="invalid-feedback">
                                         {{ form.errors.name }}

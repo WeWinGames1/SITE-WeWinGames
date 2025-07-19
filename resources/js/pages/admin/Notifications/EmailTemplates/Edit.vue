@@ -70,7 +70,57 @@ onBeforeUnmount(() => {
     editor.value?.destroy();
 });
 
+function validateForm(): boolean {
+    // Clear previous errors
+    form.clearErrors();
+    
+    let isValid = true;
+    const errors: Record<string, string> = {};
+    
+    // Required fields validation
+    if (!form.subject || !form.subject.trim()) {
+        errors.subject = 'The subject field is required.';
+        isValid = false;
+    } else if (form.subject.length > 255) {
+        errors.subject = 'The subject may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    if (!form.body_html || !form.body_html.trim() || form.body_html === '<p></p>') {
+        errors.body_html = 'The body html field is required.';
+        isValid = false;
+    }
+    
+    // Optional fields validation
+    if (form.from_email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(form.from_email)) {
+            errors.from_email = 'The from email must be a valid email address.';
+            isValid = false;
+        } else if (form.from_email.length > 255) {
+            errors.from_email = 'The from email may not be greater than 255 characters.';
+            isValid = false;
+        }
+    }
+    
+    if (form.from_name && form.from_name.length > 255) {
+        errors.from_name = 'The from name may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    // Set errors if any
+    if (!isValid) {
+        form.setError(errors);
+    }
+    
+    return isValid;
+}
+
 function updateTemplate() {
+    if (!validateForm()) {
+        return;
+    }
+    
     form.put(`/admin/notifications/email-templates/${props.template.id}`, {
         preserveScroll: true,
     });

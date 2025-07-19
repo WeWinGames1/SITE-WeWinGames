@@ -50,13 +50,125 @@ const testForm = useForm({
     icon: '/images/icons/icon-192x192.png',
 });
 
+function validateSendForm(): boolean {
+    // Clear previous errors
+    sendForm.clearErrors();
+    
+    let isValid = true;
+    const errors: Record<string, string> = {};
+    
+    // Required fields validation
+    if (!sendForm.title || !sendForm.title.trim()) {
+        errors.title = 'The title field is required.';
+        isValid = false;
+    } else if (sendForm.title.length > 255) {
+        errors.title = 'The title may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    if (!sendForm.body || !sendForm.body.trim()) {
+        errors.body = 'The body field is required.';
+        isValid = false;
+    } else if (sendForm.body.length > 500) {
+        errors.body = 'The body may not be greater than 500 characters.';
+        isValid = false;
+    }
+    
+    // Optional URL validation
+    if (sendForm.url) {
+        try {
+            new URL(sendForm.url);
+        } catch (e) {
+            errors.url = 'The url must be a valid URL.';
+            isValid = false;
+        }
+    }
+    
+    // Recipients validation
+    if (!sendForm.recipients) {
+        errors.recipients = 'The recipients field is required.';
+        isValid = false;
+    } else if (!['all', 'push_enabled', 'tier'].includes(sendForm.recipients)) {
+        errors.recipients = 'The selected recipients value is invalid.';
+        isValid = false;
+    }
+    
+    // Tier validation (required if recipients is 'tier')
+    if (sendForm.recipients === 'tier') {
+        if (!sendForm.tier) {
+            errors.tier = 'The tier field is required when recipients is tier.';
+            isValid = false;
+        } else if (!['silver', 'gold', 'platinum'].includes(sendForm.tier)) {
+            errors.tier = 'The selected tier value is invalid.';
+            isValid = false;
+        }
+    }
+    
+    // Set errors if any
+    if (!isValid) {
+        sendForm.setError(errors);
+    }
+    
+    return isValid;
+}
+
+function validateTestForm(): boolean {
+    // Clear previous errors
+    testForm.clearErrors();
+    
+    let isValid = true;
+    const errors: Record<string, string> = {};
+    
+    // Required fields validation
+    if (!testForm.title || !testForm.title.trim()) {
+        errors.title = 'The title field is required.';
+        isValid = false;
+    } else if (testForm.title.length > 255) {
+        errors.title = 'The title may not be greater than 255 characters.';
+        isValid = false;
+    }
+    
+    if (!testForm.body || !testForm.body.trim()) {
+        errors.body = 'The body field is required.';
+        isValid = false;
+    } else if (testForm.body.length > 500) {
+        errors.body = 'The body may not be greater than 500 characters.';
+        isValid = false;
+    }
+    
+    // Optional URL validation
+    if (testForm.url) {
+        try {
+            new URL(testForm.url);
+        } catch (e) {
+            errors.url = 'The url must be a valid URL.';
+            isValid = false;
+        }
+    }
+    
+    // Set errors if any
+    if (!isValid) {
+        testForm.setError(errors);
+    }
+    
+    return isValid;
+}
+
 function sendNotification() {
+    if (!validateSendForm()) {
+        return;
+    }
+    
     sendForm.post(route('admin.notifications.push.send'), {
         preserveScroll: false,
     });
 }
 
 function sendTestNotification() {
+    if (!validateTestForm()) {
+        return;
+    }
+    
     testForm.post(route('admin.notifications.push.test'), {
         preserveScroll: true,
     });
@@ -349,9 +461,14 @@ function sendTestNotification() {
                                         v-model="testForm.title"
                                         type="text"
                                         class="form-control"
+                                        :class="{ 'is-invalid': testForm.errors.title }"
                                         id="testTitle"
                                         maxlength="255"
+                                        required
                                     />
+                                    <div v-if="testForm.errors.title" class="invalid-feedback">
+                                        {{ testForm.errors.title }}
+                                    </div>
                                 </div>
 
                                 <div class="mb-3">
@@ -359,10 +476,15 @@ function sendTestNotification() {
                                     <textarea
                                         v-model="testForm.body"
                                         class="form-control"
+                                        :class="{ 'is-invalid': testForm.errors.body }"
                                         id="testBody"
                                         rows="3"
                                         maxlength="500"
+                                        required
                                     ></textarea>
+                                    <div v-if="testForm.errors.body" class="invalid-feedback">
+                                        {{ testForm.errors.body }}
+                                    </div>
                                 </div>
 
                                 <div class="mb-3">
@@ -371,8 +493,12 @@ function sendTestNotification() {
                                         v-model="testForm.url"
                                         type="url"
                                         class="form-control"
+                                        :class="{ 'is-invalid': testForm.errors.url }"
                                         id="testUrl"
                                     />
+                                    <div v-if="testForm.errors.url" class="invalid-feedback">
+                                        {{ testForm.errors.url }}
+                                    </div>
                                 </div>
 
                                 <div class="mb-3">
