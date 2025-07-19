@@ -24,6 +24,40 @@ class HomeController extends Controller
         $profitByYear = $this->betService->getProfitByYear();
         $roiByYear = $this->betService->getROIByYear();
 
+        // Get today's bets
+        $allBets = $this->betService->getTodaysBets();
+        
+        // For unauthenticated users, limit bronze bets to 2 from preferred sports
+        $user = auth()->user();
+        if (!$user) {
+            // Get sport preferences
+            $sportPreferences = \App\Models\SportPreference::active()
+                ->orderBy('priority', 'asc')
+                ->pluck('sport_name')
+                ->toArray();
+            
+            // Filter and limit bronze bets
+            $bronzeBets = $allBets->filter(function ($bet) {
+                return strtolower($bet->membership ?? $bet->level ?? '') === 'bronze';
+            });
+            
+            // Sort by sport preference and limit to 2
+            $limitedBets = $bronzeBets->sortBy(function ($bet) use ($sportPreferences) {
+                $sport = $bet->sports ?? $bet->sport ?? '';
+                $index = array_search($sport, $sportPreferences);
+                return $index === false ? 999 : $index;
+            })->take(2);
+            
+            // Include non-bronze bets for display (they'll be covered)
+            $nonBronzeBets = $allBets->filter(function ($bet) {
+                return strtolower($bet->membership ?? $bet->level ?? '') !== 'bronze';
+            });
+            
+            $freeBets = $limitedBets->merge($nonBronzeBets);
+        } else {
+            $freeBets = $allBets;
+        }
+
         return Inertia::render('Welcome', [
             'roiData' => $this->betService->getTotalROIBySubscriptionLevel(),
             'levelProfitRoiData' => $this->betService->getProfitAndROIByLevel(),
@@ -35,7 +69,7 @@ class HomeController extends Controller
             'thisYearROI' => $roiByYear[$thisYear] ?? 0,
             'lastYearROI' => $roiByYear[$lastYear] ?? 0,
             'monthlyProfit' => $this->betService->getAverageMonthlyProfit(),
-            'freeBets' => $this->betService->getTodaysBets(),
+            'freeBets' => $freeBets,
             'winRatio' => $this->betService->getWinLossRatio()['win_rate'] ?? 0,
             'thisYearWinLoss' => $this->betService->getWinLossRatioByYear($thisYear)['win_rate'] ?? 0,
             'lastYearWinLoss' => $this->betService->getWinLossRatioByYear($lastYear)['win_rate'] ?? 0,
@@ -51,6 +85,7 @@ class HomeController extends Controller
                 SimpleCacheService::TTL_LONG,
                 fn () => Testimonial::forDisplay()->limit(3)->get()
             ),
+            'sportPreferences' => \App\Models\SportPreference::active()->get(),
         ]);
     }
 }

@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, nextTick } from 'vue';
 
 const page = usePage();
 const turnstileEnabled = ref(false);
 const turnstileSiteKey = ref('');
 const turnstileWidget = ref<string | null>(null);
+const turnstileError = ref<string>('');
+const turnstileLoading = ref(true);
+const turnstileRendered = ref(false);
 
 const loginUrl = computed(() => route('login'));
 
@@ -21,23 +24,160 @@ const form = useForm({
     'cf-turnstile-response': '',
 });
 
+// Function to render Turnstile widget
+const renderTurnstile = (container: HTMLElement) => {
+    // Prevent multiple renders
+    if (turnstileRendered.value) {
+        // console.log('Turnstile already rendered, skipping...');
+        return;
+    }
+    
+    try {
+        // console.log('Rendering Turnstile widget...');
+        
+        const widgetConfig = {
+            sitekey: turnstileSiteKey.value,
+            theme: 'dark',
+            size: 'normal',
+            mode: 'managed', // Explicitly set to managed mode
+            appearance: 'always', // Always show the widget
+            callback: function(token: string) {
+                // console.log('Turnstile token received:', token.substring(0, 10) + '...');
+                form['cf-turnstile-response'] = token;
+                turnstileError.value = '';
+            },
+            'expired-callback': function() {
+                // console.log('Turnstile token expired');
+                form['cf-turnstile-response'] = '';
+                turnstileError.value = 'Token expired - please complete verification again';
+            },
+            'error-callback': function(error: any) {
+                console.error('Turnstile error occurred:', error);
+                turnstileError.value = 'Verification error - please refresh the page';
+            },
+            'before-interactive-callback': function() {
+                // console.log('Turnstile showing interactive challenge');
+            },
+            'after-interactive-callback': function() {
+                // console.log('Turnstile interactive challenge completed');
+            },
+            'unsupported-callback': function() {
+                console.error('Turnstile not supported in this browser');
+                turnstileError.value = 'Browser not supported';
+            },
+        };
+        
+        // Render Turnstile widget
+        turnstileWidget.value = window.turnstile.render(container, widgetConfig);
+        // console.log('Turnstile widget ID:', turnstileWidget.value);
+        turnstileLoading.value = false;
+        turnstileRendered.value = true;
+    } catch (error: any) {
+        console.error('Error rendering Turnstile:', error);
+        turnstileError.value = error.message || 'Failed to load verification';
+        turnstileLoading.value = false;
+    }
+};
+
 onMounted(() => {
     // Check if Turnstile is enabled from Inertia shared data
     const pageProps = page.props as any;
-    turnstileEnabled.value = pageProps.env?.TURNSTILE_ENABLED || false;
+    // Handle string "true"/"false" from env variables
+    const envEnabled = pageProps.env?.TURNSTILE_ENABLED;
+    turnstileEnabled.value = envEnabled === true || envEnabled === 'true' || envEnabled === 1 || envEnabled === '1';
     turnstileSiteKey.value = pageProps.env?.TURNSTILE_SITE_KEY || '';
     
-    if (turnstileEnabled.value && turnstileSiteKey.value && window.turnstile) {
-        // Render Turnstile widget
-        turnstileWidget.value = window.turnstile.render('#cf-turnstile', {
-            sitekey: turnstileSiteKey.value,
-            callback: function(token: string) {
-                form['cf-turnstile-response'] = token;
-            },
-            'expired-callback': function() {
-                form['cf-turnstile-response'] = '';
-            },
+    // Debug logging (commented out for production)
+    // console.log('Turnstile Debug:', {
+    //     enabled: turnstileEnabled.value,
+    //     siteKey: turnstileSiteKey.value,
+    //     windowTurnstile: !!window.turnstile,
+    //     turnstileConfig: window.turnstileConfig,
+    //     env: pageProps.env
+    // });
+    
+    // Check if Turnstile script tag exists
+    const turnstileScript = document.querySelector('script[src*="challenges.cloudflare.com/turnstile"]');
+    // console.log('Turnstile script tag:', turnstileScript ? 'found' : 'not found');
+    
+    // If script doesn't exist, try to add it manually
+    if (!turnstileScript && turnstileEnabled.value) {
+        // console.log('Manually adding Turnstile script...');
+        const script = document.createElement('script');
+        script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+        script.async = true;
+        script.defer = true;
+        script.onload = () => {
+            // console.log('Turnstile script loaded manually');
+        };
+        script.onerror = (error) => {
+            console.error('Failed to load Turnstile script:', error);
+            turnstileError.value = 'Failed to load security verification script';
+            turnstileLoading.value = false;
+        };
+        document.head.appendChild(script);
+    }
+    
+    if (turnstileEnabled.value && turnstileSiteKey.value) {
+        // Wait for DOM to be ready
+        nextTick().then(() => {
+            let retryCount = 0;
+            const maxRetries = 50; // 5 seconds max wait
+            
+            // Wait for Turnstile script to load
+            const checkTurnstile = () => {
+                // console.log(`Checking for Turnstile... (attempt ${retryCount + 1})`, {
+                //     turnstileExists: !!window.turnstile,
+                //     turnstileType: typeof window.turnstile
+                // });
+                
+                if (window.turnstile && typeof window.turnstile.render === 'function') {
+                    try {
+                        // Check if container exists
+                        const container = document.getElementById('cf-turnstile');
+                        if (!container) {
+                            console.error('Turnstile container not found!');
+                            turnstileError.value = 'Container element not found';
+                            turnstileLoading.value = false;
+                            // Try again after a short delay
+                            setTimeout(() => {
+                                const retryContainer = document.getElementById('cf-turnstile');
+                                if (retryContainer) {
+                                    console.log('Container found on retry, attempting render...');
+                                    turnstileError.value = '';
+                                    renderTurnstile(retryContainer);
+                                }
+                            }, 500);
+                            return;
+                        }
+                        
+                        // console.log('Container found, proceeding to render...');
+                        renderTurnstile(container);
+                    } catch (error: any) {
+                        console.error('Error in checkTurnstile:', error);
+                        turnstileError.value = error.message || 'Failed to initialize verification';
+                        turnstileLoading.value = false;
+                    }
+                } else {
+                    retryCount++;
+                    if (retryCount >= maxRetries) {
+                        console.error('Turnstile script failed to load after', maxRetries, 'attempts');
+                        turnstileError.value = 'Verification service unavailable';
+                        turnstileLoading.value = false;
+                    } else {
+                        // Retry after 100ms
+                        setTimeout(checkTurnstile, 100);
+                    }
+                }
+            };
+            
+            checkTurnstile();
         });
+    } else {
+        turnstileLoading.value = false;
+        if (turnstileEnabled.value && !turnstileSiteKey.value) {
+            turnstileError.value = 'Missing site key configuration';
+        }
     }
 });
 
@@ -73,7 +213,7 @@ const submit = () => {
                         <div class="card" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
                             <div class="card-body p-5">
                                 <h2 class="h4 fw-bold text-white mb-2">Create your account</h2>
-                                <p class="text-gray-light mb-4">Start with a 7-day free trial</p>
+                                <p class="text-gray-light mb-4">Take your first step towards winning!</p>
 
                             <form @submit.prevent="submit">
                                 <div class="mb-4">
@@ -184,10 +324,31 @@ const submit = () => {
 
                                 <!-- Cloudflare Turnstile -->
                                 <div v-if="turnstileEnabled" class="mb-3">
-                                    <div id="cf-turnstile"></div>
+                                    <div v-if="turnstileLoading && !turnstileRendered" class="text-center py-3">
+                                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                            <span class="visually-hidden">Loading security verification...</span>
+                                        </div>
+                                        <div class="text-muted small mt-2">Loading security verification...</div>
+                                    </div>
+                                    <div 
+                                        id="cf-turnstile" 
+                                        class="cf-turnstile"
+                                        :data-sitekey="turnstileSiteKey"
+                                        data-theme="dark"
+                                        data-appearance="always"
+                                        style="min-height: 65px;"
+                                    ></div>
+                                    <div v-if="turnstileError" class="alert alert-danger small mt-2">
+                                        <i class="bi bi-exclamation-triangle me-1"></i>
+                                        {{ turnstileError }}
+                                    </div>
                                     <div v-if="form.errors['cf-turnstile-response']" class="text-danger small mt-1">
                                         {{ form.errors['cf-turnstile-response'] }}
                                     </div>
+                                </div>
+                                <!-- Fallback if Turnstile is disabled but should be enabled -->
+                                <div v-else-if="!turnstileEnabled && page.props.env?.TURNSTILE_ENABLED" class="alert alert-warning mb-3">
+                                    <small>Security verification is temporarily unavailable. Please try again later.</small>
                                 </div>
 
                                 <div class="d-grid mb-4">

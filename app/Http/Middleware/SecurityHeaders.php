@@ -80,7 +80,7 @@ class SecurityHeaders
         $commonCsp = [
             ! app()->environment('local') ? "font-src 'self' https://fonts.gstatic.com https://fonts.bunny.net https://cdnjs.cloudflare.com https://rsms.me data:" : null,
             "img-src 'self' data: https: blob:",
-            "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+            "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://challenges.cloudflare.com",
             "object-src 'none'",
             "base-uri 'self'",
             "form-action 'self'",

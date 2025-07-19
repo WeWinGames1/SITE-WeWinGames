@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Auth;
 
 use App\Models\User;
+use App\Rules\ValidateTurnstile;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rules;
@@ -83,7 +84,7 @@ class RegisterRequest extends FormRequest
                 },
             ],
             // Cloudflare Turnstile token
-            'cf-turnstile-response' => config('services.turnstile.enabled') ? 'required|string' : 'nullable',
+            'cf-turnstile-response' => config('services.turnstile.enabled') ? ['required', 'string', new ValidateTurnstile] : 'nullable',
         ];
     }
 

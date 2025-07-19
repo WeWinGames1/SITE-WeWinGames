@@ -37,7 +37,7 @@ class AdminSecurityHeaders
             "img-src 'self' data: https: blob:",
             "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://fonts.bunny.net",
             "connect-src 'self' https://api.stripe.com https://www.google-analytics.com https://region1.google-analytics.com wss://localhost:* ws://localhost:*",
-            "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+            "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://challenges.cloudflare.com",
             "object-src 'none'",
             "base-uri 'self'",
             "form-action 'self'",

@@ -49,7 +49,7 @@ return [
     ],
 
     'turnstile' => [
-        'enabled' => env('TURNSTILE_ENABLED', false),
+        'enabled' => filter_var(env('TURNSTILE_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
         'site_key' => env('TURNSTILE_SITE_KEY'),
         'secret' => env('TURNSTILE_SECRET_KEY'),
     ],
