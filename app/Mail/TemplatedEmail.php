@@ -35,10 +35,17 @@ class TemplatedEmail extends Mailable
     {
         $rendered = $this->template->render($this->data);
         
-        return new Envelope(
+        $envelope = new Envelope(
             subject: $rendered['subject'],
             from: [$rendered['from_email'] => $rendered['from_name']],
         );
+        
+        // Add reply-to if different from from_email
+        if (isset($rendered['reply_to_email']) && $rendered['reply_to_email'] !== $rendered['from_email']) {
+            $envelope->replyTo($rendered['reply_to_email'], $rendered['from_name']);
+        }
+        
+        return $envelope;
     }
 
     /**

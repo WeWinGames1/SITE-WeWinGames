@@ -157,6 +157,11 @@ class EmailTemplateController extends Controller
                     ->subject($rendered['subject'])
                     ->from($rendered['from_email'], $rendered['from_name']);
                 
+                // Add reply-to if different from from_email
+                if (isset($rendered['reply_to_email']) && $rendered['reply_to_email'] !== $rendered['from_email']) {
+                    $message->replyTo($rendered['reply_to_email'], $rendered['from_name']);
+                }
+                
                 // Add headers for email logging
                 $message->getHeaders()->addTextHeader('X-Template-Key', $emailTemplate->key);
                 $message->getHeaders()->addTextHeader('X-Email-Metadata', json_encode([

@@ -84,8 +84,27 @@ class RegisterRequest extends FormRequest
                 },
             ],
             // Cloudflare Turnstile token
-            'cf-turnstile-response' => config('services.turnstile.enabled') ? ['required', 'string', new ValidateTurnstile] : 'nullable',
+            'cf-turnstile-response' => $this->getTurnstileRules(),
         ];
+    }
+
+    /**
+     * Get Turnstile validation rules
+     */
+    private function getTurnstileRules(): array|string
+    {
+        if (!config('services.turnstile.enabled')) {
+            return 'nullable';
+        }
+        
+        // Check if ValidateTurnstile class exists
+        if (class_exists(ValidateTurnstile::class)) {
+            return ['required', 'string', new ValidateTurnstile];
+        }
+        
+        // Fallback if class doesn't exist (for deployment issues)
+        \Log::warning('ValidateTurnstile class not found, using basic validation only');
+        return 'required|string';
     }
 
     /**
