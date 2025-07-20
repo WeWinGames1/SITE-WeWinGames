@@ -37,7 +37,6 @@ class RegisterRequest extends FormRequest
             'email' => [
                 'required',
                 'string',
-                'lowercase',
                 'email:rfc,dns', // Stricter email validation with DNS check
                 'max:255',
                 'unique:'.User::class,
@@ -58,8 +57,8 @@ class RegisterRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:255',
-                'regex:/^[a-zA-Z0-9._-]+#[0-9]{4}$/', // Discord username format
                 function ($attribute, $value, $fail) {
+                    // Only validate format if a value is provided
                     if ($value && !preg_match('/^[a-zA-Z0-9._-]+#[0-9]{4}$/', $value)) {
                         $fail('Please enter a valid Discord username (e.g., username#1234).');
                     }
@@ -73,8 +72,8 @@ class RegisterRequest extends FormRequest
                 'integer',
                 function ($attribute, $value, $fail) {
                     $timeTaken = time() - $value;
-                    // Form filled too quickly (less than 3 seconds)
-                    if ($timeTaken < 3) {
+                    // Form filled too quickly (less than 1 second)
+                    if ($timeTaken < 1) {
                         $fail('Please take your time to fill out the form.');
                     }
                     // Form took too long (more than 30 minutes)

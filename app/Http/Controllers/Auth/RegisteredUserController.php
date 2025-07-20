@@ -36,6 +36,13 @@ class RegisteredUserController extends Controller
      */
     public function store(RegisterRequest $request, RegistrationSecurityService $securityService, SendGridService $sendGridService): RedirectResponse
     {
+        // Debug logging
+        \Log::info('Registration attempt', [
+            'has_turnstile' => $request->has('cf-turnstile-response'),
+            'turnstile_value' => $request->input('cf-turnstile-response') ? 'present' : 'missing',
+            'all_inputs' => array_keys($request->all())
+        ]);
+        
         // Perform security checks
         $securityCheck = $securityService->canRegister($request);
 
@@ -66,7 +73,7 @@ class RegisteredUserController extends Controller
 
                 $user = User::create([
                     'name' => $request->name,
-                    'email' => $request->email,
+                    'email' => strtolower($request->email),
                     'password' => Hash::make($request->password),
                     'discord_username' => $request->discord_username,
                     'affiliate_id' => $affiliateId,
@@ -111,9 +118,14 @@ class RegisteredUserController extends Controller
 
         } catch (\Exception $e) {
             $securityService->logRegistrationAttempt($request, false);
+            
+            \Log::error('Registration failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
 
             throw ValidationException::withMessages([
-                'email' => ['Registration failed. Please try again later.'],
+                'email' => ['Registration failed. Please try again later. Error: ' . $e->getMessage()],
             ]);
         }
     }

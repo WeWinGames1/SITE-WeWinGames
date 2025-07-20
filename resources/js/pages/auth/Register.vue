@@ -10,6 +10,7 @@ const turnstileWidget = ref<string | null>(null);
 const turnstileError = ref<string>('');
 const turnstileLoading = ref(true);
 const turnstileRendered = ref(false);
+const submissionError = ref<string>('');
 
 const loginUrl = computed(() => route('login'));
 
@@ -20,7 +21,7 @@ const form = useForm({
     password: '',
     password_confirmation: '',
     website: '', // Honeypot field
-    timestamp: Math.floor(Date.now() / 1000), // Current timestamp
+    timestamp: 0, // Will be set on mount
     'cf-turnstile-response': '',
 });
 
@@ -42,9 +43,10 @@ const renderTurnstile = (container: HTMLElement) => {
             mode: 'managed', // Explicitly set to managed mode
             appearance: 'always', // Always show the widget
             callback: function(token: string) {
-                // console.log('Turnstile token received:', token.substring(0, 10) + '...');
+                console.log('Turnstile token received:', token.substring(0, 10) + '...');
                 form['cf-turnstile-response'] = token;
                 turnstileError.value = '';
+                console.log('Token set in form:', !!form['cf-turnstile-response']);
             },
             'expired-callback': function() {
                 // console.log('Turnstile token expired');
@@ -80,12 +82,36 @@ const renderTurnstile = (container: HTMLElement) => {
 };
 
 onMounted(() => {
+    console.log('Vue component mounted successfully');
+    
+    // Set timestamp when component mounts
+    form.timestamp = Math.floor(Date.now() / 1000);
+    console.log('Timestamp set to:', form.timestamp);
+    
     // Check if Turnstile is enabled from Inertia shared data
     const pageProps = page.props as any;
     // Handle string "true"/"false" from env variables
     const envEnabled = pageProps.env?.TURNSTILE_ENABLED;
     turnstileEnabled.value = envEnabled === true || envEnabled === 'true' || envEnabled === 1 || envEnabled === '1';
     turnstileSiteKey.value = pageProps.env?.TURNSTILE_SITE_KEY || '';
+    
+    // Add global error handler to catch any issues
+    window.addEventListener('error', (e) => {
+        console.error('Global error caught:', e.message, e);
+    });
+    
+    // Check if Inertia is working
+    console.log('Inertia available:', typeof route !== 'undefined');
+    console.log('Form object:', form);
+    
+    // Log form data for debugging
+    const formElement = document.getElementById('registration-form');
+    if (formElement) {
+        formElement.addEventListener('submit', (e) => {
+            console.log('Native form submit event triggered - this should not happen!');
+            e.preventDefault(); // Extra prevention
+        });
+    }
     
     // Debug logging (commented out for production)
     // console.log('Turnstile Debug:', {
@@ -182,17 +208,45 @@ onMounted(() => {
 });
 
 const submit = () => {
-    // Update timestamp if form was cached
-    form.timestamp = Math.floor(Date.now() / 1000);
+    // Don't update timestamp here - use the one from mount
+    
+    // Debug logging
+    console.log('Form submission started', {
+        turnstileEnabled: turnstileEnabled.value,
+        hasToken: !!form['cf-turnstile-response'],
+        tokenLength: form['cf-turnstile-response']?.length || 0,
+        timestamp: form.timestamp,
+        currentTime: Math.floor(Date.now() / 1000),
+        timeDiff: Math.floor(Date.now() / 1000) - form.timestamp,
+        formData: form.data()
+    });
     
     form.post(route('register'), {
+        onStart: () => {
+            console.log('Request started');
+            submissionError.value = '';
+        },
         onFinish: () => {
+            console.log('Request finished');
             form.reset('password', 'password_confirmation');
             // Reset Turnstile if enabled
             if (turnstileEnabled.value && window.turnstile && turnstileWidget.value) {
                 window.turnstile.reset(turnstileWidget.value);
             }
         },
+        onError: (errors) => {
+            console.error('Registration errors:', errors);
+            submissionError.value = Object.values(errors).flat().join(' ');
+            // Reset Turnstile on error
+            if (turnstileEnabled.value && window.turnstile && turnstileWidget.value) {
+                window.turnstile.reset(turnstileWidget.value);
+            }
+        },
+        onSuccess: (page) => {
+            console.log('Registration successful', page);
+        },
+        preserveScroll: true,
+        preserveState: false
     });
 };
 </script>
@@ -215,7 +269,7 @@ const submit = () => {
                                 <h2 class="h4 fw-bold text-white mb-2">Create your account</h2>
                                 <p class="text-gray-light mb-4">Take your first step towards winning!</p>
 
-                            <form @submit.prevent="submit">
+                            <form @submit.prevent="submit" id="registration-form">
                                 <div class="mb-4">
                                     <label for="name" class="form-label text-white fw-medium">Full Name</label>
                                     <input
@@ -352,13 +406,19 @@ const submit = () => {
                                 </div>
 
                                 <div class="d-grid mb-4">
-                                    <button type="submit" class="btn btn-primary btn-lg py-3" :disabled="form.processing">
+                                    <button type="submit" class="btn btn-primary btn-lg py-3" :disabled="form.processing" @click="console.log('Button clicked')">
                                         <span v-if="form.processing" class="spinner-border spinner-border-sm me-2" role="status">
                                             <span class="visually-hidden">Loading...</span>
                                         </span>
                                         <span class="fw-semibold">Create Account</span>
                                         <i class="bi bi-arrow-right ms-2"></i>
                                     </button>
+                                </div>
+
+                                <!-- Debug error display -->
+                                <div v-if="submissionError" class="alert alert-danger mb-3">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    {{ submissionError }}
                                 </div>
 
                                 <div class="text-center text-gray-light small mb-4">

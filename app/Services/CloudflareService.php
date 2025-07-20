@@ -209,6 +209,20 @@ class CloudflareService
     }
 
     /**
+     * Check if the request is from a blocked country
+     *
+     * @param Request $request
+     * @return bool
+     */
+    public function isBlockedCountry(Request $request): bool
+    {
+        $country = $request->header('CF-IPCountry');
+        $blockedCountries = config('cloudflare.blocked_countries', []);
+        
+        return $country && in_array($country, $blockedCountries);
+    }
+
+    /**
      * Get security summary from Cloudflare headers
      *
      * @param Request $request
@@ -225,5 +239,53 @@ class CloudflareService
             'user_agent' => $request->userAgent(),
             'is_tor' => $request->header('CF-Tor-Exit') === 'true',
         ];
+    }
+
+    /**
+     * Verify Turnstile token
+     *
+     * @param string $token
+     * @param string $remoteIp
+     * @return array
+     */
+    public function verifyTurnstile(string $token, string $remoteIp): array
+    {
+        if (!config('services.turnstile.enabled')) {
+            return ['success' => true];
+        }
+
+        try {
+            $response = Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+                'secret' => config('services.turnstile.secret'),
+                'response' => $token,
+                'remoteip' => $remoteIp,
+            ]);
+
+            $result = $response->json();
+            
+            if (!$response->successful()) {
+                Log::error('Turnstile API request failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                return ['success' => false, 'error' => 'API request failed'];
+            }
+
+            if (!($result['success'] ?? false)) {
+                Log::warning('Turnstile verification failed', [
+                    'error_codes' => $result['error-codes'] ?? [],
+                    'ip' => $remoteIp
+                ]);
+            }
+
+            return $result;
+        } catch (\Exception $e) {
+            Log::error('Turnstile verification exception', [
+                'error' => $e->getMessage(),
+                'ip' => $remoteIp
+            ]);
+            
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
     }
 }

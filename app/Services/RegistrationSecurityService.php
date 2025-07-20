@@ -47,7 +47,8 @@ class RegistrationSecurityService
             'ip_reputation' => $this->checkIpReputation($realIp),
             'email_domain' => $this->checkEmailDomain($request->input('email')),
             'velocity' => $this->checkRegistrationVelocity(),
-            'turnstile' => $this->checkTurnstile($request),
+            // Turnstile is already validated in RegisterRequest, don't check again
+            // 'turnstile' => $this->checkTurnstile($request),
         ];
 
         $allowed = ! in_array(false, $checks, true);

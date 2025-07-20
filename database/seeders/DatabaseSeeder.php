@@ -15,10 +15,16 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
+        // Run RoleSeeder first to ensure roles exist
+        $this->call([
+            RoleSeeder::class,
+        ]);
+        
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+        
         $this->call([
             SportSeeder::class,
             OperatorSeeder::class,

@@ -14,6 +14,10 @@ import axios from 'axios';
 // Make Bootstrap available globally
 window.bootstrap = bootstrap;
 
+// Debug flag to verify JS is running
+(window as any).appLoaded = true;
+console.log('App.ts loaded successfully');
+
 // Configure axios defaults
 if (typeof window !== 'undefined') {
     axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
@@ -55,14 +59,22 @@ declare module 'vite/client' {
 
 const appName = import.meta.env.VITE_APP_NAME || 'We Win Games';
 
+console.log('Initializing Inertia app...');
+
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
-    resolve: (name) => resolvePageComponent(`./pages/${name}.vue`, import.meta.glob<DefineComponent>('./pages/**/*.vue')),
+    resolve: (name) => {
+        console.log('Resolving page component:', name);
+        return resolvePageComponent(`./pages/${name}.vue`, import.meta.glob<DefineComponent>('./pages/**/*.vue'));
+    },
     setup({ el, App, props, plugin }) {
-        createApp({ render: () => h(App, props) })
+        console.log('Setting up Vue app with props:', props);
+        const app = createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)
             .mount(el);
+        console.log('Vue app mounted successfully');
+        return app;
     },
     progress: {
         color: '#4B5563',
