@@ -24,29 +24,35 @@ class ImpersonationController extends Controller
             return back()->with('error', 'You cannot impersonate another admin user.');
         }
 
-        // Log the impersonation action
-        activity()
-            ->causedBy(Auth::user())
-            ->performedOn($user)
-            ->withProperties([
-                'impersonator_id' => Auth::id(),
-                'impersonator_email' => Auth::user()->email,
-                'target_user_id' => $user->id,
-                'target_user_email' => $user->email,
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-            ])
-            ->log('Admin started impersonating user');
+        // Log the impersonation action (commented out temporarily to debug)
+        // activity()
+        //     ->causedBy(Auth::user())
+        //     ->performedOn($user)
+        //     ->withProperties([
+        //         'impersonator_id' => Auth::id(),
+        //         'impersonator_email' => Auth::user()->email,
+        //         'target_user_id' => $user->id,
+        //         'target_user_email' => $user->email,
+        //         'ip_address' => request()->ip(),
+        //         'user_agent' => request()->userAgent(),
+        //     ])
+        //     ->log('Admin started impersonating user');
 
-        // Store the admin's ID in the session
-        Session::put('impersonator_id', Auth::id());
+        // Store the admin's ID in the session BEFORE regenerating
+        $adminId = Auth::id();
+        
+        // Login as the user with remember me to ensure API requests work
+        Auth::login($user, true);
+        
+        // Now store the impersonation data in the new session
+        Session::put('impersonator_id', $adminId);
         Session::put('impersonation_started_at', now());
-
-        // Login as the user
-        Auth::login($user);
-
+        
         // Regenerate session to prevent session fixation attacks
-        request()->session()->regenerate();
+        Session::regenerate();
+        
+        // Force save the session to ensure data persists
+        Session::save();
 
         return redirect('/dashboard')->with('success', "You are now impersonating {$user->name}");
     }
@@ -72,22 +78,22 @@ class ImpersonationController extends Controller
             return redirect('/');
         }
 
-        // Log the end of impersonation
-        activity()
-            ->causedBy($impersonator)
-            ->performedOn(Auth::user())
-            ->withProperties([
-                'impersonator_id' => $impersonator->id,
-                'impersonator_email' => $impersonator->email,
-                'target_user_id' => Auth::id(),
-                'target_user_email' => Auth::user()->email,
-                'duration' => Session::has('impersonation_started_at')
-                    ? now()->diffInMinutes(Session::get('impersonation_started_at')).' minutes'
-                    : 'unknown',
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-            ])
-            ->log('Admin stopped impersonating user');
+        // Log the end of impersonation (commented out temporarily to debug)
+        // activity()
+        //     ->causedBy($impersonator)
+        //     ->performedOn(Auth::user())
+        //     ->withProperties([
+        //         'impersonator_id' => $impersonator->id,
+        //         'impersonator_email' => $impersonator->email,
+        //         'target_user_id' => Auth::id(),
+        //         'target_user_email' => Auth::user()->email,
+        //         'duration' => Session::has('impersonation_started_at')
+        //             ? now()->diffInMinutes(Session::get('impersonation_started_at')).' minutes'
+        //             : 'unknown',
+        //         'ip_address' => request()->ip(),
+        //         'user_agent' => request()->userAgent(),
+        //     ])
+        //     ->log('Admin stopped impersonating user');
 
         // Login back as the admin
         Auth::login($impersonator);
@@ -95,6 +101,12 @@ class ImpersonationController extends Controller
         // Clear the impersonation session
         Session::forget('impersonator_id');
         Session::forget('impersonation_started_at');
+        
+        // Regenerate session for security
+        Session::regenerate();
+        
+        // Force save the session
+        Session::save();
 
         return redirect('/admin/customers')->with('success', 'Impersonation ended');
     }

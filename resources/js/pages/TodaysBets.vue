@@ -50,20 +50,13 @@ const sportIcons = {
     'Ultimate Fighting Championship': '🥊'
 };
 
-// Get user's subscription type - handle ambassador/gifted/override users
+// Get user's subscription type from auth.currentTier
 const getUserSubscriptionType = () => {
-    if (!auth?.user?.data) return 'free';
-    const user = auth.user.data;
+    if (!auth?.user) return 'free';
     
-    // Check for override fields first (ambassador, gifted, override)
-    if (user.ambassador || user.gifted || user.override) {
-        return 'platinum'; // These users get platinum access
-    }
-    
-    // Check active subscription
-    const activeSubscription = user.subscriptions?.find(sub => sub.stripe_status === 'active');
-    if (activeSubscription?.type) {
-        return activeSubscription.type.toLowerCase();
+    // Use currentTier from auth which already handles ambassador/gifted/override
+    if (auth.currentTier) {
+        return auth.currentTier.toLowerCase();
     }
     
     return 'free';
@@ -76,7 +69,8 @@ const isAdmin = auth?.isAdmin || false;
 const canViewBet = (bet) => {
     if (isAdmin) return true;
     
-    const betLevel = bet.membership?.toLowerCase() || 'bronze';
+    // Check both 'level' and 'membership' fields for compatibility
+    const betLevel = (bet.level || bet.membership || 'bronze').toLowerCase();
     
     switch (userSubscriptionType) {
         case 'free':

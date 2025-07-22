@@ -218,23 +218,31 @@ function grantSubscription() {
 
 function impersonateUser(user: Customer) {
   if (confirm(`Impersonate ${user.name}?`)) {
-    // Create a form to properly handle CSRF
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = route('admin.customers.impersonate', user.id);
-    
-    // Add CSRF token
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-    if (csrfToken) {
-      const tokenInput = document.createElement('input');
-      tokenInput.type = 'hidden';
-      tokenInput.name = '_token';
-      tokenInput.value = csrfToken;
-      form.appendChild(tokenInput);
-    }
-    
-    document.body.appendChild(form);
-    form.submit();
+    // Use Inertia to handle the request properly with CSRF
+    router.post(route('admin.customers.impersonate', user.id), {}, {
+      preserveScroll: true,
+      preserveState: false,
+      onStart: () => {
+        // Optionally show loading state
+      },
+      onSuccess: () => {
+        // The controller will redirect to dashboard
+      },
+      onError: (errors) => {
+        console.error('Impersonation error:', errors);
+        // If it's a 419 error, retry once
+        if (errors.response?.status === 419) {
+          setTimeout(() => {
+            router.post(route('admin.customers.impersonate', user.id), {}, {
+              preserveScroll: true,
+              preserveState: false
+            });
+          }, 100);
+        } else {
+          alert('Failed to impersonate user. Please try again.');
+        }
+      }
+    });
   }
 }
 

@@ -21,6 +21,7 @@ console.log('App.ts loaded successfully');
 // Configure axios defaults
 if (typeof window !== 'undefined') {
     axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+    axios.defaults.withCredentials = true;
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     if (token) {
         axios.defaults.headers.common['X-CSRF-TOKEN'] = token;
