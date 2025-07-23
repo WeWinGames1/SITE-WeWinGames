@@ -56,7 +56,7 @@ class EmailLogController extends Controller
             ->paginate(50)
             ->withQueryString();
 
-        return Inertia::render('admin/Notifications/EmailLogs/Index', [
+        return Inertia::render('Admin/Notifications/EmailLogs/Index', [
             'logs' => $logs,
             'stats' => $stats,
             'filters' => $request->only(['status', 'search', 'template_key', 'date_from', 'date_to']),
@@ -68,7 +68,7 @@ class EmailLogController extends Controller
      */
     public function show(EmailLog $emailLog)
     {
-        return Inertia::render('admin/Notifications/EmailLogs/Show', [
+        return Inertia::render('Admin/Notifications/EmailLogs/Show', [
             'log' => $emailLog,
         ]);
     }

@@ -118,6 +118,13 @@ watch(() => filters.value.status, () => {
     replace: true,
   });
 });
+watch(() => filters.value.subscription_status, () => {
+  router.get(route('admin.customers.index'), filters.value, {
+    preserveState: true,
+    preserveScroll: true,
+    replace: true,
+  });
+});
 watch(() => filters.value.tier, () => {
   router.get(route('admin.customers.index'), filters.value, {
     preserveState: true,

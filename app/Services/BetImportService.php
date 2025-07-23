@@ -63,9 +63,14 @@ class BetImportService
         }
 
         try {
-            // If already in Y-m-d format, return as is
-            if (preg_match('/^\d{4}-\d{2}-\d{2}/', $dateValue)) {
+            // If already in Y-m-d H:i:s format, return as is
+            if (preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $dateValue)) {
                 return $dateValue;
+            }
+            
+            // If already in Y-m-d format, append time
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateValue)) {
+                return $dateValue . ' 00:00:00';
             }
 
             // Try parsing with Carbon - it handles many formats
@@ -88,6 +93,34 @@ class BetImportService
             // Return null if we can't parse it
             return null;
         }
+    }
+
+    /**
+     * Ensure a required date field has a valid value
+     * 
+     * @param mixed $primaryDate The primary date value to use
+     * @param mixed $fallbackDate An optional fallback date value
+     * @param string $defaultDate The default date to use if all else fails (defaults to current datetime)
+     * @return string A valid MySQL datetime string
+     */
+    private function ensureRequiredDate($primaryDate, $fallbackDate = null, string $defaultDate = null): string
+    {
+        // Try primary date first
+        $formatted = $this->formatDateForMysql($primaryDate);
+        if ($formatted !== null) {
+            return $formatted;
+        }
+
+        // Try fallback date if provided
+        if ($fallbackDate !== null) {
+            $formatted = $this->formatDateForMysql($fallbackDate);
+            if ($formatted !== null) {
+                return $formatted;
+            }
+        }
+
+        // Use default date or current datetime as last resort
+        return $defaultDate ?? date('Y-m-d H:i:s');
     }
 
     public function importFromCsv(string $filePath): array
@@ -344,8 +377,8 @@ class BetImportService
                 'team_two' => $awayTeamName ?? '',
                 'team_two_logo' => $awayTeam ? $awayTeam->logo : null,
                 'tips' => $record['wager_name'] ?? $record['selection'] ?? '',
-                'betting_date' => $this->formatDateForMysql($record['betting_date'] ?? $record['game_date']),
-                'game_date' => $this->formatDateForMysql($record['game_date'] ?? $record['betting_date']),
+                'betting_date' => $this->ensureRequiredDate($record['betting_date'] ?? null, $record['game_date'] ?? null),
+                'game_date' => $this->ensureRequiredDate($record['game_date'] ?? null, $record['betting_date'] ?? null),
                 'odds' => (float) $record['odds'], // New column
                 'wager_odds' => (float) $record['odds'], // Keep old column for compatibility
                 'wager_amount' => (float) ($record['wager_amount'] ?? $record['stake'] ?? 0),
@@ -509,7 +542,7 @@ class BetImportService
         // Handle both 'date' and 'game_date' fields from CSV
         $dateField = isset($record['date']) ? 'date' : (isset($record['game_date']) ? 'game_date' : null);
 
-        // Parse dates
+        // Parse game_date
         if ($dateField && isset($record[$dateField]) && ! empty($record[$dateField])) {
             try {
                 // Try multiple date formats
@@ -544,6 +577,48 @@ class BetImportService
             } catch (\Exception $e) {
                 // Keep original value if parse fails
             }
+        }
+
+        // Parse betting_date
+        if (isset($record['betting_date']) && ! empty($record['betting_date'])) {
+            try {
+                // Try multiple date formats
+                $formats = [
+                    'Y-m-d H:i:s',
+                    'Y-m-d',
+                    'm/d/Y',
+                    'd/m/Y',
+                    'm-d-Y',
+                    'd-m-Y',
+                    'Y/m/d',
+                    'm/d/Y H:i:s',
+                    'm/d/Y H:i',
+                ];
+
+                $parsed = false;
+                foreach ($formats as $format) {
+                    try {
+                        $date = \Carbon\Carbon::createFromFormat($format, trim($record['betting_date']));
+                        $record['betting_date'] = $date->format('Y-m-d H:i:s');
+                        $parsed = true;
+                        break;
+                    } catch (\Exception $e) {
+                        continue;
+                    }
+                }
+
+                if (! $parsed) {
+                    // Last resort - let Carbon try to parse it
+                    $record['betting_date'] = \Carbon\Carbon::parse($record['betting_date'])->format('Y-m-d H:i:s');
+                }
+            } catch (\Exception $e) {
+                // Keep original value if parse fails
+            }
+        }
+
+        // If betting_date is not provided, use game_date as fallback
+        if (empty($record['betting_date']) && !empty($record['game_date'])) {
+            $record['betting_date'] = $record['game_date'];
         }
 
         // Parse placed_at date

@@ -14,6 +14,7 @@ use App\Traits\HasFilters;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Response;
 use Inertia\Inertia;
 
 class BetManagementController extends Controller
@@ -672,5 +673,80 @@ class BetManagementController extends Controller
             'void', 'push' => 0,
             default => 0
         };
+    }
+
+    /**
+     * Export bets to CSV
+     */
+    public function export(Request $request)
+    {
+        // Build the same query as index with filters
+        $query = Bet::query()->select(['bets.*']);
+        
+        // Apply filters using the same method as index
+        $this->applyFilters($query, $request);
+        
+        // Apply sorting
+        $validSortFields = ['betting_date', 'created_at', 'wager_amount', 'winning_amount', 'profit_amount', 'wager_odds', 'status'];
+        $this->applySorting($query, $request, $validSortFields, 'betting_date', 'desc');
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="bets_export_' . date('Y-m-d_His') . '.csv"',
+        ];
+
+        $callback = function () use ($query) {
+            $handle = fopen('php://output', 'w');
+            
+            // CSV header matching the import format (17 columns)
+            fputcsv($handle, [
+                'Sport', 'League', 'Month', 'Date', 'Home Team', 'Away Team', 'Bet Type',
+                'Wager Type', 'Wager Name', 'odds', 'level', 'code', 'Status',
+                'ROI(net)', 'Wager', 'Profits', 'Winning Amount',
+            ]);
+
+            // Stream results using cursor for memory efficiency
+            foreach ($query->cursor() as $bet) {
+                // Format date
+                $bettingDate = $bet->betting_date ? \Carbon\Carbon::parse($bet->betting_date) : null;
+                $month = $bettingDate ? $bettingDate->format('F') : '';
+                $date = $bettingDate ? $bettingDate->format('Y-m-d') : '';
+
+                // Format ROI as percentage
+                $roi = $bet->roi ? number_format($bet->roi, 2) . '%' : '0.00%';
+
+                // Format monetary values
+                $wager = '$' . number_format($bet->wager_amount ?? 0, 2);
+                $profits = '$' . number_format($bet->profit_amount ?? 0, 2);
+                $winningAmount = '$' . number_format($bet->winning_amount ?? 0, 2);
+
+                fputcsv($handle, [
+                    $bet->sports ?? '',                    // Sport
+                    $bet->league ?? '',                    // League
+                    $bet->month ?? $month,                 // Month
+                    $date,                                  // Date
+                    $bet->team_one ?? '',                  // Home Team
+                    $bet->team_two ?? '',                  // Away Team
+                    $bet->markets ?? '',                   // Bet Type
+                    $bet->wager_type ?? '',                // Wager Type
+                    $bet->tips ?? '',                      // Wager Name
+                    $bet->wager_odds ?? '',                // odds (American format)
+                    $bet->level ?? $bet->membership ?? 'Bronze',  // level
+                    $bet->code ?? $bet->referrer ?? '',   // code
+                    ucfirst($bet->status ?? 'Pending'),   // Status
+                    $roi,                                   // ROI(net)
+                    $wager,                                 // Wager
+                    $profits,                               // Profits
+                    $winningAmount,                         // Winning Amount
+                ]);
+            }
+            fclose($handle);
+        };
+
+        activity()
+            ->causedBy(auth()->user())
+            ->log('Exported bets with filters');
+
+        return response()->stream($callback, 200, $headers);
     }
 }

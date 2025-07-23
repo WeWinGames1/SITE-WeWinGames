@@ -54,6 +54,7 @@ const props = defineProps<Props>();
 // State
 const showCreateModal = ref(false);
 const showDetailsModal = ref(false);
+const showEditModal = ref(false);
 const selectedCode = ref<DiscountCode | null>(null);
 const codeDetails = ref<any>(null);
 const copiedCode = ref<string | null>(null);
@@ -78,6 +79,22 @@ const createForm = useForm({
     applicable_products: [] as number[],
     minimum_amount: null as number | null,
     create_in_stripe: false,
+});
+
+const editForm = useForm({
+    code: '',
+    description: '',
+    discount_type: 'percentage' as 'percentage' | 'fixed',
+    discount_amount: 0,
+    apply_to: 'first_payment' as 'first_payment' | 'forever' | 'specific_months',
+    months_count: null as number | null,
+    max_uses: null as number | null,
+    max_uses_per_customer: 1,
+    valid_from: '',
+    valid_until: '',
+    applicable_products: [] as number[],
+    minimum_amount: null as number | null,
+    is_active: true,
 });
 
 // Debounced search
@@ -126,6 +143,46 @@ async function viewDetails(code: DiscountCode) {
 function deactivateCode(code: DiscountCode) {
     if (confirm(`Deactivate discount code ${code.code}?`)) {
         router.post(route('admin.discounts.deactivate', code.id), {}, {
+            preserveScroll: true,
+        });
+    }
+}
+
+function editCode(code: DiscountCode) {
+    selectedCode.value = code;
+    editForm.code = code.code;
+    editForm.description = code.description || '';
+    editForm.discount_type = code.discount_type;
+    editForm.discount_amount = parseFloat(code.discount_amount);
+    editForm.apply_to = code.apply_to;
+    editForm.months_count = code.months_count;
+    editForm.max_uses = code.max_uses;
+    editForm.max_uses_per_customer = code.max_uses_per_customer;
+    editForm.valid_from = code.valid_from ? code.valid_from.slice(0, 16) : '';
+    editForm.valid_until = code.valid_until ? code.valid_until.slice(0, 16) : '';
+    editForm.applicable_products = code.applicable_products || [];
+    editForm.minimum_amount = code.minimum_amount;
+    editForm.is_active = code.is_active;
+    showEditModal.value = true;
+}
+
+function updateDiscount() {
+    if (!selectedCode.value) return;
+    
+    editForm.put(route('admin.discounts.update', selectedCode.value.id), {
+        onSuccess: () => {
+            showEditModal.value = false;
+            selectedCode.value = null;
+            editForm.reset();
+        },
+    });
+}
+
+function reactivateCode(code: DiscountCode) {
+    if (confirm(`Reactivate discount code ${code.code}?`)) {
+        router.put(route('admin.discounts.update', code.id), {
+            is_active: true
+        }, {
             preserveScroll: true,
         });
     }
@@ -301,11 +358,22 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                                 title="View Details">
                                             <i class="bi bi-eye"></i>
                                         </button>
+                                        <button @click="editCode(code)" 
+                                                class="btn btn-outline-secondary"
+                                                title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
                                         <button v-if="code.is_active"
                                                 @click="deactivateCode(code)" 
                                                 class="btn btn-outline-danger"
                                                 title="Deactivate">
                                             <i class="bi bi-x-circle"></i>
+                                        </button>
+                                        <button v-else
+                                                @click="reactivateCode(code)" 
+                                                class="btn btn-outline-success"
+                                                title="Reactivate">
+                                            <i class="bi bi-check-circle"></i>
                                         </button>
                                     </div>
                                 </td>
@@ -681,5 +749,246 @@ function getStatusBadgeClass(code: DiscountCode): string {
             </div>
         </div>
         <div v-if="showDetailsModal" class="modal-backdrop fade show"></div>
+        
+        <!-- Edit Modal -->
+        <div class="modal fade" :class="{ 'show': showEditModal }" :style="{ display: showEditModal ? 'block' : 'none' }" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content bg-light text-dark">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Discount Code</h5>
+                        <button type="button" class="btn-close" @click="showEditModal = false; selectedCode = null; editForm.reset()"></button>
+                    </div>
+                    <form @submit.prevent="updateDiscount">
+                        <div class="modal-body">
+                            <!-- Basic Information -->
+                            <div class="card mb-4 bg-white">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0 text-dark">Basic Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label for="edit-code" class="form-label text-dark fw-medium">Discount Code</label>
+                                            <input 
+                                                v-model="editForm.code" 
+                                                id="edit-code" 
+                                                type="text"
+                                                class="form-control text-uppercase font-monospace bg-white text-dark" 
+                                                :class="{ 'is-invalid': editForm.errors.code }"
+                                                @input="e => editForm.code = e.target.value.toUpperCase()"
+                                            />
+                                            <div v-if="editForm.errors.code" class="invalid-feedback">{{ editForm.errors.code }}</div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <label for="edit-description" class="form-label text-dark fw-medium">Internal Description</label>
+                                            <input 
+                                                v-model="editForm.description" 
+                                                id="edit-description" 
+                                                type="text"
+                                                class="form-control bg-white text-dark" 
+                                                :class="{ 'is-invalid': editForm.errors.description }"
+                                                placeholder="e.g., Black Friday 2024 promotion"
+                                            />
+                                            <div class="form-text text-muted">For admin reference only</div>
+                                            <div v-if="editForm.errors.description" class="invalid-feedback">{{ editForm.errors.description }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Discount Configuration -->
+                            <div class="card mb-4 bg-white">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0 text-dark">Discount Configuration</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label for="edit-discount_type" class="form-label text-dark fw-medium">Discount Type</label>
+                                            <select v-model="editForm.discount_type" id="edit-discount_type" class="form-select bg-white text-dark">
+                                                <option value="percentage">Percentage Off</option>
+                                                <option value="fixed">Fixed Amount Off</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="col-md-4">
+                                            <label for="edit-discount_amount" class="form-label text-dark fw-medium">Discount Amount</label>
+                                            <div class="input-group">
+                                                <span v-if="editForm.discount_type === 'fixed'" class="input-group-text">$</span>
+                                                <input 
+                                                    v-model.number="editForm.discount_amount" 
+                                                    id="edit-discount_amount" 
+                                                    type="number" 
+                                                    step="0.01" 
+                                                    min="0"
+                                                    :max="editForm.discount_type === 'percentage' ? 100 : null"
+                                                    class="form-control bg-white text-dark" 
+                                                    :class="{ 'is-invalid': editForm.errors.discount_amount }"
+                                                    required 
+                                                />
+                                                <span v-if="editForm.discount_type === 'percentage'" class="input-group-text">%</span>
+                                                <div v-if="editForm.errors.discount_amount" class="invalid-feedback">{{ editForm.errors.discount_amount }}</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-4">
+                                            <label for="edit-apply_to" class="form-label text-dark fw-medium">Duration</label>
+                                            <select v-model="editForm.apply_to" id="edit-apply_to" class="form-select bg-white text-dark">
+                                                <option value="first_payment">First Payment Only</option>
+                                                <option value="forever">All Payments (Forever)</option>
+                                                <option value="specific_months">Specific Number of Months</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div v-if="editForm.apply_to === 'specific_months'" class="row g-3 mt-1">
+                                        <div class="col-md-4">
+                                            <label for="edit-months_count" class="form-label text-dark fw-medium">Number of Months</label>
+                                            <input v-model.number="editForm.months_count" 
+                                                   id="edit-months_count" 
+                                                   type="number" 
+                                                   min="1" 
+                                                   class="form-control bg-white text-dark" 
+                                                   :class="{ 'is-invalid': editForm.errors.months_count }"
+                                                   required />
+                                            <div v-if="editForm.errors.months_count" class="invalid-feedback">{{ editForm.errors.months_count }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Usage Limits -->
+                            <div class="card mb-4 bg-white">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0 text-dark">Usage Limits</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label for="edit-max_uses" class="form-label text-dark fw-medium">Total Usage Limit</label>
+                                            <input 
+                                                v-model.number="editForm.max_uses" 
+                                                id="edit-max_uses" 
+                                                type="number" 
+                                                min="1" 
+                                                class="form-control bg-white text-dark" 
+                                                :class="{ 'is-invalid': editForm.errors.max_uses }"
+                                                placeholder="Unlimited"
+                                            />
+                                            <div class="form-text text-muted">
+                                                Current usage: {{ selectedCode?.times_used || 0 }}. Leave empty for unlimited.
+                                            </div>
+                                            <div v-if="editForm.errors.max_uses" class="invalid-feedback">{{ editForm.errors.max_uses }}</div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <label for="edit-max_uses_per_customer" class="form-label text-dark fw-medium">Per Customer Limit</label>
+                                            <input 
+                                                v-model.number="editForm.max_uses_per_customer" 
+                                                id="edit-max_uses_per_customer" 
+                                                type="number" 
+                                                min="1" 
+                                                class="form-control bg-white text-dark" 
+                                                :class="{ 'is-invalid': editForm.errors.max_uses_per_customer }"
+                                                required 
+                                            />
+                                            <div v-if="editForm.errors.max_uses_per_customer" class="invalid-feedback">{{ editForm.errors.max_uses_per_customer }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Validity Period -->
+                            <div class="card mb-4 bg-white">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0 text-dark">Validity Period</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label for="edit-valid_from" class="form-label text-dark fw-medium">Start Date</label>
+                                            <input v-model="editForm.valid_from" 
+                                                   id="edit-valid_from" 
+                                                   type="datetime-local" 
+                                                   class="form-control bg-white text-dark"
+                                                   :class="{ 'is-invalid': editForm.errors.valid_from }" />
+                                            <div class="form-text text-muted">When this code becomes active (optional)</div>
+                                            <div v-if="editForm.errors.valid_from" class="invalid-feedback">{{ editForm.errors.valid_from }}</div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <label for="edit-valid_until" class="form-label text-dark fw-medium">Expiration Date</label>
+                                            <input v-model="editForm.valid_until" 
+                                                   id="edit-valid_until" 
+                                                   type="datetime-local" 
+                                                   class="form-control bg-white text-dark"
+                                                   :class="{ 'is-invalid': editForm.errors.valid_until }" />
+                                            <div class="form-text text-muted">When this code expires (optional)</div>
+                                            <div v-if="editForm.errors.valid_until" class="invalid-feedback">{{ editForm.errors.valid_until }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Product Restrictions -->
+                            <div class="card mb-4 bg-white">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0 text-dark">Product Restrictions</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted mb-3">Select which products this discount applies to. Leave empty to apply to all products.</p>
+                                    <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                        <div v-for="product in products" :key="product.id" class="form-check">
+                                            <input 
+                                                type="checkbox" 
+                                                :id="`edit-product-${product.id}`"
+                                                :value="product.id"
+                                                v-model="editForm.applicable_products"
+                                                class="form-check-input"
+                                            />
+                                            <label :for="`edit-product-${product.id}`" class="form-check-label">
+                                                {{ product.name }} - {{ product.tier }} ({{ product.billing_period }})
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div v-if="editForm.errors.applicable_products" class="text-danger mt-2">{{ editForm.errors.applicable_products }}</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Status -->
+                            <div class="alert alert-info">
+                                <div class="form-check form-switch">
+                                    <input 
+                                        v-model="editForm.is_active" 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        id="edit-is-active"
+                                    />
+                                    <label class="form-check-label" for="edit-is-active">
+                                        <strong>Active</strong>
+                                        <br>
+                                        <small>Inactive codes cannot be used at checkout</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" @click="showEditModal = false; selectedCode = null; editForm.reset()">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary" :disabled="editForm.processing">
+                                <span v-if="editForm.processing">
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                    Updating...
+                                </span>
+                                <span v-else>Update Discount</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div v-if="showEditModal" class="modal-backdrop fade show"></div>
     </AdminLayout>
 </template>

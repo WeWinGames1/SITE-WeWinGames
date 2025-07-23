@@ -313,6 +313,10 @@ function exportBets() {
     window.location.href = route('admin.bets.export') + '?' + new URLSearchParams(filterForm.data() as any);
 }
 
+function exportAllBets() {
+    window.location.href = route('admin.bets.export');
+}
+
 function getStatusColor(status: string): string {
     switch (status) {
         case 'won':
@@ -397,7 +401,14 @@ function formatCurrency(amount: number | null | undefined): string {
                         type="button"
                         class="btn btn-outline-secondary"
                     >
-                        <i class="bi bi-download me-2"></i>Export
+                        <i class="bi bi-download me-2"></i>Export Current
+                    </button>
+                    <button
+                        @click="exportAllBets"
+                        type="button"
+                        class="btn btn-outline-secondary"
+                    >
+                        <i class="bi bi-download me-2"></i>Export All
                     </button>
                     <Link
                         :href="route('admin.bets.create')"

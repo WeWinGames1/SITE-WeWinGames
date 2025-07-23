@@ -21,6 +21,13 @@ class CustomerController extends Controller
             $q->latest();
         }])
             ->withCount('subscriptions');
+        
+        // Debug: Log the initial request
+        \Log::info('CustomerController index request', [
+            'all_params' => $request->all(),
+            'tier' => $request->get('tier'),
+            'subscription_status' => $request->get('subscription_status')
+        ]);
 
         // Search functionality
         if ($search = $request->get('search')) {
@@ -38,24 +45,93 @@ class CustomerController extends Controller
 
         // Subscription Status filter
         if ($subscriptionStatus = $request->get('subscription_status')) {
+            \Log::info('Applying subscription status filter', ['status' => $subscriptionStatus]);
+            
             if ($subscriptionStatus === 'no_subscription') {
-                $query->doesntHave('subscriptions');
+                $query->whereDoesntHave('subscriptions', function (Builder $q) {
+                    $q->whereIn('stripe_status', ['active', 'trialing']);
+                });
             } else {
                 $query->whereHas('subscriptions', function (Builder $q) use ($subscriptionStatus) {
-                    $q->where('stripe_status', $subscriptionStatus);
+                    $q->where('stripe_status', $subscriptionStatus)
+                      ->whereNull('ends_at'); // Ensure it's not cancelled
                 });
             }
         }
 
         // Tier filter (Free, Silver, Gold, Platinum)
         if ($tier = $request->get('tier')) {
+            \Log::info('Applying tier filter', ['tier' => $tier]);
+            
             if ($tier === 'free') {
-                $query->doesntHave('subscriptions');
-            } else {
-                $query->whereHas('subscriptions', function (Builder $q) use ($tier) {
-                    $q->where('stripe_price', 'like', '%'.strtolower($tier).'%');
+                // Free users have no active subscriptions AND no admin override
+                $query->whereDoesntHave('subscriptions', function (Builder $q) {
+                    $q->whereIn('stripe_status', ['active', 'trialing']);
+                })->where(function ($q) {
+                    $q->where('admin_override', '!=', true)
+                      ->orWhereNull('admin_override');
+                });
+            } else if ($tier !== 'all') {
+                // Normalize tier name to proper case (Silver, Gold, Platinum)
+                $normalizedTier = ucfirst(strtolower($tier));
+                
+                // Get all price IDs for this tier from StripeProduct table
+                $priceIds = \App\Models\StripeProduct::where('tier', $normalizedTier)
+                    ->where('is_active', true)
+                    ->pluck('stripe_price_id')
+                    ->filter()
+                    ->values()
+                    ->toArray();
+                
+                // Also check for legacy price IDs from config
+                $priceToTier = config('stripe.price_to_tier', []);
+                foreach ($priceToTier as $priceId => $tierInfo) {
+                    if (isset($tierInfo['tier']) && $tierInfo['tier'] === $normalizedTier) {
+                        $priceIds[] = $priceId;
+                    }
+                }
+                
+                // Add legacy hardcoded price IDs that might be in the database
+                $legacyPriceIds = [
+                    'Silver' => ['price_silver_monthly', 'price_silver_weekly', 'price_silver_daily'],
+                    'Gold' => ['price_gold_monthly', 'price_gold_weekly', 'price_gold_daily'],
+                    'Platinum' => ['price_platinum_monthly', 'price_platinum_weekly', 'price_platinum_daily'],
+                ];
+                
+                if (isset($legacyPriceIds[$normalizedTier])) {
+                    $priceIds = array_merge($priceIds, $legacyPriceIds[$normalizedTier]);
+                }
+                
+                // Remove duplicates and ensure unique values
+                $priceIds = array_values(array_unique(array_filter($priceIds)));
+                
+                \Log::info('Tier filter price IDs', [
+                    'tier' => $tier,
+                    'normalized_tier' => $normalizedTier,
+                    'price_ids_count' => count($priceIds),
+                    'price_ids' => $priceIds
+                ]);
+                
+                // Apply the filter - users must have EXACTLY this tier
+                $query->where(function ($mainQuery) use ($priceIds, $normalizedTier) {
+                    // Option 1: Has active subscription with this tier's price ID
+                    $mainQuery->where(function ($subQuery) use ($priceIds) {
+                        if (!empty($priceIds)) {
+                            $subQuery->whereHas('subscriptions', function (Builder $q) use ($priceIds) {
+                                $q->whereIn('stripe_price', $priceIds)
+                                  ->whereIn('stripe_status', ['active', 'trialing'])
+                                  ->whereNull('ends_at');
+                            });
+                        }
+                    })
+                    // Option 2: OR has admin override for this tier
+                    ->orWhere(function ($overrideQuery) use ($normalizedTier) {
+                        $overrideQuery->where('admin_override', true)
+                                      ->where('override_tier', $normalizedTier);
+                    });
                 });
             }
+            // If tier === 'all', don't add any tier filtering
         }
 
         // Date range filter
@@ -72,9 +148,14 @@ class CustomerController extends Controller
 
         // Handle special sort cases
         if ($sortField === 'subscription_status') {
-            $query->leftJoin('subscriptions', 'users.id', '=', 'subscriptions.user_id')
-                ->select('users.*')
-                ->orderBy('subscriptions.stripe_status', $sortDirection);
+            // Use a subquery to get the latest subscription status for ordering
+            $query->orderBy(
+                \Laravel\Cashier\Subscription::select('stripe_status')
+                    ->whereColumn('user_id', 'users.id')
+                    ->orderBy('created_at', 'desc')
+                    ->limit(1),
+                $sortDirection
+            );
         } else {
             $query->orderBy($sortField, $sortDirection);
         }

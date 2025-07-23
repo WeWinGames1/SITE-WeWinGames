@@ -9,6 +9,7 @@ use App\Services\StripeService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class DiscountCodeController extends Controller
@@ -155,15 +156,44 @@ class DiscountCodeController extends Controller
     public function update(Request $request, DiscountCode $discountCode)
     {
         $validated = $request->validate([
+            'code' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('discount_codes')->ignore($discountCode->id),
+            ],
             'description' => 'nullable|string|max:255',
+            'discount_type' => 'required|in:percentage,fixed',
+            'discount_amount' => 'required|numeric|min:0',
+            'apply_to' => 'required|in:first_payment,forever,specific_months',
+            'months_count' => 'required_if:apply_to,specific_months|nullable|integer|min:1',
             'max_uses' => 'nullable|integer|min:1',
-            'valid_until' => 'nullable|date',
+            'max_uses_per_customer' => 'required|integer|min:1',
+            'valid_from' => 'nullable|date',
+            'valid_until' => 'nullable|date|after:valid_from',
+            'applicable_products' => 'nullable|array',
+            'applicable_products.*' => 'exists:stripe_products,id',
+            'minimum_amount' => 'nullable|numeric|min:0',
             'is_active' => 'boolean',
         ]);
 
         // Don't allow changing usage limit if already exceeded
         if (isset($validated['max_uses']) && $validated['max_uses'] < $discountCode->times_used) {
             return back()->withErrors(['max_uses' => 'Cannot set max uses below current usage count.']);
+        }
+
+        // Convert product IDs to Stripe product IDs
+        if (isset($validated['applicable_products'])) {
+            if (!empty($validated['applicable_products'])) {
+                $stripeProductIds = StripeProduct::whereIn('id', $validated['applicable_products'])
+                    ->pluck('stripe_product_id')
+                    ->filter()
+                    ->toArray();
+                $validated['applicable_products'] = $stripeProductIds;
+            } else {
+                // Empty array means no restrictions (applies to all products)
+                $validated['applicable_products'] = [];
+            }
         }
 
         $discountCode->update($validated);
