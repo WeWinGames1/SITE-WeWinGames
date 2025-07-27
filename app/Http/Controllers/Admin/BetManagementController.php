@@ -299,12 +299,13 @@ class BetManagementController extends Controller
             'game_date' => 'required|date',
             'wager_odds' => 'required|numeric',
             'wager_amount' => 'required|numeric|min:0',
-            'status' => 'required|in:pending,won,lost,void,push',
+            'status' => 'required|in:pending,won,placed,lost,void,push',
             'membership' => 'required|in:bronze,silver,gold,platinum',
             'level' => 'nullable|string|max:50',
             'code' => 'nullable|string|max:255',
             'referrer' => 'nullable|string|max:255',
             'place_fraction' => 'nullable|numeric|between:0,1',
+            'is_each_way' => 'nullable|boolean',
         ]);
 
         // Set the user_id to the authenticated admin
@@ -347,6 +348,16 @@ class BetManagementController extends Controller
         
         // Remove the is_new flags from validated data
         unset($validated['team_one_is_new'], $validated['team_two_is_new']);
+
+        // Handle Each Way bets
+        if ($request->boolean('is_each_way')) {
+            $validated['is_each_way'] = true;
+            $validated['each_way_stake'] = $validated['wager_amount'] / 2;
+            // Default place fraction to 1/5 if not provided
+            if (!isset($validated['place_fraction'])) {
+                $validated['place_fraction'] = 0.2;
+            }
+        }
 
         // Calculate potential win and profit
         $validated['winning_amount'] = $this->calculatePotentialWin($validated['wager_amount'], $validated['wager_odds']);
@@ -504,12 +515,13 @@ class BetManagementController extends Controller
             'winning_amount' => 'nullable|numeric|min:0',
             'profit_amount' => 'nullable|numeric',
             'roi' => 'nullable|numeric',
-            'status' => 'required|in:pending,won,lost,void,push',
+            'status' => 'required|in:pending,won,placed,lost,void,push',
             'membership' => 'required|in:bronze,silver,gold,platinum',
             'level' => 'nullable|string|max:50',
             'code' => 'nullable|string|max:255',
             'referrer' => 'nullable|string|max:255',
             'place_fraction' => 'nullable|numeric|between:0,1',
+            'is_each_way' => 'nullable|boolean',
             'is_parlay' => 'nullable|boolean',
             'parlay_teams' => 'nullable|array',
             'parlay_teams.*.id' => 'nullable|exists:teams,id',
@@ -553,6 +565,16 @@ class BetManagementController extends Controller
         
         // Remove the is_new flags from validated data
         unset($validated['team_one_is_new'], $validated['team_two_is_new']);
+
+        // Handle Each Way bets
+        if ($request->boolean('is_each_way')) {
+            $validated['is_each_way'] = true;
+            $validated['each_way_stake'] = $validated['wager_amount'] / 2;
+            // Default place fraction to 1/5 if not provided
+            if (!isset($validated['place_fraction'])) {
+                $validated['place_fraction'] = 0.2;
+            }
+        }
 
         // Handle parlay teams
         if ($request->has('is_parlay') && $request->is_parlay && isset($validated['parlay_teams'])) {

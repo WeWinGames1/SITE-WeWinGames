@@ -15,7 +15,7 @@ interface Props {
     page: Page;
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 </script>
 
 <template>

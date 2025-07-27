@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
+defineProps<{
     data: Array<{ level: string, profit: number, roi: number }>
 }>();
 // console.log('ProfitsByLevelTable props:', props.data);

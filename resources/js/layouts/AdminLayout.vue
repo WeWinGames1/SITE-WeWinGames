@@ -2,14 +2,12 @@
 import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
 import axios from 'axios';
-import ApplicationLogo from '@/components/AppLogo.vue';
 import ImpersonationBanner from '@/components/ImpersonationBanner.vue';
 import KnowledgebaseSidebar from '@/components/Admin/KnowledgebaseSidebar.vue';
 import ToastContainer from '@/components/ToastContainer.vue';
 
 const page = usePage();
 const sidebarOpen = ref(false);
-const userMenuOpen = ref(false);
 const knowledgebaseSidebarOpen = ref(false);
 const isImpersonating = computed(() => page.props.impersonation?.isImpersonating || false);
 const isClearingCache = ref(false);
@@ -27,8 +25,6 @@ function isActiveRoute(href: string): boolean {
 
 // Simple reactive state for navigation
 const activeParent = computed(() => {
-    const currentPath = currentUrl.value;
-    
     for (const item of navigation) {
         if (item.children) {
             const hasActiveChild = item.children.some(child => {

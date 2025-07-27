@@ -53,6 +53,9 @@ interface Bet {
     status: string;
     referrer?: string;
     place_fraction?: number;
+    is_each_way?: boolean;
+    each_way_stake?: number;
+    place_payout?: number;
     user_id?: number;
     created_at: string;
     updated_at: string;

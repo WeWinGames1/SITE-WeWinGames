@@ -1,4 +1,4 @@
-import { defineComponent, h, VNode, ref, onMounted, onUnmounted } from 'vue';
+import { defineComponent, h, ref } from 'vue';
 
 export const DraggableWrapper = defineComponent({
     name: 'DraggableWrapper',

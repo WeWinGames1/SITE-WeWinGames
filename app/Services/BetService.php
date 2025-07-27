@@ -183,25 +183,30 @@ class BetService
                 ];
             }
 
-            $data = ['status' => $result];
+            // Handle Each Way bets separately
+            if ($bet->is_each_way) {
+                $data = $this->settleEachWayBet($bet, $result);
+            } else {
+                $data = ['status' => $result];
 
-            // Calculate profit based on result
-            switch ($result) {
-                case 'won':
-                    $data['profit'] = $bet->potential_return - $bet->stake;
-                    $data['winning_amount'] = $bet->potential_return;
-                    break;
-                case 'lost':
-                    $data['profit'] = -$bet->stake;
-                    $data['winning_amount'] = 0;
-                    break;
-                case 'void':
-                case 'push':
-                    $data['profit'] = 0;
-                    $data['winning_amount'] = $bet->stake;
-                    break;
-                default:
-                    throw new \InvalidArgumentException('Invalid bet result');
+                // Calculate profit based on result
+                switch ($result) {
+                    case 'won':
+                        $data['profit'] = $bet->potential_return - $bet->stake;
+                        $data['winning_amount'] = $bet->potential_return;
+                        break;
+                    case 'lost':
+                        $data['profit'] = -$bet->stake;
+                        $data['winning_amount'] = 0;
+                        break;
+                    case 'void':
+                    case 'push':
+                        $data['profit'] = 0;
+                        $data['winning_amount'] = $bet->stake;
+                        break;
+                    default:
+                        throw new \InvalidArgumentException('Invalid bet result');
+                }
             }
 
             $data['settled_at'] = now();
@@ -212,7 +217,8 @@ class BetService
             Log::info('Bet settled', [
                 'bet_id' => $bet->id,
                 'result' => $result,
-                'profit' => $data['profit'],
+                'profit' => $data['profit'] ?? $data['profit_amount'] ?? 0,
+                'is_each_way' => $bet->is_each_way,
             ]);
 
             DB::commit();
@@ -921,5 +927,95 @@ class BetService
         }
 
         return $bets;
+    }
+
+    /**
+     * Settle an Each Way bet
+     */
+    private function settleEachWayBet(Bet $bet, string $result): array
+    {
+        $halfStake = $bet->each_way_stake ?: ($bet->wager_amount / 2);
+        $placeFraction = $bet->place_fraction ?: 0.2; // Default 1/5
+        
+        // Calculate place odds
+        $placeOdds = $this->calculatePlaceOdds($bet->odds, $placeFraction);
+        
+        $data = ['status' => $result];
+        
+        switch ($result) {
+            case 'won':
+                // Both win and place parts win
+                $winPayout = $this->calculateAmericanOddsPayout($halfStake, $bet->odds);
+                $placePayout = $this->calculateAmericanOddsPayout($halfStake, $placeOdds);
+                
+                $data['winning_amount'] = $winPayout + $placePayout;
+                $data['place_payout'] = $placePayout;
+                $data['profit_amount'] = ($winPayout + $placePayout) - $bet->wager_amount;
+                break;
+                
+            case 'placed':
+                // Only place part wins
+                $placePayout = $this->calculateAmericanOddsPayout($halfStake, $placeOdds);
+                
+                $data['winning_amount'] = $placePayout;
+                $data['place_payout'] = $placePayout;
+                $data['profit_amount'] = $placePayout - $bet->wager_amount;
+                break;
+                
+            case 'lost':
+                // Both parts lose
+                $data['winning_amount'] = 0;
+                $data['place_payout'] = 0;
+                $data['profit_amount'] = -$bet->wager_amount;
+                break;
+                
+            case 'void':
+            case 'push':
+                // Return full stake
+                $data['winning_amount'] = $bet->wager_amount;
+                $data['profit_amount'] = 0;
+                break;
+                
+            default:
+                throw new \InvalidArgumentException('Invalid bet result for Each Way bet');
+        }
+        
+        return $data;
+    }
+    
+    /**
+     * Calculate place odds from win odds and place fraction
+     */
+    private function calculatePlaceOdds($americanOdds, $placeFraction): float
+    {
+        if ($americanOdds > 0) {
+            // Positive odds: +2200 with 1/5 = +440
+            return $americanOdds * $placeFraction;
+        } else {
+            // Negative odds: Convert to decimal, apply fraction, convert back
+            $decimal = ($americanOdds < 0) ? (100 / abs($americanOdds)) + 1 : ($americanOdds / 100) + 1;
+            $placeDecimal = 1 + (($decimal - 1) * $placeFraction);
+            
+            // Convert back to American
+            if ($placeDecimal >= 2) {
+                return ($placeDecimal - 1) * 100;
+            } else {
+                return -100 / ($placeDecimal - 1);
+            }
+        }
+    }
+    
+    /**
+     * Calculate payout for American odds
+     */
+    private function calculateAmericanOddsPayout($stake, $odds): float
+    {
+        if ($odds > 0) {
+            // Positive odds: stake * (odds/100) + stake
+            return $stake * ($odds / 100) + $stake;
+        } else {
+            // Negative odds: stake * (100/abs(odds)) + stake
+            return $stake * (100 / abs($odds)) + $stake;
+        }
     }
 }

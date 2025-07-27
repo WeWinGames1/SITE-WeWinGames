@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import ImpersonationBanner from '@/components/ImpersonationBanner.vue';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 
 const page = usePage();
-const user = page.props.auth?.user?.data;
 const isImpersonating = page.props.impersonation?.isImpersonating || false;
 
 // Simply use WelcomeLayout and pass through the slot

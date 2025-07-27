@@ -24,7 +24,7 @@ const uploadCSV = async () => {
     });
     alert('CSV uploaded and imported!');
     //window.location.reload();
-  } catch (err) {
+  } catch {
     alert('Upload failed');
   } finally {
     loading.value = false;

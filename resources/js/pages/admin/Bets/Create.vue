@@ -78,6 +78,7 @@ const form = useForm({
     status: 'pending',
     referrer: '',
     place_fraction: 0,
+    is_each_way: false,
 });
 
 // Initialize Select2 after component is mounted
@@ -553,6 +554,70 @@ function submit() {
     }
 }
 
+// Helper function to calculate place odds
+function calculatePlaceOdds(americanOdds: number, placeFraction: number): number {
+    if (!americanOdds || !placeFraction) return 0;
+    
+    if (americanOdds > 0) {
+        // Positive odds: +2200 with 1/5 = +440
+        return americanOdds * placeFraction;
+    } else {
+        // Negative odds: Convert to decimal, apply fraction, convert back
+        const decimal = (americanOdds < 0) ? (100 / Math.abs(americanOdds)) + 1 : (americanOdds / 100) + 1;
+        const placeDecimal = 1 + ((decimal - 1) * placeFraction);
+        
+        // Convert back to American
+        if (placeDecimal >= 2) {
+            return (placeDecimal - 1) * 100;
+        } else {
+            return -100 / (placeDecimal - 1);
+        }
+    }
+}
+
+// Helper function to format odds display
+function formatOdds(odds: number): string {
+    if (!odds) return '';
+    return odds > 0 ? `+${Math.round(odds)}` : Math.round(odds).toString();
+}
+
+// Helper function to calculate Each Way payouts
+function calculateEachWayPayout(type: 'win' | 'place'): number {
+    const stake = (form.wager_amount || 10) / 2; // Each Way splits the stake
+    const winOdds = parseFloat(form.wager_odds) || 0;
+    const placeOdds = calculatePlaceOdds(winOdds, form.place_fraction);
+    
+    if (type === 'win') {
+        // Win = both win and place parts pay out
+        const winPayout = calculateAmericanOddsPayout(stake, winOdds);
+        const placePayout = calculateAmericanOddsPayout(stake, placeOdds);
+        return winPayout + placePayout;
+    } else {
+        // Place = only place part pays out
+        return calculateAmericanOddsPayout(stake, placeOdds);
+    }
+}
+
+// Helper function to calculate payout from American odds
+function calculateAmericanOddsPayout(stake: number, odds: number): number {
+    if (!stake || !odds) return stake;
+    
+    if (odds > 0) {
+        // Positive odds: profit = stake * (odds/100)
+        return stake + (stake * odds / 100);
+    } else {
+        // Negative odds: profit = stake * (100/|odds|)
+        return stake + (stake * 100 / Math.abs(odds));
+    }
+}
+
+// Helper function to get ordinal suffix
+function getOrdinal(n: number): string {
+    const s = ['th', 'st', 'nd', 'rd'];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
 // Declare global for TypeScript
 declare global {
     interface Window {
@@ -938,6 +1003,7 @@ declare global {
                                     <option value="">Select status...</option>
                                     <option value="pending">Pending</option>
                                     <option value="won">Won</option>
+                                    <option v-if="form.is_each_way" value="placed">Placed</option>
                                     <option value="lost">Lost</option>
                                     <option value="push">Push</option>
                                     <option value="void">Void</option>
@@ -977,6 +1043,84 @@ declare global {
                                 />
                                 <div v-if="form.errors.roi" class="invalid-feedback">
                                     {{ form.errors.roi }}
+                                </div>
+                            </div>
+
+                            <!-- Each Way Checkbox -->
+                            <div class="col-md-12">
+                                <div class="form-check mb-3">
+                                    <input
+                                        id="is_each_way"
+                                        v-model="form.is_each_way"
+                                        type="checkbox"
+                                        class="form-check-input"
+                                    />
+                                    <label class="form-check-label" for="is_each_way">
+                                        Each Way Bet
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Place Fraction -->
+                            <div v-if="form.is_each_way" class="col-md-6">
+                                <label for="place_fraction" class="form-label">Place Fraction</label>
+                                <select
+                                    id="place_fraction"
+                                    v-model="form.place_fraction"
+                                    class="form-select"
+                                    :class="{ 'is-invalid': form.errors.place_fraction }"
+                                >
+                                    <option value="0.2">1/5</option>
+                                    <option value="0.25">1/4</option>
+                                    <option value="0.333">1/3</option>
+                                    <option value="0.5">1/2</option>
+                                </select>
+                                <div v-if="form.errors.place_fraction" class="invalid-feedback">
+                                    {{ form.errors.place_fraction }}
+                                </div>
+                            </div>
+
+                            <!-- Place Odds Preview -->
+                            <div v-if="form.is_each_way" class="col-md-6">
+                                <label class="form-label">Place Odds Preview</label>
+                                <div class="border rounded p-2" style="background-color: #f8f9fa;">
+                                    <div class="small text-muted mb-2">
+                                        Place Odds: <strong>{{ formatOdds(calculatePlaceOdds(parseFloat(form.wager_odds), form.place_fraction)) }}</strong>
+                                    </div>
+                                    <table class="table table-sm table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-center" style="width: 60px;">Position</th>
+                                                <th class="text-end">Payout (per ${{ form.wager_amount/2 || 5 }})</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="table-success">
+                                                <td class="text-center fw-bold">1st</td>
+                                                <td class="text-end">
+                                                    ${{ calculateEachWayPayout('win').toFixed(2) }}
+                                                    <small class="text-muted d-block">Win + Place</small>
+                                                </td>
+                                            </tr>
+                                            <tr v-for="position in [2, 3, 4, 5, 6, 7, 8, 9, 10]" :key="position" :class="{ 'table-info': position <= 5, 'text-muted': position > 5 }">
+                                                <td class="text-center">{{ getOrdinal(position) }}</td>
+                                                <td class="text-end">
+                                                    <span v-if="position <= 5">
+                                                        ${{ calculateEachWayPayout('place').toFixed(2) }}
+                                                        <small class="text-muted d-block">Place only</small>
+                                                    </span>
+                                                    <span v-else>
+                                                        $0.00
+                                                        <small class="text-muted d-block">No payout</small>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div class="text-muted small mt-2">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Assuming top 5 places pay (typical for Golf)
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1056,25 +1200,6 @@ declare global {
                                 />
                                 <div v-if="form.errors.referrer" class="invalid-feedback">
                                     {{ form.errors.referrer }}
-                                </div>
-                            </div>
-
-                            <!-- Place Fraction -->
-                            <div class="col-md-6">
-                                <label for="place_fraction" class="form-label">Place Fraction (Each Way)</label>
-                                <input
-                                    id="place_fraction"
-                                    v-model.number="form.place_fraction"
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    max="1"
-                                    class="form-control"
-                                    :class="{ 'is-invalid': form.errors.place_fraction }"
-                                    placeholder="0.25"
-                                />
-                                <div v-if="form.errors.place_fraction" class="invalid-feedback">
-                                    {{ form.errors.place_fraction }}
                                 </div>
                             </div>
                         </div>

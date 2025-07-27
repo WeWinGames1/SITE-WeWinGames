@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import { socialMediaLinks } from '@/config/social';
 import KnowledgebaseSidebar from '@/components/Admin/KnowledgebaseSidebar.vue';

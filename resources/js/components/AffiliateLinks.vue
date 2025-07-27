@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
+defineProps<{
   affiliates: Array<{
     logo: string,
     text: string,

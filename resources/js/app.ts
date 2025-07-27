@@ -119,7 +119,6 @@ router.on('error', (event) => {
         event.preventDefault();
     } else if (status === 500) {
         // Server error
-        const error = event.detail.response?.data?.error;
         const message = event.detail.response?.data?.message || 'An error occurred while processing your request.';
         
         // Show error message

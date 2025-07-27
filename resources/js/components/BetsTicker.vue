@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
 
@@ -11,6 +11,7 @@ interface Bet {
     odds: number;
     level: string;
     game_date: string;
+    is_each_way?: boolean;
 }
 
 const bets = ref<Bet[]>([]);
@@ -19,7 +20,6 @@ const tickerContainer = ref<HTMLElement | null>(null);
 const tickerWrapper = ref<HTMLElement | null>(null);
 const animationId = ref<number | null>(null);
 const position = ref(0);
-const containerWidth = ref(0);
 
 // Fetch last 10 bets
 const fetchBets = async () => {
@@ -125,6 +125,7 @@ onUnmounted(() => {
                         <span class="separator">•</span>
                         <span class="pick">{{ bet.wager_name }}</span>
                         <span class="odds">({{ formatOdds(bet.odds) }})</span>
+                        <span v-if="bet.is_each_way" class="badge badge-sm bg-success ms-1">EW</span>
                     </div>
                 </div>
                 <!-- Duplicate for seamless scrolling -->
@@ -137,6 +138,7 @@ onUnmounted(() => {
                         <span class="separator">•</span>
                         <span class="pick">{{ bet.wager_name }}</span>
                         <span class="odds">({{ formatOdds(bet.odds) }})</span>
+                        <span v-if="bet.is_each_way" class="badge badge-sm bg-success ms-1">EW</span>
                     </div>
                 </div>
             </div>

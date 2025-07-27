@@ -55,6 +55,16 @@
                 <button class="btn btn-warning btn-lg w-100 fw-bold text-dark" style="border-radius: 8px; padding: 12px;">
                     {{ bet.tips || 'Ohio Moneyline' }} - {{ bet.wager_odds || '110' }}
                 </button>
+                <!-- Each Way Indicator -->
+                <div v-if="bet.is_each_way" class="mt-2">
+                    <span class="badge bg-success">
+                        <i class="bi bi-check2-circle me-1"></i>
+                        Each Way
+                    </span>
+                    <small v-if="bet.place_fraction" class="text-muted ms-2">
+                        ({{ formatPlaceFraction(bet.place_fraction) }} odds for place)
+                    </small>
+                </div>
             </div>
             
             <!-- Additional Info (hidden by default, shown on hover) -->
@@ -66,7 +76,7 @@
                     </div>
                     <div v-if="bet.place_fraction" class="d-flex justify-content-between">
                         <span class="text-gray-light">Place Fraction:</span>
-                        <span class="text-info">{{ bet.place_fraction }}</span>
+                        <span class="text-info">{{ formatPlaceFraction(bet.place_fraction) }}</span>
                     </div>
                 </div>
             </div>
@@ -89,6 +99,7 @@
                         <select v-model="updatedStatus" class="form-select form-select-sm">
                             <option value="Pending">Pending</option>
                             <option value="Won">Win</option>
+                            <option v-if="bet.is_each_way" value="Placed">Placed</option>
                             <option value="Lost">Loss</option>
                             <option value="Push">Push</option>
                         </select>
@@ -127,6 +138,7 @@
 import { ref, defineEmits } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
+import { formatPlaceFraction } from '@/utils/betting';
 
 const props = defineProps({
     bet: {
@@ -135,7 +147,10 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits();
+const emit = defineEmits<{
+    'bet-updated': [data: any];
+    'bet-deleted': [id: number];
+}>();
 const { props: pageProps } = usePage();
 // Only show admin controls if user is logged in AND has admin role
 const isAdmin = pageProps.auth?.user && pageProps.auth?.isAdmin === true;
@@ -193,12 +208,6 @@ const getStatusIcon = () => {
     }
 };
 
-const getBetCardClass = () => {
-    const membership = props.bet.membership.toUpperCase();
-    if (membership === 'PLATINUM') return 'border-purple';
-    if (membership === 'GOLD') return 'border-warning';
-    return '';
-};
 
 const updateBet = async () => {
     const formData = new FormData();
@@ -216,7 +225,7 @@ const updateBet = async () => {
         });
         alert('Bet updated successfully!');
         emit('bet-updated', response.data);
-    } catch (error) {
+    } catch {
         alert('Failed to update bet. Please try again.');
     }
 };
@@ -227,11 +236,12 @@ const deleteBet = async () => {
             await axios.delete(`/api/bets/${props.bet.id}`);
             alert('Bet deleted successfully!');
             emit('bet-deleted', props.bet.id);
-        } catch (error) {
+        } catch {
             alert('Failed to delete bet. Please try again.');
         }
     }
 };
+
 </script>
 
 <style scoped>

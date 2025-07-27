@@ -2,7 +2,7 @@
 import SimpleBetCard from './SimpleBetCard.vue';
 import CoveredBetPickCard from './CoveredBetPickCard.vue';
 
-const props = defineProps<{
+defineProps<{
   groupedBets: Record<string, Array<any>>
 }>();
 
@@ -44,7 +44,7 @@ const getSportIcon = (sport: string) => {
       <!-- Bet Cards Grid -->
       <div class="row g-3">
         <div
-          v-for="(bet, index) in bets"
+          v-for="bet in bets"
           :key="bet.id"
           class="col-12 col-md-6 col-lg-3"
         >

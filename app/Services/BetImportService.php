@@ -392,11 +392,20 @@ class BetImportService
                 'game_id' => $game->id ?? null,
             ];
 
+            // Check if this is an Each-Way bet
+            $isEachWay = isset($betData['wager_type']) &&
+                strtolower($betData['wager_type']) === 'each way';
+            
+            // Set Each Way fields
+            if ($isEachWay) {
+                $betData['is_each_way'] = true;
+                $betData['each_way_stake'] = $betData['wager_amount'] / 2;
+                $betData['place_fraction'] = ! empty($record['place_fraction']) ? 
+                    (float) $record['place_fraction'] : 0.2; // Default 1/5
+            }
+
             // Calculate winning and profit amounts based on American odds
             if (in_array($betData['status'], ['won', 'lost', 'placed'])) {
-                // Check if this is an Each-Way bet
-                $isEachWay = isset($betData['wager_type']) &&
-                    strtolower($betData['wager_type']) === 'each way';
 
                 if ($betData['status'] === 'won') {
                     // Check if we have pre-calculated values from CSV
@@ -438,6 +447,7 @@ class BetImportService
 
                             $betData['profit_amount'] = $winProfit + $placeProfit;
                             $betData['winning_amount'] = $stake + $betData['profit_amount'];
+                            $betData['place_payout'] = $placeStake + $placeProfit;
                         } else {
                             // Regular bet
                             if ($odds > 0) {
@@ -477,6 +487,7 @@ class BetImportService
                     // Lost the win part, won the place part
                     $betData['profit_amount'] = $placeProfit - $winStake;
                     $betData['winning_amount'] = $placeStake + $placeProfit;
+                    $betData['place_payout'] = $placeStake + $placeProfit;
                 } else {
                     // Lost bet
                     $betData['winning_amount'] = 0;

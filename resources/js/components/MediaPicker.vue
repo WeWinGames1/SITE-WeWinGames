@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, watch } from 'vue';
 import axios from 'axios';
 
 interface Media {
@@ -90,7 +90,7 @@ async function uploadFiles() {
     });
 
     try {
-        const response = await axios.post(route('admin.media-library.store'), formData, {
+        await axios.post(route('admin.media-library.store'), formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },

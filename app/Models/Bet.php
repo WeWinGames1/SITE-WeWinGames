@@ -45,11 +45,18 @@ class Bet extends Model
         'place_fraction',
         'is_parlay',
         'parlay_legs',
+        'is_each_way',
+        'each_way_stake',
+        'place_payout',
     ];
     
     protected $casts = [
         'is_parlay' => 'boolean',
         'parlay_legs' => 'integer',
+        'is_each_way' => 'boolean',
+        'each_way_stake' => 'decimal:2',
+        'place_payout' => 'decimal:2',
+        'place_fraction' => 'decimal:2',
     ];
 
     // Relationships

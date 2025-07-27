@@ -179,7 +179,7 @@ const submitForm = () => {
         onSuccess: () => {
             alert('Bet uploaded successfully!');
         },
-        onError: (errors) => {
+        onError: () => {
             // console.error('Error uploading bet:', errors);
             alert('Failed to upload bet. Please try again.');
         },

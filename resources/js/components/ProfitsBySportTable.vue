@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
+defineProps<{
     data: Array<{ sport: string, profit: number, roi: number }>
 }>();
 
