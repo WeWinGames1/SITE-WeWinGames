@@ -687,6 +687,12 @@ function getCustomerBadgeClass(status: string) {
                       <ul class="dropdown-menu dropdown-menu-end" :aria-labelledby="`actionDropdown${customer.id}`">
                         <li><h6 class="dropdown-header">User Actions</h6></li>
                         <li>
+                          <a :href="route('admin.customers.show', customer.id)" class="dropdown-item">
+                            <i class="bi bi-eye me-2 text-primary"></i>
+                            View Customer Details
+                          </a>
+                        </li>
+                        <li>
                           <button class="dropdown-item" @click="toggleUserStatus(customer)">
                             <i :class="['bi me-2', customer.status === 'active' ? 'bi-x-circle text-danger' : 'bi-check-circle text-success']"></i>
                             {{ customer.status === 'active' ? 'Disable User' : 'Enable User' }}

@@ -10,11 +10,189 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rules\Password as PasswordRule;
 use Inertia\Inertia;
 
 class CustomerController extends Controller
 {
+    /**
+     * Display the specified customer details.
+     */
+    public function show(User $user)
+    {
+        // Load all necessary relationships
+        $user->load([
+            'subscriptions' => function ($query) {
+                $query->orderBy('created_at', 'desc');
+            },
+        ]);
+
+        // Get payment methods
+        $paymentMethods = [];
+        try {
+            if ($user->hasPaymentMethod()) {
+                foreach ($user->paymentMethods() as $method) {
+                    // Check if card property exists
+                    if (isset($method->card)) {
+                        $paymentMethods[] = [
+                            'id' => $method->id,
+                            'brand' => $method->card->brand ?? 'Unknown',
+                            'last4' => $method->card->last4 ?? '****',
+                            'exp_month' => $method->card->exp_month ?? '',
+                            'exp_year' => $method->card->exp_year ?? '',
+                            'is_default' => $method->id === $user->defaultPaymentMethod()?->id,
+                        ];
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to fetch payment methods', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+        }
+
+        // Get activity logs with eager loading to prevent N+1 queries
+        $activities = collect([]);
+        try {
+            if (class_exists(\Spatie\Activitylog\Models\Activity::class) && Schema::hasTable('activity_log')) {
+                $activities = \Spatie\Activitylog\Models\Activity::where('subject_type', User::class)
+                    ->where('subject_id', $user->id)
+                    ->with('causer') // Eager load the causer relationship
+                    ->orderBy('created_at', 'desc')
+                    ->limit(50)
+                    ->get()
+                    ->map(function ($activity) {
+                        return [
+                            'id' => $activity->id,
+                            'description' => $activity->description,
+                            'properties' => $activity->properties,
+                            'causer' => $activity->causer ? [
+                                'id' => $activity->causer->id,
+                                'name' => $activity->causer->name,
+                                'email' => $activity->causer->email,
+                            ] : null,
+                            'created_at' => $activity->created_at,
+                        ];
+                    });
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to fetch activity logs', ['error' => $e->getMessage()]);
+        }
+
+        // Get subscription history
+        $subscriptionHistory = $user->subscriptions()
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($subscription) {
+                $tier = null;
+                $interval = null;
+                
+                // Get tier/interval from StripeProduct or config
+                if ($subscription->stripe_price) {
+                    $stripeProduct = \App\Models\StripeProduct::where('stripe_price_id', $subscription->stripe_price)
+                        ->first();
+                    
+                    if ($stripeProduct) {
+                        $tier = $stripeProduct->tier;
+                        $interval = $stripeProduct->billing_period;
+                    } else {
+                        $priceToTier = config('stripe.price_to_tier');
+                        if (isset($priceToTier[$subscription->stripe_price])) {
+                            $tier = $priceToTier[$subscription->stripe_price]['tier'];
+                            $interval = $priceToTier[$subscription->stripe_price]['period'];
+                        }
+                    }
+                }
+                
+                return [
+                    'id' => $subscription->id,
+                    'stripe_id' => $subscription->stripe_id,
+                    'status' => $subscription->stripe_status,
+                    'price_id' => $subscription->stripe_price,
+                    'tier' => $tier,
+                    'interval' => $interval,
+                    'trial_ends_at' => $subscription->trial_ends_at,
+                    'current_period_start' => $subscription->current_period_start,
+                    'current_period_end' => $subscription->current_period_end,
+                    'ends_at' => $subscription->ends_at,
+                    'created_at' => $subscription->created_at,
+                    'is_manual' => str_starts_with($subscription->stripe_id, 'manual_'),
+                ];
+            });
+
+        // Get current subscription details
+        $currentSubscription = null;
+        $activeSubscription = $user->subscription('default');
+        if ($activeSubscription) {
+            $currentSubscription = [
+                'status' => $activeSubscription->stripe_status,
+                'price_id' => $activeSubscription->stripe_price,
+                'trial_ends_at' => $activeSubscription->trial_ends_at,
+                'current_period_end' => $activeSubscription->current_period_end,
+                'ends_at' => $activeSubscription->ends_at,
+                'is_manual' => str_starts_with($activeSubscription->stripe_id, 'manual_'),
+                'days_until_renewal' => $activeSubscription->current_period_end ? 
+                    (int) now()->diffInDays($activeSubscription->current_period_end, false) : null,
+            ];
+        }
+
+        // Get invoices if available
+        $invoices = collect([]); // Initialize as collection to ensure consistent type
+        try {
+            if ($user->stripe_id && !str_starts_with($user->stripe_id, 'manual_')) {
+                $invoices = $user->invoices()->take(10)->map(function ($invoice) {
+                    return [
+                        'id' => $invoice->id,
+                        'number' => $invoice->number,
+                        'total' => $invoice->rawTotal(), // Use rawTotal() to get integer cents
+                        'status' => $invoice->status,
+                        'created_at' => $invoice->date()->toDateTimeString(),
+                        'hosted_invoice_url' => $invoice->hosted_invoice_url,
+                        'invoice_pdf' => $invoice->invoice_pdf,
+                    ];
+                });
+            }
+        } catch (\Exception $e) {
+            // Log but don't fail
+            \Log::warning('Failed to fetch invoices for user', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+        }
+
+        // Get discount usage - check if tables exist first
+        $discountUsage = collect([]);
+        try {
+            if (Schema::hasTable('discount_redemptions') && Schema::hasTable('discount_codes')) {
+                $discountUsage = \DB::table('discount_redemptions')
+                    ->join('discount_codes', 'discount_redemptions.discount_code_id', '=', 'discount_codes.id')
+                    ->where('discount_redemptions.user_id', $user->id)
+                    ->select([
+                        'discount_codes.code',
+                        'discount_codes.discount_amount as amount',
+                        'discount_codes.discount_type as type',
+                        'discount_redemptions.subscription_id',
+                        'discount_redemptions.created_at',
+                    ])
+                    ->orderBy('discount_redemptions.created_at', 'desc')
+                    ->get();
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to fetch discount usage', ['error' => $e->getMessage()]);
+        }
+
+        return Inertia::render('admin/CustomerView', [
+            'customer' => $user,
+            'paymentMethods' => $paymentMethods,
+            'activities' => $activities,
+            'subscriptionHistory' => $subscriptionHistory,
+            'currentSubscription' => $currentSubscription,
+            'invoices' => $invoices,
+            'discountUsage' => $discountUsage,
+            'stats' => [
+                'total_spent' => $invoices->sum('total') / 100, // Convert from cents
+                'subscription_count' => $subscriptionHistory->count(),
+                'days_as_customer' => $user->created_at->diffInDays(now()),
+            ],
+        ]);
+    }
+
     public function index(Request $request)
     {
         $query = User::with(['subscriptions' => function ($q) {
@@ -363,25 +541,74 @@ class CustomerController extends Controller
                         return back()->withErrors(['subscription_price' => 'Plan is required for manual override']);
                     }
 
-                    // Cancel any existing Stripe subscription
-                    $current = $user->subscriptions()->active()->first();
-                    if ($current) {
-                        $current->cancelNow();
-                    }
+                    // Wrap in database transaction for data integrity
+                    \DB::transaction(function () use ($user, $data) {
+                        // Cancel any existing Stripe subscription
+                        $current = $user->subscriptions()->active()->first();
+                        if ($current) {
+                            $current->cancelNow();
+                        }
 
-                    // Create manual subscription record
-                    \DB::table('subscriptions')->insert([
-                        'user_id' => $user->id,
-                        'type' => 'default',
-                        'stripe_id' => 'manual_'.uniqid(),
-                        'stripe_status' => 'active',
-                        'stripe_price' => $data['subscription_price'],
-                        'quantity' => 1,
-                        'trial_ends_at' => ! empty($data['trial_days']) ? now()->addDays($data['trial_days']) : null,
-                        'ends_at' => null,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
+                        // Parse price to get tier information
+                        $tier = null;
+                        $billingPeriod = 'monthly'; // default
+                        
+                        // Try to get from StripeProduct table first
+                        $stripeProduct = \App\Models\StripeProduct::where('stripe_price_id', $data['subscription_price'])
+                            ->where('is_active', true)
+                            ->first();
+                        
+                        if ($stripeProduct) {
+                            $tier = $stripeProduct->tier;
+                            $billingPeriod = $stripeProduct->billing_period;
+                        } else {
+                            // Fallback to config
+                            $priceToTier = config('stripe.price_to_tier');
+                            if (isset($priceToTier[$data['subscription_price']])) {
+                                $tier = $priceToTier[$data['subscription_price']]['tier'];
+                                $billingPeriod = $priceToTier[$data['subscription_price']]['period'];
+                            }
+                        }
+
+                        // Calculate period end based on billing period
+                        $periodEnd = now();
+                        switch ($billingPeriod) {
+                            case 'daily':
+                                $periodEnd->addDay();
+                                break;
+                            case 'weekly':
+                                $periodEnd->addWeek();
+                                break;
+                            case 'yearly':
+                                $periodEnd->addYear();
+                                break;
+                            default: // monthly
+                                $periodEnd->addMonth();
+                                break;
+                        }
+
+                        // Create manual subscription record using Laravel Cashier's Subscription model
+                        $subscription = $user->subscriptions()->create([
+                            'type' => 'default',
+                            'stripe_id' => 'manual_'.uniqid(),
+                            'stripe_status' => 'active',
+                            'stripe_price' => $data['subscription_price'],
+                            'quantity' => 1,
+                            'trial_ends_at' => ! empty($data['trial_days']) ? now()->addDays($data['trial_days']) : null,
+                            'current_period_start' => now(),
+                            'current_period_end' => $periodEnd,
+                            'ends_at' => null,
+                        ]);
+
+                        // Update user override fields
+                        if ($tier) {
+                            $user->update([
+                                'admin_override' => true,
+                                'override_tier' => $tier,
+                                'override_expiry' => $periodEnd->toDateString(),
+                            ]);
+                        }
+                    });
 
                     return back()->with('success', 'Manual subscription override applied! No automatic billing will occur.');
             }

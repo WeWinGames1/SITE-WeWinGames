@@ -15,8 +15,10 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
-    // Skip the cache for requests to the API
-  if (event.request.url.includes('/api/')) {
+    // Skip the cache for requests to the API, admin routes, and POST requests
+  if (event.request.url.includes('/api/') || 
+      event.request.url.includes('/admin/') ||
+      event.request.method !== 'GET') {
     return;
   }
   event.respondWith(
