@@ -399,6 +399,12 @@ function formatCurrency(amount: number | null | undefined): string {
                     </p>
                 </div>
                 <div class="d-flex gap-2">
+                    <Link
+                        :href="route('admin.bets.mass-edit.index')"
+                        class="btn btn-warning"
+                    >
+                        <i class="bi bi-pencil-square me-2"></i>Mass Edit
+                    </Link>
                     <button
                         @click="exportBets"
                         type="button"

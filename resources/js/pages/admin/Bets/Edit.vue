@@ -69,6 +69,15 @@ interface Bet {
     place_payout?: number;
     user_id?: number;
     is_parlay?: boolean;
+    // New fields for position and dead heat
+    finishing_position?: string;
+    places_paid?: number;
+    position_numeric?: number;
+    is_dead_heat?: boolean;
+    dead_heat_players?: number;
+    dead_heat_spots?: number;
+    bet_result_type?: string;
+    place_terms_denominator?: number;
 }
 
 interface Props {
@@ -124,6 +133,12 @@ const form = useForm({
     place_fraction: props.bet.place_fraction || 0,
     is_each_way: props.bet.is_each_way || false,
     user_id: props.bet.user_id || null,
+    // New fields for position and dead heat
+    finishing_position: props.bet.finishing_position || '',
+    places_paid: props.bet.places_paid || null,
+    is_dead_heat: props.bet.is_dead_heat || false,
+    dead_heat_players: props.bet.dead_heat_players || null,
+    dead_heat_spots: props.bet.dead_heat_spots || null,
 });
 
 // Initialize sport_id and league_id from existing data
@@ -619,6 +634,31 @@ function validateForm(): boolean {
     if (form.place_fraction !== null && form.place_fraction !== undefined) {
         if (form.place_fraction < 0 || form.place_fraction > 1) {
             errors.place_fraction = 'The place fraction must be between 0 and 1.';
+            isValid = false;
+        }
+    }
+    
+    // Position and dead heat validation
+    if (form.finishing_position && form.finishing_position.length > 20) {
+        errors.finishing_position = 'The finishing position may not be greater than 20 characters.';
+        isValid = false;
+    }
+    
+    if (form.places_paid !== null && form.places_paid !== undefined) {
+        if (form.places_paid < 1 || form.places_paid > 50) {
+            errors.places_paid = 'The places paid must be between 1 and 50.';
+            isValid = false;
+        }
+    }
+    
+    if (form.is_dead_heat) {
+        if (!form.dead_heat_players || form.dead_heat_players < 2) {
+            errors.dead_heat_players = 'Dead heat must have at least 2 players tied.';
+            isValid = false;
+        }
+        
+        if (form.dead_heat_spots === null || form.dead_heat_spots === undefined || form.dead_heat_spots <= 0) {
+            errors.dead_heat_spots = 'Dead heat must have available spots specified.';
             isValid = false;
         }
     }
@@ -1203,6 +1243,114 @@ declare global {
                                     <div class="text-muted small mt-2">
                                         <i class="bi bi-info-circle me-1"></i>
                                         Assuming top 5 places pay (typical for Golf)
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Position and Dead Heat Information -->
+                            <div v-if="form.is_each_way || form.status !== 'pending'" class="col-12">
+                                <h5 class="mt-3 mb-2">Position & Dead Heat Information</h5>
+                                <div class="row g-3">
+                                    <!-- Finishing Position -->
+                                    <div class="col-md-3">
+                                        <label for="finishing_position" class="form-label">Finishing Position</label>
+                                        <input
+                                            id="finishing_position"
+                                            v-model="form.finishing_position"
+                                            type="text"
+                                            class="form-control"
+                                            :class="{ 'is-invalid': form.errors.finishing_position }"
+                                            placeholder="e.g., T5, 2nd, MC"
+                                        />
+                                        <div class="form-text">e.g., 1, T5, 3rd, MC, WD</div>
+                                        <div v-if="form.errors.finishing_position" class="invalid-feedback">
+                                            {{ form.errors.finishing_position }}
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Places Paid -->
+                                    <div class="col-md-3">
+                                        <label for="places_paid" class="form-label">Places Paid</label>
+                                        <input
+                                            id="places_paid"
+                                            v-model.number="form.places_paid"
+                                            type="number"
+                                            class="form-control"
+                                            :class="{ 'is-invalid': form.errors.places_paid }"
+                                            min="1"
+                                            max="50"
+                                            placeholder="e.g., 8"
+                                        />
+                                        <div class="form-text">Number of places that pay</div>
+                                        <div v-if="form.errors.places_paid" class="invalid-feedback">
+                                            {{ form.errors.places_paid }}
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Dead Heat Checkbox -->
+                                    <div class="col-md-6">
+                                        <div class="form-check mt-4">
+                                            <input
+                                                id="is_dead_heat"
+                                                v-model="form.is_dead_heat"
+                                                type="checkbox"
+                                                class="form-check-input"
+                                            />
+                                            <label class="form-check-label" for="is_dead_heat">
+                                                Dead Heat (tied position)
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Dead Heat Details -->
+                                    <div v-if="form.is_dead_heat" class="col-12">
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                                <label for="dead_heat_players" class="form-label">Players Tied</label>
+                                                <input
+                                                    id="dead_heat_players"
+                                                    v-model.number="form.dead_heat_players"
+                                                    type="number"
+                                                    class="form-control"
+                                                    :class="{ 'is-invalid': form.errors.dead_heat_players }"
+                                                    min="2"
+                                                    placeholder="e.g., 4"
+                                                />
+                                                <div class="form-text">Number of players tied</div>
+                                                <div v-if="form.errors.dead_heat_players" class="invalid-feedback">
+                                                    {{ form.errors.dead_heat_players }}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-3">
+                                                <label for="dead_heat_spots" class="form-label">Available Spots</label>
+                                                <input
+                                                    id="dead_heat_spots"
+                                                    v-model.number="form.dead_heat_spots"
+                                                    type="number"
+                                                    class="form-control"
+                                                    :class="{ 'is-invalid': form.errors.dead_heat_spots }"
+                                                    min="0.1"
+                                                    step="0.1"
+                                                    placeholder="e.g., 2"
+                                                />
+                                                <div class="form-text">Spots available for tied players</div>
+                                                <div v-if="form.errors.dead_heat_spots" class="invalid-feedback">
+                                                    {{ form.errors.dead_heat_spots }}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <div class="alert alert-info mb-0">
+                                                    <strong>Dead Heat Factor:</strong> 
+                                                    <span v-if="form.dead_heat_players && form.dead_heat_spots">
+                                                        {{ (form.dead_heat_spots / form.dead_heat_players).toFixed(4) }}
+                                                        ({{ form.dead_heat_spots }}/{{ form.dead_heat_players }})
+                                                    </span>
+                                                    <span v-else>Enter values to calculate</span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

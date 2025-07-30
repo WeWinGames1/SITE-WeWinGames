@@ -991,7 +991,12 @@ class CsvImportService
                 'profits' => 'Net gain or loss (USD) for the bet (can be negative)',
                 'winning_amount' => 'Total returned if the bet wins (Wager + Profits; $0 if lost)',
             ],
-            'optional' => [],
+            'optional' => [
+                'finishing_position' => 'Actual finishing position (e.g., 1, T5, 2nd, MC, WD) - enables automatic Each-Way calculations',
+                'places_paid' => 'Number of places that pay out (e.g., 8, 10) - used with finishing_position for Each-Way bets',
+                'dead_heat_players' => 'Number of players tied for a position (e.g., 4) - only when dead heat occurs',
+                'dead_heat_spots' => 'Number of available paying spots for tied players (e.g., 2) - used for dead heat calculations',
+            ],
         ];
     }
 

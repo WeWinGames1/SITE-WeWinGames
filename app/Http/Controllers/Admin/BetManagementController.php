@@ -306,6 +306,12 @@ class BetManagementController extends Controller
             'referrer' => 'nullable|string|max:255',
             'place_fraction' => 'nullable|numeric|between:0,1',
             'is_each_way' => 'nullable|boolean',
+            // New fields for position and dead heat
+            'finishing_position' => 'nullable|string|max:20',
+            'places_paid' => 'nullable|integer|min:1|max:50',
+            'is_dead_heat' => 'nullable|boolean',
+            'dead_heat_players' => 'nullable|integer|min:2|required_if:is_dead_heat,true',
+            'dead_heat_spots' => 'nullable|numeric|min:0|required_if:is_dead_heat,true',
         ]);
 
         // Set the user_id to the authenticated admin
@@ -357,15 +363,58 @@ class BetManagementController extends Controller
             if (!isset($validated['place_fraction'])) {
                 $validated['place_fraction'] = 0.2;
             }
+            
+            // If position data is provided, calculate status automatically
+            if (!empty($validated['finishing_position']) && !empty($validated['places_paid'])) {
+                $betService = app(\App\Services\BetService::class);
+                
+                // Create temporary bet object for calculation
+                $tempBet = new Bet($validated);
+                
+                // Prepare dead heat info if applicable
+                $deadHeatInfo = null;
+                if (!empty($validated['is_dead_heat']) && !empty($validated['dead_heat_players']) && isset($validated['dead_heat_spots'])) {
+                    $deadHeatInfo = [
+                        'players_tied' => $validated['dead_heat_players'],
+                        'spots_available' => $validated['dead_heat_spots'],
+                    ];
+                }
+                
+                // Calculate using automatic determination
+                $calculation = $betService->calculateEachWayPayoutWithDeadHeat(
+                    $tempBet,
+                    $validated['finishing_position'],
+                    $validated['places_paid'],
+                    $deadHeatInfo
+                );
+                
+                // Apply calculated values
+                $validated['status'] = $calculation['status'];
+                $validated['bet_result_type'] = $calculation['bet_result_type'];
+                $validated['winning_amount'] = $calculation['winning_amount'];
+                $validated['place_payout'] = $calculation['place_payout'];
+                $validated['profit_amount'] = $calculation['profit_amount'];
+                
+                // Store position numeric
+                $validated['position_numeric'] = $betService->parsePosition($validated['finishing_position']);
+            } else {
+                // Manual calculation for backward compatibility
+                $validated['winning_amount'] = $this->calculatePotentialWin($validated['wager_amount'], $validated['wager_odds']);
+                $validated['profit_amount'] = $this->calculateProfit([
+                    'status' => $validated['status'],
+                    'stake' => $validated['wager_amount'],
+                    'potential_win' => $validated['winning_amount']
+                ]);
+            }
+        } else {
+            // Standard bet calculation
+            $validated['winning_amount'] = $this->calculatePotentialWin($validated['wager_amount'], $validated['wager_odds']);
+            $validated['profit_amount'] = $this->calculateProfit([
+                'status' => $validated['status'],
+                'stake' => $validated['wager_amount'],
+                'potential_win' => $validated['winning_amount']
+            ]);
         }
-
-        // Calculate potential win and profit
-        $validated['winning_amount'] = $this->calculatePotentialWin($validated['wager_amount'], $validated['wager_odds']);
-        $validated['profit_amount'] = $this->calculateProfit([
-            'status' => $validated['status'],
-            'stake' => $validated['wager_amount'],
-            'potential_win' => $validated['winning_amount']
-        ]);
 
         // Check if this is a parlay
         $isParlay = $validated['wager_type'] === 'parlay';
@@ -526,6 +575,12 @@ class BetManagementController extends Controller
             'parlay_teams' => 'nullable|array',
             'parlay_teams.*.id' => 'nullable|exists:teams,id',
             'parlay_teams.*.name' => 'nullable|string|max:255',
+            // New fields for position and dead heat
+            'finishing_position' => 'nullable|string|max:20',
+            'places_paid' => 'nullable|integer|min:1|max:50',
+            'is_dead_heat' => 'nullable|boolean',
+            'dead_heat_players' => 'nullable|integer|min:2',
+            'dead_heat_spots' => 'nullable|numeric|min:0',
         ]);
         
         // Handle new team creation
@@ -573,6 +628,41 @@ class BetManagementController extends Controller
             // Default place fraction to 1/5 if not provided
             if (!isset($validated['place_fraction'])) {
                 $validated['place_fraction'] = 0.2;
+            }
+            
+            // If position data is provided, calculate status automatically
+            if (!empty($validated['finishing_position']) && !empty($validated['places_paid'])) {
+                $betService = app(\App\Services\BetService::class);
+                
+                // Update bet with current data first
+                $bet->fill($validated);
+                
+                // Prepare dead heat info if applicable
+                $deadHeatInfo = null;
+                if (!empty($validated['is_dead_heat']) && !empty($validated['dead_heat_players']) && isset($validated['dead_heat_spots'])) {
+                    $deadHeatInfo = [
+                        'players_tied' => $validated['dead_heat_players'],
+                        'spots_available' => $validated['dead_heat_spots'],
+                    ];
+                }
+                
+                // Calculate using automatic determination
+                $calculation = $betService->calculateEachWayPayoutWithDeadHeat(
+                    $bet,
+                    $validated['finishing_position'],
+                    $validated['places_paid'],
+                    $deadHeatInfo
+                );
+                
+                // Apply calculated values
+                $validated['status'] = $calculation['status'];
+                $validated['bet_result_type'] = $calculation['bet_result_type'];
+                $validated['winning_amount'] = $calculation['winning_amount'];
+                $validated['place_payout'] = $calculation['place_payout'];
+                $validated['profit_amount'] = $calculation['profit_amount'];
+                
+                // Store position numeric
+                $validated['position_numeric'] = $betService->parsePosition($validated['finishing_position']);
             }
         }
 

@@ -243,6 +243,26 @@ class BetImportService
             
             return;
         }
+        
+        // Additional validation for Each Way bets
+        if (isset($record['wager_type']) && strtolower($record['wager_type']) === 'each way') {
+            $calculationService = app(BetCalculationService::class);
+            $eachWayErrors = $calculationService->validateEachWayBetData($record);
+            
+            if (!empty($eachWayErrors)) {
+                $this->errors[] = [
+                    'line' => $lineNumber,
+                    'errors' => ['each_way_validation' => $eachWayErrors],
+                    'data' => $record,
+                ];
+                
+                if (!$this->skipErrors) {
+                    throw new \Exception('Each Way validation failed at line ' . $lineNumber . ': ' . implode(', ', $eachWayErrors));
+                }
+                
+                return;
+            }
+        }
 
         try {
             // Get or create sport
@@ -402,10 +422,38 @@ class BetImportService
                 $betData['each_way_stake'] = $betData['wager_amount'] / 2;
                 $betData['place_fraction'] = ! empty($record['place_fraction']) ? 
                     (float) $record['place_fraction'] : 0.2; // Default 1/5
+                $betData['place_terms_denominator'] = ! empty($record['place_terms_denominator']) ? 
+                    (int) $record['place_terms_denominator'] : 5; // Default 1/5
+            }
+            
+            // Add position and dead heat fields if available
+            if (!empty($record['finishing_position'])) {
+                $betData['finishing_position'] = $record['finishing_position'];
+                $betData['position_numeric'] = $record['position_numeric'] ?? null;
+            }
+            
+            if (isset($record['places_paid'])) {
+                $betData['places_paid'] = $record['places_paid'];
+            }
+            
+            if (isset($record['is_dead_heat'])) {
+                $betData['is_dead_heat'] = $record['is_dead_heat'];
+            }
+            
+            if (isset($record['dead_heat_players'])) {
+                $betData['dead_heat_players'] = $record['dead_heat_players'];
+            }
+            
+            if (isset($record['dead_heat_spots'])) {
+                $betData['dead_heat_spots'] = $record['dead_heat_spots'];
             }
 
-            // Calculate winning and profit amounts based on American odds
-            if (in_array($betData['status'], ['won', 'lost', 'placed'])) {
+            // Store position numeric if we have a finishing position
+            if (!empty($betData['finishing_position'])) {
+                $betService = app(BetService::class);
+                $betData['position_numeric'] = $betService->parsePosition($betData['finishing_position']);
+            }
+            elseif (in_array($betData['status'], ['won', 'lost', 'placed'])) {
 
                 if ($betData['status'] === 'won') {
                     // Check if we have pre-calculated values from CSV
@@ -547,6 +595,43 @@ class BetImportService
                 // For individual sports like Golf, the entire game field is the player name
                 $record['home_team'] = $record['game'];
                 $record['away_team'] = null;
+            }
+        }
+        
+        // Parse finishing position if provided
+        if (isset($record['finishing_position']) && !empty($record['finishing_position'])) {
+            $record['finishing_position'] = trim($record['finishing_position']);
+            
+            // Parse numeric position for easier calculations
+            $betService = app(BetService::class);
+            $record['position_numeric'] = $betService->parsePosition($record['finishing_position']);
+        }
+        
+        // Parse places paid
+        if (isset($record['places_paid'])) {
+            $record['places_paid'] = $this->parseNumeric($record['places_paid']);
+        }
+        
+        // Parse dead heat information
+        if (isset($record['dead_heat_players'])) {
+            $record['dead_heat_players'] = $this->parseNumeric($record['dead_heat_players']);
+        }
+        
+        if (isset($record['dead_heat_spots'])) {
+            $record['dead_heat_spots'] = $this->parseNumeric($record['dead_heat_spots']);
+        }
+        
+        // Auto-detect dead heat from position format
+        if (isset($record['finishing_position']) && !isset($record['is_dead_heat'])) {
+            $calculationService = app(BetCalculationService::class);
+            $record['is_dead_heat'] = $calculationService->detectDeadHeat($record['finishing_position']);
+        }
+        
+        // Parse place terms (e.g., "1/5" -> denominator = 5)
+        if (isset($record['place_terms']) && !empty($record['place_terms'])) {
+            if (preg_match('/1\/(\d+)/', $record['place_terms'], $matches)) {
+                $record['place_terms_denominator'] = (int) $matches[1];
+                $record['place_fraction'] = 1 / (int) $matches[1];
             }
         }
 
@@ -844,6 +929,12 @@ class BetImportService
             'description' => 'nullable|string|max:500',
             'placed_at' => 'nullable|string',
             'referrer' => 'nullable|string|max:255',
+            // New fields for position and dead heat
+            'finishing_position' => 'nullable|string|max:20',
+            'places_paid' => 'nullable|integer|min:1|max:50',
+            'dead_heat_players' => 'nullable|integer|min:2',
+            'dead_heat_spots' => 'nullable|numeric|min:0',
+            'place_terms' => 'nullable|string|max:10',
         ];
 
         $validator = Validator::make($record, $rules);

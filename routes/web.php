@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AdminToolsController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\BetImportWizardController;
 use App\Http\Controllers\Admin\BetManagementController;
+use App\Http\Controllers\Admin\BetMassEditController;
 use App\Http\Controllers\Admin\BlogPostController;
 use App\Http\Controllers\Admin\BlogCategoryController;
 use App\Http\Controllers\Admin\CacheController;
@@ -122,6 +123,14 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
     Route::post('bets/bulk-update-status', [BetManagementController::class, 'bulkUpdateStatus'])->name('bets.bulk-update-status');
     Route::get('bets/statistics', [BetManagementController::class, 'statistics'])->name('bets.statistics');
     Route::get('bets/export', [BetManagementController::class, 'export'])->name('bets.export')->middleware('admin.rate_limit:export');
+    
+    // Mass Edit for Golf Each-Way Bets
+    Route::prefix('bets/mass-edit')->name('bets.mass-edit.')->group(function () {
+        Route::get('/', [BetMassEditController::class, 'index'])->name('index');
+        Route::post('/update', [BetMassEditController::class, 'updateBatch'])->name('update');
+        Route::post('/import', [BetMassEditController::class, 'importCorrections'])->name('import');
+        Route::get('/sample', [BetMassEditController::class, 'downloadSample'])->name('sample');
+    });
 
     // Game Management (TODO)
     // Route::resource('games', Admin\GameManagementController::class);

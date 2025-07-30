@@ -171,7 +171,7 @@ class BetService
     /**
      * Settle a bet
      */
-    public function settleBet(Bet $bet, string $result): array
+    public function settleBet(Bet $bet, string $result, ?array $positionData = null): array
     {
         try {
             DB::beginTransaction();
@@ -185,7 +185,31 @@ class BetService
 
             // Handle Each Way bets separately
             if ($bet->is_each_way) {
-                $data = $this->settleEachWayBet($bet, $result);
+                // If position data is provided, use automatic determination
+                if ($positionData && isset($positionData['position']) && isset($positionData['places_paid'])) {
+                    $deadHeatInfo = null;
+                    if (isset($positionData['players_tied']) && isset($positionData['spots_available'])) {
+                        $deadHeatInfo = [
+                            'players_tied' => $positionData['players_tied'],
+                            'spots_available' => $positionData['spots_available'],
+                        ];
+                    }
+                    
+                    $data = $this->calculateEachWayPayoutWithDeadHeat(
+                        $bet,
+                        $positionData['position'],
+                        $positionData['places_paid'],
+                        $deadHeatInfo
+                    );
+                    
+                    // Store position data
+                    $data['finishing_position'] = $positionData['position'];
+                    $data['places_paid'] = $positionData['places_paid'];
+                    $data['position_numeric'] = $this->parsePosition($positionData['position']);
+                } else {
+                    // Fall back to manual result
+                    $data = $this->settleEachWayBet($bet, $result);
+                }
             } else {
                 $data = ['status' => $result];
 
@@ -219,6 +243,8 @@ class BetService
                 'result' => $result,
                 'profit' => $data['profit'] ?? $data['profit_amount'] ?? 0,
                 'is_each_way' => $bet->is_each_way,
+                'position' => $positionData['position'] ?? null,
+                'is_dead_heat' => $data['is_dead_heat'] ?? false,
             ]);
 
             DB::commit();
@@ -1017,5 +1043,168 @@ class BetService
             // Negative odds: stake * (100/abs(odds)) + stake
             return $stake * (100 / abs($odds)) + $stake;
         }
+    }
+    
+    /**
+     * Determine Each Way bet status based on finishing position
+     */
+    public function determineEachWayStatus(string $position, int $placesPaid): string
+    {
+        $numericPosition = $this->parsePosition($position);
+        
+        if ($numericPosition === null) {
+            // Handle special cases like MC (Missed Cut), WD (Withdrawn), DQ (Disqualified)
+            if (in_array(strtoupper($position), ['MC', 'WD', 'DQ', 'CUT', 'DNS', 'DNF'])) {
+                return 'lost';
+            }
+            return 'lost'; // Default to lost if we can't parse
+        }
+        
+        if ($numericPosition === 1) {
+            return 'won'; // Outright win
+        } elseif ($numericPosition <= $placesPaid) {
+            return 'placed'; // Place finish
+        } else {
+            return 'lost'; // Outside paying places
+        }
+    }
+    
+    /**
+     * Parse position string to numeric value
+     * Handles formats like "1", "T5", "2nd", "3rd", etc.
+     */
+    public function parsePosition(string $position): ?int
+    {
+        $position = strtoupper(trim($position));
+        
+        // Handle tied positions (T5, T10, etc.)
+        if (preg_match('/^T(\d+)$/i', $position, $matches)) {
+            return (int) $matches[1];
+        }
+        
+        // Handle ordinal positions (1st, 2nd, 3rd, etc.)
+        if (preg_match('/^(\d+)(st|nd|rd|th)$/i', $position, $matches)) {
+            return (int) $matches[1];
+        }
+        
+        // Handle plain numeric positions
+        if (is_numeric($position)) {
+            return (int) $position;
+        }
+        
+        // Handle special text positions
+        $textPositions = [
+            'FIRST' => 1, '1ST' => 1,
+            'SECOND' => 2, '2ND' => 2,
+            'THIRD' => 3, '3RD' => 3,
+            'FOURTH' => 4, '4TH' => 4,
+            'FIFTH' => 5, '5TH' => 5,
+            'SIXTH' => 6, '6TH' => 6,
+            'SEVENTH' => 7, '7TH' => 7,
+            'EIGHTH' => 8, '8TH' => 8,
+            'NINTH' => 9, '9TH' => 9,
+            'TENTH' => 10, '10TH' => 10,
+        ];
+        
+        if (isset($textPositions[$position])) {
+            return $textPositions[$position];
+        }
+        
+        return null; // Unable to parse
+    }
+    
+    /**
+     * Calculate dead heat reduction factor
+     */
+    public function calculateDeadHeatReduction(int $playersTied, float $spotsAvailable): float
+    {
+        if ($playersTied <= 0 || $spotsAvailable <= 0) {
+            return 0; // Invalid input
+        }
+        
+        // Reduction factor = available spots / players tied
+        return min(1, $spotsAvailable / $playersTied);
+    }
+    
+    /**
+     * Apply dead heat reduction to a payout
+     */
+    public function applyDeadHeatToPlacePayout(float $basePayout, float $stake, float $reductionFactor): float
+    {
+        // For dead heat, only the profit portion is reduced, not the stake return
+        $profit = $basePayout - $stake;
+        $reducedProfit = $profit * $reductionFactor;
+        
+        // Return stake + reduced profit
+        return $stake + $reducedProfit;
+    }
+    
+    /**
+     * Calculate Each Way payout with dead heat consideration
+     */
+    public function calculateEachWayPayoutWithDeadHeat(Bet $bet, string $position, int $placesPaid, ?array $deadHeatInfo = null): array
+    {
+        $status = $this->determineEachWayStatus($position, $placesPaid);
+        $halfStake = $bet->each_way_stake ?: ($bet->wager_amount / 2);
+        $placeFraction = $bet->place_fraction ?: 0.2; // Default 1/5
+        $placeOdds = $this->calculatePlaceOdds($bet->odds, $placeFraction);
+        
+        $result = [
+            'status' => $status,
+            'bet_result_type' => $status === 'won' ? 'won_outright' : ($status === 'placed' ? 'placed' : 'lost'),
+            'winning_amount' => 0,
+            'place_payout' => 0,
+            'profit_amount' => 0,
+            'is_dead_heat' => false,
+            'dead_heat_players' => null,
+            'dead_heat_spots' => null,
+        ];
+        
+        switch ($status) {
+            case 'won':
+                // Both win and place parts win (no dead heat on outright wins)
+                $winPayout = $this->calculateAmericanOddsPayout($halfStake, $bet->odds);
+                $placePayout = $this->calculateAmericanOddsPayout($halfStake, $placeOdds);
+                
+                $result['winning_amount'] = $winPayout + $placePayout;
+                $result['place_payout'] = $placePayout;
+                $result['profit_amount'] = ($winPayout + $placePayout) - $bet->wager_amount;
+                $result['bet_result_type'] = 'won_outright';
+                break;
+                
+            case 'placed':
+                // Only place part wins - check for dead heat
+                $placePayout = $this->calculateAmericanOddsPayout($halfStake, $placeOdds);
+                
+                if ($deadHeatInfo && isset($deadHeatInfo['players_tied']) && isset($deadHeatInfo['spots_available'])) {
+                    // Apply dead heat reduction
+                    $reductionFactor = $this->calculateDeadHeatReduction(
+                        $deadHeatInfo['players_tied'],
+                        $deadHeatInfo['spots_available']
+                    );
+                    
+                    $placePayout = $this->applyDeadHeatToPlacePayout($placePayout, $halfStake, $reductionFactor);
+                    
+                    $result['is_dead_heat'] = true;
+                    $result['dead_heat_players'] = $deadHeatInfo['players_tied'];
+                    $result['dead_heat_spots'] = $deadHeatInfo['spots_available'];
+                    $result['bet_result_type'] = 'placed_dead_heat';
+                }
+                
+                $result['winning_amount'] = $placePayout;
+                $result['place_payout'] = $placePayout;
+                $result['profit_amount'] = $placePayout - $bet->wager_amount;
+                break;
+                
+            case 'lost':
+                // Both parts lose
+                $result['winning_amount'] = 0;
+                $result['place_payout'] = 0;
+                $result['profit_amount'] = -$bet->wager_amount;
+                $result['bet_result_type'] = 'lost';
+                break;
+        }
+        
+        return $result;
     }
 }

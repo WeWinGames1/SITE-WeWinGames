@@ -48,6 +48,15 @@ class Bet extends Model
         'is_each_way',
         'each_way_stake',
         'place_payout',
+        // New fields for position and dead heat calculations
+        'finishing_position',
+        'places_paid',
+        'position_numeric',
+        'is_dead_heat',
+        'dead_heat_players',
+        'dead_heat_spots',
+        'bet_result_type',
+        'place_terms_denominator',
     ];
     
     protected $casts = [
@@ -57,6 +66,12 @@ class Bet extends Model
         'each_way_stake' => 'decimal:2',
         'place_payout' => 'decimal:2',
         'place_fraction' => 'decimal:2',
+        'places_paid' => 'integer',
+        'position_numeric' => 'integer',
+        'is_dead_heat' => 'boolean',
+        'dead_heat_players' => 'integer',
+        'dead_heat_spots' => 'decimal:4',
+        'place_terms_denominator' => 'integer',
     ];
 
     // Relationships
