@@ -15,6 +15,7 @@ interface Bet {
     wager_odds?: number;
     odds?: number;
     status: string;
+    is_each_way?: boolean;
 }
 
 interface Props {
@@ -28,6 +29,7 @@ interface Props {
         date_to?: string;
         sport?: string;
         status?: string;
+        each_way?: string;
     };
     sports?: string[];
 }
@@ -38,6 +40,7 @@ const props = defineProps<Props>();
 const filterForm = useForm({
     sport: props.filters?.sport || '',
     status: props.filters?.status || '',
+    each_way: props.filters?.each_way || '',
     date_from: props.filters?.date_from || '',
     date_to: props.filters?.date_to || '',
 });
@@ -113,6 +116,7 @@ function applyFilters() {
 function clearFilters() {
     filterForm.sport = '';
     filterForm.status = '';
+    filterForm.each_way = '';
     filterForm.date_from = '';
     filterForm.date_to = '';
     filterForm.get(route('admin.bets.mass-edit.index'));
@@ -169,13 +173,9 @@ function formatDate(date: string): string {
                                     class="form-select"
                                 >
                                     <option value="">All Sports</option>
-                                    <option value="Golf">Golf</option>
-                                    <option value="Football">Football</option>
-                                    <option value="Basketball">Basketball</option>
-                                    <option value="Baseball">Baseball</option>
-                                    <option value="Hockey">Hockey</option>
-                                    <option value="Soccer">Soccer</option>
-                                    <option value="Tennis">Tennis</option>
+                                    <option v-for="sport in sports" :key="sport" :value="sport">
+                                        {{ sport }}
+                                    </option>
                                 </select>
                             </div>
                             <div class="col-md-2">
@@ -189,6 +189,22 @@ function formatDate(date: string): string {
                                     <option value="won">Won</option>
                                     <option value="placed">Placed</option>
                                 </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Each Way</label>
+                                <div class="form-check mt-2">
+                                    <input
+                                        id="each_way"
+                                        v-model="filterForm.each_way"
+                                        type="checkbox"
+                                        class="form-check-input"
+                                        value="1"
+                                        :true-value="'1'"
+                                        :false-value="''">
+                                    <label for="each_way" class="form-check-label">
+                                        Each Way Bets Only
+                                    </label>
+                                </div>
                             </div>
                             <div class="col-md-2">
                                 <label for="date_from" class="form-label">Date From</label>
@@ -208,7 +224,7 @@ function formatDate(date: string): string {
                                     class="form-control"
                                 />
                             </div>
-                            <div class="col-md-4 d-flex align-items-end gap-2">
+                            <div class="col-md-2 d-flex align-items-end gap-2">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="bi bi-funnel me-1"></i>Apply Filters
                                 </button>
@@ -243,6 +259,7 @@ function formatDate(date: string): string {
                                     <th>Sport</th>
                                     <th>Player/Match</th>
                                     <th>Status</th>
+                                    <th>Type</th>
                                     <th>Odds</th>
                                     <th>Stake</th>
                                     <th>Winning Amount</th>
@@ -262,6 +279,10 @@ function formatDate(date: string): string {
                                         }">
                                             {{ bet.status }}
                                         </span>
+                                    </td>
+                                    <td>
+                                        <span v-if="bet.is_each_way" class="badge bg-primary">EW</span>
+                                        <span v-else class="badge bg-secondary">Straight</span>
                                     </td>
                                     <td>{{ (bet.odds || bet.wager_odds || 0) > 0 ? '+' : '' }}{{ bet.odds || bet.wager_odds || 0 }}</td>
                                     <td>${{ bet.wager_amount.toFixed(2) }}</td>

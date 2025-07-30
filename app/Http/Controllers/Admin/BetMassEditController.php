@@ -31,6 +31,11 @@ class BetMassEditController extends Controller
             $query->where('status', $request->status);
         }
 
+        // Add each way filter
+        if ($request->filled('each_way') && $request->each_way === '1') {
+            $query->where('is_each_way', true);
+        }
+
         // Add date filters
         if ($request->filled('date_from')) {
             $query->whereDate('betting_date', '>=', $request->date_from);
@@ -42,11 +47,17 @@ class BetMassEditController extends Controller
         $bets = $query->paginate(100)->withQueryString();
 
         // Get list of available sports
-        $sports = Bet::distinct()->pluck('sports')->toArray();
+        $sports = Bet::distinct()->pluck('sports')->filter()->values()->toArray();
+        
+        // Debug: Log the query and results
+        \Log::info('Sport filter value:', ['sport' => $request->sport]);
+        \Log::info('Available sports in database:', $sports);
+        \Log::info('Query SQL:', ['sql' => $query->toSql(), 'bindings' => $query->getBindings()]);
+        \Log::info('Result count:', ['count' => $bets->total()]);
 
         return Inertia::render('admin/Bets/MassEdit', [
             'bets' => $bets,
-            'filters' => $request->only(['sport', 'status', 'date_from', 'date_to']),
+            'filters' => $request->only(['sport', 'status', 'each_way', 'date_from', 'date_to']),
             'sports' => $sports,
         ]);
     }
@@ -69,8 +80,8 @@ class BetMassEditController extends Controller
             foreach ($validated['updates'] as $update) {
                 $bet = Bet::find($update['id']);
                 
-                // Only update if it's a Golf Each-Way bet
-                if ($bet->sports === 'Golf' && $bet->is_each_way) {
+                // Only update if it's a Golf bet
+                if ($bet->sports === 'Golf') {
                     $bet->winning_amount = $update['winning_amount'];
                     
                     // Calculate profit if not provided
@@ -128,7 +139,6 @@ class BetMassEditController extends Controller
 
                     // Find matching bet
                     $query = Bet::where('sports', 'Golf')
-                        ->where('is_each_way', true)
                         ->whereDate('betting_date', $date)
                         ->whereIn('status', ['won', 'placed']);
 
