@@ -96,7 +96,7 @@ const selectedTeamForLogo = ref<Team | null>(null);
 const logoFile = ref<File | null>(null);
 
 const form = useForm({
-    bet_type: props.bet.bet_type || props.bet.markets || '',
+    wager_type: props.bet.wager_type || props.bet.markets || '',
     sports: props.bet.sports || '',
     sport_id: null as number | null,
     league: props.bet.league || '',
@@ -161,7 +161,7 @@ const filteredLeagues = computed(() => {
     return props.leagues.filter(league => league.sport_id === form.sport_id);
 });
 
-const isParlay = computed(() => form.bet_type === 'parlay');
+const isParlay = computed(() => form.wager_type === 'parlay');
 
 const teamOneLogo = computed(() => {
     if (props.bet.teamOne?.logo_url) {
@@ -216,9 +216,9 @@ watch(() => form.status, () => {
 });
 
 // Watch for bet type changes to reset golf_place
-watch(() => form.bet_type, () => {
+watch(() => form.wager_type, () => {
     // Reset golf_place if bet type is not each_way
-    if (form.bet_type !== 'each_way') {
+    if (form.wager_type !== 'each_way') {
         form.golf_place = false;
     }
 });
@@ -520,8 +520,8 @@ function validateForm(): boolean {
     const errors: Record<string, string> = {};
     
     // Required fields validation
-    if (!form.bet_type) {
-        errors.bet_type = 'The bet type field is required.';
+    if (!form.wager_type) {
+        errors.wager_type = 'The bet type field is required.';
         isValid = false;
     }
     
@@ -686,10 +686,10 @@ function submit() {
         return;
     }
     
-    // Set is_each_way based on bet_type
+    // Set is_each_way based on wager_type
     const data = {
         ...form.data(),
-        is_each_way: form.bet_type === 'each_way'
+        is_each_way: form.wager_type === 'each_way'
     };
     
     form.transform(() => data).put(route('admin.bets.update', props.bet.id));
@@ -803,12 +803,12 @@ declare global {
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-12">
-                                <label for="bet_type" class="form-label">Select Bet Type <span class="text-danger">*</span></label>
+                                <label for="wager_type" class="form-label">Select Bet Type <span class="text-danger">*</span></label>
                                 <select
-                                    id="bet_type"
-                                    v-model="form.bet_type"
+                                    id="wager_type"
+                                    v-model="form.wager_type"
                                     class="form-select form-select-lg"
-                                    :class="{ 'is-invalid': form.errors.bet_type }"
+                                    :class="{ 'is-invalid': form.errors.wager_type }"
                                     required
                                 >
                                     <option value="">Select bet type...</option>
@@ -816,8 +816,8 @@ declare global {
                                         {{ label }}
                                     </option>
                                 </select>
-                                <div v-if="form.errors.bet_type" class="invalid-feedback">
-                                    {{ form.errors.bet_type }}
+                                <div v-if="form.errors.wager_type" class="invalid-feedback">
+                                    {{ form.errors.wager_type }}
                                 </div>
                             </div>
                         </div>
@@ -1132,7 +1132,7 @@ declare global {
                                     <option value="">Select status...</option>
                                     <option value="pending">Pending</option>
                                     <option value="won">Won</option>
-                                    <option v-if="form.bet_type === 'each_way'" value="placed">Placed</option>
+                                    <option v-if="form.wager_type === 'each_way'" value="placed">Placed</option>
                                     <option value="loss">Loss</option>
                                     <option value="push">Push</option>
                                     <option value="void">Void</option>
@@ -1177,7 +1177,7 @@ declare global {
 
 
                             <!-- Place Fraction -->
-                            <div v-if="form.bet_type === 'each_way'" class="col-md-6">
+                            <div v-if="form.wager_type === 'each_way'" class="col-md-6">
                                 <label for="place_fraction" class="form-label">Place Fraction</label>
                                 <select
                                     id="place_fraction"
@@ -1196,7 +1196,7 @@ declare global {
                             </div>
 
                             <!-- Place Odds Preview -->
-                            <div v-if="form.bet_type === 'each_way'" class="col-md-6">
+                            <div v-if="form.wager_type === 'each_way'" class="col-md-6">
                                 <label class="form-label">Place Odds Preview</label>
                                 <div class="border rounded p-2" style="background-color: #f8f9fa;">
                                     <div class="small text-muted mb-2">
@@ -1240,7 +1240,7 @@ declare global {
                             </div>
                             
                             <!-- Golf Only: Place -->
-                            <div v-if="form.bet_type === 'each_way'" class="col-12 mt-3">
+                            <div v-if="form.wager_type === 'each_way'" class="col-12 mt-3">
                                 <div class="form-check">
                                     <input
                                         id="golf_place"

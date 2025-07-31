@@ -248,9 +248,9 @@ class BetImportService
         $record = $this->transformRecordData($record);
         
         // Skip Each Way bets - they must be added manually
-        if (isset($record['bet_type']) && 
-            (strcasecmp($record['bet_type'], 'each_way') === 0 || 
-             strcasecmp($record['bet_type'], 'each way') === 0)) {
+        if (isset($record['wager_type']) && 
+            (strcasecmp($record['wager_type'], 'each_way') === 0 || 
+             strcasecmp($record['wager_type'], 'each way') === 0)) {
             $this->skippedEachWayBets[] = [
                 'line' => $lineNumber,
                 'data' => $record
@@ -259,7 +259,7 @@ class BetImportService
         }
         
         // Skip Parlay bets - they must be added manually
-        if (isset($record['bet_type']) && strcasecmp($record['bet_type'], 'parlay') === 0) {
+        if (isset($record['wager_type']) && strcasecmp($record['wager_type'], 'parlay') === 0) {
             $this->skippedParlayBets[] = [
                 'line' => $lineNumber,
                 'data' => $record
@@ -285,7 +285,7 @@ class BetImportService
         }
         
         // Additional validation for Each Way bets
-        if (isset($record['wager_type']) && strtolower($record['wager_type']) === 'each way') {
+        if (isset($record['wager_type']) && strtolower($record['wager_type']) === 'each_way') {
             $calculationService = app(BetCalculationService::class);
             $eachWayErrors = $calculationService->validateEachWayBetData($record);
             
@@ -429,9 +429,8 @@ class BetImportService
                 'month' => $record['month'] ?? null,
                 'game' => $record['game'] ?? $matchesField, // New column
                 'matches' => $matchesField,
-                'bet_type' => $record['bet_type'] ?? null, // New column
-                'markets' => $record['bet_type'], // Keep old column for compatibility
-                'wager_type' => $record['wager_type'] ?? null,
+                'wager_type' => $record['wager_type'] ?? null, // New column
+                'markets' => $record['wager_type'], // Keep old column for compatibility
                 'wager_name' => $record['wager_name'] ?? $record['selection'] ?? '', // New column
                 'team_one' => $homeTeamName ?? '',
                 'team_one_logo' => $homeTeam ? $homeTeam->logo : null,
@@ -455,7 +454,7 @@ class BetImportService
 
             // Check if this is an Each-Way bet
             $isEachWay = isset($betData['wager_type']) &&
-                strtolower($betData['wager_type']) === 'each way';
+                strtolower($betData['wager_type']) === 'each_way';
             
             // Set Each Way fields
             if ($isEachWay) {
@@ -467,34 +466,12 @@ class BetImportService
                     (int) $record['place_terms_denominator'] : 5; // Default 1/5
             }
             
-            // Add position and dead heat fields if available
-            if (!empty($record['finishing_position'])) {
-                $betData['finishing_position'] = $record['finishing_position'];
-                $betData['position_numeric'] = $record['position_numeric'] ?? null;
+            // Handle golf_place field if available
+            if (isset($record['golf_place'])) {
+                $betData['golf_place'] = filter_var($record['golf_place'], FILTER_VALIDATE_BOOLEAN);
             }
             
-            if (isset($record['places_paid'])) {
-                $betData['places_paid'] = $record['places_paid'];
-            }
-            
-            if (isset($record['is_dead_heat'])) {
-                $betData['is_dead_heat'] = $record['is_dead_heat'];
-            }
-            
-            if (isset($record['dead_heat_players'])) {
-                $betData['dead_heat_players'] = $record['dead_heat_players'];
-            }
-            
-            if (isset($record['dead_heat_spots'])) {
-                $betData['dead_heat_spots'] = $record['dead_heat_spots'];
-            }
-
-            // Store position numeric if we have a finishing position
-            if (!empty($betData['finishing_position'])) {
-                $betService = app(BetService::class);
-                $betData['position_numeric'] = $betService->parsePosition($betData['finishing_position']);
-            }
-            elseif (in_array($betData['status'], ['won', 'lost', 'placed'])) {
+            if (in_array($betData['status'], ['won', 'lost', 'placed'])) {
 
                 if ($betData['status'] === 'won') {
                     // Check if we have pre-calculated values from CSV
@@ -637,35 +614,6 @@ class BetImportService
                 $record['home_team'] = $record['game'];
                 $record['away_team'] = null;
             }
-        }
-        
-        // Parse finishing position if provided
-        if (isset($record['finishing_position']) && !empty($record['finishing_position'])) {
-            $record['finishing_position'] = trim($record['finishing_position']);
-            
-            // Parse numeric position for easier calculations
-            $betService = app(BetService::class);
-            $record['position_numeric'] = $betService->parsePosition($record['finishing_position']);
-        }
-        
-        // Parse places paid
-        if (isset($record['places_paid'])) {
-            $record['places_paid'] = $this->parseNumeric($record['places_paid']);
-        }
-        
-        // Parse dead heat information
-        if (isset($record['dead_heat_players'])) {
-            $record['dead_heat_players'] = $this->parseNumeric($record['dead_heat_players']);
-        }
-        
-        if (isset($record['dead_heat_spots'])) {
-            $record['dead_heat_spots'] = $this->parseNumeric($record['dead_heat_spots']);
-        }
-        
-        // Auto-detect dead heat from position format
-        if (isset($record['finishing_position']) && !isset($record['is_dead_heat'])) {
-            $calculationService = app(BetCalculationService::class);
-            $record['is_dead_heat'] = $calculationService->detectDeadHeat($record['finishing_position']);
         }
         
         // Parse place terms (e.g., "1/5" -> denominator = 5)
@@ -950,7 +898,7 @@ class BetImportService
             'sport' => 'required|string|max:255',
             'league' => 'nullable|string|max:255',
             'month' => 'nullable|string|max:50',
-            'bet_type' => 'required|string|max:50',
+            'wager_type' => 'required|string|max:50',
             'wager_name' => 'required|string|max:250',  // Updated to 250
             'odds' => ['required', 'numeric', 'between:-100000,100000'], // Allow negative odds
             'wager_amount' => 'required|numeric|min:0.01',
@@ -970,12 +918,6 @@ class BetImportService
             'description' => 'nullable|string|max:500',
             'placed_at' => 'nullable|string',
             'referrer' => 'nullable|string|max:255',
-            // New fields for position and dead heat
-            'finishing_position' => 'nullable|string|max:20',
-            'places_paid' => 'nullable|integer|min:1|max:50',
-            'dead_heat_players' => 'nullable|integer|min:2',
-            'dead_heat_spots' => 'nullable|numeric|min:0',
-            'place_terms' => 'nullable|string|max:10',
         ];
 
         $validator = Validator::make($record, $rules);
@@ -995,7 +937,7 @@ class BetImportService
                 'away_team',
                 'game_date',
                 'operator',
-                'bet_type',
+                'wager_type',
                 'selection',
                 'odds',
                 'stake',
@@ -1010,7 +952,7 @@ class BetImportService
                 'away_team' => 'Buffalo Bills',
                 'game_date' => '2024-01-15',
                 'operator' => 'DraftKings',
-                'bet_type' => 'Spread',
+                'wager_type' => 'Spread',
                 'selection' => 'Chiefs -3.5',
                 'odds' => '1.91',
                 'stake' => '100',

@@ -16,7 +16,7 @@ class Bet extends Model
         'month',
         'game',     // New column
         'matches',
-        'bet_type', // New column
+        'wager_type', // New column
         'markets',
         'wager_name', // New column
         'team_one',

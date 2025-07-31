@@ -70,7 +70,7 @@ class BetManagementController extends Controller
             'bets' => $bets,
             'filters' => $request->only([
                 'status', 'sport_id', 'operator_id', 'user_id',
-                'date_from', 'date_to', 'search', 'bet_type',
+                'date_from', 'date_to', 'search', 'wager_type',
                 'is_featured', 'profit_status',
                 'sort_by', 'sort_direction', 'per_page',
             ]),
@@ -118,8 +118,8 @@ class BetManagementController extends Controller
             $query->where('user_id', $request->user_id);
         }
 
-        if ($request->filled('bet_type')) {
-            $query->where('bet_type', $request->bet_type);
+        if ($request->filled('wager_type')) {
+            $query->where('wager_type', $request->wager_type);
         }
 
         if ($request->filled('is_featured')) {
@@ -272,7 +272,7 @@ class BetManagementController extends Controller
             'parlay_teams.*.name' => 'nullable|string|max:255',
             'tips' => 'nullable|string|max:500',
             'markets' => 'nullable|string|max:255',
-            'bet_type' => 'required|string|in:moneyline,spread,total,prop,parlay,futures,each_way',
+            'wager_type' => 'required|string|in:moneyline,spread,total,prop,parlay,futures,each_way',
             'betting_date' => 'required|date',
             'game_date' => 'required|date',
             'wager_odds' => 'required|numeric',
@@ -401,7 +401,7 @@ class BetManagementController extends Controller
         }
 
         // Check if this is a parlay
-        $isParlay = $validated['bet_type'] === 'parlay';
+        $isParlay = $validated['wager_type'] === 'parlay';
         $validated['is_parlay'] = $isParlay;
 
         // Handle parlay teams
@@ -530,7 +530,7 @@ class BetManagementController extends Controller
             'team_two_id' => 'nullable|exists:teams,id',
             'team_two_is_new' => 'nullable|boolean',
             'tips' => 'nullable|string|max:500',
-            'bet_type' => 'required|string|in:moneyline,spread,total,prop,parlay,futures,each_way',
+            'wager_type' => 'required|string|in:moneyline,spread,total,prop,parlay,futures,each_way',
             'betting_date' => 'required|date',
             'game_date' => 'required|date',
             'wager_odds' => 'required|numeric',

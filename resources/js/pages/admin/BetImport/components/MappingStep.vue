@@ -320,7 +320,6 @@ const formatFieldName = (field: string): string => {
     'game': 'Game',
     'home_team': 'Home Team',
     'away_team': 'Away Team',
-    'bet_type': 'Bet Type',
     'wager_type': 'Wager Type',
     'wager_name': 'Wager Name',
     'odds': 'odds',

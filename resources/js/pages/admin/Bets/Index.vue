@@ -98,7 +98,7 @@ interface Props {
         date_from?: string;
         date_to?: string;
         search?: string;
-        bet_type?: string;
+        wager_type?: string;
         is_featured?: boolean;
         min_confidence?: number;
         profit_status?: string;
@@ -124,7 +124,7 @@ const filterForm = useForm({
     date_from: props.filters.date_from || '',
     date_to: props.filters.date_to || '',
     search: props.filters.search || '',
-    bet_type: props.filters.bet_type || '',
+    wager_type: props.filters.wager_type || '',
     is_featured: props.filters.is_featured || '',
     min_confidence: props.filters.min_confidence || '',
     profit_status: props.filters.profit_status || '',
@@ -198,7 +198,7 @@ watch(() => ({
     operator_id: filterForm.operator_id,
     date_from: filterForm.date_from,
     date_to: filterForm.date_to,
-    bet_type: filterForm.bet_type,
+    wager_type: filterForm.wager_type,
     is_featured: filterForm.is_featured,
     min_confidence: filterForm.min_confidence,
     profit_status: filterForm.profit_status,
@@ -612,7 +612,7 @@ function formatCurrency(amount: number | null | undefined): string {
                                     <div class="col-lg-3 col-md-4 col-sm-6">
                                         <label class="form-label">Bet Type</label>
                                         <select
-                                            v-model="filterForm.bet_type"
+                                            v-model="filterForm.wager_type"
                                             class="form-select"
                                         >
                                             <option value="">All Types</option>

@@ -26,7 +26,7 @@ class BetRequest extends FormRequest
             'sport_id' => ['required', 'integer', 'exists:sports,id'],
             'game_id' => ['required', 'integer', 'exists:games,id'],
             'operator_id' => ['required', 'integer', 'exists:operators,id'],
-            'bet_type' => ['required', 'string', 'max:50'],
+            'wager_type' => ['required', 'string', 'max:50'],
             'selection' => ['required', 'string', 'max:255'],
             'odds' => ['required', 'numeric', 'min:1.01', 'max:1000'],
             'stake' => ['required', 'numeric', 'min:0.01', 'max:100000'],
