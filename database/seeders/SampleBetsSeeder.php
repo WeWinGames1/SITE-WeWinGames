@@ -203,11 +203,11 @@ class SampleBetsSeeder extends Seeder
 
             $market = $markets[array_rand($markets)];
             $operator = Operator::inRandomOrder()->first();
-            $statuses = ['Won', 'Lost', 'Push'];
+            $statuses = ['Won', 'Loss', 'Push'];
 
             $status = $statuses[array_rand($statuses)];
             $wagerAmount = rand(10, 100);
-            $profit = $status === 'Won' ? $wagerAmount * (rand(50, 200) / 100) : ($status === 'Lost' ? -$wagerAmount : 0);
+            $profit = $status === 'Won' ? $wagerAmount * (rand(50, 200) / 100) : ($status === 'Loss' ? -$wagerAmount : 0);
 
             Bet::create([
                 'sports' => $sport,

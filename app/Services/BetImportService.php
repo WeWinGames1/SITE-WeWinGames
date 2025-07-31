@@ -24,6 +24,10 @@ class BetImportService
     private array $staticValues = [];
     
     private bool $skipErrors = false;
+    
+    private array $skippedEachWayBets = [];
+    
+    private array $skippedParlayBets = [];
 
     public function __construct(
         private BetRepositoryInterface $betRepository
@@ -73,10 +77,18 @@ class BetImportService
                 return $dateValue . ' 00:00:00';
             }
 
-            // Try parsing with Carbon - it handles many formats
-            return \Carbon\Carbon::parse($dateValue)->format('Y-m-d H:i:s');
-        } catch (\Exception $e) {
-            // If Carbon fails, try manual parsing for MM-DD-YYYY format
+            // IMPORTANT: Always parse dates as MM/DD/YYYY format first
+            // This ensures consistency for dates like 07/12/2025
+            
+            // Try manual parsing for MM/DD/YYYY format with slashes
+            if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/', $dateValue, $matches)) {
+                $month = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+                $day = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+                $year = $matches[3];
+                return "$year-$month-$day 00:00:00";
+            }
+            
+            // Try manual parsing for MM-DD-YYYY format with dashes
             if (preg_match('/^(\d{1,2})-(\d{1,2})-(\d{4})$/', $dateValue, $matches)) {
                 $month = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
                 $day = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
@@ -84,6 +96,10 @@ class BetImportService
                 return "$year-$month-$day 00:00:00";
             }
 
+            // Only use Carbon as a fallback with explicit format
+            // This prevents Carbon from auto-detecting and potentially swapping MM/DD
+            return \Carbon\Carbon::createFromFormat('m/d/Y', $dateValue)->format('Y-m-d H:i:s');
+        } catch (\Exception $e) {
             // Log the error for debugging
             \Log::warning('Failed to parse date in BetImportService', [
                 'value' => $dateValue,
@@ -183,6 +199,8 @@ class BetImportService
                 'successCount' => $this->successCount,
                 'processed' => $totalRecords,
                 'errors' => $this->errors,
+                'skippedEachWayBets' => $this->skippedEachWayBets,
+                'skippedParlayBets' => $this->skippedParlayBets,
             ];
 
         } catch (\Exception $e) {
@@ -202,6 +220,8 @@ class BetImportService
                 'errors' => $this->errors,
                 'successCount' => $this->successCount,
                 'processed' => $totalRecords ?? 0,
+                'skippedEachWayBets' => $this->skippedEachWayBets,
+                'skippedParlayBets' => $this->skippedParlayBets,
             ];
         }
     }
@@ -226,6 +246,26 @@ class BetImportService
 
         // Transform data before validation
         $record = $this->transformRecordData($record);
+        
+        // Skip Each Way bets - they must be added manually
+        if (isset($record['bet_type']) && 
+            (strcasecmp($record['bet_type'], 'each_way') === 0 || 
+             strcasecmp($record['bet_type'], 'each way') === 0)) {
+            $this->skippedEachWayBets[] = [
+                'line' => $lineNumber,
+                'data' => $record
+            ];
+            return;
+        }
+        
+        // Skip Parlay bets - they must be added manually
+        if (isset($record['bet_type']) && strcasecmp($record['bet_type'], 'parlay') === 0) {
+            $this->skippedParlayBets[] = [
+                'line' => $lineNumber,
+                'data' => $record
+            ];
+            return;
+        }
 
         // Validate record
         $validation = $this->validateRecord($record);
@@ -265,10 +305,11 @@ class BetImportService
         }
 
         try {
-            // Get or create sport
+            // Get or create sport (normalize to lowercase)
+            $sportName = strtolower($record['sport']);
             $sport = Sport::firstOrCreate(
-                ['name' => $record['sport']],
-                ['slug' => \Str::slug($record['sport'])]
+                ['name' => $sportName],
+                ['slug' => \Str::slug($sportName)]
             );
 
             // Get teams - should already be parsed in transformRecordData
@@ -279,7 +320,7 @@ class BetImportService
             $matchesField = '';
             if ($awayTeamName && $homeTeamName) {
                 // Team sports - format as "Away @ Home" or "Fighter1 vs Fighter2"
-                $isCombatSport = in_array(strtolower($record['sport']), ['ufc', 'mma', 'boxing', 'combat sports']);
+                $isCombatSport = in_array($sportName, ['ufc', 'mma', 'boxing', 'combat sports']);
                 $matchesField = $isCombatSport ?
                     "{$awayTeamName} vs {$homeTeamName}" :
                     "{$awayTeamName} @ {$homeTeamName}";
@@ -382,8 +423,8 @@ class BetImportService
 
             $betData = [
                 // Use both old and new column names for compatibility
-                'sport' => $record['sport'],
-                'sports' => $record['sport'], // Keep old column for compatibility
+                'sport' => strtolower($record['sport']),
+                'sports' => strtolower($record['sport']), // Keep old column for compatibility
                 'league' => $record['league'] ?? null,
                 'month' => $record['month'] ?? null,
                 'game' => $record['game'] ?? $matchesField, // New column
@@ -642,16 +683,16 @@ class BetImportService
         if ($dateField && isset($record[$dateField]) && ! empty($record[$dateField])) {
             try {
                 // Try multiple date formats
+                // IMPORTANT: m/d/Y (MM/DD/YYYY) is prioritized over d/m/Y
                 $formats = [
                     'Y-m-d H:i:s',
                     'Y-m-d',
-                    'm/d/Y',
-                    'd/m/Y',
-                    'm-d-Y',
-                    'd-m-Y',
-                    'Y/m/d',
+                    'm/d/Y',      // MM/DD/YYYY format (prioritized)
+                    'm-d-Y',      // MM-DD-YYYY format
                     'm/d/Y H:i:s',
                     'm/d/Y H:i',
+                    'Y/m/d',
+                    // Note: d/m/Y formats removed to prevent date swapping
                 ];
 
                 $parsed = false;
@@ -667,8 +708,8 @@ class BetImportService
                 }
 
                 if (! $parsed) {
-                    // Last resort - let Carbon try to parse it
-                    $record['game_date'] = \Carbon\Carbon::parse($record[$dateField])->format('Y-m-d H:i:s');
+                    // Last resort - use formatDateForMysql method which prioritizes MM/DD/YYYY
+                    $record['game_date'] = $this->formatDateForMysql($record[$dateField]);
                 }
             } catch (\Exception $e) {
                 // Keep original value if parse fails
@@ -679,16 +720,16 @@ class BetImportService
         if (isset($record['betting_date']) && ! empty($record['betting_date'])) {
             try {
                 // Try multiple date formats
+                // IMPORTANT: m/d/Y (MM/DD/YYYY) is prioritized over d/m/Y
                 $formats = [
                     'Y-m-d H:i:s',
                     'Y-m-d',
-                    'm/d/Y',
-                    'd/m/Y',
-                    'm-d-Y',
-                    'd-m-Y',
-                    'Y/m/d',
+                    'm/d/Y',      // MM/DD/YYYY format (prioritized)
+                    'm-d-Y',      // MM-DD-YYYY format
                     'm/d/Y H:i:s',
                     'm/d/Y H:i',
+                    'Y/m/d',
+                    // Note: d/m/Y formats removed to prevent date swapping
                 ];
 
                 $parsed = false;
@@ -704,8 +745,8 @@ class BetImportService
                 }
 
                 if (! $parsed) {
-                    // Last resort - let Carbon try to parse it
-                    $record['betting_date'] = \Carbon\Carbon::parse($record['betting_date'])->format('Y-m-d H:i:s');
+                    // Last resort - use formatDateForMysql method which prioritizes MM/DD/YYYY
+                    $record['betting_date'] = $this->formatDateForMysql($record['betting_date']);
                 }
             } catch (\Exception $e) {
                 // Keep original value if parse fails
@@ -720,7 +761,7 @@ class BetImportService
         // Parse placed_at date
         if (isset($record['placed_at']) && ! empty($record['placed_at'])) {
             try {
-                $record['placed_at'] = \Carbon\Carbon::parse($record['placed_at'])->format('Y-m-d H:i:s');
+                $record['placed_at'] = $this->formatDateForMysql($record['placed_at']);
             } catch (\Exception $e) {
                 // Keep original value if parse fails
             }
@@ -847,10 +888,10 @@ class BetImportService
             'win' => 'won',
             'won' => 'won',
             'w' => 'won',
-            'loss' => 'lost',
-            'lost' => 'lost',
-            'lose' => 'lost',
-            'l' => 'lost',
+            'loss' => 'loss',
+            'lost' => 'loss',
+            'lose' => 'loss',
+            'l' => 'loss',
             'push' => 'push',
             'p' => 'push',
             'void' => 'void',

@@ -169,6 +169,23 @@ const sortBy = (field: string) => {
     applyFilters();
 };
 
+// Generate pagination URL with current filters
+const getPaginationUrl = (page: number) => {
+    const params = new URLSearchParams();
+    
+    // Add all current filters
+    Object.entries(filterForm.data()).forEach(([key, value]) => {
+        if (value !== '' && value !== null && value !== undefined) {
+            params.append(key, String(value));
+        }
+    });
+    
+    // Update page number
+    params.set('page', String(page));
+    
+    return `?${params.toString()}`;
+};
+
 const getSortIcon = (field: string) => {
     if (filterForm.sort_by !== field) return ArrowsUpDownIcon;
     return filterForm.sort_direction === 'asc' ? ChevronUpIcon : ChevronDownIcon;
@@ -324,7 +341,7 @@ function getStatusColor(status: string): string {
     switch (status) {
         case 'won':
             return 'badge bg-success';
-        case 'lost':
+        case 'loss':
             return 'badge bg-danger';
         case 'push':
             return 'badge bg-warning';
@@ -341,7 +358,7 @@ function getStatusIcon(status: string) {
     switch (status) {
         case 'won':
             return CheckIcon;
-        case 'lost':
+        case 'loss':
             return XMarkIcon;
         default:
             return null;
@@ -703,7 +720,7 @@ function formatCurrency(amount: number | null | undefined): string {
                             >
                                 <option value="">Select status...</option>
                                 <option value="won">Mark as Won</option>
-                                <option value="lost">Mark as Lost</option>
+                                <option value="loss">Mark as Loss</option>
                                 <option value="push">Mark as Push</option>
                                 <option value="cancelled">Mark as Cancelled</option>
                             </select>
@@ -910,8 +927,9 @@ function formatCurrency(amount: number | null | undefined): string {
                                             <ul class="pagination pagination-sm mb-0">
                                                 <li v-if="bets.current_page > 1" class="page-item">
                                                     <Link
-                                                        :href="`?page=${bets.current_page - 1}`"
+                                                        :href="getPaginationUrl(bets.current_page - 1)"
                                                         preserve-scroll
+                                                        preserve-state
                                                         class="page-link"
                                                     >
                                                         Previous
@@ -923,8 +941,9 @@ function formatCurrency(amount: number | null | undefined): string {
                                                     </li>
                                                     <li v-else class="page-item" :class="{ active: page === bets.current_page }">
                                                         <Link
-                                                            :href="`?page=${page}`"
+                                                            :href="getPaginationUrl(page)"
                                                             preserve-scroll
+                                                            preserve-state
                                                             class="page-link"
                                                         >
                                                             {{ page }}
@@ -933,8 +952,9 @@ function formatCurrency(amount: number | null | undefined): string {
                                                 </template>
                                                 <li v-if="bets.current_page < bets.last_page" class="page-item">
                                                     <Link
-                                                        :href="`?page=${bets.current_page + 1}`"
+                                                        :href="getPaginationUrl(bets.current_page + 1)"
                                                         preserve-scroll
+                                                        preserve-state
                                                         class="page-link"
                                                     >
                                                         Next

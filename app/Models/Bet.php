@@ -18,7 +18,6 @@ class Bet extends Model
         'matches',
         'bet_type', // New column
         'markets',
-        'wager_type',
         'wager_name', // New column
         'team_one',
         'team_one_id',
@@ -57,6 +56,7 @@ class Bet extends Model
         'dead_heat_spots',
         'bet_result_type',
         'place_terms_denominator',
+        'golf_place',
     ];
     
     protected $casts = [
@@ -72,6 +72,7 @@ class Bet extends Model
         'dead_heat_players' => 'integer',
         'dead_heat_spots' => 'decimal:4',
         'place_terms_denominator' => 'integer',
+        'golf_place' => 'boolean',
     ];
 
     // Relationships

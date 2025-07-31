@@ -70,14 +70,14 @@ class BetManagementController extends Controller
             'bets' => $bets,
             'filters' => $request->only([
                 'status', 'sport_id', 'operator_id', 'user_id',
-                'date_from', 'date_to', 'search', 'bet_type', 'wager_type',
+                'date_from', 'date_to', 'search', 'bet_type',
                 'is_featured', 'profit_status',
                 'sort_by', 'sort_direction', 'per_page',
             ]),
             'stats' => $stats,
             'sports' => $filterOptions['sports'],
             'operators' => $filterOptions['operators'],
-            'statuses' => ['pending', 'won', 'lost', 'void', 'push'],
+            'statuses' => ['pending', 'won', 'loss', 'void', 'push'],
             'betTypes' => [
                 'moneyline' => 'Moneyline',
                 'spread' => 'Point Spread',
@@ -85,14 +85,7 @@ class BetManagementController extends Controller
                 'prop' => 'Prop Bet',
                 'parlay' => 'Parlay',
                 'futures' => 'Futures',
-            ],
-            'wagerTypes' => [
-                'single' => 'Single Bet',
-                'parlay' => 'Parlay',
-                'round_robin' => 'Round Robin',
-                'teaser' => 'Teaser',
-                'if_bet' => 'If Bet',
-                'reverse' => 'Reverse',
+                'each_way' => 'Each Way',
             ],
         ]);
     }
@@ -128,10 +121,6 @@ class BetManagementController extends Controller
         if ($request->filled('bet_type')) {
             $query->where('bet_type', $request->bet_type);
         }
-        
-        if ($request->filled('wager_type')) {
-            $query->where('wager_type', $request->wager_type);
-        }
 
         if ($request->filled('is_featured')) {
             $query->where('is_featured', $request->boolean('is_featured'));
@@ -160,7 +149,6 @@ class BetManagementController extends Controller
                 'team_one',
                 'team_two',
                 'tips',
-                'wager_type',
                 'membership',
                 'status',
             ];
@@ -250,16 +238,7 @@ class BetManagementController extends Controller
             'prop' => 'Prop Bet',
             'parlay' => 'Parlay',
             'futures' => 'Futures',
-        ];
-
-        // Define wager types
-        $wagerTypes = [
-            'single' => 'Single Bet',
-            'parlay' => 'Parlay',
-            'round_robin' => 'Round Robin',
-            'teaser' => 'Teaser',
-            'if_bet' => 'If Bet',
-            'reverse' => 'Reverse',
+            'each_way' => 'Each Way',
         ];
 
         return Inertia::render('admin/Bets/Create', [
@@ -268,7 +247,6 @@ class BetManagementController extends Controller
             'operators' => $operators,
             'games' => $games,
             'betTypes' => $betTypes,
-            'wagerTypes' => $wagerTypes,
         ]);
     }
 
@@ -278,7 +256,6 @@ class BetManagementController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'wager_type' => 'required|string|max:250',
             'sports' => 'required|string|max:255',
             'sport_id' => 'nullable|exists:sports,id',
             'league' => 'nullable|string|max:255',
@@ -295,11 +272,12 @@ class BetManagementController extends Controller
             'parlay_teams.*.name' => 'nullable|string|max:255',
             'tips' => 'nullable|string|max:500',
             'markets' => 'nullable|string|max:255',
+            'bet_type' => 'required|string|in:moneyline,spread,total,prop,parlay,futures,each_way',
             'betting_date' => 'required|date',
             'game_date' => 'required|date',
             'wager_odds' => 'required|numeric',
             'wager_amount' => 'required|numeric|min:0',
-            'status' => 'required|in:pending,won,placed,lost,void,push',
+            'status' => 'required|in:pending,won,placed,loss,void,push',
             'membership' => 'required|in:bronze,silver,gold,platinum',
             'level' => 'nullable|string|max:50',
             'code' => 'nullable|string|max:255',
@@ -312,10 +290,16 @@ class BetManagementController extends Controller
             'is_dead_heat' => 'nullable|boolean',
             'dead_heat_players' => 'nullable|integer|min:2|required_if:is_dead_heat,true',
             'dead_heat_spots' => 'nullable|numeric|min:0|required_if:is_dead_heat,true',
+            'golf_place' => 'nullable|boolean',
         ]);
 
         // Set the user_id to the authenticated admin
         $validated['user_id'] = Auth::id();
+        
+        // Normalize sports name to lowercase
+        if (isset($validated['sports'])) {
+            $validated['sports'] = strtolower($validated['sports']);
+        }
         
         // Handle new team creation
         DB::transaction(function () use (&$validated, $request) {
@@ -417,7 +401,7 @@ class BetManagementController extends Controller
         }
 
         // Check if this is a parlay
-        $isParlay = $validated['wager_type'] === 'parlay';
+        $isParlay = $validated['bet_type'] === 'parlay';
         $validated['is_parlay'] = $isParlay;
 
         // Handle parlay teams
@@ -488,16 +472,7 @@ class BetManagementController extends Controller
             'prop' => 'Prop Bet',
             'parlay' => 'Parlay',
             'futures' => 'Futures',
-        ];
-
-        // Define wager types
-        $wagerTypes = [
-            'single' => 'Single Bet',
-            'parlay' => 'Parlay',
-            'round_robin' => 'Round Robin',
-            'teaser' => 'Teaser',
-            'if_bet' => 'If Bet',
-            'reverse' => 'Reverse',
+            'each_way' => 'Each Way',
         ];
 
         // Convert bet to array and ensure team relationships are properly formatted
@@ -531,7 +506,6 @@ class BetManagementController extends Controller
             'operators' => $operators,
             'users' => $users,
             'betTypes' => $betTypes,
-            'wagerTypes' => $wagerTypes,
         ]);
     }
 
@@ -549,7 +523,6 @@ class BetManagementController extends Controller
             'month' => 'nullable|string|max:50',
             'matches' => 'nullable|string|max:500',
             'markets' => 'nullable|string|max:255',
-            'wager_type' => 'nullable|string|max:250',
             'team_one' => 'nullable|string|max:255',
             'team_one_id' => 'nullable|exists:teams,id',
             'team_one_is_new' => 'nullable|boolean',
@@ -557,6 +530,7 @@ class BetManagementController extends Controller
             'team_two_id' => 'nullable|exists:teams,id',
             'team_two_is_new' => 'nullable|boolean',
             'tips' => 'nullable|string|max:500',
+            'bet_type' => 'required|string|in:moneyline,spread,total,prop,parlay,futures,each_way',
             'betting_date' => 'required|date',
             'game_date' => 'required|date',
             'wager_odds' => 'required|numeric',
@@ -564,7 +538,7 @@ class BetManagementController extends Controller
             'winning_amount' => 'nullable|numeric|min:0',
             'profit_amount' => 'nullable|numeric',
             'roi' => 'nullable|numeric',
-            'status' => 'required|in:pending,won,placed,lost,void,push',
+            'status' => 'required|in:pending,won,placed,loss,void,push',
             'membership' => 'required|in:bronze,silver,gold,platinum',
             'level' => 'nullable|string|max:50',
             'code' => 'nullable|string|max:255',
@@ -581,7 +555,13 @@ class BetManagementController extends Controller
             'is_dead_heat' => 'nullable|boolean',
             'dead_heat_players' => 'nullable|integer|min:2',
             'dead_heat_spots' => 'nullable|numeric|min:0',
+            'golf_place' => 'nullable|boolean',
         ]);
+        
+        // Normalize sports name to lowercase
+        if (isset($validated['sports'])) {
+            $validated['sports'] = strtolower($validated['sports']);
+        }
         
         // Handle new team creation
         DB::transaction(function () use (&$validated, $request) {

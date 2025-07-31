@@ -48,7 +48,7 @@ class BetRequest extends FormRequest
             // Add status validation for updates
             $rules['status'] = [
                 'sometimes',
-                Rule::in(['pending', 'won', 'lost', 'void', 'cashout', 'push']),
+                Rule::in(['pending', 'won', 'loss', 'void', 'cashout', 'push']),
             ];
         }
 

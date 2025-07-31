@@ -85,6 +85,73 @@
       </div>
     </div>
 
+    <!-- Skipped Bets Notice -->
+    <div v-if="(progress.skippedEachWayBets && progress.skippedEachWayBets.length > 0) || (progress.skippedParlayBets && progress.skippedParlayBets.length > 0)" class="mb-4">
+      <h3 class="h5 mb-2">Skipped Bets</h3>
+      
+      <!-- Each Way Bets -->
+      <div v-if="progress.skippedEachWayBets && progress.skippedEachWayBets.length > 0" class="alert alert-warning mb-3">
+        <div class="d-flex align-items-start mb-3">
+          <i class="bi bi-info-circle me-2 flex-shrink-0"></i>
+          <div>
+            <strong>Each Way bets must be manually added via the "Add Bet" system.</strong>
+            <p class="mb-2 mt-1">The following rows were skipped because they contain Each Way bet types:</p>
+          </div>
+        </div>
+        <div style="max-height: 200px; overflow-y: auto;">
+          <table class="table table-sm table-bordered mb-0">
+            <thead>
+              <tr>
+                <th>Row</th>
+                <th>Team/Selection</th>
+                <th>Sport</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(bet, index) in progress.skippedEachWayBets" :key="`each-way-${index}`">
+                <td>{{ bet.line }}</td>
+                <td>{{ bet.data.wager_name || bet.data.team_one || 'N/A' }}</td>
+                <td>{{ bet.data.sports || 'N/A' }}</td>
+                <td>{{ bet.data.betting_date || bet.data.game_date || 'N/A' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Parlay Bets -->
+      <div v-if="progress.skippedParlayBets && progress.skippedParlayBets.length > 0" class="alert alert-warning">
+        <div class="d-flex align-items-start mb-3">
+          <i class="bi bi-info-circle me-2 flex-shrink-0"></i>
+          <div>
+            <strong>Parlay bets must be manually added via the "Add Bet" system.</strong>
+            <p class="mb-2 mt-1">The following rows were skipped because they contain Parlay bet types:</p>
+          </div>
+        </div>
+        <div style="max-height: 200px; overflow-y: auto;">
+          <table class="table table-sm table-bordered mb-0">
+            <thead>
+              <tr>
+                <th>Row</th>
+                <th>Team/Selection</th>
+                <th>Sport</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(bet, index) in progress.skippedParlayBets" :key="`parlay-${index}`">
+                <td>{{ bet.line }}</td>
+                <td>{{ bet.data.wager_name || bet.data.team_one || 'N/A' }}</td>
+                <td>{{ bet.data.sports || 'N/A' }}</td>
+                <td>{{ bet.data.betting_date || bet.data.game_date || 'N/A' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- Actions -->
     <div class="d-flex justify-content-center gap-3">
       <button
@@ -130,7 +197,9 @@ const progress = ref({
   success: 0,
   errors: 0,
   percentage: 0,
-  status: 'processing' // processing, completed, failed
+  status: 'processing', // processing, completed, failed
+  skippedEachWayBets: [] as Array<{ line: number; data: any }>,
+  skippedParlayBets: [] as Array<{ line: number; data: any }>
 })
 
 const errorLog = ref<Array<{ row: number; message: string }>>([])

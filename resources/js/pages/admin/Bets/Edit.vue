@@ -40,7 +40,6 @@ interface Bet {
     month?: string;
     matches?: string;
     markets?: string;
-    wager_type?: string;
     team_one?: string;
     team_one_id?: number;
     team_one_logo?: string;
@@ -64,7 +63,6 @@ interface Bet {
     status: string;
     referrer?: string;
     place_fraction?: number;
-    is_each_way?: boolean;
     each_way_stake?: number;
     place_payout?: number;
     user_id?: number;
@@ -78,6 +76,7 @@ interface Bet {
     dead_heat_spots?: number;
     bet_result_type?: string;
     place_terms_denominator?: number;
+    golf_place?: boolean;
 }
 
 interface Props {
@@ -86,7 +85,6 @@ interface Props {
     sports: Sport[];
     leagues: League[];
     betTypes: Record<string, string>;
-    wagerTypes: Record<string, string>;
 }
 
 const props = defineProps<Props>();
@@ -98,7 +96,7 @@ const selectedTeamForLogo = ref<Team | null>(null);
 const logoFile = ref<File | null>(null);
 
 const form = useForm({
-    wager_type: props.bet.wager_type || 'single',
+    bet_type: props.bet.bet_type || props.bet.markets || '',
     sports: props.bet.sports || '',
     sport_id: null as number | null,
     league: props.bet.league || '',
@@ -131,14 +129,8 @@ const form = useForm({
     status: String(props.bet.status || 'pending').toLowerCase(),
     referrer: props.bet.referrer || '',
     place_fraction: props.bet.place_fraction || 0,
-    is_each_way: props.bet.is_each_way || false,
     user_id: props.bet.user_id || null,
-    // New fields for position and dead heat
-    finishing_position: props.bet.finishing_position || '',
-    places_paid: props.bet.places_paid || null,
-    is_dead_heat: props.bet.is_dead_heat || false,
-    dead_heat_players: props.bet.dead_heat_players || null,
-    dead_heat_spots: props.bet.dead_heat_spots || null,
+    golf_place: props.bet.golf_place || false,
 });
 
 // Initialize sport_id and league_id from existing data
@@ -169,7 +161,7 @@ const filteredLeagues = computed(() => {
     return props.leagues.filter(league => league.sport_id === form.sport_id);
 });
 
-const isParlay = computed(() => form.wager_type === 'parlay');
+const isParlay = computed(() => form.bet_type === 'parlay');
 
 const teamOneLogo = computed(() => {
     if (props.bet.teamOne?.logo_url) {
@@ -223,6 +215,14 @@ watch(() => form.status, () => {
     calculateProfit();
 });
 
+// Watch for bet type changes to reset golf_place
+watch(() => form.bet_type, () => {
+    // Reset golf_place if bet type is not each_way
+    if (form.bet_type !== 'each_way') {
+        form.golf_place = false;
+    }
+});
+
 function calculatePotentialWin() {
     const odds = typeof form.wager_odds === 'string' ? parseFloat(form.wager_odds) : form.wager_odds;
     const stake = Number(form.wager_amount);
@@ -246,7 +246,7 @@ function calculateProfit() {
     
     if (form.status === 'won') {
         form.profit_amount = winning - stake;
-    } else if (form.status === 'lost') {
+    } else if (form.status === 'loss') {
         form.profit_amount = -stake;
     } else if (form.status === 'push' || form.status === 'void') {
         form.profit_amount = 0;
@@ -520,6 +520,11 @@ function validateForm(): boolean {
     const errors: Record<string, string> = {};
     
     // Required fields validation
+    if (!form.bet_type) {
+        errors.bet_type = 'The bet type field is required.';
+        isValid = false;
+    }
+    
     if (!form.sports || !form.sports.trim()) {
         errors.sports = 'The sports field is required.';
         isValid = false;
@@ -557,7 +562,7 @@ function validateForm(): boolean {
     if (!form.status) {
         errors.status = 'The status field is required.';
         isValid = false;
-    } else if (!['pending', 'won', 'lost', 'void', 'push'].includes(form.status)) {
+    } else if (!['pending', 'won', 'loss', 'void', 'push'].includes(form.status)) {
         errors.status = 'The selected status is invalid.';
         isValid = false;
     }
@@ -588,11 +593,6 @@ function validateForm(): boolean {
     
     if (form.markets && form.markets.length > 255) {
         errors.markets = 'The markets may not be greater than 255 characters.';
-        isValid = false;
-    }
-    
-    if (form.wager_type && form.wager_type.length > 250) {
-        errors.wager_type = 'The wager type may not be greater than 250 characters.';
         isValid = false;
     }
     
@@ -686,7 +686,13 @@ function submit() {
         return;
     }
     
-    form.put(route('admin.bets.update', props.bet.id));
+    // Set is_each_way based on bet_type
+    const data = {
+        ...form.data(),
+        is_each_way: form.bet_type === 'each_way'
+    };
+    
+    form.transform(() => data).put(route('admin.bets.update', props.bet.id));
 }
 
 // Helper function to calculate place odds
@@ -789,29 +795,29 @@ declare global {
             </div>
 
             <form @submit.prevent="submit">
-                <!-- Wager Type Card -->
+                <!-- Bet Type Card -->
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h3 class="h5 mb-0">Wager Type</h3>
+                        <h3 class="h5 mb-0">Bet Type</h3>
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-12">
-                                <label for="wager_type" class="form-label">Select Wager Type <span class="text-danger">*</span></label>
+                                <label for="bet_type" class="form-label">Select Bet Type <span class="text-danger">*</span></label>
                                 <select
-                                    id="wager_type"
-                                    v-model="form.wager_type"
+                                    id="bet_type"
+                                    v-model="form.bet_type"
                                     class="form-select form-select-lg"
-                                    :class="{ 'is-invalid': form.errors.wager_type }"
+                                    :class="{ 'is-invalid': form.errors.bet_type }"
                                     required
                                 >
-                                    <option value="">Select wager type...</option>
-                                    <option v-for="(label, value) in wagerTypes" :key="value" :value="value">
+                                    <option value="">Select bet type...</option>
+                                    <option v-for="(label, value) in betTypes" :key="value" :value="value">
                                         {{ label }}
                                     </option>
                                 </select>
-                                <div v-if="form.errors.wager_type" class="invalid-feedback">
-                                    {{ form.errors.wager_type }}
+                                <div v-if="form.errors.bet_type" class="invalid-feedback">
+                                    {{ form.errors.bet_type }}
                                 </div>
                             </div>
                         </div>
@@ -1126,8 +1132,8 @@ declare global {
                                     <option value="">Select status...</option>
                                     <option value="pending">Pending</option>
                                     <option value="won">Won</option>
-                                    <option v-if="form.is_each_way" value="placed">Placed</option>
-                                    <option value="lost">Lost</option>
+                                    <option v-if="form.bet_type === 'each_way'" value="placed">Placed</option>
+                                    <option value="loss">Loss</option>
                                     <option value="push">Push</option>
                                     <option value="void">Void</option>
                                 </select>
@@ -1169,23 +1175,9 @@ declare global {
                                 </div>
                             </div>
 
-                            <!-- Each Way Checkbox -->
-                            <div class="col-md-12">
-                                <div class="form-check mb-3">
-                                    <input
-                                        id="is_each_way"
-                                        v-model="form.is_each_way"
-                                        type="checkbox"
-                                        class="form-check-input"
-                                    />
-                                    <label class="form-check-label" for="is_each_way">
-                                        Each Way Bet
-                                    </label>
-                                </div>
-                            </div>
 
                             <!-- Place Fraction -->
-                            <div v-if="form.is_each_way" class="col-md-6">
+                            <div v-if="form.bet_type === 'each_way'" class="col-md-6">
                                 <label for="place_fraction" class="form-label">Place Fraction</label>
                                 <select
                                     id="place_fraction"
@@ -1204,7 +1196,7 @@ declare global {
                             </div>
 
                             <!-- Place Odds Preview -->
-                            <div v-if="form.is_each_way" class="col-md-6">
+                            <div v-if="form.bet_type === 'each_way'" class="col-md-6">
                                 <label class="form-label">Place Odds Preview</label>
                                 <div class="border rounded p-2" style="background-color: #f8f9fa;">
                                     <div class="small text-muted mb-2">
@@ -1247,110 +1239,22 @@ declare global {
                                 </div>
                             </div>
                             
-                            <!-- Position and Dead Heat Information -->
-                            <div v-if="form.is_each_way || form.status !== 'pending'" class="col-12">
-                                <h5 class="mt-3 mb-2">Position & Dead Heat Information</h5>
-                                <div class="row g-3">
-                                    <!-- Finishing Position -->
-                                    <div class="col-md-3">
-                                        <label for="finishing_position" class="form-label">Finishing Position</label>
-                                        <input
-                                            id="finishing_position"
-                                            v-model="form.finishing_position"
-                                            type="text"
-                                            class="form-control"
-                                            :class="{ 'is-invalid': form.errors.finishing_position }"
-                                            placeholder="e.g., T5, 2nd, MC"
-                                        />
-                                        <div class="form-text">e.g., 1, T5, 3rd, MC, WD</div>
-                                        <div v-if="form.errors.finishing_position" class="invalid-feedback">
-                                            {{ form.errors.finishing_position }}
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Places Paid -->
-                                    <div class="col-md-3">
-                                        <label for="places_paid" class="form-label">Places Paid</label>
-                                        <input
-                                            id="places_paid"
-                                            v-model.number="form.places_paid"
-                                            type="number"
-                                            class="form-control"
-                                            :class="{ 'is-invalid': form.errors.places_paid }"
-                                            min="1"
-                                            max="50"
-                                            placeholder="e.g., 8"
-                                        />
-                                        <div class="form-text">Number of places that pay</div>
-                                        <div v-if="form.errors.places_paid" class="invalid-feedback">
-                                            {{ form.errors.places_paid }}
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Dead Heat Checkbox -->
-                                    <div class="col-md-6">
-                                        <div class="form-check mt-4">
-                                            <input
-                                                id="is_dead_heat"
-                                                v-model="form.is_dead_heat"
-                                                type="checkbox"
-                                                class="form-check-input"
-                                            />
-                                            <label class="form-check-label" for="is_dead_heat">
-                                                Dead Heat (tied position)
-                                            </label>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Dead Heat Details -->
-                                    <div v-if="form.is_dead_heat" class="col-12">
-                                        <div class="row g-3">
-                                            <div class="col-md-3">
-                                                <label for="dead_heat_players" class="form-label">Players Tied</label>
-                                                <input
-                                                    id="dead_heat_players"
-                                                    v-model.number="form.dead_heat_players"
-                                                    type="number"
-                                                    class="form-control"
-                                                    :class="{ 'is-invalid': form.errors.dead_heat_players }"
-                                                    min="2"
-                                                    placeholder="e.g., 4"
-                                                />
-                                                <div class="form-text">Number of players tied</div>
-                                                <div v-if="form.errors.dead_heat_players" class="invalid-feedback">
-                                                    {{ form.errors.dead_heat_players }}
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="col-md-3">
-                                                <label for="dead_heat_spots" class="form-label">Available Spots</label>
-                                                <input
-                                                    id="dead_heat_spots"
-                                                    v-model.number="form.dead_heat_spots"
-                                                    type="number"
-                                                    class="form-control"
-                                                    :class="{ 'is-invalid': form.errors.dead_heat_spots }"
-                                                    min="0.1"
-                                                    step="0.1"
-                                                    placeholder="e.g., 2"
-                                                />
-                                                <div class="form-text">Spots available for tied players</div>
-                                                <div v-if="form.errors.dead_heat_spots" class="invalid-feedback">
-                                                    {{ form.errors.dead_heat_spots }}
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="col-md-6">
-                                                <div class="alert alert-info mb-0">
-                                                    <strong>Dead Heat Factor:</strong> 
-                                                    <span v-if="form.dead_heat_players && form.dead_heat_spots">
-                                                        {{ (form.dead_heat_spots / form.dead_heat_players).toFixed(4) }}
-                                                        ({{ form.dead_heat_spots }}/{{ form.dead_heat_players }})
-                                                    </span>
-                                                    <span v-else>Enter values to calculate</span>
-                                                </div>
-                                            </div>
-                                        </div>
+                            <!-- Golf Only: Place -->
+                            <div v-if="form.bet_type === 'each_way'" class="col-12 mt-3">
+                                <div class="form-check">
+                                    <input
+                                        id="golf_place"
+                                        v-model="form.golf_place"
+                                        type="checkbox"
+                                        class="form-check-input"
+                                        :class="{ 'is-invalid': form.errors.golf_place }"
+                                    />
+                                    <label class="form-check-label" for="golf_place">
+                                        Golf Only: Place
+                                        <small class="text-muted d-block">Check if the bet won by placing (not outright win)</small>
+                                    </label>
+                                    <div v-if="form.errors.golf_place" class="invalid-feedback">
+                                        {{ form.errors.golf_place }}
                                     </div>
                                 </div>
                             </div>

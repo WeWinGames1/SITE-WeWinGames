@@ -15,8 +15,8 @@ class BetCalculationService
         $numericPosition = $this->parsePosition($position);
         
         $result = [
-            'status' => 'lost',
-            'bet_result_type' => 'lost',
+            'status' => 'loss',
+            'bet_result_type' => 'loss',
             'winning_amount' => 0,
             'profit_amount' => -$bet->wager_amount,
             'finishing_position' => $position,
@@ -173,7 +173,7 @@ class BetCalculationService
                 $result['profit_amount'] = $result['winning_amount'] - $bet->wager_amount;
                 break;
                 
-            case 'lost':
+            case 'loss':
                 $result['winning_amount'] = 0;
                 $result['profit_amount'] = -$bet->wager_amount;
                 break;

@@ -244,6 +244,8 @@ class BetImportWizardController extends Controller
                     'errors' => count($result['errors'] ?? []),
                     'percentage' => 100,
                     'error_log' => $errorLog,
+                    'skippedEachWayBets' => $result['skippedEachWayBets'] ?? [],
+                    'skippedParlayBets' => $result['skippedParlayBets'] ?? [],
                     'completed_at' => now()->toIso8601String(),
                 ], now()->addHours(24));
 

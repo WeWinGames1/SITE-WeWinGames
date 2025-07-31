@@ -100,6 +100,8 @@ class ProcessBetImport implements ShouldQueue
                 'errors' => count($result['errors'] ?? []),
                 'percentage' => 100,
                 'error_log' => array_slice($result['errors'] ?? [], 0, 100),
+                'skippedEachWayBets' => $result['skippedEachWayBets'] ?? [],
+                'skippedParlayBets' => $result['skippedParlayBets'] ?? [],
                 'completed_at' => now()->toIso8601String(),
             ]);
             
