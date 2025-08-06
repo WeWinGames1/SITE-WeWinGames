@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { Head, useForm, router } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { ref } from 'vue';
+import { Head, router, useForm } from '@inertiajs/vue3';
 
 interface TicketReply {
     id: number;
@@ -46,7 +45,7 @@ interface Ticket {
 
 const props = defineProps<{
     ticket: Ticket;
-    adminUsers: Array<{id: number; name: string}>;
+    adminUsers: Array<{ id: number; name: string }>;
 }>();
 
 const replyForm = useForm({
@@ -71,14 +70,14 @@ const statusClasses = {
     open: 'bg-info',
     pending: 'bg-warning',
     resolved: 'bg-success',
-    closed: 'bg-secondary'
+    closed: 'bg-secondary',
 };
 
 const priorityClasses = {
     low: 'bg-secondary',
     medium: 'bg-primary',
     high: 'bg-warning',
-    urgent: 'bg-danger'
+    urgent: 'bg-danger',
 };
 
 // Format date
@@ -88,7 +87,7 @@ function formatDate(date: string) {
         day: 'numeric',
         year: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
     });
 }
 
@@ -134,7 +133,7 @@ function impersonateUser() {
 <template>
     <AdminLayout>
         <Head :title="`Ticket #${ticket.ticket_number}`" />
-        
+
         <div class="container-fluid p-4">
             <div class="row mb-4">
                 <div class="col">
@@ -143,9 +142,7 @@ function impersonateUser() {
                             <h1 class="h2 mb-1 text-dark">Ticket #{{ ticket.ticket_number }}</h1>
                             <p class="text-dark mb-0">{{ ticket.subject }}</p>
                         </div>
-                        <a href="/admin/support-tickets" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left me-1"></i> Back to Tickets
-                        </a>
+                        <a href="/admin/support-tickets" class="btn btn-outline-secondary"> <i class="bi bi-arrow-left me-1"></i> Back to Tickets </a>
                     </div>
                 </div>
             </div>
@@ -178,11 +175,14 @@ function impersonateUser() {
 
                     <!-- Replies -->
                     <div v-for="reply in ticket.replies" :key="reply.id" class="card mb-4">
-                        <div class="card-header" :class="{
-                            'bg-warning bg-opacity-10': reply.is_internal,
-                            'bg-info bg-opacity-10': reply.user?.is_admin && !reply.is_internal,
-                            'bg-light': !reply.user?.is_admin
-                        }">
+                        <div
+                            class="card-header"
+                            :class="{
+                                'bg-warning bg-opacity-10': reply.is_internal,
+                                'bg-info bg-opacity-10': reply.user?.is_admin && !reply.is_internal,
+                                'bg-light': !reply.user?.is_admin,
+                            }"
+                        >
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <strong>{{ reply.user?.name || 'Unknown User' }}</strong>
@@ -205,8 +205,8 @@ function impersonateUser() {
                         <div class="card-body">
                             <form @submit.prevent="submitReply">
                                 <div class="mb-3">
-                                    <textarea 
-                                        v-model="replyForm.content" 
+                                    <textarea
+                                        v-model="replyForm.content"
                                         class="form-control"
                                         :class="{ 'is-invalid': replyForm.errors.content }"
                                         rows="5"
@@ -218,15 +218,8 @@ function impersonateUser() {
                                     </div>
                                 </div>
                                 <div class="form-check mb-3">
-                                    <input 
-                                        v-model="replyForm.is_internal" 
-                                        type="checkbox" 
-                                        class="form-check-input" 
-                                        id="internalNote"
-                                    />
-                                    <label class="form-check-label text-dark" for="internalNote">
-                                        Internal note (not visible to customer)
-                                    </label>
+                                    <input v-model="replyForm.is_internal" type="checkbox" class="form-check-input" id="internalNote" />
+                                    <label class="form-check-label text-dark" for="internalNote"> Internal note (not visible to customer) </label>
                                 </div>
                                 <button type="submit" class="btn btn-primary" :disabled="replyForm.processing">
                                     <span v-if="replyForm.processing">
@@ -261,9 +254,7 @@ function impersonateUser() {
                                         <option value="resolved">Resolved</option>
                                         <option value="closed">Closed</option>
                                     </select>
-                                    <button @click="updateStatus" class="btn btn-outline-secondary" :disabled="statusForm.processing">
-                                        Update
-                                    </button>
+                                    <button @click="updateStatus" class="btn btn-outline-secondary" :disabled="statusForm.processing">Update</button>
                                 </div>
                             </div>
 

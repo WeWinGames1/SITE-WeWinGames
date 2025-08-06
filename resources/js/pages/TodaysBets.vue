@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { Head, Link, usePage } from '@inertiajs/vue3';
-import SubscriptionROIChart from '@/components/SubscriptionROIChart.vue';
-import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
-import { computed, ref } from 'vue';
 import GroupedBetCards from '@/components/GroupedBetCards.vue';
+import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 const page = usePage();
 const auth = page.props.auth || null;
@@ -13,7 +12,7 @@ const isGuest = !auth?.user; // Check if user is not logged in
 // Sports filter
 const selectedSport = ref('all');
 const sports = computed(() => {
-    const sportSet = new Set(bets.map(bet => bet.sports));
+    const sportSet = new Set(bets.map((bet) => bet.sports));
     return Array.from(sportSet);
 });
 
@@ -24,41 +23,41 @@ const today = new Date().toDateString();
 // Get unique game dates from bets
 const gameDates = computed(() => {
     const dateSet = new Set();
-    bets.forEach(bet => {
+    bets.forEach((bet) => {
         const gameDate = bet.game_date || bet.betting_date;
         if (gameDate) {
             const date = new Date(gameDate).toDateString();
             dateSet.add(date);
         }
     });
-    
+
     // Convert to array and sort chronologically
     const datesArray = Array.from(dateSet).sort((a, b) => {
         return new Date(a) - new Date(b);
     });
-    
+
     return datesArray;
 });
 
 const sportIcons = {
-    'Football': '⚽',
-    'Basketball': '🏀',
-    'Hockey': '🏒',
-    'Baseball': '⚾',
-    'Soccer': '⚽',
-    'Golf': '⛳',
-    'Ultimate Fighting Championship': '🥊'
+    Football: '⚽',
+    Basketball: '🏀',
+    Hockey: '🏒',
+    Baseball: '⚾',
+    Soccer: '⚽',
+    Golf: '⛳',
+    'Ultimate Fighting Championship': '🥊',
 };
 
 // Get user's subscription type from auth.currentTier
 const getUserSubscriptionType = () => {
     if (!auth?.user) return 'free';
-    
+
     // Use currentTier from auth which already handles ambassador/gifted/override
     if (auth.currentTier) {
         return auth.currentTier.toLowerCase();
     }
-    
+
     return 'free';
 };
 
@@ -68,10 +67,10 @@ const isAdmin = auth?.isAdmin || false;
 // Determine which bets can be viewed based on subscription
 const canViewBet = (bet) => {
     if (isAdmin) return true;
-    
+
     // Check both 'level' and 'membership' fields for compatibility
     const betLevel = (bet.level || bet.membership || 'bronze').toLowerCase();
-    
+
     switch (userSubscriptionType) {
         case 'free':
             return betLevel === 'bronze';
@@ -91,59 +90,50 @@ const sportPreferences = page.props.sportPreferences || [];
 
 // Function to get sport priority (lower number = higher priority)
 const getSportPriority = (sport) => {
-    const preference = sportPreferences.find(pref => pref.sport_name === sport);
+    const preference = sportPreferences.find((pref) => pref.sport_name === sport);
     return preference ? preference.priority : 999; // Non-preferred sports get low priority
 };
 
 // Split bets into viewable and covered
-let viewableBets = bets
-    .filter(bet => canViewBet(bet))
-    .map(bet => ({ ...bet, isCovered: false }));
+let viewableBets = bets.filter((bet) => canViewBet(bet)).map((bet) => ({ ...bet, isCovered: false }));
 
 // For guests/free users, limit to 2 bronze picks from preferred sports
 if (userSubscriptionType === 'free' || isGuest) {
-    const bronzeBets = viewableBets.filter(bet => 
-        (bet.membership?.toLowerCase() || 'bronze') === 'bronze'
-    );
-    
+    const bronzeBets = viewableBets.filter((bet) => (bet.membership?.toLowerCase() || 'bronze') === 'bronze');
+
     // Sort bronze bets by sport preferences
     const sortedBronzeBets = bronzeBets.sort((a, b) => {
         const priorityA = getSportPriority(a.sports);
         const priorityB = getSportPriority(b.sports);
         return priorityA - priorityB;
     });
-    
+
     // Take only the first 2 bronze picks
     const limitedBronzeBets = sortedBronzeBets.slice(0, 2);
-    
+
     // Keep non-bronze bets (if any) and add limited bronze bets
-    viewableBets = [
-        ...viewableBets.filter(bet => (bet.membership?.toLowerCase() || 'bronze') !== 'bronze'),
-        ...limitedBronzeBets
-    ];
+    viewableBets = [...viewableBets.filter((bet) => (bet.membership?.toLowerCase() || 'bronze') !== 'bronze'), ...limitedBronzeBets];
 }
 
-const coveredBets = bets
-    .filter(bet => !canViewBet(bet))
-    .map(bet => ({ ...bet, isCovered: true }));
+const coveredBets = bets.filter((bet) => !canViewBet(bet)).map((bet) => ({ ...bet, isCovered: true }));
 
 // Calculate how many picks are hidden for free users
-const hiddenPicksCount = bets.filter(bet => !canViewBet(bet)).length;
+const hiddenPicksCount = bets.filter((bet) => !canViewBet(bet)).length;
 // Group bets by sport
 const groupedBets = computed(() => {
-  return viewableBets.reduce((acc, bet) => {
-    if (!acc[bet.sports]) acc[bet.sports] = [];
-    acc[bet.sports].push(bet);
-    return acc;
-  }, {});
+    return viewableBets.reduce((acc, bet) => {
+        if (!acc[bet.sports]) acc[bet.sports] = [];
+        acc[bet.sports].push(bet);
+        return acc;
+    }, {});
 });
 
 const coveredGroupedBets = computed(() => {
-  return coveredBets.reduce((acc, bet) => {
-    if (!acc[bet.sports]) acc[bet.sports] = [];
-    acc[bet.sports].push(bet);
-    return acc;
-  }, {});
+    return coveredBets.reduce((acc, bet) => {
+        if (!acc[bet.sports]) acc[bet.sports] = [];
+        acc[bet.sports].push(bet);
+        return acc;
+    }, {});
 });
 
 // Helper function to categorize bets by date
@@ -153,10 +143,10 @@ const categorizeBet = (bet) => {
     const today = new Date();
     const endOfWeek = new Date();
     endOfWeek.setDate(today.getDate() + (7 - today.getDay())); // Next Sunday
-    
+
     // Check if it's golf and within this week
     const isGolf = (bet.sports || '').toLowerCase().includes('golf');
-    
+
     if (betDate.toDateString() === today.toDateString()) {
         return { category: 'daily', priority: 1 };
     } else if (isGolf && betDate <= endOfWeek) {
@@ -168,70 +158,62 @@ const categorizeBet = (bet) => {
 
 // Combine all bets for grouping
 const allGroupedBets = computed(() => {
-  // Merge all bets
-  let all = [...viewableBets, ...coveredBets].filter(
-    (bet, idx, arr) => arr.findIndex(b => b.id === bet.id) === idx
-  );
-  
-  // Apply guest restriction - only show today's game_date for guests
-  if (isGuest) {
-    all = all.filter(bet => {
-      const gameDate = bet.game_date || bet.betting_date;
-      if (!gameDate) return false;
-      return new Date(gameDate).toDateString() === today;
-    });
-  }
-  
-  // Filter by selected date
-  if (selectedDate.value !== 'all') {
-    all = all.filter(bet => {
-      const gameDate = bet.game_date || bet.betting_date;
-      if (!gameDate) return false;
-      return new Date(gameDate).toDateString() === selectedDate.value;
-    });
-  }
-  
-  // Filter by selected sport
-  const filtered = selectedSport.value === 'all' 
-    ? all 
-    : all.filter(bet => bet.sports === selectedSport.value);
-  
-  // Sort bets by priority
-  const sorted = filtered.sort((a, b) => {
-    const catA = categorizeBet(a);
-    const catB = categorizeBet(b);
-    
-    // First sort by priority
-    if (catA.priority !== catB.priority) {
-        return catA.priority - catB.priority;
+    // Merge all bets
+    let all = [...viewableBets, ...coveredBets].filter((bet, idx, arr) => arr.findIndex((b) => b.id === bet.id) === idx);
+
+    // Apply guest restriction - only show today's game_date for guests
+    if (isGuest) {
+        all = all.filter((bet) => {
+            const gameDate = bet.game_date || bet.betting_date;
+            if (!gameDate) return false;
+            return new Date(gameDate).toDateString() === today;
+        });
     }
-    
-    // Then by membership level (bronze first for free picks)
-    const membershipOrder = { 'bronze': 1, 'silver': 2, 'gold': 3, 'platinum': 4 };
-    const memA = membershipOrder[a.membership?.toLowerCase()] || 5;
-    const memB = membershipOrder[b.membership?.toLowerCase()] || 5;
-    
-    return memA - memB;
-  });
-  
-  // Group by sport
-  return sorted.reduce((acc, bet) => {
-    if (!acc[bet.sports]) acc[bet.sports] = [];
-    acc[bet.sports].push(bet);
-    return acc;
-  }, {});
+
+    // Filter by selected date
+    if (selectedDate.value !== 'all') {
+        all = all.filter((bet) => {
+            const gameDate = bet.game_date || bet.betting_date;
+            if (!gameDate) return false;
+            return new Date(gameDate).toDateString() === selectedDate.value;
+        });
+    }
+
+    // Filter by selected sport
+    const filtered = selectedSport.value === 'all' ? all : all.filter((bet) => bet.sports === selectedSport.value);
+
+    // Sort bets by priority
+    const sorted = filtered.sort((a, b) => {
+        const catA = categorizeBet(a);
+        const catB = categorizeBet(b);
+
+        // First sort by priority
+        if (catA.priority !== catB.priority) {
+            return catA.priority - catB.priority;
+        }
+
+        // Then by membership level (bronze first for free picks)
+        const membershipOrder = { bronze: 1, silver: 2, gold: 3, platinum: 4 };
+        const memA = membershipOrder[a.membership?.toLowerCase()] || 5;
+        const memB = membershipOrder[b.membership?.toLowerCase()] || 5;
+
+        return memA - memB;
+    });
+
+    // Group by sport
+    return sorted.reduce((acc, bet) => {
+        if (!acc[bet.sports]) acc[bet.sports] = [];
+        acc[bet.sports].push(bet);
+        return acc;
+    }, {});
 });
 
 // Get all bets for display (not grouped)
 const displayBets = computed(() => {
-  const all = [...viewableBets, ...coveredBets].filter(
-    (bet, idx, arr) => arr.findIndex(b => b.id === bet.id) === idx
-  );
-  
-  // Filter by selected sport
-  return selectedSport.value === 'all' 
-    ? all 
-    : all.filter(bet => bet.sports === selectedSport.value);
+    const all = [...viewableBets, ...coveredBets].filter((bet, idx, arr) => arr.findIndex((b) => b.id === bet.id) === idx);
+
+    // Filter by selected sport
+    return selectedSport.value === 'all' ? all : all.filter((bet) => bet.sports === selectedSport.value);
 });
 // console.log('All Grouped Bets:', allGroupedBets.value);
 // console.log('Viewable Bets:', viewableBets);
@@ -240,9 +222,9 @@ const displayBets = computed(() => {
 // Helper functions
 const formatBetDate = (date: string) => {
     if (!date) return 'TBD';
-    return new Date(date).toLocaleDateString('en-US', { 
+    return new Date(date).toLocaleDateString('en-US', {
         day: 'numeric',
-        month: 'short'
+        month: 'short',
     });
 };
 
@@ -250,19 +232,19 @@ const formatBetDate = (date: string) => {
 const formatFilterDate = (dateString: string) => {
     const date = new Date(dateString);
     const options = { month: 'short', day: 'numeric' };
-    
+
     // Check if it's today
     if (dateString === today) {
         return 'Today';
     }
-    
+
     // Check if it's tomorrow
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     if (dateString === tomorrow.toDateString()) {
         return 'Tomorrow';
     }
-    
+
     return date.toLocaleDateString('en-US', options);
 };
 
@@ -286,20 +268,20 @@ const getMembershipBadgeStyle = (membership: string) => {
             <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
         </Head>
 
-        <div class="min-vh-100" style="background-color: #0a0e1a;">
+        <div class="min-vh-100" style="background-color: #0a0e1a">
             <!-- Sports Filter Bar -->
-            <section class="py-3" style="background: linear-gradient(90deg, #2e4057 0%, #1a2332 50%, #2e4057 100%);">
+            <section class="py-3" style="background: linear-gradient(90deg, #2e4057 0%, #1a2332 50%, #2e4057 100%)">
                 <div class="container">
-                    <div class="d-flex align-items-center gap-4 overflow-auto pb-2" style="scrollbar-width: thin;">
-                        <button 
+                    <div class="d-flex align-items-center gap-4 overflow-auto pb-2" style="scrollbar-width: thin">
+                        <button
                             @click="selectedSport = 'all'"
                             class="btn btn-sm px-4 py-2 text-nowrap"
                             :class="selectedSport === 'all' ? 'btn-warning text-dark' : 'btn-outline-light'"
                         >
                             All Sports
                         </button>
-                        <button 
-                            v-for="sport in sports" 
+                        <button
+                            v-for="sport in sports"
                             :key="sport"
                             @click="selectedSport = sport"
                             class="btn btn-sm px-4 py-2 text-nowrap"
@@ -313,19 +295,19 @@ const getMembershipBadgeStyle = (membership: string) => {
             </section>
 
             <!-- Date Filter Bar (only show if not guest or if dates exist) -->
-            <section v-if="!isGuest && gameDates.length > 1" class="py-2" style="background-color: #1a2332;">
+            <section v-if="!isGuest && gameDates.length > 1" class="py-2" style="background-color: #1a2332">
                 <div class="container">
-                    <div class="d-flex align-items-center gap-3 overflow-auto pb-2" style="scrollbar-width: thin;">
+                    <div class="d-flex align-items-center gap-3 overflow-auto pb-2" style="scrollbar-width: thin">
                         <span class="text-white small fw-bold">Game Date:</span>
-                        <button 
+                        <button
                             @click="selectedDate = 'all'"
                             class="btn btn-sm px-3 py-1 text-nowrap"
                             :class="selectedDate === 'all' ? 'btn-info text-dark' : 'btn-outline-info'"
                         >
                             All Dates
                         </button>
-                        <button 
-                            v-for="date in gameDates" 
+                        <button
+                            v-for="date in gameDates"
                             :key="date"
                             @click="selectedDate = date"
                             class="btn btn-sm px-3 py-1 text-nowrap"
@@ -345,10 +327,10 @@ const getMembershipBadgeStyle = (membership: string) => {
                         <h2 class="display-4 fw-bold text-white mb-4">Today's Picks</h2>
                         <p class="fs-5 text-gray-light mb-5">Expert analysis and betting recommendations</p>
                     </div>
-                    
+
                     <!-- Registration Prompt for Free Users (showing missing picks) -->
                     <div v-if="(userSubscriptionType === 'free' || isGuest) && hiddenPicksCount > 0" class="mb-5">
-                        <div class="card border-warning" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);">
+                        <div class="card border-warning" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%)">
                             <div class="card-body text-center py-4">
                                 <div class="mb-3">
                                     <i class="bi bi-eye-slash text-warning display-6"></i>
@@ -357,7 +339,7 @@ const getMembershipBadgeStyle = (membership: string) => {
                                     {{ hiddenPicksCount }} More {{ hiddenPicksCount === 1 ? 'Pick' : 'Picks' }} Available!
                                 </h5>
                                 <p class="text-light mb-4">
-                                    You're viewing {{ viewableBets.length }} of {{ bets.length }} total picks. 
+                                    You're viewing {{ viewableBets.length }} of {{ bets.length }} total picks.
                                     {{ isGuest ? 'Register' : 'Upgrade' }} to unlock all premium betting picks and increase your winning potential.
                                 </p>
                                 <div class="d-flex justify-content-center gap-3 flex-wrap">
@@ -377,7 +359,7 @@ const getMembershipBadgeStyle = (membership: string) => {
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Use the same GroupedBetCards component as home page -->
                     <GroupedBetCards :grouped-bets="allGroupedBets" />
                 </div>
@@ -387,14 +369,17 @@ const getMembershipBadgeStyle = (membership: string) => {
 </template>
 
 <style scoped>
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.8s;
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.8s;
 }
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
 }
-.fade-enter-to, .fade-leave-from {
-  opacity: 1;
+.fade-enter-to,
+.fade-leave-from {
+    opacity: 1;
 }
 
 /* Custom scrollbar for sports filter */
@@ -418,7 +403,9 @@ const getMembershipBadgeStyle = (membership: string) => {
 
 /* Card hover effects */
 .card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
 }
 
 .card:hover {

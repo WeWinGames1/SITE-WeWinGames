@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import { ref, computed, watch } from 'vue';
-import { PlusIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import axios from 'axios';
+import { PlusIcon } from '@heroicons/vue/24/outline';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { computed, ref, watch } from 'vue';
 
 interface Sport {
     id: number;
@@ -63,7 +62,7 @@ const form = useForm({
     description: props.team.description || '',
     logo: null as File | null,
     is_active: props.team.is_active,
-    aliases: props.team.aliases?.map(a => a.alias) || [],
+    aliases: props.team.aliases?.map((a) => a.alias) || [],
 });
 
 const newAlias = ref('');
@@ -71,19 +70,22 @@ const newAlias = ref('');
 // Filter leagues based on selected sport
 const filteredLeagues = computed(() => {
     if (!form.sport_id) return [];
-    return props.leagues.filter(league => league.sport_id === parseInt(form.sport_id));
+    return props.leagues.filter((league) => league.sport_id === parseInt(form.sport_id));
 });
 
 // Reset league when sport changes
-watch(() => form.sport_id, (newSportId, oldSportId) => {
-    // Only reset if the sport actually changed and the current league doesn't belong to the new sport
-    if (newSportId !== oldSportId && form.league_id) {
-        const currentLeague = props.leagues.find(l => l.id.toString() === form.league_id);
-        if (currentLeague && currentLeague.sport_id !== parseInt(newSportId)) {
-            form.league_id = '';
+watch(
+    () => form.sport_id,
+    (newSportId, oldSportId) => {
+        // Only reset if the sport actually changed and the current league doesn't belong to the new sport
+        if (newSportId !== oldSportId && form.league_id) {
+            const currentLeague = props.leagues.find((l) => l.id.toString() === form.league_id);
+            if (currentLeague && currentLeague.sport_id !== parseInt(newSportId)) {
+                form.league_id = '';
+            }
         }
-    }
-});
+    },
+);
 
 function handleLogoChange(event: Event) {
     const target = event.target as HTMLInputElement;
@@ -106,10 +108,10 @@ function removeAlias(index: number) {
 function validateForm(): boolean {
     // Clear previous errors
     form.clearErrors();
-    
+
     let isValid = true;
     const errors: Record<string, string> = {};
-    
+
     // Required fields validation
     if (!form.name || !form.name.trim()) {
         errors.name = 'The name field is required.';
@@ -118,33 +120,33 @@ function validateForm(): boolean {
         errors.name = 'The name may not be greater than 255 characters.';
         isValid = false;
     }
-    
+
     if (!form.sport_id) {
         errors.sport_id = 'The sport field is required.';
         isValid = false;
     }
-    
+
     // Optional fields validation
     if (form.abbreviation && form.abbreviation.length > 10) {
         errors.abbreviation = 'The abbreviation may not be greater than 10 characters.';
         isValid = false;
     }
-    
+
     if (form.city && form.city.length > 100) {
         errors.city = 'The city may not be greater than 100 characters.';
         isValid = false;
     }
-    
+
     if (form.state && form.state.length > 100) {
         errors.state = 'The state may not be greater than 100 characters.';
         isValid = false;
     }
-    
+
     if (form.country && form.country.length > 100) {
         errors.country = 'The country may not be greater than 100 characters.';
         isValid = false;
     }
-    
+
     // File validation
     if (form.logo) {
         const maxSize = 10 * 1024 * 1024; // 10MB in bytes
@@ -152,7 +154,7 @@ function validateForm(): boolean {
             errors.logo = 'The logo may not be greater than 10MB.';
             isValid = false;
         }
-        
+
         // Check file type
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/svg+xml', 'image/webp'];
         if (!allowedTypes.includes(form.logo.type)) {
@@ -160,7 +162,7 @@ function validateForm(): boolean {
             isValid = false;
         }
     }
-    
+
     // Aliases validation
     if (form.aliases && form.aliases.length > 0) {
         for (let i = 0; i < form.aliases.length; i++) {
@@ -170,12 +172,12 @@ function validateForm(): boolean {
             }
         }
     }
-    
+
     // Set errors if any
     if (!isValid) {
         form.setError(errors);
     }
-    
+
     return isValid;
 }
 
@@ -183,7 +185,7 @@ function submit() {
     if (!validateForm()) {
         return;
     }
-    
+
     // Use POST with _method for file uploads to avoid CSRF issues
     form.post(route('admin.teams.update', props.team.id), {
         _method: 'PUT',
@@ -196,7 +198,7 @@ function submit() {
                 alert('Your session has expired. Please refresh the page and try again.');
                 window.location.reload();
             }
-        }
+        },
     });
 }
 </script>
@@ -204,7 +206,7 @@ function submit() {
 <template>
     <AdminLayout>
         <Head :title="`Edit Team: ${team.name}`" />
-        
+
         <div class="container-fluid p-4">
             <!-- Header -->
             <div class="mb-4">
@@ -229,7 +231,7 @@ function submit() {
                         <div class="card mb-4">
                             <div class="card-body">
                                 <h5 class="card-title mb-4">Team Information</h5>
-                                
+
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <label for="name" class="form-label required">Team Name</label>
@@ -307,7 +309,7 @@ function submit() {
                         <div class="card mb-4">
                             <div class="card-body">
                                 <h5 class="card-title mb-4">Location</h5>
-                                
+
                                 <div class="row g-3">
                                     <div class="col-md-4">
                                         <label for="city" class="form-label">City</label>
@@ -375,7 +377,7 @@ function submit() {
                             <div class="card-body">
                                 <h5 class="card-title mb-4">Team Aliases</h5>
                                 <p class="text-muted">Add alternative names for this team to improve matching during imports.</p>
-                                
+
                                 <div class="input-group mb-3">
                                     <input
                                         v-model="newAlias"
@@ -384,12 +386,8 @@ function submit() {
                                         class="form-control"
                                         placeholder="Enter an alias (e.g., LA Lakers, L.A. Lakers)"
                                     />
-                                    <button
-                                        @click="addAlias"
-                                        type="button"
-                                        class="btn btn-outline-secondary"
-                                    >
-                                        <PlusIcon style="width: 1rem; height: 1rem;" />
+                                    <button @click="addAlias" type="button" class="btn btn-outline-secondary">
+                                        <PlusIcon style="width: 1rem; height: 1rem" />
                                         Add
                                     </button>
                                 </div>
@@ -405,13 +403,11 @@ function submit() {
                                             @click="removeAlias(index)"
                                             type="button"
                                             class="btn-close btn-close-white"
-                                            style="font-size: 0.5rem;"
+                                            style="font-size: 0.5rem"
                                         ></button>
                                     </span>
                                 </div>
-                                <div v-else class="text-muted">
-                                    No aliases added yet.
-                                </div>
+                                <div v-else class="text-muted">No aliases added yet.</div>
                             </div>
                         </div>
                     </div>
@@ -420,16 +416,11 @@ function submit() {
                         <div class="card mb-4">
                             <div class="card-body">
                                 <h5 class="card-title mb-4">Team Logo</h5>
-                                
+
                                 <div v-if="team.logo_url" class="mb-3 text-center">
-                                    <img 
-                                        :src="`/storage/${team.logo_url}`"
-                                        :alt="team.name"
-                                        class="img-fluid"
-                                        style="max-width: 150px;"
-                                    />
+                                    <img :src="`/storage/${team.logo_url}`" :alt="team.name" class="img-fluid" style="max-width: 150px" />
                                 </div>
-                                
+
                                 <div class="mb-3">
                                     <label for="logo" class="form-label">Upload New Logo</label>
                                     <input
@@ -443,9 +434,7 @@ function submit() {
                                     <div v-if="form.errors.logo" class="invalid-feedback">
                                         {{ form.errors.logo }}
                                     </div>
-                                    <div class="form-text">
-                                        Recommended: 200x200px PNG or JPG
-                                    </div>
+                                    <div class="form-text">Recommended: 200x200px PNG or JPG</div>
                                 </div>
                             </div>
                         </div>
@@ -453,21 +442,12 @@ function submit() {
                         <div class="card mb-4">
                             <div class="card-body">
                                 <h5 class="card-title mb-4">Status</h5>
-                                
+
                                 <div class="form-check">
-                                    <input
-                                        v-model="form.is_active"
-                                        type="checkbox"
-                                        class="form-check-input"
-                                        id="is_active"
-                                    />
-                                    <label class="form-check-label" for="is_active">
-                                        Active
-                                    </label>
+                                    <input v-model="form.is_active" type="checkbox" class="form-check-input" id="is_active" />
+                                    <label class="form-check-label" for="is_active"> Active </label>
                                 </div>
-                                <div class="form-text">
-                                    Inactive teams won't be available for new bets.
-                                </div>
+                                <div class="form-text">Inactive teams won't be available for new bets.</div>
                             </div>
                         </div>
 
@@ -484,19 +464,8 @@ function submit() {
                 </div>
 
                 <div class="d-flex gap-2 mt-4">
-                    <button
-                        type="submit"
-                        class="btn btn-primary"
-                        :disabled="form.processing"
-                    >
-                        Update Team
-                    </button>
-                    <Link
-                        :href="route('admin.teams.index')"
-                        class="btn btn-outline-secondary"
-                    >
-                        Cancel
-                    </Link>
+                    <button type="submit" class="btn btn-primary" :disabled="form.processing">Update Team</button>
+                    <Link :href="route('admin.teams.index')" class="btn btn-outline-secondary"> Cancel </Link>
                 </div>
             </form>
         </div>

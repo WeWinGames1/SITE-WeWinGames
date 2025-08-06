@@ -10,7 +10,7 @@ const menuPosition = ref({ x: 0, y: 0 });
 function handleClick(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
-    
+
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
     menuPosition.value = {
         x: rect.left + rect.width / 2,
@@ -43,49 +43,20 @@ if (showResizeMenu.value) {
 
 <template>
     <NodeViewWrapper as="div" :style="`width: ${node.attrs.width}; display: inline-block; position: relative;`" data-resizable-image>
-        <img 
-            :src="node.attrs.src" 
-            :alt="node.attrs.alt"
-            class="img-fluid resizable-image"
-            @click="handleClick"
-        />
-        
+        <img :src="node.attrs.src" :alt="node.attrs.alt" class="img-fluid resizable-image" @click="handleClick" />
+
         <!-- Resize Menu -->
         <Teleport to="body" v-if="showResizeMenu">
-            <div 
+            <div
                 class="resize-menu"
                 :style="`position: fixed; left: ${menuPosition.x}px; top: ${menuPosition.y - 50}px; transform: translateX(-50%); z-index: 9999;`"
             >
                 <div class="bg-white border rounded shadow-sm p-2">
                     <div class="d-flex gap-1">
-                        <button 
-                            @click="resize('25%')" 
-                            class="btn btn-sm btn-outline-secondary"
-                            title="Small (25%)"
-                        >
-                            25%
-                        </button>
-                        <button 
-                            @click="resize('50%')" 
-                            class="btn btn-sm btn-outline-secondary"
-                            title="Medium (50%)"
-                        >
-                            50%
-                        </button>
-                        <button 
-                            @click="resize('75%')" 
-                            class="btn btn-sm btn-outline-secondary"
-                            title="Large (75%)"
-                        >
-                            75%
-                        </button>
-                        <button 
-                            @click="resize('100%')" 
-                            class="btn btn-sm btn-outline-secondary"
-                            title="Full Size (100%)"
-                        >
-                            100%
-                        </button>
+                        <button @click="resize('25%')" class="btn btn-sm btn-outline-secondary" title="Small (25%)">25%</button>
+                        <button @click="resize('50%')" class="btn btn-sm btn-outline-secondary" title="Medium (50%)">50%</button>
+                        <button @click="resize('75%')" class="btn btn-sm btn-outline-secondary" title="Large (75%)">75%</button>
+                        <button @click="resize('100%')" class="btn btn-sm btn-outline-secondary" title="Full Size (100%)">100%</button>
                     </div>
                 </div>
             </div>

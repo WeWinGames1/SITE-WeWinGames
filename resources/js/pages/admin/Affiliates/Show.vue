@@ -45,18 +45,21 @@ const copiedCode = ref<string | null>(null);
 
 function copyShareUrl() {
     const url = `${props.appUrl}/?affiliate=${props.affiliate.code}`;
-    
+
     // Try modern clipboard API first
     if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(url).then(() => {
-            copiedCode.value = props.affiliate.code;
-            setTimeout(() => {
-                copiedCode.value = null;
-            }, 2000);
-        }).catch(() => {
-            // Fallback if clipboard API fails
-            fallbackCopyToClipboard(url);
-        });
+        navigator.clipboard
+            .writeText(url)
+            .then(() => {
+                copiedCode.value = props.affiliate.code;
+                setTimeout(() => {
+                    copiedCode.value = null;
+                }, 2000);
+            })
+            .catch(() => {
+                // Fallback if clipboard API fails
+                fallbackCopyToClipboard(url);
+            });
     } else {
         // Fallback for older browsers or non-HTTPS
         fallbackCopyToClipboard(url);
@@ -72,7 +75,7 @@ function fallbackCopyToClipboard(text: string) {
     document.body.appendChild(textArea);
     textArea.focus();
     textArea.select();
-    
+
     try {
         document.execCommand('copy');
         copiedCode.value = props.affiliate.code;
@@ -83,7 +86,7 @@ function fallbackCopyToClipboard(text: string) {
         console.error('Failed to copy text: ', err);
         alert(`Copy failed. Please copy manually: ${text}`);
     }
-    
+
     document.body.removeChild(textArea);
 }
 
@@ -93,7 +96,7 @@ function formatDate(date: string): string {
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
     });
 }
 
@@ -101,8 +104,8 @@ function getCurrentPlan(customer: Customer): string {
     if (!customer.subscriptions || customer.subscriptions.length === 0) {
         return 'Free';
     }
-    
-    const activeSubscription = customer.subscriptions.find(sub => sub.stripe_status === 'active');
+
+    const activeSubscription = customer.subscriptions.find((sub) => sub.stripe_status === 'active');
     return activeSubscription ? activeSubscription.name || 'Paid' : 'Free';
 }
 </script>
@@ -110,7 +113,7 @@ function getCurrentPlan(customer: Customer): string {
 <template>
     <AdminLayout>
         <Head :title="`Affiliate: ${affiliate.name}`" />
-        
+
         <div class="container-fluid p-4">
             <!-- Page Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -200,10 +203,8 @@ function getCurrentPlan(customer: Customer): string {
                                     <small class="text-muted">Active Customers</small>
                                 </div>
                                 <div class="col-12">
-                                    <hr class="my-3">
-                                    <div class="small text-muted">
-                                        Member since {{ formatDate(affiliate.created_at) }}
-                                    </div>
+                                    <hr class="my-3" />
+                                    <div class="small text-muted">Member since {{ formatDate(affiliate.created_at) }}</div>
                                 </div>
                             </div>
                         </div>
@@ -251,7 +252,7 @@ function getCurrentPlan(customer: Customer): string {
 
                 <!-- Empty state -->
                 <div v-if="customers.data.length === 0" class="text-center py-5">
-                    <i class="bi bi-person-x text-muted" style="font-size: 3rem;"></i>
+                    <i class="bi bi-person-x text-muted" style="font-size: 3rem"></i>
                     <p class="text-muted mt-3 mb-0">No customers found for this affiliate.</p>
                 </div>
 
@@ -269,9 +270,7 @@ function getCurrentPlan(customer: Customer): string {
                                 </Link>
                             </li>
                             <li class="page-item active">
-                                <span class="page-link">
-                                    Page {{ customers.current_page }} of {{ customers.last_page }}
-                                </span>
+                                <span class="page-link"> Page {{ customers.current_page }} of {{ customers.last_page }} </span>
                             </li>
                             <li class="page-item" :class="{ disabled: customers.current_page === customers.last_page }">
                                 <Link

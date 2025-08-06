@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { ref, computed } from 'vue';
+import { Head, router, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 interface Ticket {
     id: number;
@@ -40,8 +40,8 @@ const props = defineProps<{
         links: any;
         meta: any;
     };
-    categories: Array<{id: number; name: string}>;
-    adminUsers: Array<{id: number; name: string}>;
+    categories: Array<{ id: number; name: string }>;
+    adminUsers: Array<{ id: number; name: string }>;
     filters: {
         status?: string;
         priority?: string;
@@ -69,14 +69,14 @@ const statusClasses = {
     open: 'bg-info',
     pending: 'bg-warning',
     resolved: 'bg-success',
-    closed: 'bg-secondary'
+    closed: 'bg-secondary',
 };
 
 const priorityClasses = {
     low: 'bg-secondary',
     medium: 'bg-primary',
     high: 'bg-warning',
-    urgent: 'bg-danger'
+    urgent: 'bg-danger',
 };
 
 // Apply filters
@@ -110,23 +110,27 @@ function executeBulkAction() {
         return;
     }
 
-    router.post('/admin/support-tickets/bulk-update', {
-        ticket_ids: selectedTickets.value,
-        action: bulkAction.value,
-        value: bulkValue.value,
-    }, {
-        onSuccess: () => {
-            selectedTickets.value = [];
-            bulkAction.value = '';
-            bulkValue.value = '';
-        }
-    });
+    router.post(
+        '/admin/support-tickets/bulk-update',
+        {
+            ticket_ids: selectedTickets.value,
+            action: bulkAction.value,
+            value: bulkValue.value,
+        },
+        {
+            onSuccess: () => {
+                selectedTickets.value = [];
+                bulkAction.value = '';
+                bulkValue.value = '';
+            },
+        },
+    );
 }
 
 // Toggle all checkboxes
 function toggleAll(event: Event) {
     const checked = (event.target as HTMLInputElement).checked;
-    selectedTickets.value = checked ? props.tickets.data.map(t => t.id) : [];
+    selectedTickets.value = checked ? props.tickets.data.map((t) => t.id) : [];
 }
 
 // Format date
@@ -136,7 +140,7 @@ function formatDate(date: string) {
         day: 'numeric',
         year: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
     });
 }
 </script>
@@ -144,7 +148,7 @@ function formatDate(date: string) {
 <template>
     <AdminLayout>
         <Head title="Support Tickets" />
-        
+
         <div class="container-fluid p-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h2 mb-0">Support Tickets</h1>
@@ -157,12 +161,7 @@ function formatDate(date: string) {
                         <div class="row g-3">
                             <div class="col-lg-3 col-md-4 col-sm-6">
                                 <label class="form-label text-dark fw-medium">Search</label>
-                                <input 
-                                    v-model="filterForm.search" 
-                                    type="text" 
-                                    class="form-control"
-                                    placeholder="Ticket #, subject, user..."
-                                />
+                                <input v-model="filterForm.search" type="text" class="form-control" placeholder="Ticket #, subject, user..." />
                             </div>
                             <div class="col-lg-2 col-md-4 col-sm-6">
                                 <label class="form-label text-dark fw-medium">Status</label>
@@ -203,12 +202,8 @@ function formatDate(date: string) {
                                 </select>
                             </div>
                             <div class="col-12 col-md-4 col-lg-auto d-flex align-items-end gap-2">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-funnel me-1"></i>Filter
-                                </button>
-                                <button type="button" @click="clearFilters" class="btn btn-outline-secondary">
-                                    Clear
-                                </button>
+                                <button type="submit" class="btn btn-primary"><i class="bi bi-funnel me-1"></i>Filter</button>
+                                <button type="button" @click="clearFilters" class="btn btn-outline-secondary">Clear</button>
                             </div>
                         </div>
                     </form>
@@ -217,32 +212,30 @@ function formatDate(date: string) {
 
             <!-- Bulk Actions -->
             <div class="d-flex gap-2 mb-3">
-                <select v-model="bulkAction" class="form-select" style="width: auto;">
+                <select v-model="bulkAction" class="form-select" style="width: auto">
                     <option value="">Bulk Actions</option>
                     <option value="close">Close Selected</option>
                     <option value="resolve">Mark as Resolved</option>
                     <option value="assign">Assign To</option>
                     <option value="priority">Change Priority</option>
                 </select>
-                
-                <select v-if="bulkAction === 'assign'" v-model="bulkValue" class="form-select" style="width: auto;">
+
+                <select v-if="bulkAction === 'assign'" v-model="bulkValue" class="form-select" style="width: auto">
                     <option value="">Select Admin</option>
                     <option v-for="admin in adminUsers" :key="admin.id" :value="admin.id">
                         {{ admin.name }}
                     </option>
                 </select>
-                
-                <select v-if="bulkAction === 'priority'" v-model="bulkValue" class="form-select" style="width: auto;">
+
+                <select v-if="bulkAction === 'priority'" v-model="bulkValue" class="form-select" style="width: auto">
                     <option value="">Select Priority</option>
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
                     <option value="high">High</option>
                     <option value="urgent">Urgent</option>
                 </select>
-                
-                <button @click="executeBulkAction" class="btn btn-primary" :disabled="!bulkAction">
-                    Apply
-                </button>
+
+                <button @click="executeBulkAction" class="btn btn-primary" :disabled="!bulkAction">Apply</button>
             </div>
 
             <!-- Tickets Table -->
@@ -251,12 +244,8 @@ function formatDate(date: string) {
                     <table class="table table-hover mb-0">
                         <thead>
                             <tr>
-                                <th style="width: 40px;">
-                                    <input 
-                                        type="checkbox" 
-                                        class="form-check-input"
-                                        @change="toggleAll"
-                                    />
+                                <th style="width: 40px">
+                                    <input type="checkbox" class="form-check-input" @change="toggleAll" />
                                 </th>
                                 <th>Ticket #</th>
                                 <th>Subject</th>
@@ -272,12 +261,7 @@ function formatDate(date: string) {
                         <tbody>
                             <tr v-for="ticket in tickets.data" :key="ticket.id">
                                 <td>
-                                    <input 
-                                        type="checkbox" 
-                                        class="form-check-input"
-                                        :value="ticket.id"
-                                        v-model="selectedTickets"
-                                    />
+                                    <input type="checkbox" class="form-check-input" :value="ticket.id" v-model="selectedTickets" />
                                 </td>
                                 <td class="fw-bold">{{ ticket.ticket_number }}</td>
                                 <td>{{ ticket.subject }}</td>
@@ -317,32 +301,24 @@ function formatDate(date: string) {
                                 </td>
                                 <td>{{ formatDate(ticket.created_at) }}</td>
                                 <td>
-                                    <a :href="`/admin/support-tickets/${ticket.id}`" class="btn btn-sm btn-outline-primary">
-                                        View
-                                    </a>
+                                    <a :href="`/admin/support-tickets/${ticket.id}`" class="btn btn-sm btn-outline-primary"> View </a>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-                
+
                 <!-- Pagination -->
                 <div v-if="tickets.links.length > 3" class="card-footer">
                     <nav>
                         <ul class="pagination mb-0 justify-content-center">
-                            <li 
-                                v-for="link in tickets.links" 
+                            <li
+                                v-for="link in tickets.links"
                                 :key="link.label"
                                 class="page-item"
                                 :class="{ active: link.active, disabled: !link.url }"
                             >
-                                <button 
-                                    class="page-link"
-                                    @click="router.get(link.url)"
-                                    :disabled="!link.url"
-                                    v-html="link.label"
-                                >
-                                </button>
+                                <button class="page-link" @click="router.get(link.url)" :disabled="!link.url" v-html="link.label"></button>
                             </li>
                         </ul>
                     </nav>

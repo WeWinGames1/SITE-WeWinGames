@@ -6,8 +6,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
 import Chart from 'chart.js/auto';
+import { onMounted, ref } from 'vue';
 
 const props = defineProps({
     roiData: {
@@ -27,15 +27,13 @@ onMounted(() => {
             // If Bronze is not in the data, it's Last Year data (Silver, Gold, Platinum only)
             const dataKeys = Object.keys(props.roiData);
             const hasBronze = dataKeys.includes('Bronze');
-            const levelOrder = hasBronze 
-                ? ['Bronze', 'Silver', 'Gold', 'Platinum'] 
-                : ['Silver', 'Gold', 'Platinum'];
-            
+            const levelOrder = hasBronze ? ['Bronze', 'Silver', 'Gold', 'Platinum'] : ['Silver', 'Gold', 'Platinum'];
+
             const sortedKeys = dataKeys.sort((a, b) => {
                 return levelOrder.indexOf(a) - levelOrder.indexOf(b);
             });
-            const sortedValues = sortedKeys.map(key => props.roiData[key]);
-            
+            const sortedValues = sortedKeys.map((key) => props.roiData[key]);
+
             new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -44,12 +42,8 @@ onMounted(() => {
                         {
                             label: 'ROI (%)',
                             data: sortedValues,
-                            backgroundColor: [
-                                'rgba(244, 210, 3, 0.9)',
-                            ],
-                            borderColor: [
-                                'rgba(75, 192, 192, 1)',
-                            ],
+                            backgroundColor: ['rgba(244, 210, 3, 0.9)'],
+                            borderColor: ['rgba(75, 192, 192, 1)'],
                             borderWidth: 1,
                         },
                     ],
@@ -69,7 +63,7 @@ onMounted(() => {
                             bodyColor: '#fff',
                             callbacks: {
                                 label: function (context) {
-                                    return `${context.raw}%`;
+                                    return `${Math.round(context.raw)}%`;
                                 },
                             },
                         },

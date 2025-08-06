@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
+import { Head, Link } from '@inertiajs/vue3';
 import axios from 'axios';
+import { onMounted, ref } from 'vue';
 
 interface EmailTemplate {
     id: number;
@@ -40,19 +40,19 @@ function formatDate(date: string): string {
         day: 'numeric',
         year: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
     });
 }
 
 function getTemplateBadge(key: string): string {
     const badges: Record<string, string> = {
-        'new_registration': 'bg-success',
-        'forgot_password': 'bg-warning',
-        'trial_expiring': 'bg-info',
-        'plan_renewal': 'bg-primary',
-        'payment_failed': 'bg-danger',
-        'subscription_cancelled': 'bg-secondary',
-        'welcome_subscriber': 'bg-success',
+        new_registration: 'bg-success',
+        forgot_password: 'bg-warning',
+        trial_expiring: 'bg-info',
+        plan_renewal: 'bg-primary',
+        payment_failed: 'bg-danger',
+        subscription_cancelled: 'bg-secondary',
+        welcome_subscriber: 'bg-success',
     };
     return badges[key] || 'bg-secondary';
 }
@@ -62,7 +62,7 @@ async function searchCustomers() {
         customers.value = [];
         return;
     }
-    
+
     isLoading.value = true;
     try {
         // Ensure CSRF token is set
@@ -70,9 +70,9 @@ async function searchCustomers() {
         if (token) {
             axios.defaults.headers.common['X-CSRF-TOKEN'] = token;
         }
-        
+
         const response = await axios.get('/admin/api/customers/search', {
-            params: { q: searchQuery.value }
+            params: { q: searchQuery.value },
         });
         customers.value = response.data.customers;
     } catch (error) {
@@ -106,22 +106,22 @@ async function sendTestEmail() {
         testEmailError.value = 'Please select a customer';
         return;
     }
-    
+
     isSending.value = true;
     testEmailError.value = '';
     testEmailMessage.value = '';
-    
+
     try {
         // Ensure CSRF token is set
         const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         if (token) {
             axios.defaults.headers.common['X-CSRF-TOKEN'] = token;
         }
-        
+
         const response = await axios.post(`/admin/notifications/email-templates/${selectedTemplate.value.id}/send-test`, {
-            user_id: selectedUserId.value
+            user_id: selectedUserId.value,
         });
-        
+
         if (response.data.success) {
             testEmailMessage.value = response.data.message;
             setTimeout(() => {
@@ -150,16 +150,14 @@ onMounted(() => {
 <template>
     <AdminLayout>
         <Head title="Email Templates" />
-        
+
         <div class="container-fluid p-4">
             <div class="row mb-4">
                 <div class="col">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h1 class="h2 mb-1 text-dark">Email Templates</h1>
-                            <p class="text-muted mb-0">
-                                Manage transactional email templates and content
-                            </p>
+                            <p class="text-muted mb-0">Manage transactional email templates and content</p>
                         </div>
                     </div>
                 </div>
@@ -172,8 +170,8 @@ onMounted(() => {
                     <div>
                         <h6 class="mb-1">Template Variables</h6>
                         <p class="mb-0">
-                            Use <code>{{variable_name}}</code> syntax to insert dynamic content. 
-                            Each template shows available variables when editing.
+                            Use <code>{{ variable_name }}</code> syntax to insert dynamic content. Each template shows available variables when
+                            editing.
                         </p>
                     </div>
                 </div>
@@ -211,27 +209,19 @@ onMounted(() => {
                                     <code class="text-primary">{{ template.subject }}</code>
                                 </td>
                                 <td>
-                                    <span v-if="template.is_active" class="badge bg-success">
-                                        <i class="bi bi-check-circle me-1"></i>Active
-                                    </span>
-                                    <span v-else class="badge bg-secondary">
-                                        <i class="bi bi-x-circle me-1"></i>Inactive
-                                    </span>
+                                    <span v-if="template.is_active" class="badge bg-success"> <i class="bi bi-check-circle me-1"></i>Active </span>
+                                    <span v-else class="badge bg-secondary"> <i class="bi bi-x-circle me-1"></i>Inactive </span>
                                 </td>
                                 <td>
                                     <small class="text-muted">{{ formatDate(template.updated_at) }}</small>
                                 </td>
                                 <td>
                                     <div class="d-flex justify-content-end gap-2">
-                                        <button
-                                            @click="openTestEmailModal(template)"
-                                            class="btn btn-sm btn-outline-info"
-                                            title="Send test email"
-                                        >
+                                        <button @click="openTestEmailModal(template)" class="btn btn-sm btn-outline-info" title="Send test email">
                                             <i class="bi bi-envelope me-1"></i>
                                             Test
                                         </button>
-                                        <Link 
+                                        <Link
                                             :href="`/admin/notifications/email-templates/${template.id}/edit`"
                                             class="btn btn-sm btn-outline-primary"
                                         >
@@ -246,9 +236,9 @@ onMounted(() => {
                 </div>
             </div>
         </div>
-        
+
         <!-- Test Email Modal -->
-        <div v-if="showTestEmailModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+        <div v-if="showTestEmailModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0, 0, 0, 0.5)">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -264,13 +254,13 @@ onMounted(() => {
                             <i class="bi bi-check-circle me-2"></i>
                             {{ testEmailMessage }}
                         </div>
-                        
+
                         <!-- Error Message -->
                         <div v-if="testEmailError" class="alert alert-danger mb-3">
                             <i class="bi bi-exclamation-triangle me-2"></i>
                             {{ testEmailError }}
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label">Search Customer</label>
                             <input
@@ -281,23 +271,23 @@ onMounted(() => {
                                 placeholder="Search by name or email..."
                             />
                         </div>
-                        
+
                         <div v-if="isLoading" class="text-center py-3">
                             <div class="spinner-border spinner-border-sm" role="status">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
                             <span class="ms-2">Searching...</span>
                         </div>
-                        
+
                         <div v-else-if="customers.length > 0" class="mb-3">
                             <label class="form-label">Select Customer</label>
-                            <div class="list-group" style="max-height: 300px; overflow-y: auto;">
+                            <div class="list-group" style="max-height: 300px; overflow-y: auto">
                                 <button
                                     v-for="customer in customers"
                                     :key="customer.id"
                                     type="button"
                                     class="list-group-item list-group-item-action"
-                                    :class="{ 'active': selectedUserId === customer.id.toString() }"
+                                    :class="{ active: selectedUserId === customer.id.toString() }"
                                     @click="selectedUserId = customer.id.toString()"
                                 >
                                     <div class="d-flex justify-content-between align-items-center">
@@ -310,27 +300,21 @@ onMounted(() => {
                                 </button>
                             </div>
                         </div>
-                        
+
                         <div v-else-if="searchQuery.length >= 2" class="alert alert-info">
                             <i class="bi bi-info-circle me-2"></i>
                             No customers found matching "{{ searchQuery }}"
                         </div>
-                        
+
                         <div class="alert alert-warning mt-3">
                             <i class="bi bi-exclamation-triangle me-2"></i>
-                            <strong>Note:</strong> The test email will be sent with actual customer data, including their name, email, and subscription details.
+                            <strong>Note:</strong> The test email will be sent with actual customer data, including their name, email, and
+                            subscription details.
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" @click="closeTestEmailModal" :disabled="isSending">
-                            Cancel
-                        </button>
-                        <button 
-                            type="button" 
-                            class="btn btn-primary" 
-                            @click="sendTestEmail"
-                            :disabled="!selectedUserId || isSending"
-                        >
+                        <button type="button" class="btn btn-secondary" @click="closeTestEmailModal" :disabled="isSending">Cancel</button>
+                        <button type="button" class="btn btn-primary" @click="sendTestEmail" :disabled="!selectedUserId || isSending">
                             <span v-if="isSending">
                                 <span class="spinner-border spinner-border-sm me-2"></span>
                                 Sending...

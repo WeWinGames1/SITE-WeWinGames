@@ -1,21 +1,17 @@
 <template>
     <div class="under-construction">
         <Head title="Under Construction" />
-        
+
         <div class="container">
             <div class="row justify-content-center min-vh-100 align-items-center">
                 <div class="col-12 col-md-8 col-lg-6 text-center">
                     <div class="construction-content">
-                        <img 
-                            src="/images/logo.png" 
-                            alt="WeWinGames" 
-                            class="logo mb-5"
-                        />
-                        
+                        <img src="/images/logo.png" alt="WeWinGames" class="logo mb-5" />
+
                         <h1 class="display-4 mb-4 text-white">Under Construction</h1>
-                        
+
                         <div class="message" v-html="blurb"></div>
-                        
+
                         <div class="mt-5">
                             <div class="construction-icon">
                                 <i class="fas fa-hard-hat fa-3x text-warning mb-3"></i>
@@ -41,7 +37,7 @@ defineProps<Props>();
 <style scoped>
 .under-construction {
     background: #0f1419;
-    background-image: 
+    background-image:
         radial-gradient(ellipse at top, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
         radial-gradient(ellipse at bottom, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
     min-height: 100vh;
@@ -56,13 +52,7 @@ defineProps<Props>();
     right: -50%;
     width: 200%;
     height: 200%;
-    background: repeating-linear-gradient(
-        45deg,
-        transparent,
-        transparent 10px,
-        rgba(59, 130, 246, 0.03) 10px,
-        rgba(59, 130, 246, 0.03) 20px
-    );
+    background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(59, 130, 246, 0.03) 10px, rgba(59, 130, 246, 0.03) 20px);
     animation: stripe 20s linear infinite;
 }
 
@@ -121,7 +111,11 @@ h1 {
 }
 
 @keyframes bounce {
-    0%, 20%, 50%, 80%, 100% {
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
         transform: translateY(0);
     }
     40% {
@@ -136,15 +130,15 @@ h1 {
     .construction-content {
         padding: 2rem;
     }
-    
+
     .logo {
         max-width: 150px;
     }
-    
+
     h1 {
         font-size: 2rem;
     }
-    
+
     .message {
         font-size: 1.1rem;
     }

@@ -1,16 +1,9 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
+import { MagnifyingGlassIcon, PencilIcon, PhotoIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { ref, computed, watch } from 'vue';
-import { 
-    PlusIcon, 
-    PencilIcon, 
-    TrashIcon,
-    MagnifyingGlassIcon,
-    FunnelIcon,
-    PhotoIcon
-} from '@heroicons/vue/24/outline';
 import { debounce } from 'lodash';
+import { computed, ref, watch } from 'vue';
 
 interface Sport {
     id: number;
@@ -80,7 +73,7 @@ const showFilters = ref(false);
 // Filter leagues based on selected sport
 const filteredLeagues = computed(() => {
     if (!filterForm.sport_id) return props.leagues;
-    return props.leagues.filter(league => league.sport_id === parseInt(filterForm.sport_id));
+    return props.leagues.filter((league) => league.sport_id === parseInt(filterForm.sport_id));
 });
 
 // Apply filters
@@ -99,14 +92,20 @@ function clearFilters() {
 }
 
 // Watch for search changes
-watch(() => filterForm.search, () => {
-    applyFilters();
-});
+watch(
+    () => filterForm.search,
+    () => {
+        applyFilters();
+    },
+);
 
 // Watch for filter changes
-watch(() => [filterForm.sport_id, filterForm.league_id], () => {
-    applyFilters();
-});
+watch(
+    () => [filterForm.sport_id, filterForm.league_id],
+    () => {
+        applyFilters();
+    },
+);
 
 // Generate pagination pages with ellipsis
 const paginationPages = computed(() => {
@@ -114,34 +113,34 @@ const paginationPages = computed(() => {
     const last = props.teams.last_page;
     const delta = 2;
     const pages: (number | string)[] = [];
-    
+
     // Always show first page
     pages.push(1);
-    
+
     // Calculate range around current page
     const rangeStart = Math.max(2, current - delta);
     const rangeEnd = Math.min(last - 1, current + delta);
-    
+
     // Add ellipsis if needed before range
     if (rangeStart > 2) {
         pages.push('...');
     }
-    
+
     // Add pages in range
     for (let i = rangeStart; i <= rangeEnd; i++) {
         pages.push(i);
     }
-    
+
     // Add ellipsis if needed after range
     if (rangeEnd < last - 1) {
         pages.push('...');
     }
-    
+
     // Always show last page if there's more than one page
     if (last > 1) {
         pages.push(last);
     }
-    
+
     return pages;
 });
 
@@ -161,21 +160,16 @@ function getTotalBets(team: Team): number {
 <template>
     <AdminLayout>
         <Head title="Teams Management" />
-        
+
         <div class="container-fluid p-4">
             <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h1 class="h2 mb-0">Teams Management</h1>
-                    <p class="text-muted mb-0">
-                        Manage teams across all sports and leagues
-                    </p>
+                    <p class="text-muted mb-0">Manage teams across all sports and leagues</p>
                 </div>
-                <Link
-                    :href="route('admin.teams.create')"
-                    class="btn btn-primary"
-                >
-                    <PlusIcon style="width: 1rem; height: 1rem;" class="me-1" />
+                <Link :href="route('admin.teams.create')" class="btn btn-primary">
+                    <PlusIcon style="width: 1rem; height: 1rem" class="me-1" />
                     Add Team
                 </Link>
             </div>
@@ -187,14 +181,9 @@ function getTotalBets(team: Team): number {
                         <div class="col-md-4">
                             <div class="input-group">
                                 <span class="input-group-text">
-                                    <MagnifyingGlassIcon style="width: 1rem; height: 1rem;" />
+                                    <MagnifyingGlassIcon style="width: 1rem; height: 1rem" />
                                 </span>
-                                <input
-                                    v-model="filterForm.search"
-                                    type="search"
-                                    class="form-control"
-                                    placeholder="Search teams or aliases..."
-                                />
+                                <input v-model="filterForm.search" type="search" class="form-control" placeholder="Search teams or aliases..." />
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -233,7 +222,7 @@ function getTotalBets(team: Team): number {
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th style="width: 60px;">Logo</th>
+                                <th style="width: 60px">Logo</th>
                                 <th>Team</th>
                                 <th>Sport</th>
                                 <th>League</th>
@@ -241,25 +230,21 @@ function getTotalBets(team: Team): number {
                                 <th>Aliases</th>
                                 <th>Bets</th>
                                 <th>Status</th>
-                                <th class="text-center" style="width: 100px;">Actions</th>
+                                <th class="text-center" style="width: 100px">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="team in teams.data" :key="team.id">
                                 <td>
-                                    <div class="d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                        <img 
-                                            v-if="team.logo_url" 
+                                    <div class="d-flex align-items-center justify-content-center" style="width: 40px; height: 40px">
+                                        <img
+                                            v-if="team.logo_url"
                                             :src="`/storage/${team.logo_url}`"
                                             :alt="team.name"
                                             class="img-fluid"
-                                            style="max-width: 40px; max-height: 40px;"
+                                            style="max-width: 40px; max-height: 40px"
                                         />
-                                        <PhotoIcon 
-                                            v-else 
-                                            class="text-muted" 
-                                            style="width: 1.5rem; height: 1.5rem;" 
-                                        />
+                                        <PhotoIcon v-else class="text-muted" style="width: 1.5rem; height: 1.5rem" />
                                     </div>
                                 </td>
                                 <td>
@@ -280,19 +265,10 @@ function getTotalBets(team: Team): number {
                                 </td>
                                 <td>
                                     <div v-if="team.aliases && team.aliases.length > 0">
-                                        <span 
-                                            v-for="(alias, index) in team.aliases.slice(0, 2)" 
-                                            :key="alias.id"
-                                            class="badge bg-secondary me-1"
-                                        >
+                                        <span v-for="(alias, index) in team.aliases.slice(0, 2)" :key="alias.id" class="badge bg-secondary me-1">
                                             {{ alias.alias }}
                                         </span>
-                                        <span 
-                                            v-if="team.aliases.length > 2" 
-                                            class="text-muted small"
-                                        >
-                                            +{{ team.aliases.length - 2 }}
-                                        </span>
+                                        <span v-if="team.aliases.length > 2" class="text-muted small"> +{{ team.aliases.length - 2 }} </span>
                                     </div>
                                     <div v-else class="text-muted">-</div>
                                 </td>
@@ -308,12 +284,8 @@ function getTotalBets(team: Team): number {
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm" role="group">
-                                        <Link
-                                            :href="route('admin.teams.edit', team.id)"
-                                            class="btn btn-outline-primary"
-                                            title="Edit"
-                                        >
-                                            <PencilIcon style="width: 1rem; height: 1rem;" />
+                                        <Link :href="route('admin.teams.edit', team.id)" class="btn btn-outline-primary" title="Edit">
+                                            <PencilIcon style="width: 1rem; height: 1rem" />
                                         </Link>
                                         <button
                                             @click="deleteTeam(team)"
@@ -321,7 +293,7 @@ function getTotalBets(team: Team): number {
                                             title="Delete"
                                             :disabled="getTotalBets(team) > 0"
                                         >
-                                            <TrashIcon style="width: 1rem; height: 1rem;" />
+                                            <TrashIcon style="width: 1rem; height: 1rem" />
                                         </button>
                                     </div>
                                 </td>
@@ -333,14 +305,9 @@ function getTotalBets(team: Team): number {
                 <!-- Empty State -->
                 <div v-if="teams.data.length === 0" class="text-center py-5">
                     <h5 class="mt-3">No teams found</h5>
-                    <p class="text-muted">
-                        Try adjusting your filters or add a new team.
-                    </p>
-                    <Link
-                        :href="route('admin.teams.create')"
-                        class="btn btn-primary mt-3"
-                    >
-                        <PlusIcon style="width: 1rem; height: 1rem;" class="me-1" />
+                    <p class="text-muted">Try adjusting your filters or add a new team.</p>
+                    <Link :href="route('admin.teams.create')" class="btn btn-primary mt-3">
+                        <PlusIcon style="width: 1rem; height: 1rem" class="me-1" />
                         Add Team
                     </Link>
                 </div>
@@ -348,42 +315,24 @@ function getTotalBets(team: Team): number {
                 <!-- Pagination -->
                 <div v-if="teams.last_page > 1" class="card-footer">
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted small">
-                            Showing {{ teams.from }} to {{ teams.to }} of {{ teams.total }} teams
-                        </span>
+                        <span class="text-muted small"> Showing {{ teams.from }} to {{ teams.to }} of {{ teams.total }} teams </span>
                         <nav>
                             <ul class="pagination pagination-sm mb-0">
                                 <li class="page-item" :class="{ disabled: teams.current_page === 1 }">
-                                    <Link
-                                        :href="`?page=${teams.current_page - 1}`"
-                                        preserve-scroll
-                                        class="page-link"
-                                    >
-                                        Previous
-                                    </Link>
+                                    <Link :href="`?page=${teams.current_page - 1}`" preserve-scroll class="page-link"> Previous </Link>
                                 </li>
                                 <template v-for="(page, index) in paginationPages" :key="index">
                                     <li v-if="page === '...'" class="page-item disabled">
                                         <span class="page-link">...</span>
                                     </li>
                                     <li v-else class="page-item" :class="{ active: page === teams.current_page }">
-                                        <Link
-                                            :href="`?page=${page}`"
-                                            preserve-scroll
-                                            class="page-link"
-                                        >
+                                        <Link :href="`?page=${page}`" preserve-scroll class="page-link">
                                             {{ page }}
                                         </Link>
                                     </li>
                                 </template>
                                 <li class="page-item" :class="{ disabled: teams.current_page === teams.last_page }">
-                                    <Link
-                                        :href="`?page=${teams.current_page + 1}`"
-                                        preserve-scroll
-                                        class="page-link"
-                                    >
-                                        Next
-                                    </Link>
+                                    <Link :href="`?page=${teams.current_page + 1}`" preserve-scroll class="page-link"> Next </Link>
                                 </li>
                             </ul>
                         </nav>

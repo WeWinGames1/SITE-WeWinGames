@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Head, Link, usePage, router } from '@inertiajs/vue3';
-import CustomerLayout from '@/layouts/CustomerLayout.vue';
 import PricingCards from '@/components/PricingCards.vue';
+import CustomerLayout from '@/layouts/CustomerLayout.vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted } from 'vue';
 
 interface PaymentMethod {
@@ -51,128 +51,114 @@ const stripeProducts = page.props.stripeProducts || {};
 
 // Helper function to get features for a specific tier and billing period
 const getFeatures = (tier: string, billingPeriod: string = 'monthly') => {
-  const products = stripeProducts[billingPeriod];
-  if (!products || !products[tier.toLowerCase()]) {
-    // Return default features if not found
-    return getDefaultFeatures(tier);
-  }
-  return products[tier.toLowerCase()].features || getDefaultFeatures(tier);
+    const products = stripeProducts[billingPeriod];
+    if (!products || !products[tier.toLowerCase()]) {
+        // Return default features if not found
+        return getDefaultFeatures(tier);
+    }
+    return products[tier.toLowerCase()].features || getDefaultFeatures(tier);
 };
 
 // Default features as fallback
 const getDefaultFeatures = (tier: string) => {
-  switch (tier.toLowerCase()) {
-    case 'silver':
-      return [
-        'Over 5 picks a day',
-        'Straight bets',
-        'Favorite picks',
-        'Avg odds -120',
-        '24/7 support',
-      ];
-    case 'gold':
-      return [
-        'All Silver features +',
-        '> 5 gold picks daily',
-        'Best Value Bets',
-        'Avg odds > +100',
-        'Cancel anytime',
-        '24/7 support',
-      ];
-    case 'platinum':
-      return [
-        'All Silver & Gold features +',
-        '5 platinum picks daily',
-        'Parlay & prop bets',
-        'Best tipsters & ROI',
-        'Cancel anytime',
-        '24/7 support',
-      ];
-    default:
-      return [];
-  }
+    switch (tier.toLowerCase()) {
+        case 'silver':
+            return ['Over 5 picks a day', 'Straight bets', 'Favorite picks', 'Avg odds -120', '24/7 support'];
+        case 'gold':
+            return ['All Silver features +', '> 5 gold picks daily', 'Best Value Bets', 'Avg odds > +100', 'Cancel anytime', '24/7 support'];
+        case 'platinum':
+            return [
+                'All Silver & Gold features +',
+                '5 platinum picks daily',
+                'Parlay & prop bets',
+                'Best tipsters & ROI',
+                'Cancel anytime',
+                '24/7 support',
+            ];
+        default:
+            return [];
+    }
 };
 
 // Get prices from stripeProducts
 const getPrice = (tier: string, billingPeriod: string = 'monthly') => {
-  const products = stripeProducts[billingPeriod];
-  if (!products || !products[tier.toLowerCase()]) {
-    // Return default prices if not found
-    return getDefaultPrice(tier, billingPeriod);
-  }
-  const amount = products[tier.toLowerCase()].amount;
-  return billingPeriod === 'monthly' ? `$${amount}` : amount.toString();
+    const products = stripeProducts[billingPeriod];
+    if (!products || !products[tier.toLowerCase()]) {
+        // Return default prices if not found
+        return getDefaultPrice(tier, billingPeriod);
+    }
+    const amount = products[tier.toLowerCase()].amount;
+    return billingPeriod === 'monthly' ? `$${amount}` : amount.toString();
 };
 
 // Default prices as fallback
 const getDefaultPrice = (tier: string, billingPeriod: string) => {
-  const defaults = {
-    silver: { monthly: '$45', weekly: '17', daily: '5' },
-    gold: { monthly: '$65', weekly: '29', daily: '8' },
-    platinum: { monthly: '$80', weekly: '49', daily: '12' },
-  };
-  return defaults[tier.toLowerCase()]?.[billingPeriod] || '$0';
+    const defaults = {
+        silver: { monthly: '$45', weekly: '17', daily: '5' },
+        gold: { monthly: '$65', weekly: '29', daily: '8' },
+        platinum: { monthly: '$80', weekly: '49', daily: '12' },
+    };
+    return defaults[tier.toLowerCase()]?.[billingPeriod] || '$0';
 };
 
 // Check if a plan matches the current subscription
 const isPlanActive = (planName: string, planPeriod: string) => {
     if (!props.currentPlan) return false;
-    return props.currentPlan.tier.toLowerCase() === planName.toLowerCase() && 
-           props.currentPlan.period === planPeriod;
+    return props.currentPlan.tier.toLowerCase() === planName.toLowerCase() && props.currentPlan.period === planPeriod;
 };
 
 const plans = computed(() => [
-  {
-    name: 'Silver',
-    price: getPrice('silver', 'monthly'),
-    monthlyPrice: getPrice('silver', 'monthly'),
-    duration: '30 days',
-    features: getFeatures('silver', 'monthly'), // Using monthly features as default display
-    monthlyFeatures: getFeatures('silver', 'monthly'),
-    weeklyFeatures: getFeatures('silver', 'weekly'),
-    dailyFeatures: getFeatures('silver', 'daily'),
-    monthlyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: stripePrices.silver_monthly }),
-    weeklyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: stripePrices.silver_weekly }),
-    dailyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: stripePrices.silver_daily }),
-    weeklyPrice: getPrice('silver', 'weekly'),
-    dailyPrice: getPrice('silver', 'daily'),
-    highlight: false,
-    isCurrentPlan: isPlanActive('Silver', 'monthly'),
-  },
-  {
-    name: 'Gold',
-    price: getPrice('gold', 'monthly'),
-    monthlyPrice: getPrice('gold', 'monthly'),
-    duration: '30 days',
-    features: getFeatures('gold', 'monthly'), // Using monthly features as default display
-    monthlyFeatures: getFeatures('gold', 'monthly'),
-    weeklyFeatures: getFeatures('gold', 'weekly'),
-    dailyFeatures: getFeatures('gold', 'daily'),
-    monthlyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: stripePrices.gold_monthly }),
-    weeklyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: stripePrices.gold_weekly }),
-    dailyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: stripePrices.gold_daily }),
-    weeklyPrice: getPrice('gold', 'weekly'),
-    dailyPrice: getPrice('gold', 'daily'),
-    highlight: true,
-    isCurrentPlan: isPlanActive('Gold', 'monthly'),
-  },
-  {
-    name: 'Platinum',
-    price: getPrice('platinum', 'monthly'),
-    monthlyPrice: getPrice('platinum', 'monthly'),
-    duration: '30 days',
-    features: getFeatures('platinum', 'monthly'), // Using monthly features as default display
-    monthlyFeatures: getFeatures('platinum', 'monthly'),
-    weeklyFeatures: getFeatures('platinum', 'weekly'),
-    dailyFeatures: getFeatures('platinum', 'daily'),
-    monthlyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: stripePrices.platinum_monthly }),
-    weeklyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: stripePrices.platinum_weekly }),
-    dailyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: stripePrices.platinum_daily }),
-    weeklyPrice: getPrice('platinum', 'weekly'),
-    dailyPrice: getPrice('platinum', 'daily'),
-    highlight: false,
-    isCurrentPlan: isPlanActive('Platinum', 'monthly'),
-  },
+    {
+        name: 'Silver',
+        price: getPrice('silver', 'monthly'),
+        monthlyPrice: getPrice('silver', 'monthly'),
+        duration: '30 days',
+        features: getFeatures('silver', 'monthly'), // Using monthly features as default display
+        monthlyFeatures: getFeatures('silver', 'monthly'),
+        weeklyFeatures: getFeatures('silver', 'weekly'),
+        dailyFeatures: getFeatures('silver', 'daily'),
+        monthlyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: stripePrices.silver_monthly }),
+        weeklyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: stripePrices.silver_weekly }),
+        dailyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: stripePrices.silver_daily }),
+        weeklyPrice: getPrice('silver', 'weekly'),
+        dailyPrice: getPrice('silver', 'daily'),
+        highlight: false,
+        isCurrentPlan: isPlanActive('Silver', 'monthly'),
+    },
+    {
+        name: 'Gold',
+        price: getPrice('gold', 'monthly'),
+        monthlyPrice: getPrice('gold', 'monthly'),
+        duration: '30 days',
+        features: getFeatures('gold', 'monthly'), // Using monthly features as default display
+        monthlyFeatures: getFeatures('gold', 'monthly'),
+        weeklyFeatures: getFeatures('gold', 'weekly'),
+        dailyFeatures: getFeatures('gold', 'daily'),
+        monthlyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: stripePrices.gold_monthly }),
+        weeklyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: stripePrices.gold_weekly }),
+        dailyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: stripePrices.gold_daily }),
+        weeklyPrice: getPrice('gold', 'weekly'),
+        dailyPrice: getPrice('gold', 'daily'),
+        highlight: true,
+        isCurrentPlan: isPlanActive('Gold', 'monthly'),
+    },
+    {
+        name: 'Platinum',
+        price: getPrice('platinum', 'monthly'),
+        monthlyPrice: getPrice('platinum', 'monthly'),
+        duration: '30 days',
+        features: getFeatures('platinum', 'monthly'), // Using monthly features as default display
+        monthlyFeatures: getFeatures('platinum', 'monthly'),
+        weeklyFeatures: getFeatures('platinum', 'weekly'),
+        dailyFeatures: getFeatures('platinum', 'daily'),
+        monthlyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: stripePrices.platinum_monthly }),
+        weeklyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: stripePrices.platinum_weekly }),
+        dailyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: stripePrices.platinum_daily }),
+        weeklyPrice: getPrice('platinum', 'weekly'),
+        dailyPrice: getPrice('platinum', 'daily'),
+        highlight: false,
+        isCurrentPlan: isPlanActive('Platinum', 'monthly'),
+    },
 ]);
 
 const handleBillingPortal = () => {
@@ -181,14 +167,18 @@ const handleBillingPortal = () => {
 
 const setDefaultPaymentMethod = (paymentMethodId: string) => {
     if (confirm('Set this as your default payment method?')) {
-        router.post(route('billing.set-default-payment-method'), {
-            payment_method_id: paymentMethodId
-        }, {
-            preserveScroll: true,
-            onSuccess: () => {
-                router.reload({ only: ['paymentMethods'] });
-            }
-        });
+        router.post(
+            route('billing.set-default-payment-method'),
+            {
+                payment_method_id: paymentMethodId,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    router.reload({ only: ['paymentMethods'] });
+                },
+            },
+        );
     }
 };
 
@@ -200,7 +190,7 @@ onMounted(() => {
         // Remove the parameter from URL
         const newUrl = window.location.pathname;
         window.history.replaceState({}, '', newUrl);
-        
+
         // Force a page reload to get fresh data from server
         setTimeout(() => {
             router.reload({ only: ['paymentMethods', 'currentPlan', 'invoices'] });
@@ -219,15 +209,9 @@ onMounted(() => {
                 <div class="col-12">
                     <h2 class="mb-3">Settings</h2>
                     <nav class="nav nav-pills">
-                        <Link :href="route('profile.edit')" class="nav-link">
-                            <i class="bi bi-person me-2"></i>Profile
-                        </Link>
-                        <Link :href="route('billing.edit')" class="nav-link active">
-                            <i class="bi bi-credit-card me-2"></i>Billing
-                        </Link>
-                        <Link :href="route('password.edit')" class="nav-link">
-                            <i class="bi bi-shield-lock me-2"></i>Security
-                        </Link>
+                        <Link :href="route('profile.edit')" class="nav-link"> <i class="bi bi-person me-2"></i>Profile </Link>
+                        <Link :href="route('billing.edit')" class="nav-link active"> <i class="bi bi-credit-card me-2"></i>Billing </Link>
+                        <Link :href="route('password.edit')" class="nav-link"> <i class="bi bi-shield-lock me-2"></i>Security </Link>
                     </nav>
                 </div>
             </div>
@@ -251,17 +235,18 @@ onMounted(() => {
                                         <h6>Plan Details</h6>
                                         <div class="mb-3">
                                             <span class="badge bg-primary fs-6 mb-2">{{ currentPlan.tier }} {{ currentPlan.period }}</span>
-                                            <p class="mb-1"><strong>Status:</strong> 
+                                            <p class="mb-1">
+                                                <strong>Status:</strong>
                                                 <span :class="['badge', currentPlan.status === 'active' ? 'bg-success' : 'bg-secondary']">
                                                     {{ currentPlan.status }}
                                                 </span>
                                             </p>
                                             <p class="mb-1" v-if="currentPlan.current_period_end">
-                                                <strong>Next billing date:</strong> 
+                                                <strong>Next billing date:</strong>
                                                 {{ new Date(currentPlan.current_period_end).toLocaleDateString() }}
                                             </p>
                                             <p class="mb-1" v-if="currentPlan.trial_ends_at">
-                                                <strong>Trial ends:</strong> 
+                                                <strong>Trial ends:</strong>
                                                 {{ new Date(currentPlan.trial_ends_at).toLocaleDateString() }}
                                             </p>
                                         </div>
@@ -295,11 +280,9 @@ onMounted(() => {
                         </div>
                         <div class="card-body">
                             <div v-if="paymentMethods.length === 0" class="text-center py-3">
-                                <i class="bi bi-credit-card" style="font-size: 3rem;"></i>
+                                <i class="bi bi-credit-card" style="font-size: 3rem"></i>
                                 <p class="mt-2">No payment methods on file</p>
-                                <button @click="handleBillingPortal" class="btn btn-primary">
-                                    Add Payment Method
-                                </button>
+                                <button @click="handleBillingPortal" class="btn btn-primary">Add Payment Method</button>
                             </div>
                             <div v-else class="row">
                                 <div v-for="method in paymentMethods" :key="method.id" class="col-md-6 mb-3">
@@ -308,22 +291,30 @@ onMounted(() => {
                                             <div class="list-group-item">
                                                 <div class="d-flex justify-content-between align-items-start">
                                                     <div class="d-flex align-items-center">
-                                                        <i :class="[method.brand === 'Stripe Link' ? 'bi-link-45deg' : 'bi-credit-card-fill', 'bi text-primary me-3']" style="font-size: 1.5rem;"></i>
+                                                        <i
+                                                            :class="[
+                                                                method.brand === 'Stripe Link' ? 'bi-link-45deg' : 'bi-credit-card-fill',
+                                                                'bi text-primary me-3',
+                                                            ]"
+                                                            style="font-size: 1.5rem"
+                                                        ></i>
                                                         <div>
                                                             <p class="mb-0">
-                                                                <strong>{{ method.brand }}</strong> 
+                                                                <strong>{{ method.brand }}</strong>
                                                                 <span v-if="method.brand === 'Stripe Link'">{{ method.last4 }}</span>
                                                                 <span v-else>ending in {{ method.last4 }}</span>
                                                             </p>
-                                                            <small v-if="method.exp_month && method.exp_year">Expires {{ method.exp_month }}/{{ method.exp_year }}</small>
+                                                            <small v-if="method.exp_month && method.exp_year"
+                                                                >Expires {{ method.exp_month }}/{{ method.exp_year }}</small
+                                                            >
                                                             <small v-else-if="method.brand === 'Stripe Link'">Quick checkout</small>
                                                         </div>
                                                     </div>
                                                     <span v-if="method.is_default" class="badge bg-success">Default</span>
                                                 </div>
                                                 <div class="mt-3 d-flex gap-2 justify-content-end">
-                                                    <button 
-                                                        v-if="!method.is_default" 
+                                                    <button
+                                                        v-if="!method.is_default"
                                                         @click="setDefaultPaymentMethod(method.id)"
                                                         class="btn btn-sm btn-primary"
                                                         title="Set as default payment method"
@@ -345,7 +336,7 @@ onMounted(() => {
                                     <div class="card h-100 border-dashed bg-light">
                                         <div class="card-body d-flex align-items-center justify-content-center">
                                             <button @click="handleBillingPortal" class="btn btn-link text-decoration-none text-dark">
-                                                <i class="bi bi-plus-circle text-primary" style="font-size: 2rem;"></i>
+                                                <i class="bi bi-plus-circle text-primary" style="font-size: 2rem"></i>
                                                 <p class="mb-0 mt-2 text-dark">Add Payment Method</p>
                                             </button>
                                         </div>
@@ -363,7 +354,7 @@ onMounted(() => {
                         </div>
                         <div class="card-body">
                             <div v-if="invoices.length === 0" class="text-center py-3">
-                                <i class="bi bi-receipt" style="font-size: 3rem;"></i>
+                                <i class="bi bi-receipt" style="font-size: 3rem"></i>
                                 <p class="mt-2">No payment history yet</p>
                             </div>
                             <div v-else class="table-responsive">
@@ -397,9 +388,7 @@ onMounted(() => {
                                 </table>
                             </div>
                             <div v-if="invoices.length > 0" class="text-center mt-3">
-                                <button @click="handleBillingPortal" class="btn btn-outline-primary">
-                                    View All Invoices
-                                </button>
+                                <button @click="handleBillingPortal" class="btn btn-outline-primary">View All Invoices</button>
                             </div>
                         </div>
                     </div>

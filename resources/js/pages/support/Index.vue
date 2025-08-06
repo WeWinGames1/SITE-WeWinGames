@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Head, useForm, router, usePage } from '@inertiajs/vue3';
 import CustomerLayout from '@/layouts/CustomerLayout.vue';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import NewTicketModal from './NewTicketModal.vue';
-import { ref, computed } from 'vue';
 
 interface Ticket {
     id: number;
@@ -31,14 +31,14 @@ const statusClasses = {
     pending: 'bg-warning',
     resolved: 'bg-success',
     closed: 'bg-secondary',
-    'user-requests-close': 'bg-warning'
+    'user-requests-close': 'bg-warning',
 };
 
 const priorityClasses = {
     low: 'bg-secondary',
     medium: 'bg-primary',
     high: 'bg-warning',
-    urgent: 'bg-danger'
+    urgent: 'bg-danger',
 };
 
 // Format date
@@ -48,18 +48,18 @@ function formatDate(date: string) {
         day: 'numeric',
         year: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
     });
 }
 
 // Format status display name
 function formatStatus(status: string) {
     const statusLabels: Record<string, string> = {
-        'open': 'Open',
-        'pending': 'Pending',
-        'resolved': 'Resolved',
-        'closed': 'Closed',
-        'user-requests-close': 'Awaiting Closure'
+        open: 'Open',
+        pending: 'Pending',
+        resolved: 'Resolved',
+        closed: 'Closed',
+        'user-requests-close': 'Awaiting Closure',
     };
     return statusLabels[status] || status;
 }
@@ -73,18 +73,13 @@ function viewTicket(ticketId: number) {
 <template>
     <CustomerLayout>
         <Head title="Support Tickets" />
-        
+
         <div class="container py-4">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h1 class="h3 mb-0">Support Tickets</h1>
-                        <button 
-                            @click="showNewTicketModal = true" 
-                            class="btn btn-primary"
-                            data-bs-toggle="modal" 
-                            data-bs-target="#newTicketModal"
-                        >
+                        <button @click="showNewTicketModal = true" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newTicketModal">
                             <i class="bi bi-plus-circle me-2"></i>
                             New Ticket
                         </button>
@@ -96,10 +91,10 @@ function viewTicket(ticketId: number) {
                             <div v-if="tickets.length === 0" class="text-center py-5">
                                 <i class="bi bi-inbox display-1 text-muted"></i>
                                 <p class="text-muted mt-3">No support tickets yet</p>
-                                <button 
+                                <button
                                     @click="showNewTicketModal = true"
                                     class="btn btn-primary mt-2"
-                                    data-bs-toggle="modal" 
+                                    data-bs-toggle="modal"
                                     data-bs-target="#newTicketModal"
                                 >
                                     Create your first ticket
@@ -141,12 +136,7 @@ function viewTicket(ticketId: number) {
                                             </td>
                                             <td>{{ formatDate(ticket.updated_at) }}</td>
                                             <td>
-                                                <button 
-                                                    @click="viewTicket(ticket.id)"
-                                                    class="btn btn-sm btn-outline-primary"
-                                                >
-                                                    View
-                                                </button>
+                                                <button @click="viewTicket(ticket.id)" class="btn btn-sm btn-outline-primary">View</button>
                                             </td>
                                         </tr>
                                     </tbody>

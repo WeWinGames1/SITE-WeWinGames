@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { ref, computed } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 interface Faq {
     id: number;
@@ -30,19 +30,16 @@ const searchQuery = ref<string>('');
 
 const filteredFaqs = computed(() => {
     let filtered = props.faqs.data;
-    
+
     if (selectedCategory.value) {
-        filtered = filtered.filter(faq => faq.category === selectedCategory.value);
+        filtered = filtered.filter((faq) => faq.category === selectedCategory.value);
     }
-    
+
     if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase();
-        filtered = filtered.filter(faq => 
-            faq.question.toLowerCase().includes(query) || 
-            faq.answer.toLowerCase().includes(query)
-        );
+        filtered = filtered.filter((faq) => faq.question.toLowerCase().includes(query) || faq.answer.toLowerCase().includes(query));
     }
-    
+
     return filtered;
 });
 
@@ -53,22 +50,30 @@ function deleteFaq(id: number) {
 }
 
 function toggleActive(faq: Faq) {
-    router.post(route('admin.faqs.toggle', faq.id), {}, {
-        preserveScroll: true
-    });
+    router.post(
+        route('admin.faqs.toggle', faq.id),
+        {},
+        {
+            preserveScroll: true,
+        },
+    );
 }
 
 function updateOrder(faqs: Faq[]) {
     const faqsWithOrder = faqs.map((faq, index) => ({
         id: faq.id,
-        sort_order: index
+        sort_order: index,
     }));
-    
-    router.post(route('admin.faqs.update-order'), {
-        faqs: faqsWithOrder
-    }, {
-        preserveScroll: true
-    });
+
+    router.post(
+        route('admin.faqs.update-order'),
+        {
+            faqs: faqsWithOrder,
+        },
+        {
+            preserveScroll: true,
+        },
+    );
 }
 
 function moveUp(index: number) {
@@ -91,7 +96,7 @@ function moveDown(index: number) {
 <template>
     <AdminLayout>
         <Head title="FAQs" />
-        
+
         <div class="container-fluid p-4">
             <!-- Page Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -99,10 +104,7 @@ function moveDown(index: number) {
                     <h1 class="h2 mb-0">Frequently Asked Questions</h1>
                     <p class="text-muted mb-0">Manage your FAQ items</p>
                 </div>
-                <Link 
-                    :href="route('admin.faqs.create')" 
-                    class="btn btn-primary"
-                >
+                <Link :href="route('admin.faqs.create')" class="btn btn-primary">
                     <i class="bi bi-plus-circle me-2"></i>
                     Add FAQ
                 </Link>
@@ -114,12 +116,7 @@ function moveDown(index: number) {
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label">Search FAQs</label>
-                            <input 
-                                v-model="searchQuery"
-                                type="text" 
-                                class="form-control" 
-                                placeholder="Search questions or answers..."
-                            >
+                            <input v-model="searchQuery" type="text" class="form-control" placeholder="Search questions or answers..." />
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Filter by Category</label>
@@ -131,7 +128,13 @@ function moveDown(index: number) {
                             </select>
                         </div>
                         <div class="col-md-4 d-flex align-items-end">
-                            <button @click="selectedCategory = ''; searchQuery = ''" class="btn btn-secondary">
+                            <button
+                                @click="
+                                    selectedCategory = '';
+                                    searchQuery = '';
+                                "
+                                class="btn btn-secondary"
+                            >
                                 <i class="bi bi-arrow-clockwise me-2"></i>
                                 Reset Filters
                             </button>
@@ -149,16 +152,12 @@ function moveDown(index: number) {
                             <span v-if="searchQuery || selectedCategory">No FAQs found matching your criteria.</span>
                             <span v-else>No FAQs found. Add your first FAQ to get started.</span>
                         </p>
-                        <Link 
-                            v-if="!searchQuery && !selectedCategory"
-                            :href="route('admin.faqs.create')" 
-                            class="btn btn-primary mt-3"
-                        >
+                        <Link v-if="!searchQuery && !selectedCategory" :href="route('admin.faqs.create')" class="btn btn-primary mt-3">
                             <i class="bi bi-plus-circle me-2"></i>
                             Add First FAQ
                         </Link>
                     </div>
-                    
+
                     <div v-else class="table-responsive">
                         <table class="table table-hover align-middle">
                             <thead>
@@ -174,15 +173,10 @@ function moveDown(index: number) {
                                 <tr v-for="(faq, index) in filteredFaqs" :key="faq.id">
                                     <td>
                                         <div class="btn-group btn-group-sm" role="group">
-                                            <button 
-                                                @click="moveUp(index)"
-                                                :disabled="index === 0"
-                                                class="btn btn-outline-secondary"
-                                                title="Move up"
-                                            >
+                                            <button @click="moveUp(index)" :disabled="index === 0" class="btn btn-outline-secondary" title="Move up">
                                                 <i class="bi bi-arrow-up"></i>
                                             </button>
-                                            <button 
+                                            <button
                                                 @click="moveDown(index)"
                                                 :disabled="index === filteredFaqs.length - 1"
                                                 class="btn btn-outline-secondary"
@@ -195,7 +189,7 @@ function moveDown(index: number) {
                                     <td>
                                         <div>
                                             <h6 class="mb-1">{{ faq.question }}</h6>
-                                            <p class="text-muted small mb-0" style="max-width: 500px;">
+                                            <p class="text-muted small mb-0" style="max-width: 500px">
                                                 {{ faq.answer.substring(0, 100) }}{{ faq.answer.length > 100 ? '...' : '' }}
                                             </p>
                                         </div>
@@ -207,7 +201,7 @@ function moveDown(index: number) {
                                         <span v-else class="text-muted">-</span>
                                     </td>
                                     <td class="text-center">
-                                        <button 
+                                        <button
                                             @click="toggleActive(faq)"
                                             :class="faq.is_active ? 'btn btn-sm btn-success' : 'btn btn-sm btn-danger'"
                                         >
@@ -217,18 +211,10 @@ function moveDown(index: number) {
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group btn-group-sm" role="group">
-                                            <Link 
-                                                :href="route('admin.faqs.edit', faq.id)"
-                                                class="btn btn-outline-primary"
-                                                title="Edit"
-                                            >
+                                            <Link :href="route('admin.faqs.edit', faq.id)" class="btn btn-outline-primary" title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </Link>
-                                            <button 
-                                                @click="deleteFaq(faq.id)"
-                                                class="btn btn-outline-danger"
-                                                title="Delete"
-                                            >
+                                            <button @click="deleteFaq(faq.id)" class="btn btn-outline-danger" title="Delete">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
@@ -245,34 +231,17 @@ function moveDown(index: number) {
                 <nav>
                     <ul class="pagination">
                         <li class="page-item" :class="{ disabled: props.faqs.current_page === 1 }">
-                            <Link 
-                                :href="route('admin.faqs.index', { page: props.faqs.current_page - 1 })"
-                                class="page-link"
-                                preserve-state
-                            >
+                            <Link :href="route('admin.faqs.index', { page: props.faqs.current_page - 1 })" class="page-link" preserve-state>
                                 Previous
                             </Link>
                         </li>
-                        <li 
-                            v-for="page in props.faqs.last_page" 
-                            :key="page"
-                            class="page-item" 
-                            :class="{ active: page === props.faqs.current_page }"
-                        >
-                            <Link 
-                                :href="route('admin.faqs.index', { page })"
-                                class="page-link"
-                                preserve-state
-                            >
+                        <li v-for="page in props.faqs.last_page" :key="page" class="page-item" :class="{ active: page === props.faqs.current_page }">
+                            <Link :href="route('admin.faqs.index', { page })" class="page-link" preserve-state>
                                 {{ page }}
                             </Link>
                         </li>
                         <li class="page-item" :class="{ disabled: props.faqs.current_page === props.faqs.last_page }">
-                            <Link 
-                                :href="route('admin.faqs.index', { page: props.faqs.current_page + 1 })"
-                                class="page-link"
-                                preserve-state
-                            >
+                            <Link :href="route('admin.faqs.index', { page: props.faqs.current_page + 1 })" class="page-link" preserve-state>
                                 Next
                             </Link>
                         </li>

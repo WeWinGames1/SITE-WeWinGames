@@ -1,15 +1,15 @@
-import '../css/app.css';
 import 'bootstrap';
 import * as bootstrap from 'bootstrap';
+import '../css/app.css';
 
 import { createInertiaApp, router } from '@inertiajs/vue3';
+import axios from 'axios';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
 import { initializeTheme } from './composables/useAppearance';
 import { useGoogleAnalytics } from './composables/useGoogleAnalytics';
-import axios from 'axios';
 
 // Make Bootstrap available globally
 window.bootstrap = bootstrap;
@@ -26,22 +26,22 @@ if (typeof window !== 'undefined') {
     if (token) {
         axios.defaults.headers.common['X-CSRF-TOKEN'] = token;
     }
-    
+
     // Add global error interceptor for debugging
     axios.interceptors.response.use(
-        response => response,
-        error => {
+        (response) => response,
+        (error) => {
             if (error.response?.status === 422) {
                 console.error('Validation Error Details:', {
                     url: error.config?.url,
                     method: error.config?.method,
                     data: error.config?.data,
                     errors: error.response?.data?.errors,
-                    message: error.response?.data?.message
+                    message: error.response?.data?.message,
                 });
             }
             return Promise.reject(error);
-        }
+        },
     );
 }
 
@@ -94,14 +94,14 @@ router.on('navigate', () => {
 // Handle Inertia errors globally
 router.on('error', (event) => {
     const status = event.detail.response?.status;
-    
+
     if (status === 419) {
         // CSRF token mismatch
         alert('Your session has expired. The page will refresh to restore your session.');
-        
+
         // Prevent the default error modal
         event.preventDefault();
-        
+
         // Reload the page to get a fresh CSRF token
         setTimeout(() => {
             window.location.reload();
@@ -111,19 +111,19 @@ router.on('error', (event) => {
         const data = event.detail.response?.data;
         const message = data?.message || 'Too many requests. Please try again later.';
         const retryAfter = data?.retry_after || 60;
-        
+
         // Show a nice alert or toast
         alert(`${message}\n\nYou can try again in ${retryAfter} seconds.`);
-        
+
         // Prevent the default error modal
         event.preventDefault();
     } else if (status === 500) {
         // Server error
         const message = event.detail.response?.data?.message || 'An error occurred while processing your request.';
-        
+
         // Show error message
         alert(`Server Error: ${message}`);
-        
+
         // Prevent the default error modal
         event.preventDefault();
     }
@@ -131,7 +131,7 @@ router.on('error', (event) => {
 
 if ('serviceWorker' in navigator) {
     console.log('Service Worker is supported');
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js');
-  });
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js');
+    });
 }

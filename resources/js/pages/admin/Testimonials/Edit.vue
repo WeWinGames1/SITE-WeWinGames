@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 interface Testimonial {
@@ -27,7 +27,7 @@ const form = useForm({
     review_date: props.testimonial.review_date.split(' ')[0], // Extract date only
     published: props.testimonial.published,
     sort_order: props.testimonial.sort_order,
-    image: null as File | null
+    image: null as File | null,
 });
 
 const imagePreview = ref<string | null>(props.testimonial.image);
@@ -36,7 +36,7 @@ function handleImageChange(event: Event) {
     const target = event.target as HTMLInputElement;
     if (target.files && target.files[0]) {
         form.image = target.files[0];
-        
+
         // Create preview
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -56,10 +56,10 @@ function removeImage() {
 function validateForm(): boolean {
     // Clear previous errors
     form.clearErrors();
-    
+
     let isValid = true;
     const errors: Record<string, string> = {};
-    
+
     // Required fields validation
     if (!form.name || !form.name.trim()) {
         errors.name = 'The name field is required.';
@@ -68,27 +68,27 @@ function validateForm(): boolean {
         errors.name = 'The name may not be greater than 255 characters.';
         isValid = false;
     }
-    
+
     if (form.title && form.title.length > 255) {
         errors.title = 'The title may not be greater than 255 characters.';
         isValid = false;
     }
-    
+
     if (!form.stars || form.stars < 1 || form.stars > 5) {
         errors.stars = 'The stars must be between 1 and 5.';
         isValid = false;
     }
-    
+
     if (!form.review || !form.review.trim()) {
         errors.review = 'The review field is required.';
         isValid = false;
     }
-    
+
     if (!form.review_date) {
         errors.review_date = 'The review date field is required.';
         isValid = false;
     }
-    
+
     // File validation
     if (form.image) {
         const maxSize = 2 * 1024 * 1024; // 2MB in bytes
@@ -96,7 +96,7 @@ function validateForm(): boolean {
             errors.image = 'The image may not be greater than 2MB.';
             isValid = false;
         }
-        
+
         // Check file type
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/svg+xml', 'image/webp'];
         if (!allowedTypes.includes(form.image.type)) {
@@ -104,7 +104,7 @@ function validateForm(): boolean {
             isValid = false;
         }
     }
-    
+
     // Numeric validation
     if (form.sort_order !== null && form.sort_order !== undefined) {
         if (!Number.isInteger(form.sort_order)) {
@@ -112,12 +112,12 @@ function validateForm(): boolean {
             isValid = false;
         }
     }
-    
+
     // Set errors if any
     if (!isValid) {
         form.setError(errors);
     }
-    
+
     return isValid;
 }
 
@@ -125,9 +125,9 @@ function submit() {
     if (!validateForm()) {
         return;
     }
-    
+
     form.put(route('admin.testimonials.update', props.testimonial.id), {
-        forceFormData: true
+        forceFormData: true,
     });
 }
 </script>
@@ -135,7 +135,7 @@ function submit() {
 <template>
     <AdminLayout>
         <Head title="Edit Testimonial" />
-        
+
         <div class="container-fluid">
             <!-- Page Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -163,7 +163,9 @@ function submit() {
                             <form @submit.prevent="submit">
                                 <div class="row mb-4">
                                     <div class="col-md-6">
-                                        <label for="name" class="form-label text-dark fw-medium">Customer Name <span class="text-danger">*</span></label>
+                                        <label for="name" class="form-label text-dark fw-medium"
+                                            >Customer Name <span class="text-danger">*</span></label
+                                        >
                                         <input
                                             id="name"
                                             type="text"
@@ -205,10 +207,7 @@ function submit() {
                                             class="btn btn-link p-0 text-decoration-none"
                                             @click="form.stars = star"
                                         >
-                                            <i 
-                                                class="bi fs-4"
-                                                :class="star <= form.stars ? 'bi-star-fill text-warning' : 'bi-star text-muted'"
-                                            ></i>
+                                            <i class="bi fs-4" :class="star <= form.stars ? 'bi-star-fill text-warning' : 'bi-star text-muted'"></i>
                                         </button>
                                     </div>
                                     <div v-if="form.errors.stars" class="text-danger small mt-1">
@@ -234,7 +233,9 @@ function submit() {
 
                                 <div class="row mb-4">
                                     <div class="col-md-6">
-                                        <label for="review_date" class="form-label text-dark fw-medium">Review Date <span class="text-danger">*</span></label>
+                                        <label for="review_date" class="form-label text-dark fw-medium"
+                                            >Review Date <span class="text-danger">*</span></label
+                                        >
                                         <input
                                             id="review_date"
                                             type="date"
@@ -268,17 +269,17 @@ function submit() {
                                     <label for="image" class="form-label text-dark fw-medium">Customer Photo</label>
                                     <div v-if="imagePreview" class="mb-3">
                                         <div class="position-relative d-inline-block">
-                                            <img 
-                                                :src="imagePreview" 
-                                                alt="Preview" 
+                                            <img
+                                                :src="imagePreview"
+                                                alt="Preview"
                                                 class="rounded-circle"
-                                                style="width: 100px; height: 100px; object-fit: cover;"
+                                                style="width: 100px; height: 100px; object-fit: cover"
                                             />
                                             <button
                                                 type="button"
                                                 class="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle"
                                                 @click="removeImage"
-                                                style="width: 30px; height: 30px; padding: 0;"
+                                                style="width: 30px; height: 30px; padding: 0"
                                             >
                                                 <i class="bi bi-x"></i>
                                             </button>
@@ -300,36 +301,20 @@ function submit() {
 
                                 <div class="mb-4">
                                     <div class="form-check">
-                                        <input
-                                            id="published"
-                                            type="checkbox"
-                                            class="form-check-input"
-                                            v-model="form.published"
-                                        />
-                                        <label for="published" class="form-check-label text-dark fw-medium">
-                                            Published
-                                        </label>
+                                        <input id="published" type="checkbox" class="form-check-input" v-model="form.published" />
+                                        <label for="published" class="form-check-label text-dark fw-medium"> Published </label>
                                     </div>
                                 </div>
 
                                 <div class="d-flex gap-2">
-                                    <button 
-                                        type="submit" 
-                                        class="btn btn-primary"
-                                        :disabled="form.processing"
-                                    >
+                                    <button type="submit" class="btn btn-primary" :disabled="form.processing">
                                         <span v-if="form.processing" class="spinner-border spinner-border-sm me-2" role="status">
                                             <span class="visually-hidden">Loading...</span>
                                         </span>
                                         <i v-else class="bi bi-save me-2"></i>
                                         Update Testimonial
                                     </button>
-                                    <Link 
-                                        :href="route('admin.testimonials.index')" 
-                                        class="btn btn-secondary"
-                                    >
-                                        Cancel
-                                    </Link>
+                                    <Link :href="route('admin.testimonials.index')" class="btn btn-secondary"> Cancel </Link>
                                 </div>
                             </form>
                         </div>
@@ -344,31 +329,31 @@ function submit() {
                         </div>
                         <div class="card-body">
                             <div class="text-center mb-3">
-                                <div 
-                                    v-if="imagePreview"
-                                    class="rounded-circle overflow-hidden mx-auto mb-3"
-                                    style="width: 80px; height: 80px;"
-                                >
-                                    <img 
-                                        :src="imagePreview" 
-                                        alt="Preview"
-                                        class="w-100 h-100 object-fit-cover"
-                                    />
+                                <div v-if="imagePreview" class="rounded-circle overflow-hidden mx-auto mb-3" style="width: 80px; height: 80px">
+                                    <img :src="imagePreview" alt="Preview" class="w-100 h-100 object-fit-cover" />
                                 </div>
-                                <div 
+                                <div
                                     v-else
                                     class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3"
-                                    style="width: 80px; height: 80px; font-size: 24px; font-weight: 600;"
+                                    style="width: 80px; height: 80px; font-size: 24px; font-weight: 600"
                                 >
-                                    {{ form.name ? form.name.split(' ').map(n => n[0]?.toUpperCase()).join('').slice(0, 2) : '??' }}
+                                    {{
+                                        form.name
+                                            ? form.name
+                                                  .split(' ')
+                                                  .map((n) => n[0]?.toUpperCase())
+                                                  .join('')
+                                                  .slice(0, 2)
+                                            : '??'
+                                    }}
                                 </div>
                                 <h6 class="mb-0">{{ form.name || 'Customer Name' }}</h6>
                                 <small class="text-muted">{{ form.title || 'Title/Position' }}</small>
                             </div>
                             <div class="mb-3">
                                 <div class="d-flex justify-content-center gap-1 mb-2">
-                                    <i 
-                                        v-for="star in 5" 
+                                    <i
+                                        v-for="star in 5"
                                         :key="star"
                                         class="bi"
                                         :class="star <= form.stars ? 'bi-star-fill text-warning' : 'bi-star text-muted'"
@@ -376,7 +361,11 @@ function submit() {
                                 </div>
                                 <p class="text-muted small mb-2">{{ form.review || 'Review text will appear here...' }}</p>
                                 <small class="text-muted">
-                                    {{ form.review_date ? new Date(form.review_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Review Date' }}
+                                    {{
+                                        form.review_date
+                                            ? new Date(form.review_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+                                            : 'Review Date'
+                                    }}
                                 </small>
                             </div>
                         </div>

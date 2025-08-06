@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
 
 interface EmailLog {
     id: number;
@@ -72,7 +71,7 @@ function formatDate(date: string | null): string {
         day: 'numeric',
         year: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
     });
 }
 
@@ -86,16 +85,14 @@ function resendEmail(log: EmailLog) {
 <template>
     <AdminLayout>
         <Head title="Email Logs" />
-        
+
         <div class="container-fluid p-4">
             <div class="row mb-4">
                 <div class="col">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h1 class="h2 mb-1 text-dark">Email Logs</h1>
-                            <p class="text-muted mb-0">
-                                Track all sent emails and their delivery status
-                            </p>
+                            <p class="text-muted mb-0">Track all sent emails and their delivery status</p>
                         </div>
                     </div>
                 </div>
@@ -160,12 +157,7 @@ function resendEmail(log: EmailLog) {
                         <div class="row g-3">
                             <div class="col-lg-3 col-md-6">
                                 <label class="form-label text-dark fw-medium">Search</label>
-                                <input 
-                                    v-model="filterForm.search"
-                                    type="text"
-                                    class="form-control"
-                                    placeholder="Email, name, subject..."
-                                />
+                                <input v-model="filterForm.search" type="text" class="form-control" placeholder="Email, name, subject..." />
                             </div>
                             <div class="col-lg-2 col-md-6">
                                 <label class="form-label text-dark fw-medium">Status</label>
@@ -193,19 +185,11 @@ function resendEmail(log: EmailLog) {
                             </div>
                             <div class="col-lg-2 col-md-6">
                                 <label class="form-label text-dark fw-medium">From Date</label>
-                                <input 
-                                    v-model="filterForm.date_from"
-                                    type="date"
-                                    class="form-control"
-                                />
+                                <input v-model="filterForm.date_from" type="date" class="form-control" />
                             </div>
                             <div class="col-lg-2 col-md-6">
                                 <label class="form-label text-dark fw-medium">To Date</label>
-                                <input 
-                                    v-model="filterForm.date_to"
-                                    type="date"
-                                    class="form-control"
-                                />
+                                <input v-model="filterForm.date_to" type="date" class="form-control" />
                             </div>
                             <div class="col-lg-1 col-md-12 d-flex align-items-end gap-2">
                                 <button type="submit" class="btn btn-primary">
@@ -245,7 +229,7 @@ function resendEmail(log: EmailLog) {
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="text-truncate d-inline-block" style="max-width: 300px;">
+                                    <span class="text-truncate d-inline-block" style="max-width: 300px">
                                         {{ log.subject }}
                                     </span>
                                 </td>
@@ -268,14 +252,14 @@ function resendEmail(log: EmailLog) {
                                 </td>
                                 <td>
                                     <div class="d-flex justify-content-end gap-1">
-                                        <Link 
+                                        <Link
                                             :href="`/admin/notifications/email-logs/${log.id}`"
                                             class="btn btn-sm btn-outline-primary"
                                             title="View Details"
                                         >
                                             <i class="bi bi-eye"></i>
                                         </Link>
-                                        <button 
+                                        <button
                                             v-if="log.status === 'failed'"
                                             @click="resendEmail(log)"
                                             class="btn btn-sm btn-outline-warning"
@@ -299,18 +283,16 @@ function resendEmail(log: EmailLog) {
                 <!-- Pagination -->
                 <div v-if="logs.links.length > 3" class="card-footer">
                     <div class="d-flex justify-content-between align-items-center">
-                        <div class="text-muted">
-                            Showing {{ logs.meta.from }} to {{ logs.meta.to }} of {{ logs.meta.total }} results
-                        </div>
+                        <div class="text-muted">Showing {{ logs.meta.from }} to {{ logs.meta.to }} of {{ logs.meta.total }} results</div>
                         <nav>
                             <ul class="pagination pagination-sm mb-0">
-                                <li v-for="link in logs.links" :key="link.label" 
-                                    class="page-item" 
-                                    :class="{ 'active': link.active, 'disabled': !link.url }">
-                                    <button v-if="link.url"
-                                            @click="router.get(link.url)"
-                                            class="page-link"
-                                            v-html="link.label" />
+                                <li
+                                    v-for="link in logs.links"
+                                    :key="link.label"
+                                    class="page-item"
+                                    :class="{ active: link.active, disabled: !link.url }"
+                                >
+                                    <button v-if="link.url" @click="router.get(link.url)" class="page-link" v-html="link.label" />
                                     <span v-else class="page-link" v-html="link.label" />
                                 </li>
                             </ul>

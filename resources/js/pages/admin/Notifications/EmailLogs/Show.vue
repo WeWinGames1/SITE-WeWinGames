@@ -35,7 +35,7 @@ function formatDate(date: string | null): string {
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-        second: '2-digit'
+        second: '2-digit',
     });
 }
 
@@ -49,21 +49,16 @@ function resendEmail() {
 <template>
     <AdminLayout>
         <Head :title="`Email Log #${log.id}`" />
-        
+
         <div class="container-fluid p-4">
             <div class="row mb-4">
                 <div class="col">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h1 class="h2 mb-1 text-dark">Email Log Details</h1>
-                            <p class="text-muted mb-0">
-                                View detailed information about this email
-                            </p>
+                            <p class="text-muted mb-0">View detailed information about this email</p>
                         </div>
-                        <Link 
-                            href="/admin/notifications/email-logs"
-                            class="btn btn-outline-secondary"
-                        >
+                        <Link href="/admin/notifications/email-logs" class="btn btn-outline-secondary">
                             <i class="bi bi-arrow-left me-2"></i>
                             Back to Logs
                         </Link>
@@ -205,10 +200,7 @@ function resendEmail() {
                             <h5 class="mb-0">Actions</h5>
                         </div>
                         <div class="card-body">
-                            <button 
-                                @click="resendEmail"
-                                class="btn btn-warning w-100"
-                            >
+                            <button @click="resendEmail" class="btn btn-warning w-100">
                                 <i class="bi bi-arrow-repeat me-2"></i>
                                 Resend Email
                             </button>

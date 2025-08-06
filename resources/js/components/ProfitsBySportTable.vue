@@ -12,7 +12,7 @@
                 <tr v-for="row in data" :key="row.sport" class="border-b border-gray-700 last:border-b-0">
                     <td class="px-4 py-2 border-r border-gray-700">{{ row.sport }}</td>
                     <td class="px-4 py-2 border-r border-gray-700">${{ formatMoney(row.profit) }}</td>
-                    <td class="px-4 py-2">{{ Math.round(row.roi,2) }}%</td>
+                    <td class="px-4 py-2">{{ Math.round(row.roi) }}%</td>
                 </tr>
             </tbody>
         </table>
@@ -21,10 +21,10 @@
 
 <script setup lang="ts">
 defineProps<{
-    data: Array<{ sport: string, profit: number, roi: number }>
+    data: Array<{ sport: string; profit: number; roi: number }>;
 }>();
 
 function formatMoney(val: number | undefined) {
-    return (Math.round(val ?? 0)).toLocaleString();
+    return Math.round(val ?? 0).toLocaleString();
 }
 </script>

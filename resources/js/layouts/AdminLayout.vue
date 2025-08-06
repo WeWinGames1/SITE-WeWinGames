@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick, watch } from 'vue';
-import { Link, usePage, router } from '@inertiajs/vue3';
-import axios from 'axios';
-import ImpersonationBanner from '@/components/ImpersonationBanner.vue';
 import KnowledgebaseSidebar from '@/components/Admin/KnowledgebaseSidebar.vue';
+import ImpersonationBanner from '@/components/ImpersonationBanner.vue';
 import ToastContainer from '@/components/ToastContainer.vue';
+import { Link, router, usePage } from '@inertiajs/vue3';
+import axios from 'axios';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 const page = usePage();
 const sidebarOpen = ref(false);
@@ -27,7 +27,7 @@ function isActiveRoute(href: string): boolean {
 const activeParent = computed(() => {
     for (const item of navigation) {
         if (item.children) {
-            const hasActiveChild = item.children.some(child => {
+            const hasActiveChild = item.children.some((child) => {
                 const isActive = isActiveRoute(child.href);
                 return isActive;
             });
@@ -42,10 +42,10 @@ const activeParent = computed(() => {
 // Function to update collapse state
 const updateCollapseState = async () => {
     await nextTick();
-    
+
     // Close all collapse elements first
     const allCollapses = document.querySelectorAll('.admin-sidebar .collapse');
-    allCollapses.forEach(collapse => {
+    allCollapses.forEach((collapse) => {
         collapse.classList.remove('show');
         // Also update aria-expanded on parent links
         const parentLink = document.querySelector(`[data-bs-target="#${collapse.id}"]`);
@@ -53,13 +53,13 @@ const updateCollapseState = async () => {
             parentLink.setAttribute('aria-expanded', 'false');
         }
     });
-    
+
     // Open the active parent collapse
     if (activeParent.value) {
         const collapseId = `collapse-${activeParent.value.replace(/\s+/g, '-')}`;
         const collapseElement = document.getElementById(collapseId);
         const parentLink = document.querySelector(`[data-bs-target="#${collapseId}"]`);
-        
+
         if (collapseElement) {
             collapseElement.classList.add('show');
         }
@@ -178,13 +178,13 @@ const navigation: NavItem[] = [
 
 async function clearCache() {
     if (isClearingCache.value) return;
-    
+
     isClearingCache.value = true;
-    
+
     // Use axios for AJAX request instead of Inertia router
     try {
         const response = await axios.post('/admin/cache/clear');
-        
+
         if (response.data.success) {
             alert(response.data.message || 'Cache cleared successfully!');
             // Optionally reload the page to reflect cache clear
@@ -213,23 +213,19 @@ function logout() {
 <template>
     <div class="d-flex min-vh-100">
         <!-- Mobile Sidebar Overlay -->
-        <div 
-            v-show="sidebarOpen" 
-            class="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-lg-none" 
-            style="z-index: 1040;"
+        <div
+            v-show="sidebarOpen"
+            class="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-lg-none"
+            style="z-index: 1040"
             @click="sidebarOpen = false"
         ></div>
 
         <!-- Sidebar -->
-        <nav 
-            class="admin-sidebar position-fixed h-100 overflow-auto" 
-            :class="{ 'show': sidebarOpen }"
-            style="width: 280px; z-index: 1050;"
-        >
+        <nav class="admin-sidebar position-fixed h-100 overflow-auto" :class="{ show: sidebarOpen }" style="width: 280px; z-index: 1050">
             <div class="p-3 border-bottom border-secondary">
                 <div class="d-flex align-items-center">
                     <a href="/" class="d-flex align-items-center text-decoration-none">
-                        <img src="/images/logo.png" alt="WeWinGames" style="height: 40px; width: auto;" />
+                        <img src="/images/logo.png" alt="WeWinGames" style="height: 40px; width: auto" />
                         <span class="ms-3 fs-5 fw-bold text-white">Admin Portal</span>
                     </a>
                 </div>
@@ -241,10 +237,7 @@ function logout() {
                         <template v-if="!item.children">
                             <Link
                                 :href="item.href"
-                                :class="[
-                                    'nav-link d-flex align-items-center',
-                                    isActiveRoute(item.href) ? 'active' : ''
-                                ]"
+                                :class="['nav-link d-flex align-items-center', isActiveRoute(item.href) ? 'active' : '']"
                                 @click="sidebarOpen = false"
                             >
                                 <i :class="[item.icon, 'me-3']"></i>
@@ -258,10 +251,7 @@ function logout() {
                             <div class="nav-item">
                                 <a
                                     href="#"
-                                    :class="[
-                                        'nav-link d-flex align-items-center',
-                                        activeParent === item.name ? 'text-white' : ''
-                                    ]"
+                                    :class="['nav-link d-flex align-items-center', activeParent === item.name ? 'text-white' : '']"
                                     data-bs-toggle="collapse"
                                     :data-bs-target="`#collapse-${item.name.replace(/\s+/g, '-')}`"
                                     :aria-expanded="activeParent === item.name ? 'true' : 'false'"
@@ -278,10 +268,7 @@ function logout() {
                                         <li v-for="child in item.children" :key="child.name" class="nav-item">
                                             <Link
                                                 :href="child.href"
-                                                :class="[
-                                                    'nav-link py-2',
-                                                    isActiveRoute(child.href) ? 'active' : ''
-                                                ]"
+                                                :class="['nav-link py-2', isActiveRoute(child.href) ? 'active' : '']"
                                                 @click="sidebarOpen = false"
                                             >
                                                 {{ child.name }}
@@ -294,14 +281,11 @@ function logout() {
                     </li>
                 </ul>
 
-                <hr class="my-3 border-secondary">
+                <hr class="my-3 border-secondary" />
 
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <button
-                            @click="logout"
-                            class="nav-link d-flex align-items-center text-danger w-100 border-0 bg-transparent"
-                        >
+                        <button @click="logout" class="nav-link d-flex align-items-center text-danger w-100 border-0 bg-transparent">
                             <i class="bi bi-box-arrow-right me-3"></i>
                             Sign out
                         </button>
@@ -311,31 +295,22 @@ function logout() {
         </nav>
 
         <!-- Main Content -->
-        <div class="flex-grow-1 admin-main-content" style="margin-left: 280px;">
+        <div class="flex-grow-1 admin-main-content" style="margin-left: 280px">
             <!-- Top Bar -->
             <nav class="navbar navbar-expand navbar-light bg-white border-bottom sticky-top">
                 <div class="container-fluid">
                     <!-- Mobile menu toggle -->
-                    <button 
-                        class="btn btn-link text-dark d-lg-none p-0 me-3"
-                        @click="sidebarOpen = true"
-                    >
+                    <button class="btn btn-link text-dark d-lg-none p-0 me-3" @click="sidebarOpen = true">
                         <i class="bi bi-list fs-4"></i>
                     </button>
 
-
                     <!-- Search -->
-                    <form class="d-flex flex-grow-1 me-3" style="max-width: 400px;">
+                    <form class="d-flex flex-grow-1 me-3" style="max-width: 400px">
                         <div class="input-group">
                             <span class="input-group-text bg-transparent border-end-0">
                                 <i class="bi bi-search"></i>
                             </span>
-                            <input
-                                type="search"
-                                class="form-control border-start-0"
-                                placeholder="Search..."
-                                aria-label="Search"
-                            />
+                            <input type="search" class="form-control border-start-0" placeholder="Search..." aria-label="Search" />
                         </div>
                     </form>
 
@@ -343,7 +318,7 @@ function logout() {
                     <ul class="navbar-nav ms-auto align-items-center">
                         <!-- Clear Cache Button -->
                         <li class="nav-item me-3">
-                            <button 
+                            <button
                                 @click="clearCache"
                                 class="btn btn-link text-dark position-relative p-0"
                                 :disabled="isClearingCache"
@@ -372,17 +347,15 @@ function logout() {
                                     class="rounded-circle me-2"
                                     :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(page.props.auth.user.name)}&color=7F9CF5&background=EBF4FF`"
                                     alt="User avatar"
-                                    style="width: 32px; height: 32px;"
+                                    style="width: 32px; height: 32px"
                                 />
                                 <span class="d-none d-md-inline">{{ page.props.auth.user.name }}</span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
-                                    <Link href="/settings/profile" class="dropdown-item">
-                                        <i class="bi bi-person me-2"></i>Your profile
-                                    </Link>
+                                    <Link href="/settings/profile" class="dropdown-item"> <i class="bi bi-person me-2"></i>Your profile </Link>
                                 </li>
-                                <li><hr class="dropdown-divider"></li>
+                                <li><hr class="dropdown-divider" /></li>
                                 <li>
                                     <button @click="logout" class="dropdown-item text-danger">
                                         <i class="bi bi-box-arrow-right me-2"></i>Sign out
@@ -398,10 +371,10 @@ function logout() {
             <main class="admin-main-content">
                 <!-- Impersonation Banner -->
                 <ImpersonationBanner v-if="isImpersonating" />
-                
+
                 <slot />
             </main>
-            
+
             <!-- Help Button (Fixed bottom right) -->
             <button
                 type="button"
@@ -411,14 +384,11 @@ function logout() {
             >
                 <i class="bi bi-question-lg"></i>
             </button>
-            
+
             <!-- Knowledgebase Sidebar -->
-            <KnowledgebaseSidebar 
-                :is-visible="knowledgebaseSidebarOpen"
-                @close="knowledgebaseSidebarOpen = false"
-            />
+            <KnowledgebaseSidebar :is-visible="knowledgebaseSidebarOpen" @close="knowledgebaseSidebarOpen = false" />
         </div>
-        
+
         <!-- Toast Container -->
         <ToastContainer />
     </div>
@@ -643,11 +613,11 @@ function logout() {
         transform: translateX(-100%);
         transition: transform 0.3s ease-in-out;
     }
-    
+
     .admin-sidebar.show {
         transform: translateX(0);
     }
-    
+
     .flex-grow-1 {
         margin-left: 0 !important;
     }
@@ -690,22 +660,22 @@ function logout() {
 }
 
 /* Active parent link */
-.nav-link[data-bs-toggle="collapse"][aria-expanded="true"] {
+.nav-link[data-bs-toggle='collapse'][aria-expanded='true'] {
     color: #fff !important;
     background-color: rgba(148, 163, 184, 0.15);
     font-weight: 500;
 }
 
-.nav-link[data-bs-toggle="collapse"][aria-expanded="true"]:hover {
+.nav-link[data-bs-toggle='collapse'][aria-expanded='true']:hover {
     color: #fff !important;
     background-color: rgba(148, 163, 184, 0.2);
 }
 
-.nav-link[data-bs-toggle="collapse"][aria-expanded="true"] .bi-chevron-down {
+.nav-link[data-bs-toggle='collapse'][aria-expanded='true'] .bi-chevron-down {
     transform: rotate(180deg);
 }
 
-.nav-link[data-bs-toggle="collapse"]:hover {
+.nav-link[data-bs-toggle='collapse']:hover {
     color: #e2e8f0;
     background-color: rgba(148, 163, 184, 0.1);
     padding-left: 1.25rem;
@@ -849,7 +819,7 @@ main {
 
 .admin-main-content :deep(.dropdown-menu) {
     background-color: #ffffff !important;
-    border: 1px solid rgba(0,0,0,.15) !important;
+    border: 1px solid rgba(0, 0, 0, 0.15) !important;
 }
 
 .admin-main-content :deep(.dropdown-item) {

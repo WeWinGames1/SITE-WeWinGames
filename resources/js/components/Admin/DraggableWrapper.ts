@@ -5,12 +5,12 @@ export const DraggableWrapper = defineComponent({
     props: {
         modelValue: {
             type: Array,
-            required: true
+            required: true,
         },
         tag: {
             type: String,
-            default: 'div'
-        }
+            default: 'div',
+        },
     },
     emits: ['update:modelValue'],
     setup(props, { slots, emit, attrs }) {
@@ -21,12 +21,12 @@ export const DraggableWrapper = defineComponent({
         const handleDragStart = (e: DragEvent, index: number) => {
             draggedElement.value = e.target as HTMLElement;
             draggedIndex.value = index;
-            
+
             if (e.dataTransfer) {
                 e.dataTransfer.effectAllowed = 'move';
                 e.dataTransfer.setData('text/html', draggedElement.value.innerHTML);
             }
-            
+
             draggedElement.value.style.opacity = '0.5';
         };
 
@@ -37,10 +37,10 @@ export const DraggableWrapper = defineComponent({
             }
             draggedIndex.value = -1;
             dragOverIndex.value = -1;
-            
+
             // Remove all drag-over classes
             const wrapper = e.currentTarget as HTMLElement;
-            wrapper.querySelectorAll('.drag-over').forEach(el => {
+            wrapper.querySelectorAll('.drag-over').forEach((el) => {
                 el.classList.remove('drag-over');
             });
         };
@@ -72,30 +72,30 @@ export const DraggableWrapper = defineComponent({
             if (e.stopPropagation) {
                 e.stopPropagation();
             }
-            
+
             const target = e.currentTarget as HTMLElement;
             target.classList.remove('drag-over');
 
             if (draggedIndex.value !== -1 && draggedIndex.value !== dropIndex) {
                 const newArray = [...props.modelValue];
                 const draggedItem = newArray[draggedIndex.value];
-                
+
                 // Remove the dragged item
                 newArray.splice(draggedIndex.value, 1);
-                
+
                 // Insert at new position
                 const insertIndex = draggedIndex.value < dropIndex ? dropIndex - 1 : dropIndex;
                 newArray.splice(insertIndex, 0, draggedItem);
-                
+
                 emit('update:modelValue', newArray);
             }
-            
+
             return false;
         };
 
         return () => {
             const children = slots.default?.() || [];
-            
+
             // Inject drag handlers into each child
             const modifiedChildren = children.map((child, index) => {
                 if (child.type === DraggableItem) {
@@ -107,18 +107,22 @@ export const DraggableWrapper = defineComponent({
                         onDragover: handleDragOver,
                         onDragenter: (e: DragEvent) => handleDragEnter(e, index),
                         onDragleave: handleDragLeave,
-                        onDrop: (e: DragEvent) => handleDrop(e, index)
+                        onDrop: (e: DragEvent) => handleDrop(e, index),
                     });
                 }
                 return child;
             });
-            
-            return h(props.tag, {
-                ...attrs,
-                class: ['draggable-wrapper', attrs.class]
-            }, modifiedChildren);
+
+            return h(
+                props.tag,
+                {
+                    ...attrs,
+                    class: ['draggable-wrapper', attrs.class],
+                },
+                modifiedChildren,
+            );
         };
-    }
+    },
 });
 
 export const DraggableItem = defineComponent({
@@ -126,26 +130,31 @@ export const DraggableItem = defineComponent({
     props: {
         index: {
             type: Number,
-            default: -1
-        }
+            default: -1,
+        },
     },
     emits: ['dragstart', 'dragend', 'dragover', 'dragenter', 'dragleave', 'drop'],
     setup(props, { slots, emit, attrs }) {
-        return () => h('div', {
-            ...attrs,
-            class: ['draggable-item', attrs.class],
-            draggable: true,
-            onDragstart: (e: DragEvent) => emit('dragstart', e),
-            onDragend: (e: DragEvent) => emit('dragend', e),
-            onDragover: (e: DragEvent) => emit('dragover', e),
-            onDragenter: (e: DragEvent) => emit('dragenter', e),
-            onDragleave: (e: DragEvent) => emit('dragleave', e),
-            onDrop: (e: DragEvent) => emit('drop', e),
-            style: {
-                cursor: 'move',
-                transition: 'all 0.3s ease',
-                ...((attrs.style as any) || {})
-            }
-        }, slots.default?.());
-    }
+        return () =>
+            h(
+                'div',
+                {
+                    ...attrs,
+                    class: ['draggable-item', attrs.class],
+                    draggable: true,
+                    onDragstart: (e: DragEvent) => emit('dragstart', e),
+                    onDragend: (e: DragEvent) => emit('dragend', e),
+                    onDragover: (e: DragEvent) => emit('dragover', e),
+                    onDragenter: (e: DragEvent) => emit('dragenter', e),
+                    onDragleave: (e: DragEvent) => emit('dragleave', e),
+                    onDrop: (e: DragEvent) => emit('drop', e),
+                    style: {
+                        cursor: 'move',
+                        transition: 'all 0.3s ease',
+                        ...((attrs.style as any) || {}),
+                    },
+                },
+                slots.default?.(),
+            );
+    },
 });

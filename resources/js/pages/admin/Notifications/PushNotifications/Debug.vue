@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, usePage } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 
 const page = usePage();
 const user = page.props.auth.user?.data || null;
@@ -19,7 +19,7 @@ onMounted(async () => {
             const registration = await navigator.serviceWorker.getRegistration();
             if (registration) {
                 serviceWorkerStatus.value = 'Registered ✓';
-                
+
                 // Check push subscription
                 const subscription = await registration.pushManager.getSubscription();
                 if (subscription) {
@@ -37,7 +37,7 @@ onMounted(async () => {
     } else {
         serviceWorkerStatus.value = 'Not supported in this browser';
     }
-    
+
     // Check notification permission
     if ('Notification' in window) {
         notificationPermission.value = Notification.permission;
@@ -49,21 +49,21 @@ onMounted(async () => {
 async function requestPermission() {
     try {
         console.log('Requesting notification permission...');
-        
+
         if (!('Notification' in window)) {
             alert('This browser does not support desktop notifications');
             return;
         }
-        
+
         const permission = await Notification.requestPermission();
         console.log('Permission result:', permission);
         notificationPermission.value = permission;
-        
+
         if (permission === 'granted') {
             // Show a test notification to confirm it works
             new Notification('Notifications Enabled!', {
                 body: 'You will now receive push notifications from WeWinGames',
-                icon: '/images/icons/icon-192x192.png'
+                icon: '/images/icons/icon-192x192.png',
             });
         } else if (permission === 'denied') {
             alert('Notification permission denied. You will need to enable it in your browser settings.');
@@ -79,14 +79,14 @@ async function subscribeToPush() {
         alert('VAPID public key not configured!');
         return;
     }
-    
+
     try {
         const registration = await navigator.serviceWorker.ready;
         const subscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
         });
-        
+
         // Send to server
         const response = await fetch('/api/push/subscribe', {
             method: 'POST',
@@ -94,9 +94,9 @@ async function subscribeToPush() {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
             },
-            body: JSON.stringify(subscription)
+            body: JSON.stringify(subscription),
         });
-        
+
         if (response.ok) {
             pushSubscription.value = subscription;
             subscriptionDetails.value = JSON.stringify(subscription, null, 2);
@@ -110,12 +110,10 @@ async function subscribeToPush() {
 }
 
 function urlBase64ToUint8Array(base64String: string) {
-    const padding = '='.repeat((4 - base64String.length % 4) % 4);
-    const base64 = (base64String + padding)
-        .replace(/\-/g, '+')
-        .replace(/_/g, '/');
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
     const rawData = window.atob(base64);
-    return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
+    return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)));
 }
 
 async function testLocalNotification() {
@@ -124,21 +122,21 @@ async function testLocalNotification() {
             alert('This browser does not support notifications');
             return;
         }
-        
+
         if (Notification.permission !== 'granted') {
             alert('Please grant notification permission first');
             return;
         }
-        
+
         // Test basic notification
         const notification = new Notification('Test Notification', {
             body: 'This is a local test notification (not push)',
             icon: '/images/icons/icon-192x192.png',
             badge: '/images/icons/icon-96x96.png',
             vibrate: [100, 50, 100],
-            requireInteraction: false
+            requireInteraction: false,
         });
-        
+
         notification.onclick = () => {
             console.log('Notification clicked');
             window.focus();
@@ -157,7 +155,7 @@ async function testServiceWorkerNotification() {
             body: 'This notification was shown by the service worker',
             icon: '/images/icons/icon-192x192.png',
             badge: '/images/icons/icon-96x96.png',
-            vibrate: [100, 50, 100]
+            vibrate: [100, 50, 100],
         });
     } catch (error) {
         console.error('Service worker notification error:', error);
@@ -169,10 +167,10 @@ async function testServiceWorkerNotification() {
 <template>
     <AdminLayout>
         <Head title="Push Notification Debug" />
-        
+
         <div class="container-fluid p-4">
             <h1 class="h2 mb-4">Push Notification Debug</h1>
-            
+
             <div class="row">
                 <div class="col-lg-6">
                     <div class="card mb-4">
@@ -185,68 +183,64 @@ async function testServiceWorkerNotification() {
                                 <dd class="col-sm-7">
                                     <code class="small">{{ vapidPublicKey ? vapidPublicKey.substring(0, 20) + '...' : 'NOT CONFIGURED' }}</code>
                                 </dd>
-                                
+
                                 <dt class="col-sm-5">Service Worker:</dt>
                                 <dd class="col-sm-7">{{ serviceWorkerStatus }}</dd>
-                                
+
                                 <dt class="col-sm-5">Notification Permission:</dt>
                                 <dd class="col-sm-7">
-                                    <span :class="{
-                                        'text-success': notificationPermission === 'granted',
-                                        'text-warning': notificationPermission === 'default',
-                                        'text-danger': notificationPermission === 'denied'
-                                    }">
+                                    <span
+                                        :class="{
+                                            'text-success': notificationPermission === 'granted',
+                                            'text-warning': notificationPermission === 'default',
+                                            'text-danger': notificationPermission === 'denied',
+                                        }"
+                                    >
                                         {{ notificationPermission }}
                                     </span>
                                 </dd>
-                                
+
                                 <dt class="col-sm-5">User Push Preference:</dt>
                                 <dd class="col-sm-7">
                                     {{ user?.notification_preferences?.push ? 'Enabled ✓' : 'Disabled ✗' }}
                                 </dd>
-                                
+
                                 <dt class="col-sm-5">Browser:</dt>
                                 <dd class="col-sm-7">{{ navigator.userAgent.substring(0, 50) }}...</dd>
-                                
+
                                 <dt class="col-sm-5">Protocol:</dt>
                                 <dd class="col-sm-7">
-                                    <span :class="{
-                                        'text-success': location.protocol === 'https:',
-                                        'text-warning': location.protocol === 'http:' && location.hostname === 'localhost',
-                                        'text-danger': location.protocol === 'http:' && location.hostname !== 'localhost'
-                                    }">
+                                    <span
+                                        :class="{
+                                            'text-success': location.protocol === 'https:',
+                                            'text-warning': location.protocol === 'http:' && location.hostname === 'localhost',
+                                            'text-danger': location.protocol === 'http:' && location.hostname !== 'localhost',
+                                        }"
+                                    >
                                         {{ location.protocol }}//{{ location.hostname }}
                                     </span>
                                 </dd>
                             </dl>
                         </div>
                     </div>
-                    
+
                     <div class="card">
                         <div class="card-header">
                             <h5 class="mb-0">Actions</h5>
                         </div>
                         <div class="card-body">
                             <div class="d-grid gap-2">
-                                <button 
-                                    @click="requestPermission"
-                                    class="btn btn-primary"
-                                    :disabled="notificationPermission === 'granted'"
-                                >
+                                <button @click="requestPermission" class="btn btn-primary" :disabled="notificationPermission === 'granted'">
                                     <i class="bi bi-shield-check me-2"></i>
                                     Request Notification Permission
                                 </button>
-                                
-                                <button 
-                                    @click="testLocalNotification"
-                                    class="btn btn-warning"
-                                    :disabled="notificationPermission !== 'granted'"
-                                >
+
+                                <button @click="testLocalNotification" class="btn btn-warning" :disabled="notificationPermission !== 'granted'">
                                     <i class="bi bi-bell me-2"></i>
                                     Test Local Notification
                                 </button>
-                                
-                                <button 
+
+                                <button
                                     @click="testServiceWorkerNotification"
                                     class="btn btn-info"
                                     :disabled="notificationPermission !== 'granted' || serviceWorkerStatus !== 'Registered ✓'"
@@ -254,8 +248,8 @@ async function testServiceWorkerNotification() {
                                     <i class="bi bi-gear me-2"></i>
                                     Test Service Worker Notification
                                 </button>
-                                
-                                <button 
+
+                                <button
                                     @click="subscribeToPush"
                                     class="btn btn-success"
                                     :disabled="!vapidPublicKey || notificationPermission !== 'granted'"
@@ -267,7 +261,7 @@ async function testServiceWorkerNotification() {
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-lg-6">
                     <div class="card">
                         <div class="card-header">

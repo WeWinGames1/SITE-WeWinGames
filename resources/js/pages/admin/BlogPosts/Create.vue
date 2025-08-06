@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import AdminLayout from '@/layouts/AdminLayout.vue';
-import { Head, useForm, Link } from '@inertiajs/vue3';
-import { ref, computed, onMounted, watch } from 'vue';
-import { useEditor, EditorContent } from '@tiptap/vue-3';
-import StarterKit from '@tiptap/starter-kit';
-import TiptapLink from '@tiptap/extension-link';
-import Image from '@tiptap/extension-image';
-import Placeholder from '@tiptap/extension-placeholder';
 import MediaPicker from '@/components/MediaPicker.vue';
 import { useToast } from '@/composables/useToast';
+import AdminLayout from '@/layouts/AdminLayout.vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import Image from '@tiptap/extension-image';
+import TiptapLink from '@tiptap/extension-link';
+import Placeholder from '@tiptap/extension-placeholder';
+import StarterKit from '@tiptap/starter-kit';
+import { EditorContent, useEditor } from '@tiptap/vue-3';
+import { computed, ref, watch } from 'vue';
 
 interface Props {
     categories: Record<string, string>;
@@ -110,12 +110,15 @@ function updateSeoDescription() {
 }
 
 // Watch is_published to set default publish date
-watch(() => form.is_published, (newValue) => {
-    if (newValue && !form.published_at) {
-        // Set current date/time when toggling to published
-        form.published_at = formatDateForInput(new Date());
-    }
-});
+watch(
+    () => form.is_published,
+    (newValue) => {
+        if (newValue && !form.published_at) {
+            // Set current date/time when toggling to published
+            form.published_at = formatDateForInput(new Date());
+        }
+    },
+);
 
 // Add link function
 const addLink = () => {
@@ -148,7 +151,7 @@ function handleImageChange(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file) {
         form.featured_image = file;
-        
+
         // Create preview
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -168,11 +171,11 @@ function removeImage() {
 function selectFeaturedImage(media: any) {
     // media can be a single object or array depending on picker mode
     const selectedMedia = Array.isArray(media) ? media[0] : media;
-    
+
     form.featured_image_media_id = selectedMedia.id;
     featuredImagePreview.value = selectedMedia.full_url;
     showMediaPicker.value = false;
-    
+
     // Clear file input since we're using media library
     form.featured_image = null;
     fileInputKey.value++;
@@ -181,28 +184,36 @@ function selectFeaturedImage(media: any) {
 function selectContentImage(media: any) {
     // media can be a single object or array depending on picker mode
     const selectedMedia = Array.isArray(media) ? media[0] : media;
-    
+
     if (editor.value) {
         // Ask for image size
         const sizeOptions = [
             { label: 'Small (25%)', value: '25' },
             { label: 'Medium (50%)', value: '50' },
             { label: 'Large (75%)', value: '75' },
-            { label: 'Full Size (100%)', value: '100' }
+            { label: 'Full Size (100%)', value: '100' },
         ];
-        
+
         const selectedOption = prompt(
-            'Select image size:\n1. Small (25%)\n2. Medium (50%)\n3. Large (75%)\n4. Full Size (100%)\n\nEnter number (1-4) or percentage (e.g., 60):', 
-            '4'
+            'Select image size:\n1. Small (25%)\n2. Medium (50%)\n3. Large (75%)\n4. Full Size (100%)\n\nEnter number (1-4) or percentage (e.g., 60):',
+            '4',
         );
-        
+
         let width = '100%';
         if (selectedOption) {
             switch (selectedOption) {
-                case '1': width = '25%'; break;
-                case '2': width = '50%'; break;
-                case '3': width = '75%'; break;
-                case '4': width = '100%'; break;
+                case '1':
+                    width = '25%';
+                    break;
+                case '2':
+                    width = '50%';
+                    break;
+                case '3':
+                    width = '75%';
+                    break;
+                case '4':
+                    width = '100%';
+                    break;
                 default:
                     // Allow custom percentage
                     const customWidth = parseInt(selectedOption);
@@ -211,7 +222,7 @@ function selectContentImage(media: any) {
                     }
             }
         }
-        
+
         // Insert image with Bootstrap classes and custom width
         const imgHtml = `<div style="width: ${width}; display: inline-block;"><img src="${selectedMedia.full_url}" alt="${selectedMedia.name || 'Image'}" class="img-fluid" /></div>`;
         editor.value.chain().focus().insertContent(imgHtml).run();
@@ -239,10 +250,10 @@ function addPopularTag(tag: string) {
 function validateForm(): boolean {
     // Clear previous errors
     form.clearErrors();
-    
+
     let isValid = true;
     const errors: Record<string, string> = {};
-    
+
     // Required fields validation
     if (!form.title || !form.title.trim()) {
         errors.title = 'The title field is required.';
@@ -251,17 +262,17 @@ function validateForm(): boolean {
         errors.title = 'The title may not be greater than 255 characters.';
         isValid = false;
     }
-    
+
     if (!form.content || form.content.trim() === '' || form.content.trim() === '<p></p>') {
         errors.content = 'The content field is required.';
         isValid = false;
     }
-    
+
     if (!form.category) {
         errors.category = 'The category field is required.';
         isValid = false;
     }
-    
+
     // Optional fields validation
     if (form.slug) {
         if (form.slug.length > 255) {
@@ -272,12 +283,12 @@ function validateForm(): boolean {
             isValid = false;
         }
     }
-    
+
     if (form.excerpt && form.excerpt.length > 500) {
         errors.excerpt = 'The excerpt may not be greater than 500 characters.';
         isValid = false;
     }
-    
+
     // File validation
     if (form.featured_image) {
         const maxSize = 20 * 1024 * 1024; // 20MB in bytes
@@ -285,7 +296,7 @@ function validateForm(): boolean {
             errors.featured_image = 'The featured image may not be greater than 20MB.';
             isValid = false;
         }
-        
+
         // Check file type
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/svg+xml', 'image/webp'];
         if (!allowedTypes.includes(form.featured_image.type)) {
@@ -293,7 +304,7 @@ function validateForm(): boolean {
             isValid = false;
         }
     }
-    
+
     // Tags validation
     if (form.tags && form.tags.length > 0) {
         for (let i = 0; i < form.tags.length; i++) {
@@ -303,28 +314,28 @@ function validateForm(): boolean {
             }
         }
     }
-    
+
     // SEO fields validation
     if (form.seo_title && form.seo_title.length > 60) {
         errors.seo_title = 'The SEO title may not be greater than 60 characters.';
         isValid = false;
     }
-    
+
     if (form.seo_description && form.seo_description.length > 160) {
         errors.seo_description = 'The SEO description may not be greater than 160 characters.';
         isValid = false;
     }
-    
+
     if (form.seo_keywords && form.seo_keywords.length > 255) {
         errors.seo_keywords = 'The SEO keywords may not be greater than 255 characters.';
         isValid = false;
     }
-    
+
     // Set errors if any
     if (!isValid) {
         form.setError(errors);
     }
-    
+
     return isValid;
 }
 
@@ -333,7 +344,7 @@ function submit() {
         showToast('error', 'Please fix the validation errors before submitting.');
         return;
     }
-    
+
     form.post(route('admin.blog-posts.store'), {
         onSuccess: () => {
             showToast('success', 'Blog post created successfully!');
@@ -344,7 +355,7 @@ function submit() {
             const firstError = Object.values(errors)[0];
             const errorMessage = Array.isArray(firstError) ? firstError[0] : firstError || 'An error occurred while creating the blog post.';
             showToast('error', errorMessage);
-        }
+        },
     });
 }
 
@@ -372,23 +383,18 @@ function updateSourceCode(event: Event) {
 <template>
     <AdminLayout>
         <Head title="Create Blog Post" />
-        
+
         <div class="p-4">
             <!-- Header -->
             <div class="mb-4">
-                <Link
-                    :href="route('admin.blog-posts.index')"
-                    class="btn btn-link text-decoration-none p-0 mb-3"
-                >
+                <Link :href="route('admin.blog-posts.index')" class="btn btn-link text-decoration-none p-0 mb-3">
                     <i class="bi bi-arrow-left me-2"></i>
                     Back to Blog Posts
                 </Link>
                 <h1 class="h2 fw-bold text-dark">Create New Blog Post</h1>
-                <p class="text-muted small">
-                    Create a new blog post with rich content and SEO optimization
-                </p>
+                <p class="text-muted small">Create a new blog post with rich content and SEO optimization</p>
             </div>
-            
+
             <form @submit.prevent="submit">
                 <div class="row">
                     <!-- Main Content -->
@@ -396,20 +402,18 @@ function updateSourceCode(event: Event) {
                         <!-- Title -->
                         <div class="card mb-4">
                             <div class="card-body">
-                                <label for="title" class="form-label text-dark fw-medium">
-                                    Post Title <span class="text-danger">*</span>
-                                </label>
+                                <label for="title" class="form-label text-dark fw-medium"> Post Title <span class="text-danger">*</span> </label>
                                 <p class="text-muted small mb-2">The main headline for your blog post</p>
-                                <input 
-                                    v-model="form.title" 
-                                    id="title" 
+                                <input
+                                    v-model="form.title"
+                                    id="title"
                                     type="text"
-                                    class="form-control" 
+                                    class="form-control"
                                     placeholder="Enter post title"
                                     maxlength="255"
                                     @blur="updateSeoTitle"
                                     @input="updateSlug"
-                                    required 
+                                    required
                                 />
                                 <div class="text-muted small mt-1">{{ characterCounts.title }} characters</div>
                                 <div v-if="form.errors.title" class="invalid-feedback d-block">
@@ -417,27 +421,23 @@ function updateSourceCode(event: Event) {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Slug -->
                         <div class="card mb-4">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <label for="slug" class="form-label text-dark fw-medium mb-0">URL Slug</label>
-                                    <button 
-                                        type="button"
-                                        @click="showSlugInput = !showSlugInput"
-                                        class="btn btn-sm btn-outline-secondary"
-                                    >
+                                    <button type="button" @click="showSlugInput = !showSlugInput" class="btn btn-sm btn-outline-secondary">
                                         {{ showSlugInput ? 'Auto' : 'Custom' }}
                                     </button>
                                 </div>
                                 <p class="text-muted small mb-2">The URL path for this post</p>
-                                <input 
+                                <input
                                     v-if="showSlugInput"
-                                    v-model="form.slug" 
-                                    id="slug" 
+                                    v-model="form.slug"
+                                    id="slug"
                                     type="text"
-                                    class="form-control" 
+                                    class="form-control"
                                     placeholder="custom-url-slug"
                                     pattern="[a-z0-9-]+"
                                 />
@@ -450,15 +450,15 @@ function updateSourceCode(event: Event) {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Excerpt -->
                         <div class="card mb-4">
                             <div class="card-body">
                                 <label for="excerpt" class="form-label text-dark fw-medium">Post Excerpt</label>
                                 <p class="text-muted small mb-2">A short summary that appears in post listings and search results</p>
-                                <textarea 
-                                    v-model="form.excerpt" 
-                                    id="excerpt" 
+                                <textarea
+                                    v-model="form.excerpt"
+                                    id="excerpt"
                                     class="form-control"
                                     rows="3"
                                     maxlength="500"
@@ -471,18 +471,18 @@ function updateSourceCode(event: Event) {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Content -->
                         <div class="card mb-4">
                             <div class="card-body">
                                 <label class="form-label text-dark fw-medium mb-2">Content <span class="text-danger">*</span></label>
-                                
+
                                 <!-- Tiptap Editor Toolbar -->
                                 <div v-if="editor" class="border rounded-top bg-light p-2 d-flex flex-wrap align-items-center gap-1">
                                     <button
                                         type="button"
                                         @click="editor.chain().focus().toggleBold().run()"
-                                        :class="{ 'active': editor.isActive('bold') }"
+                                        :class="{ active: editor.isActive('bold') }"
                                         class="btn btn-sm btn-outline-secondary"
                                         title="Bold"
                                         :disabled="showSourceCode"
@@ -492,7 +492,7 @@ function updateSourceCode(event: Event) {
                                     <button
                                         type="button"
                                         @click="editor.chain().focus().toggleItalic().run()"
-                                        :class="{ 'active': editor.isActive('italic') }"
+                                        :class="{ active: editor.isActive('italic') }"
                                         class="btn btn-sm btn-outline-secondary"
                                         title="Italic"
                                         :disabled="showSourceCode"
@@ -502,7 +502,7 @@ function updateSourceCode(event: Event) {
                                     <button
                                         type="button"
                                         @click="editor.chain().focus().toggleStrike().run()"
-                                        :class="{ 'active': editor.isActive('strike') }"
+                                        :class="{ active: editor.isActive('strike') }"
                                         class="btn btn-sm btn-outline-secondary"
                                         title="Strikethrough"
                                         :disabled="showSourceCode"
@@ -513,7 +513,7 @@ function updateSourceCode(event: Event) {
                                     <button
                                         type="button"
                                         @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
-                                        :class="{ 'active': editor.isActive('heading', { level: 1 }) }"
+                                        :class="{ active: editor.isActive('heading', { level: 1 }) }"
                                         class="btn btn-sm btn-outline-secondary"
                                         title="Heading 1"
                                         :disabled="showSourceCode"
@@ -523,7 +523,7 @@ function updateSourceCode(event: Event) {
                                     <button
                                         type="button"
                                         @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
-                                        :class="{ 'active': editor.isActive('heading', { level: 2 }) }"
+                                        :class="{ active: editor.isActive('heading', { level: 2 }) }"
                                         class="btn btn-sm btn-outline-secondary"
                                         title="Heading 2"
                                         :disabled="showSourceCode"
@@ -533,7 +533,7 @@ function updateSourceCode(event: Event) {
                                     <button
                                         type="button"
                                         @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
-                                        :class="{ 'active': editor.isActive('heading', { level: 3 }) }"
+                                        :class="{ active: editor.isActive('heading', { level: 3 }) }"
                                         class="btn btn-sm btn-outline-secondary"
                                         title="Heading 3"
                                         :disabled="showSourceCode"
@@ -544,7 +544,7 @@ function updateSourceCode(event: Event) {
                                     <button
                                         type="button"
                                         @click="editor.chain().focus().toggleBulletList().run()"
-                                        :class="{ 'active': editor.isActive('bulletList') }"
+                                        :class="{ active: editor.isActive('bulletList') }"
                                         class="btn btn-sm btn-outline-secondary"
                                         title="Bullet List"
                                         :disabled="showSourceCode"
@@ -554,7 +554,7 @@ function updateSourceCode(event: Event) {
                                     <button
                                         type="button"
                                         @click="editor.chain().focus().toggleOrderedList().run()"
-                                        :class="{ 'active': editor.isActive('orderedList') }"
+                                        :class="{ active: editor.isActive('orderedList') }"
                                         class="btn btn-sm btn-outline-secondary"
                                         title="Numbered List"
                                         :disabled="showSourceCode"
@@ -593,30 +593,26 @@ function updateSourceCode(event: Event) {
                                     <button
                                         type="button"
                                         @click="toggleSourceView"
-                                        :class="{ 'active': showSourceCode }"
+                                        :class="{ active: showSourceCode }"
                                         class="btn btn-sm btn-outline-secondary"
                                         title="Show Source Code"
                                     >
                                         <i class="bi bi-code-slash"></i>
                                     </button>
                                 </div>
-                                
+
                                 <!-- Editor Content -->
                                 <div v-if="!showSourceCode">
-                                    <EditorContent 
-                                        :editor="editor" 
-                                        class="border border-top-0 rounded-bottom p-3"
-                                        style="min-height: 300px;"
-                                    />
+                                    <EditorContent :editor="editor" class="border border-top-0 rounded-bottom p-3" style="min-height: 300px" />
                                 </div>
-                                
+
                                 <!-- Source Code Editor -->
                                 <div v-else>
                                     <textarea
                                         v-model="sourceCode"
                                         @input="updateSourceCode"
                                         class="form-control border border-top-0 rounded-bottom"
-                                        style="min-height: 300px; font-family: 'Courier New', monospace; font-size: 14px;"
+                                        style="min-height: 300px; font-family: 'Courier New', monospace; font-size: 14px"
                                         placeholder="Enter HTML source code..."
                                     ></textarea>
                                 </div>
@@ -626,256 +622,194 @@ function updateSourceCode(event: Event) {
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Sidebar -->
                     <div class="col-lg-4">
-                        <div class="sticky-top" style="top: 1rem;">
-                        <!-- Publish Settings -->
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0">Publish Settings</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="form-check mb-3">
-                                    <input
-                                        id="is_published"
-                                        v-model="form.is_published"
-                                        type="checkbox"
-                                        class="form-check-input"
-                                    />
-                                    <label for="is_published" class="form-check-label text-dark">
-                                        Published
-                                    </label>
+                        <div class="sticky-top" style="top: 1rem">
+                            <!-- Publish Settings -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Publish Settings</h5>
                                 </div>
-                                
-                                <div v-if="form.is_published">
-                                    <label for="published_at" class="form-label text-dark fw-medium">
-                                        Publish Date
-                                    </label>
-                                    <input
-                                        id="published_at"
-                                        v-model="form.published_at"
-                                        type="datetime-local"
-                                        class="form-control"
-                                    />
-                                    <div v-if="form.errors.published_at" class="invalid-feedback d-block">
-                                        {{ form.errors.published_at }}
+                                <div class="card-body">
+                                    <div class="form-check mb-3">
+                                        <input id="is_published" v-model="form.is_published" type="checkbox" class="form-check-input" />
+                                        <label for="is_published" class="form-check-label text-dark"> Published </label>
                                     </div>
-                                </div>
-                                
-                                <div class="d-grid gap-2 mt-3">
-                                    <button
-                                        type="submit"
-                                        class="btn btn-primary"
-                                        :disabled="form.processing"
-                                    >
-                                        <span v-if="form.processing" class="spinner-border spinner-border-sm me-2"></span>
-                                        {{ form.processing ? 'Creating...' : 'Create Post' }}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Featured Image -->
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0">Featured Image</h5>
-                            </div>
-                            <div class="card-body">
-                                <div v-if="featuredImagePreview" class="mb-3">
-                                    <img :src="featuredImagePreview" alt="Preview" class="img-fluid rounded">
-                                    <button
-                                        type="button"
-                                        @click="removeImage"
-                                        class="btn btn-sm btn-outline-danger mt-2"
-                                    >
-                                        Remove Image
-                                    </button>
-                                </div>
-                                <div class="d-flex gap-2">
-                                    <input
-                                        type="file"
-                                        @change="handleImageChange"
-                                        accept="image/*"
-                                        class="form-control"
-                                        :key="fileInputKey"
-                                    />
-                                    <button 
-                                        type="button" 
-                                        @click="showMediaPicker = true"
-                                        class="btn btn-outline-primary"
-                                    >
-                                        <i class="bi bi-images"></i>
-                                        Choose
-                                    </button>
-                                </div>
-                                <div class="text-muted small mt-1">
-                                    <i class="bi bi-info-circle"></i>
-                                    Upload new or choose from media library • 1200x630px • Max 20MB
-                                </div>
-                                <div v-if="form.errors.featured_image" class="invalid-feedback d-block">
-                                    {{ form.errors.featured_image }}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Category -->
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0">Category <span class="text-danger">*</span></h5>
-                            </div>
-                            <div class="card-body">
-                                <select v-model="form.category" class="form-select" required>
-                                    <option value="">Select Category</option>
-                                    <option v-for="(label, value) in categories" :key="value" :value="value">
-                                        {{ label }}
-                                    </option>
-                                </select>
-                                <div v-if="form.errors.category" class="invalid-feedback d-block">
-                                    {{ form.errors.category }}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Tags -->
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0">Tags</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="input-group mb-2">
-                                    <input
-                                        v-model="newTag"
-                                        type="text"
-                                        class="form-control"
-                                        placeholder="Add tag"
-                                        @keyup.enter="addTag"
-                                    />
-                                    <button
-                                        type="button"
-                                        @click="addTag"
-                                        class="btn btn-outline-secondary"
-                                    >
-                                        Add
-                                    </button>
-                                </div>
-                                
-                                <!-- Current Tags -->
-                                <div v-if="form.tags.length" class="mb-3">
-                                    <span
-                                        v-for="(tag, index) in form.tags"
-                                        :key="index"
-                                        class="badge bg-primary me-1 mb-1"
-                                    >
-                                        {{ tag }}
-                                        <button
-                                            type="button"
-                                            @click="removeTag(index)"
-                                            class="btn-close btn-close-white ms-1"
-                                            style="font-size: 0.6em;"
-                                        ></button>
-                                    </span>
-                                </div>
-                                
-                                <!-- Popular Tags -->
-                                <div v-if="popularTags.length">
-                                    <small class="text-muted">Popular tags:</small>
-                                    <div class="mt-1">
-                                        <button
-                                            v-for="tag in popularTags"
-                                            :key="tag"
-                                            type="button"
-                                            @click="addPopularTag(tag)"
-                                            class="btn btn-sm btn-outline-secondary me-1 mb-1"
-                                            :disabled="form.tags.includes(tag)"
-                                        >
-                                            {{ tag }}
+
+                                    <div v-if="form.is_published">
+                                        <label for="published_at" class="form-label text-dark fw-medium"> Publish Date </label>
+                                        <input id="published_at" v-model="form.published_at" type="datetime-local" class="form-control" />
+                                        <div v-if="form.errors.published_at" class="invalid-feedback d-block">
+                                            {{ form.errors.published_at }}
+                                        </div>
+                                    </div>
+
+                                    <div class="d-grid gap-2 mt-3">
+                                        <button type="submit" class="btn btn-primary" :disabled="form.processing">
+                                            <span v-if="form.processing" class="spinner-border spinner-border-sm me-2"></span>
+                                            {{ form.processing ? 'Creating...' : 'Create Post' }}
                                         </button>
                                     </div>
                                 </div>
-                                
-                                <div v-if="form.errors.tags" class="invalid-feedback d-block">
-                                    {{ form.errors.tags }}
-                                </div>
                             </div>
-                        </div>
-                        
-                        <!-- SEO Settings -->
-                        <div class="card mb-4">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0">SEO Settings</h5>
-                                <button
-                                    type="button"
-                                    @click="showSeoFields = !showSeoFields"
-                                    class="btn btn-sm btn-outline-secondary"
-                                >
-                                    {{ showSeoFields ? 'Hide' : 'Show' }}
-                                </button>
-                            </div>
-                            <div v-if="showSeoFields" class="card-body">
-                                <div class="mb-3">
-                                    <label for="seo_title" class="form-label text-dark fw-medium">SEO Title</label>
-                                    <input
-                                        id="seo_title"
-                                        v-model="form.seo_title"
-                                        type="text"
-                                        class="form-control"
-                                        placeholder="Custom title for search engines"
-                                    />
-                                    <div class="text-muted small mt-1">{{ characterCounts.seoTitle }}/60 characters</div>
-                                    <div v-if="form.errors.seo_title" class="invalid-feedback d-block">
-                                        {{ form.errors.seo_title }}
-                                    </div>
+
+                            <!-- Featured Image -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Featured Image</h5>
                                 </div>
-                                
-                                <div class="mb-3">
-                                    <label for="seo_description" class="form-label text-dark fw-medium">SEO Description</label>
-                                    <textarea
-                                        id="seo_description"
-                                        v-model="form.seo_description"
-                                        class="form-control"
-                                        rows="3"
-                                        placeholder="Meta description for search engines"
-                                    ></textarea>
-                                    <div class="text-muted small mt-1">{{ characterCounts.seoDescription }}/160 characters</div>
-                                    <div v-if="form.errors.seo_description" class="invalid-feedback d-block">
-                                        {{ form.errors.seo_description }}
+                                <div class="card-body">
+                                    <div v-if="featuredImagePreview" class="mb-3">
+                                        <img :src="featuredImagePreview" alt="Preview" class="img-fluid rounded" />
+                                        <button type="button" @click="removeImage" class="btn btn-sm btn-outline-danger mt-2">Remove Image</button>
                                     </div>
-                                </div>
-                                
-                                <div>
-                                    <label for="seo_keywords" class="form-label text-dark fw-medium">SEO Keywords</label>
-                                    <input
-                                        id="seo_keywords"
-                                        v-model="form.seo_keywords"
-                                        type="text"
-                                        class="form-control"
-                                        placeholder="Comma-separated keywords"
-                                    />
-                                    <div v-if="form.errors.seo_keywords" class="invalid-feedback d-block">
-                                        {{ form.errors.seo_keywords }}
+                                    <div class="d-flex gap-2">
+                                        <input type="file" @change="handleImageChange" accept="image/*" class="form-control" :key="fileInputKey" />
+                                        <button type="button" @click="showMediaPicker = true" class="btn btn-outline-primary">
+                                            <i class="bi bi-images"></i>
+                                            Choose
+                                        </button>
+                                    </div>
+                                    <div class="text-muted small mt-1">
+                                        <i class="bi bi-info-circle"></i>
+                                        Upload new or choose from media library • 1200x630px • Max 20MB
+                                    </div>
+                                    <div v-if="form.errors.featured_image" class="invalid-feedback d-block">
+                                        {{ form.errors.featured_image }}
                                     </div>
                                 </div>
                             </div>
-                        </div>
+
+                            <!-- Category -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Category <span class="text-danger">*</span></h5>
+                                </div>
+                                <div class="card-body">
+                                    <select v-model="form.category" class="form-select" required>
+                                        <option value="">Select Category</option>
+                                        <option v-for="(label, value) in categories" :key="value" :value="value">
+                                            {{ label }}
+                                        </option>
+                                    </select>
+                                    <div v-if="form.errors.category" class="invalid-feedback d-block">
+                                        {{ form.errors.category }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tags -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Tags</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="input-group mb-2">
+                                        <input v-model="newTag" type="text" class="form-control" placeholder="Add tag" @keyup.enter="addTag" />
+                                        <button type="button" @click="addTag" class="btn btn-outline-secondary">Add</button>
+                                    </div>
+
+                                    <!-- Current Tags -->
+                                    <div v-if="form.tags.length" class="mb-3">
+                                        <span v-for="(tag, index) in form.tags" :key="index" class="badge bg-primary me-1 mb-1">
+                                            {{ tag }}
+                                            <button
+                                                type="button"
+                                                @click="removeTag(index)"
+                                                class="btn-close btn-close-white ms-1"
+                                                style="font-size: 0.6em"
+                                            ></button>
+                                        </span>
+                                    </div>
+
+                                    <!-- Popular Tags -->
+                                    <div v-if="popularTags.length">
+                                        <small class="text-muted">Popular tags:</small>
+                                        <div class="mt-1">
+                                            <button
+                                                v-for="tag in popularTags"
+                                                :key="tag"
+                                                type="button"
+                                                @click="addPopularTag(tag)"
+                                                class="btn btn-sm btn-outline-secondary me-1 mb-1"
+                                                :disabled="form.tags.includes(tag)"
+                                            >
+                                                {{ tag }}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div v-if="form.errors.tags" class="invalid-feedback d-block">
+                                        {{ form.errors.tags }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SEO Settings -->
+                            <div class="card mb-4">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0">SEO Settings</h5>
+                                    <button type="button" @click="showSeoFields = !showSeoFields" class="btn btn-sm btn-outline-secondary">
+                                        {{ showSeoFields ? 'Hide' : 'Show' }}
+                                    </button>
+                                </div>
+                                <div v-if="showSeoFields" class="card-body">
+                                    <div class="mb-3">
+                                        <label for="seo_title" class="form-label text-dark fw-medium">SEO Title</label>
+                                        <input
+                                            id="seo_title"
+                                            v-model="form.seo_title"
+                                            type="text"
+                                            class="form-control"
+                                            placeholder="Custom title for search engines"
+                                        />
+                                        <div class="text-muted small mt-1">{{ characterCounts.seoTitle }}/60 characters</div>
+                                        <div v-if="form.errors.seo_title" class="invalid-feedback d-block">
+                                            {{ form.errors.seo_title }}
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="seo_description" class="form-label text-dark fw-medium">SEO Description</label>
+                                        <textarea
+                                            id="seo_description"
+                                            v-model="form.seo_description"
+                                            class="form-control"
+                                            rows="3"
+                                            placeholder="Meta description for search engines"
+                                        ></textarea>
+                                        <div class="text-muted small mt-1">{{ characterCounts.seoDescription }}/160 characters</div>
+                                        <div v-if="form.errors.seo_description" class="invalid-feedback d-block">
+                                            {{ form.errors.seo_description }}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label for="seo_keywords" class="form-label text-dark fw-medium">SEO Keywords</label>
+                                        <input
+                                            id="seo_keywords"
+                                            v-model="form.seo_keywords"
+                                            type="text"
+                                            class="form-control"
+                                            placeholder="Comma-separated keywords"
+                                        />
+                                        <div v-if="form.errors.seo_keywords" class="invalid-feedback d-block">
+                                            {{ form.errors.seo_keywords }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </form>
         </div>
-        
+
         <!-- Media Pickers -->
-        <MediaPicker 
-            :show="showMediaPicker" 
-            @select="selectFeaturedImage"
-            @close="showMediaPicker = false"
-        />
-        
-        <MediaPicker 
-            :show="showContentMediaPicker" 
-            @select="selectContentImage"
-            @close="showContentMediaPicker = false"
-        />
+        <MediaPicker :show="showMediaPicker" @select="selectFeaturedImage" @close="showMediaPicker = false" />
+
+        <MediaPicker :show="showContentMediaPicker" @select="selectContentImage" @close="showContentMediaPicker = false" />
     </AdminLayout>
 </template>
 

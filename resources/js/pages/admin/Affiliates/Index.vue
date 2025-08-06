@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { debounce } from 'lodash';
+import { ref } from 'vue';
 
 interface Affiliate {
     id: number;
@@ -43,10 +43,7 @@ const loadingCustomers = ref(false);
 const copiedCode = ref<string | null>(null);
 
 const debouncedSearch = debounce((value: string) => {
-    router.get(route('admin.affiliates.index'), 
-        { search: value, status: status.value },
-        { preserveState: true, preserveScroll: true }
-    );
+    router.get(route('admin.affiliates.index'), { search: value, status: status.value }, { preserveState: true, preserveScroll: true });
 }, 300);
 
 function updateSearch(value: string) {
@@ -56,26 +53,26 @@ function updateSearch(value: string) {
 
 function updateStatus(value: string) {
     status.value = value;
-    router.get(route('admin.affiliates.index'), 
-        { search: search.value, status: value },
-        { preserveState: true, preserveScroll: true }
-    );
+    router.get(route('admin.affiliates.index'), { search: search.value, status: value }, { preserveState: true, preserveScroll: true });
 }
 
 function copyShareUrl(affiliate: Affiliate) {
     const url = `${props.appUrl}/?affiliate=${affiliate.code}`;
-    
+
     // Try modern clipboard API first
     if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(url).then(() => {
-            copiedCode.value = affiliate.code;
-            setTimeout(() => {
-                copiedCode.value = null;
-            }, 2000);
-        }).catch(() => {
-            // Fallback if clipboard API fails
-            fallbackCopyToClipboard(url, affiliate.code);
-        });
+        navigator.clipboard
+            .writeText(url)
+            .then(() => {
+                copiedCode.value = affiliate.code;
+                setTimeout(() => {
+                    copiedCode.value = null;
+                }, 2000);
+            })
+            .catch(() => {
+                // Fallback if clipboard API fails
+                fallbackCopyToClipboard(url, affiliate.code);
+            });
     } else {
         // Fallback for older browsers or non-HTTPS
         fallbackCopyToClipboard(url, affiliate.code);
@@ -91,7 +88,7 @@ function fallbackCopyToClipboard(text: string, code: string) {
     document.body.appendChild(textArea);
     textArea.focus();
     textArea.select();
-    
+
     try {
         document.execCommand('copy');
         copiedCode.value = code;
@@ -102,7 +99,7 @@ function fallbackCopyToClipboard(text: string, code: string) {
         console.error('Failed to copy text: ', err);
         alert(`Copy failed. Please copy manually: ${text}`);
     }
-    
+
     document.body.removeChild(textArea);
 }
 
@@ -110,7 +107,7 @@ async function showCustomers(affiliate: Affiliate) {
     selectedAffiliate.value = affiliate;
     showCustomersModal.value = true;
     loadingCustomers.value = true;
-    
+
     try {
         const response = await fetch(route('admin.affiliates.customers', affiliate.id));
         const data = await response.json();
@@ -132,7 +129,7 @@ function deleteAffiliate(affiliate: Affiliate) {
 <template>
     <AdminLayout>
         <Head title="Affiliates" />
-        
+
         <div class="container-fluid p-4">
             <!-- Page Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -177,7 +174,12 @@ function deleteAffiliate(affiliate: Affiliate) {
                         <div class="col-md-3">
                             <button
                                 v-if="search || status"
-                                @click="search = ''; status = ''; updateSearch(''); updateStatus('')"
+                                @click="
+                                    search = '';
+                                    status = '';
+                                    updateSearch('');
+                                    updateStatus('');
+                                "
                                 type="button"
                                 class="btn btn-outline-secondary w-100"
                             >
@@ -201,7 +203,7 @@ function deleteAffiliate(affiliate: Affiliate) {
                                 <th>Customers</th>
                                 <th>Active</th>
                                 <th>Status</th>
-                                <th class="text-center" style="width: 150px;">Actions</th>
+                                <th class="text-center" style="width: 150px">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -217,11 +219,7 @@ function deleteAffiliate(affiliate: Affiliate) {
                                 <td>{{ affiliate.email || '-' }}</td>
                                 <td>{{ affiliate.commission_rate }}%</td>
                                 <td>
-                                    <button 
-                                        @click="showCustomers(affiliate)"
-                                        class="btn btn-sm btn-link p-0"
-                                        :disabled="affiliate.users_count === 0"
-                                    >
+                                    <button @click="showCustomers(affiliate)" class="btn btn-sm btn-link p-0" :disabled="affiliate.users_count === 0">
                                         {{ affiliate.users_count }}
                                     </button>
                                 </td>
@@ -240,10 +238,7 @@ function deleteAffiliate(affiliate: Affiliate) {
                                         >
                                             <i :class="['bi', copiedCode === affiliate.code ? 'bi-check' : 'bi-clipboard']"></i>
                                         </button>
-                                        <Link
-                                            :href="route('admin.affiliates.edit', affiliate.id)"
-                                            class="btn btn-sm btn-outline-secondary"
-                                        >
+                                        <Link :href="route('admin.affiliates.edit', affiliate.id)" class="btn btn-sm btn-outline-secondary">
                                             <i class="bi bi-pencil"></i>
                                         </Link>
                                         <button
@@ -279,9 +274,7 @@ function deleteAffiliate(affiliate: Affiliate) {
                                 </Link>
                             </li>
                             <li class="page-item active">
-                                <span class="page-link">
-                                    Page {{ affiliates.current_page }} of {{ affiliates.last_page }}
-                                </span>
+                                <span class="page-link"> Page {{ affiliates.current_page }} of {{ affiliates.last_page }} </span>
                             </li>
                             <li class="page-item" :class="{ disabled: affiliates.current_page === affiliates.last_page }">
                                 <Link
@@ -299,13 +292,11 @@ function deleteAffiliate(affiliate: Affiliate) {
         </div>
 
         <!-- Customers Modal -->
-        <div v-if="showCustomersModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+        <div v-if="showCustomersModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0, 0, 0, 0.5)">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">
-                            Customers for {{ selectedAffiliate?.name }}
-                        </h5>
+                        <h5 class="modal-title">Customers for {{ selectedAffiliate?.name }}</h5>
                         <button type="button" class="btn-close" @click="showCustomersModal = false"></button>
                     </div>
                     <div class="modal-body">

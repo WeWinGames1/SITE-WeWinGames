@@ -1,18 +1,17 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { Head, router, useForm } from '@inertiajs/vue3';
-import { ref, computed, watch } from 'vue';
-import { 
-    ChartBarIcon, 
-    UsersIcon, 
-    CurrencyDollarIcon,
-    CalendarIcon,
-    MagnifyingGlassIcon,
-    FunnelIcon,
+import {
     ArrowDownTrayIcon,
+    CalendarIcon,
+    ChartBarIcon,
+    CurrencyDollarIcon,
+    FunnelIcon,
+    MagnifyingGlassIcon,
     PlusIcon,
-    XMarkIcon
+    UsersIcon,
 } from '@heroicons/vue/24/outline';
+import { Head, router, useForm } from '@inertiajs/vue3';
+import { computed, ref, watch } from 'vue';
 
 interface Customer {
     id: number;
@@ -92,21 +91,23 @@ function toggleAll() {
     if (allSelected.value) {
         selectedCustomers.value = [];
     } else {
-        selectedCustomers.value = props.customers.data.map(c => c.id);
+        selectedCustomers.value = props.customers.data.map((c) => c.id);
     }
 }
 
 function applyFilters() {
-    filterForm.transform(data => {
-        const filtered: any = {};
-        Object.keys(data).forEach(key => {
-            if (data[key]) filtered[key] = data[key];
+    filterForm
+        .transform((data) => {
+            const filtered: any = {};
+            Object.keys(data).forEach((key) => {
+                if (data[key]) filtered[key] = data[key];
+            });
+            return filtered;
+        })
+        .get(route('admin.subscriptions.index'), {
+            preserveState: true,
+            preserveScroll: true,
         });
-        return filtered;
-    }).get(route('admin.subscriptions.index'), {
-        preserveState: true,
-        preserveScroll: true,
-    });
 }
 
 function clearFilters() {
@@ -118,7 +119,7 @@ function exportSelected() {
     const form = useForm({
         ids: selectedCustomers.value,
     });
-    
+
     form.post(route('admin.subscriptions.export'), {
         onSuccess: () => {
             selectedCustomers.value = [];
@@ -146,10 +147,10 @@ function grantSubscription() {
 }
 
 function cancelSubscription(customer: Customer, immediately = false) {
-    const message = immediately 
+    const message = immediately
         ? 'Cancel this subscription immediately? The user will lose access right away.'
         : 'Cancel this subscription at the end of the billing period?';
-        
+
     if (confirm(message)) {
         router.post(route('admin.subscriptions.cancel', customer.id), {
             immediately,
@@ -169,7 +170,7 @@ function getStatusColor(status: string): string {
 
 function getTierColor(tier: string | null): string {
     if (!tier) return 'badge bg-secondary';
-    
+
     const colors: Record<string, string> = {
         Bronze: 'badge bg-warning',
         Silver: 'badge bg-secondary',
@@ -181,24 +182,27 @@ function getTierColor(tier: string | null): string {
 
 // Auto-submit search after delay
 let searchTimeout: NodeJS.Timeout;
-watch(() => filterForm.search, (value) => {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        applyFilters();
-    }, 500);
-});
+watch(
+    () => filterForm.search,
+    (value) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            applyFilters();
+        }, 500);
+    },
+);
 </script>
 
 <template>
     <AdminLayout>
         <Head title="Subscription Dashboard" />
-        
+
         <div class="container-fluid p-4">
             <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h2 mb-0">Subscription Dashboard</h1>
             </div>
-                
+
             <!-- Stats Cards -->
             <div class="row mb-4">
                 <div class="col-lg-3 col-md-6 mb-3">
@@ -209,12 +213,12 @@ watch(() => filterForm.search, (value) => {
                                     <p class="text-muted mb-1 small">Active Subscriptions</p>
                                     <h4 class="mb-0 text-success">{{ stats.total_active }}</h4>
                                 </div>
-                                <UsersIcon class="text-success" style="width: 2.5rem; height: 2.5rem;" />
+                                <UsersIcon class="text-success" style="width: 2.5rem; height: 2.5rem" />
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-lg-3 col-md-6 mb-3">
                     <div class="card h-100">
                         <div class="card-body">
@@ -223,12 +227,12 @@ watch(() => filterForm.search, (value) => {
                                     <p class="text-muted mb-1 small">Monthly Recurring Revenue</p>
                                     <h4 class="mb-0 text-primary">${{ stats.mrr.toLocaleString() }}</h4>
                                 </div>
-                                <CurrencyDollarIcon class="text-primary" style="width: 2.5rem; height: 2.5rem;" />
+                                <CurrencyDollarIcon class="text-primary" style="width: 2.5rem; height: 2.5rem" />
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-lg-3 col-md-6 mb-3">
                     <div class="card h-100">
                         <div class="card-body">
@@ -237,12 +241,12 @@ watch(() => filterForm.search, (value) => {
                                     <p class="text-muted mb-1 small">Renewals (30 days)</p>
                                     <h4 class="mb-0 text-warning">{{ stats.upcoming_renewals }}</h4>
                                 </div>
-                                <CalendarIcon class="text-warning" style="width: 2.5rem; height: 2.5rem;" />
+                                <CalendarIcon class="text-warning" style="width: 2.5rem; height: 2.5rem" />
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-lg-3 col-md-6 mb-3">
                     <div class="card h-100">
                         <div class="card-body">
@@ -256,13 +260,13 @@ watch(() => filterForm.search, (value) => {
                                         </div>
                                     </div>
                                 </div>
-                                <ChartBarIcon class="text-purple" style="width: 2.5rem; height: 2.5rem;" />
+                                <ChartBarIcon class="text-purple" style="width: 2.5rem; height: 2.5rem" />
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-                
+
             <!-- Actions Bar -->
             <div class="row mb-4">
                 <div class="col">
@@ -272,42 +276,33 @@ watch(() => filterForm.search, (value) => {
                                 <div class="col-md-8">
                                     <div class="d-flex align-items-center gap-3">
                                         <!-- Search -->
-                                        <div class="input-group" style="max-width: 300px;">
+                                        <div class="input-group" style="max-width: 300px">
                                             <span class="input-group-text">
-                                                <MagnifyingGlassIcon style="width: 1rem; height: 1rem;" />
+                                                <MagnifyingGlassIcon style="width: 1rem; height: 1rem" />
                                             </span>
-                                            <input 
-                                                v-model="filterForm.search" 
-                                                class="form-control" 
-                                                placeholder="Search by name or email..."
-                                            />
+                                            <input v-model="filterForm.search" class="form-control" placeholder="Search by name or email..." />
                                         </div>
-                                        
+
                                         <!-- Filters -->
                                         <button @click="showFilters = !showFilters" class="btn btn-outline-secondary">
-                                            <FunnelIcon style="width: 1rem; height: 1rem;" class="me-1" />
+                                            <FunnelIcon style="width: 1rem; height: 1rem" class="me-1" />
                                             Filters
-                                            <span v-if="Object.values(props.filters).filter(v => v).length > 0" 
-                                                  class="badge bg-primary ms-1">
-                                                {{ Object.values(props.filters).filter(v => v).length }}
+                                            <span v-if="Object.values(props.filters).filter((v) => v).length > 0" class="badge bg-primary ms-1">
+                                                {{ Object.values(props.filters).filter((v) => v).length }}
                                             </span>
                                         </button>
                                     </div>
                                 </div>
-                                
+
                                 <div class="col-md-4 text-end">
                                     <div class="d-flex justify-content-end gap-2">
-                                        <button 
-                                            v-if="selectedCount > 0"
-                                            @click="exportSelected" 
-                                            class="btn btn-outline-info"
-                                        >
-                                            <ArrowDownTrayIcon style="width: 1rem; height: 1rem;" class="me-1" />
+                                        <button v-if="selectedCount > 0" @click="exportSelected" class="btn btn-outline-info">
+                                            <ArrowDownTrayIcon style="width: 1rem; height: 1rem" class="me-1" />
                                             Export ({{ selectedCount }})
                                         </button>
-                                        
+
                                         <button @click="openGrantModal()" class="btn btn-primary">
-                                            <PlusIcon style="width: 1rem; height: 1rem;" class="me-1" />
+                                            <PlusIcon style="width: 1rem; height: 1rem" class="me-1" />
                                             Grant Subscription
                                         </button>
                                     </div>
@@ -317,7 +312,7 @@ watch(() => filterForm.search, (value) => {
                     </div>
                 </div>
             </div>
-                
+
             <!-- Filters Panel -->
             <div v-if="showFilters" class="row mb-4">
                 <div class="col">
@@ -334,7 +329,7 @@ watch(() => filterForm.search, (value) => {
                                         <option value="past_due">Past Due</option>
                                     </select>
                                 </div>
-                                
+
                                 <div class="col-lg-3 col-md-6">
                                     <label class="form-label text-dark fw-medium">Tier</label>
                                     <select v-model="filterForm.tier" class="form-select">
@@ -342,7 +337,7 @@ watch(() => filterForm.search, (value) => {
                                         <option v-for="tier in tiers" :key="tier" :value="tier">{{ tier }}</option>
                                     </select>
                                 </div>
-                                
+
                                 <div class="col-lg-3 col-md-6">
                                     <label class="form-label text-dark fw-medium">Renewal Period</label>
                                     <select v-model="filterForm.renewal_period" class="form-select">
@@ -352,7 +347,7 @@ watch(() => filterForm.search, (value) => {
                                         <option value="60">Next 60 days</option>
                                     </select>
                                 </div>
-                                
+
                                 <div class="col-lg-3 col-md-6 d-flex align-items-end gap-2">
                                     <button @click="applyFilters" class="btn btn-primary flex-grow-1">Apply</button>
                                     <button @click="clearFilters" class="btn btn-link text-muted p-1">Clear</button>
@@ -370,14 +365,9 @@ watch(() => filterForm.search, (value) => {
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th class="text-center" style="width: 50px;">
+                                        <th class="text-center" style="width: 50px">
                                             <div class="form-check">
-                                                <input 
-                                                    type="checkbox" 
-                                                    :checked="allSelected"
-                                                    @change="toggleAll"
-                                                    class="form-check-input"
-                                                />
+                                                <input type="checkbox" :checked="allSelected" @change="toggleAll" class="form-check-input" />
                                             </div>
                                         </th>
                                         <th>Customer</th>
@@ -385,19 +375,14 @@ watch(() => filterForm.search, (value) => {
                                         <th>Status</th>
                                         <th>Started</th>
                                         <th>Renews</th>
-                                        <th class="text-center" style="width: 200px;">Actions</th>
+                                        <th class="text-center" style="width: 200px">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr v-for="customer in customers.data" :key="customer.id">
                                         <td class="text-center">
                                             <div class="form-check">
-                                                <input 
-                                                    type="checkbox" 
-                                                    :value="customer.id"
-                                                    v-model="selectedCustomers"
-                                                    class="form-check-input"
-                                                />
+                                                <input type="checkbox" :value="customer.id" v-model="selectedCustomers" class="form-check-input" />
                                             </div>
                                         </td>
                                         <td>
@@ -405,15 +390,9 @@ watch(() => filterForm.search, (value) => {
                                                 <div class="fw-medium">{{ customer.name }}</div>
                                                 <div class="text-muted small">{{ customer.email }}</div>
                                                 <div v-if="customer.is_ambassador || customer.is_gifted || customer.has_override" class="mt-1">
-                                                    <span v-if="customer.is_ambassador" class="badge bg-primary me-1">
-                                                        Ambassador
-                                                    </span>
-                                                    <span v-if="customer.is_gifted" class="badge bg-success me-1">
-                                                        Gifted
-                                                    </span>
-                                                    <span v-if="customer.has_override" class="badge bg-purple me-1">
-                                                        Override
-                                                    </span>
+                                                    <span v-if="customer.is_ambassador" class="badge bg-primary me-1"> Ambassador </span>
+                                                    <span v-if="customer.is_gifted" class="badge bg-success me-1"> Gifted </span>
+                                                    <span v-if="customer.has_override" class="badge bg-purple me-1"> Override </span>
                                                 </div>
                                             </div>
                                         </td>
@@ -446,12 +425,8 @@ watch(() => filterForm.search, (value) => {
                                         </td>
                                         <td class="text-center">
                                             <div class="d-flex justify-content-center gap-1">
-                                                <button @click="openGrantModal(customer)" class="btn btn-sm btn-outline-primary">
-                                                    Grant
-                                                </button>
-                                                <button @click="cancelSubscription(customer)" class="btn btn-sm btn-outline-warning">
-                                                    Cancel
-                                                </button>
+                                                <button @click="openGrantModal(customer)" class="btn btn-sm btn-outline-primary">Grant</button>
+                                                <button @click="cancelSubscription(customer)" class="btn btn-sm btn-outline-warning">Cancel</button>
                                                 <button @click="cancelSubscription(customer, true)" class="btn btn-sm btn-outline-danger">
                                                     Cancel Now
                                                 </button>
@@ -461,7 +436,7 @@ watch(() => filterForm.search, (value) => {
                                 </tbody>
                             </table>
                         </div>
-                        
+
                         <!-- Pagination -->
                         <div v-if="customers.links.length > 3" class="card-footer bg-light">
                             <div class="d-flex justify-content-between align-items-center">
@@ -470,13 +445,13 @@ watch(() => filterForm.search, (value) => {
                                 </div>
                                 <nav>
                                     <ul class="pagination pagination-sm mb-0">
-                                        <li v-for="link in customers.links" :key="link.label" class="page-item" :class="{ active: link.active, disabled: !link.url }">
-                                            <button
-                                                v-if="link.url"
-                                                @click="router.get(link.url)"
-                                                class="page-link"
-                                                v-html="link.label"
-                                            />
+                                        <li
+                                            v-for="link in customers.links"
+                                            :key="link.label"
+                                            class="page-item"
+                                            :class="{ active: link.active, disabled: !link.url }"
+                                        >
+                                            <button v-if="link.url" @click="router.get(link.url)" class="page-link" v-html="link.label" />
                                             <span v-else class="page-link" v-html="link.label" />
                                         </li>
                                     </ul>
@@ -487,7 +462,7 @@ watch(() => filterForm.search, (value) => {
                 </div>
             </div>
         </div>
-        
+
         <!-- Grant Subscription Modal -->
         <div class="modal fade" :class="{ show: showGrantModal, 'd-block': showGrantModal }" tabindex="-1">
             <div class="modal-dialog">
@@ -501,7 +476,7 @@ watch(() => filterForm.search, (value) => {
                             <div v-if="selectedUser" class="alert alert-info">
                                 <strong>{{ selectedUser.name }}</strong> ({{ selectedUser.email }})
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="tier" class="form-label">Subscription Tier</label>
                                 <select v-model="grantForm.tier" id="tier" class="form-select" required>
@@ -509,21 +484,16 @@ watch(() => filterForm.search, (value) => {
                                 </select>
                                 <div v-if="grantForm.errors.tier" class="text-danger small mt-1">{{ grantForm.errors.tier }}</div>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="duration" class="form-label">Duration (days)</label>
                                 <input v-model.number="grantForm.duration_days" id="duration" type="number" min="1" class="form-control" required />
                                 <div v-if="grantForm.errors.duration_days" class="text-danger small mt-1">{{ grantForm.errors.duration_days }}</div>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="reason" class="form-label">Reason (optional)</label>
-                                <textarea 
-                                    v-model="grantForm.reason" 
-                                    id="reason" 
-                                    class="form-control"
-                                    rows="3"
-                                ></textarea>
+                                <textarea v-model="grantForm.reason" id="reason" class="form-control" rows="3"></textarea>
                                 <div v-if="grantForm.errors.reason" class="text-danger small mt-1">{{ grantForm.errors.reason }}</div>
                             </div>
                         </div>

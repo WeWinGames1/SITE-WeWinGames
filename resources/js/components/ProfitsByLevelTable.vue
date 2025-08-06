@@ -15,7 +15,7 @@
                         <tr v-for="row in data" :key="row.level" class="border-b border-gray-700 last:border-b-0">
                             <td class="px-4 py-2 border-r border-gray-700">{{ row.level }}</td>
                             <td class="px-4 py-2 border-r border-gray-700">${{ formatMoney(row.profit) }}</td>
-                            <td class="px-4 py-2">{{ Math.round(row.roi, 2) }}%</td>
+                            <td class="px-4 py-2">{{ Math.round(row.roi) }}%</td>
                         </tr>
                     </tbody>
                 </table>
@@ -26,10 +26,10 @@
 
 <script setup lang="ts">
 defineProps<{
-    data: Array<{ level: string, profit: number, roi: number }>
+    data: Array<{ level: string; profit: number; roi: number }>;
 }>();
 // console.log('ProfitsByLevelTable props:', props.data);
 function formatMoney(val: number | undefined) {
-    return (Math.round(val ?? 0)).toLocaleString();
+    return Math.round(val ?? 0).toLocaleString();
 }
 </script>

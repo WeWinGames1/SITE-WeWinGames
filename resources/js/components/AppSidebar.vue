@@ -4,8 +4,8 @@ import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
-import { usePage, Link } from '@inertiajs/vue3';
-import { LayoutGrid, UsersRound, DollarSign, CreditCard, House } from 'lucide-vue-next';
+import { Link, usePage } from '@inertiajs/vue3';
+import { CreditCard, DollarSign, House, LayoutGrid, UsersRound } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const page = usePage();
@@ -23,17 +23,15 @@ const mainNavItems: NavItem[] = [
         href: '/settings/billing',
         icon: CreditCard,
     },
-   // { title: "Betting Picks", href: '/todays-tips', icon: Bell },
-   //{ title: 'Betting Results', href: '/betting-results', icon: Trophy },
-    
+    // { title: "Betting Picks", href: '/todays-tips', icon: Bell },
+    //{ title: 'Betting Results', href: '/betting-results', icon: Trophy },
 ];
 
 const footerNavItems: NavItem[] = [
     { title: 'Blog', href: '/blog', icon: BookOpen },
     { title: 'Betting Education', href: '/betting-education', icon: BookOpen },
     { title: 'Careers', href: '/careers-jobs', icon: DollarSign },
-    { title: 'About Us', href: '/about-us', icon: UsersRound }
-    
+    { title: 'About Us', href: '/about-us', icon: UsersRound },
 ];
 </script>
 

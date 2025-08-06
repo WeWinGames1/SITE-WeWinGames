@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import InputError from '@/components/InputError.vue';
+import CustomerLayout from '@/layouts/CustomerLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import CustomerLayout from '@/layouts/CustomerLayout.vue';
-import InputError from '@/components/InputError.vue';
 
 const passwordInput = ref<HTMLInputElement | null>(null);
 const currentPasswordInput = ref<HTMLInputElement | null>(null);
@@ -46,15 +46,9 @@ const updatePassword = () => {
                 <div class="col-12">
                     <h2 class="mb-3">Settings</h2>
                     <nav class="nav nav-pills">
-                        <Link :href="route('profile.edit')" class="nav-link">
-                            <i class="bi bi-person me-2"></i>Profile
-                        </Link>
-                        <Link :href="route('billing.edit')" class="nav-link">
-                            <i class="bi bi-credit-card me-2"></i>Billing
-                        </Link>
-                        <Link :href="route('password.edit')" class="nav-link active">
-                            <i class="bi bi-shield-lock me-2"></i>Security
-                        </Link>
+                        <Link :href="route('profile.edit')" class="nav-link"> <i class="bi bi-person me-2"></i>Profile </Link>
+                        <Link :href="route('billing.edit')" class="nav-link"> <i class="bi bi-credit-card me-2"></i>Billing </Link>
+                        <Link :href="route('password.edit')" class="nav-link active"> <i class="bi bi-shield-lock me-2"></i>Security </Link>
                     </nav>
                 </div>
             </div>
@@ -64,9 +58,7 @@ const updatePassword = () => {
                     <div class="card">
                         <div class="card-header">
                             <h5 class="mb-0">Update Password</h5>
-                            <p class="text-muted mb-0 small">
-                                Ensure your account is using a long, random password to stay secure.
-                            </p>
+                            <p class="text-muted mb-0 small">Ensure your account is using a long, random password to stay secure.</p>
                         </div>
                         <div class="card-body">
                             <form @submit.prevent="updatePassword">

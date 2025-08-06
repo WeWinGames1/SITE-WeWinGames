@@ -26,20 +26,15 @@ function closeQR() {
 <template>
     <AdminLayout>
         <Head title="Landing Pages" />
-        
+
         <div class="container-fluid p-4">
             <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h1 class="h2 mb-0">Landing Pages</h1>
-                    <p class="text-muted mb-0">
-                        Manage your marketing and landing pages
-                    </p>
+                    <p class="text-muted mb-0">Manage your marketing and landing pages</p>
                 </div>
-                <Link 
-                    :href="route('admin.landing-pages.create')" 
-                    class="btn btn-primary"
-                >
+                <Link :href="route('admin.landing-pages.create')" class="btn btn-primary">
                     <i class="bi bi-plus-circle me-2"></i>
                     Create New Page
                 </Link>
@@ -51,15 +46,12 @@ function closeQR() {
                     <div v-if="props.pages.length === 0" class="text-center py-5">
                         <i class="bi bi-file-earmark-text display-1 text-muted mb-3 d-block"></i>
                         <p class="text-muted">No landing pages found. Create your first landing page to get started.</p>
-                        <Link 
-                            :href="route('admin.landing-pages.create')" 
-                            class="btn btn-primary mt-3"
-                        >
+                        <Link :href="route('admin.landing-pages.create')" class="btn btn-primary mt-3">
                             <i class="bi bi-plus-circle me-2"></i>
                             Create First Page
                         </Link>
                     </div>
-                    
+
                     <div v-else class="table-responsive">
                         <table class="table table-hover align-middle">
                             <thead>
@@ -80,17 +72,14 @@ function closeQR() {
                                         <code class="text-primary">/landing/{{ page.slug }}</code>
                                     </td>
                                     <td class="text-center">
-                                        <span 
-                                            class="badge"
-                                            :class="page.published ? 'bg-success' : 'bg-secondary'"
-                                        >
+                                        <span class="badge" :class="page.published ? 'bg-success' : 'bg-secondary'">
                                             {{ page.published ? 'Published' : 'Draft' }}
                                         </span>
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm" role="group">
-                                            <Link 
-                                                :href="route('admin.landing-pages.edit', page.id)" 
+                                            <Link
+                                                :href="route('admin.landing-pages.edit', page.id)"
                                                 class="btn btn-outline-primary"
                                                 title="Edit page"
                                             >
@@ -105,18 +94,10 @@ function closeQR() {
                                             >
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                            <button 
-                                                @click="openQR(page)" 
-                                                class="btn btn-outline-info"
-                                                title="Generate QR code"
-                                            >
+                                            <button @click="openQR(page)" class="btn btn-outline-info" title="Generate QR code">
                                                 <i class="bi bi-qr-code"></i>
                                             </button>
-                                            <button 
-                                                @click="deletePage(page.id)" 
-                                                class="btn btn-outline-danger"
-                                                title="Delete page"
-                                            >
+                                            <button @click="deletePage(page.id)" class="btn btn-outline-danger" title="Delete page">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
@@ -130,22 +111,12 @@ function closeQR() {
         </div>
 
         <!-- QR Code Modal -->
-        <div 
-            v-if="showQR" 
-            class="modal fade show d-block" 
-            tabindex="-1" 
-            style="background-color: rgba(0,0,0,0.5);"
-        >
+        <div v-if="showQR" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5)">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">QR Code: {{ qrTitle }}</h5>
-                        <button 
-                            type="button" 
-                            class="btn-close" 
-                            @click="closeQR"
-                            aria-label="Close"
-                        ></button>
+                        <button type="button" class="btn-close" @click="closeQR" aria-label="Close"></button>
                     </div>
                     <div class="modal-body text-center">
                         <QrcodeVue :value="qrUrl" :size="250" class="mb-3" />
@@ -154,13 +125,7 @@ function closeQR() {
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button 
-                            type="button" 
-                            class="btn btn-secondary" 
-                            @click="closeQR"
-                        >
-                            Close
-                        </button>
+                        <button type="button" class="btn btn-secondary" @click="closeQR">Close</button>
                     </div>
                 </div>
             </div>

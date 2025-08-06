@@ -17,8 +17,8 @@ const props = withDefaults(defineProps<Props>(), {
         total_users: 0,
         push_enabled: 0,
         email_enabled: 0,
-        subscribers_by_tier: {}
-    })
+        subscribers_by_tier: {},
+    }),
 });
 
 const activeTab = ref<'send' | 'test'>('send');
@@ -53,10 +53,10 @@ const testForm = useForm({
 function validateSendForm(): boolean {
     // Clear previous errors
     sendForm.clearErrors();
-    
+
     let isValid = true;
     const errors: Record<string, string> = {};
-    
+
     // Required fields validation
     if (!sendForm.title || !sendForm.title.trim()) {
         errors.title = 'The title field is required.';
@@ -65,7 +65,7 @@ function validateSendForm(): boolean {
         errors.title = 'The title may not be greater than 255 characters.';
         isValid = false;
     }
-    
+
     if (!sendForm.body || !sendForm.body.trim()) {
         errors.body = 'The body field is required.';
         isValid = false;
@@ -73,7 +73,7 @@ function validateSendForm(): boolean {
         errors.body = 'The body may not be greater than 500 characters.';
         isValid = false;
     }
-    
+
     // Optional URL validation
     if (sendForm.url) {
         try {
@@ -83,7 +83,7 @@ function validateSendForm(): boolean {
             isValid = false;
         }
     }
-    
+
     // Recipients validation
     if (!sendForm.recipients) {
         errors.recipients = 'The recipients field is required.';
@@ -92,7 +92,7 @@ function validateSendForm(): boolean {
         errors.recipients = 'The selected recipients value is invalid.';
         isValid = false;
     }
-    
+
     // Tier validation (required if recipients is 'tier')
     if (sendForm.recipients === 'tier') {
         if (!sendForm.tier) {
@@ -103,22 +103,22 @@ function validateSendForm(): boolean {
             isValid = false;
         }
     }
-    
+
     // Set errors if any
     if (!isValid) {
         sendForm.setError(errors);
     }
-    
+
     return isValid;
 }
 
 function validateTestForm(): boolean {
     // Clear previous errors
     testForm.clearErrors();
-    
+
     let isValid = true;
     const errors: Record<string, string> = {};
-    
+
     // Required fields validation
     if (!testForm.title || !testForm.title.trim()) {
         errors.title = 'The title field is required.';
@@ -127,7 +127,7 @@ function validateTestForm(): boolean {
         errors.title = 'The title may not be greater than 255 characters.';
         isValid = false;
     }
-    
+
     if (!testForm.body || !testForm.body.trim()) {
         errors.body = 'The body field is required.';
         isValid = false;
@@ -135,7 +135,7 @@ function validateTestForm(): boolean {
         errors.body = 'The body may not be greater than 500 characters.';
         isValid = false;
     }
-    
+
     // Optional URL validation
     if (testForm.url) {
         try {
@@ -145,12 +145,12 @@ function validateTestForm(): boolean {
             isValid = false;
         }
     }
-    
+
     // Set errors if any
     if (!isValid) {
         testForm.setError(errors);
     }
-    
+
     return isValid;
 }
 
@@ -158,7 +158,7 @@ function sendNotification() {
     if (!validateSendForm()) {
         return;
     }
-    
+
     sendForm.post(route('admin.notifications.push.send'), {
         preserveScroll: false,
     });
@@ -168,7 +168,7 @@ function sendTestNotification() {
     if (!validateTestForm()) {
         return;
     }
-    
+
     testForm.post(route('admin.notifications.push.test'), {
         preserveScroll: true,
     });
@@ -178,14 +178,11 @@ function sendTestNotification() {
 <template>
     <AdminLayout>
         <Head title="Send Push Notification" />
-        
+
         <div class="container-fluid p-4">
             <!-- Header -->
             <div class="mb-4 d-flex align-items-center">
-                <Link 
-                    :href="route('admin.notifications.push.index')" 
-                    class="btn btn-link text-decoration-none me-3"
-                >
+                <Link :href="route('admin.notifications.push.index')" class="btn btn-link text-decoration-none me-3">
                     <i class="bi bi-arrow-left"></i> Back
                 </Link>
                 <div>
@@ -252,22 +249,12 @@ function sendTestNotification() {
             <!-- Tabs -->
             <ul class="nav nav-tabs mb-3">
                 <li class="nav-item">
-                    <button 
-                        class="nav-link" 
-                        :class="{ active: activeTab === 'send' }"
-                        @click="activeTab = 'send'"
-                        type="button"
-                    >
+                    <button class="nav-link" :class="{ active: activeTab === 'send' }" @click="activeTab = 'send'" type="button">
                         Send Notification
                     </button>
                 </li>
                 <li class="nav-item">
-                    <button 
-                        class="nav-link" 
-                        :class="{ active: activeTab === 'test' }"
-                        @click="activeTab = 'test'"
-                        type="button"
-                    >
+                    <button class="nav-link" :class="{ active: activeTab === 'test' }" @click="activeTab = 'test'" type="button">
                         Test Notification
                     </button>
                 </li>
@@ -308,9 +295,7 @@ function sendTestNotification() {
                                         maxlength="500"
                                         required
                                     ></textarea>
-                                    <div class="form-text">
-                                        {{ sendForm.body.length }}/500 characters
-                                    </div>
+                                    <div class="form-text">{{ sendForm.body.length }}/500 characters</div>
                                     <div v-if="sendForm.errors.body" class="invalid-feedback">
                                         {{ sendForm.errors.body }}
                                     </div>
@@ -326,9 +311,7 @@ function sendTestNotification() {
                                         id="url"
                                         placeholder="https://wewingames.com/todays-picks"
                                     />
-                                    <div class="form-text">
-                                        Where users go when they click the notification (optional)
-                                    </div>
+                                    <div class="form-text">Where users go when they click the notification (optional)</div>
                                     <div v-if="sendForm.errors.url" class="invalid-feedback">
                                         {{ sendForm.errors.url }}
                                     </div>
@@ -346,15 +329,8 @@ function sendTestNotification() {
                                                     name="sendIcon"
                                                     class="visually-hidden"
                                                 />
-                                                <div 
-                                                    class="icon-selector"
-                                                    :class="{ 'selected': sendForm.icon === iconOption.value }"
-                                                >
-                                                    <img 
-                                                        :src="iconOption.preview" 
-                                                        :alt="iconOption.label"
-                                                        class="icon-preview"
-                                                    />
+                                                <div class="icon-selector" :class="{ selected: sendForm.icon === iconOption.value }">
+                                                    <img :src="iconOption.preview" :alt="iconOption.label" class="icon-preview" />
                                                     <small class="d-block text-center mt-1">{{ iconOption.label }}</small>
                                                 </div>
                                             </label>
@@ -370,7 +346,7 @@ function sendTestNotification() {
                                 <div class="card bg-light">
                                     <div class="card-body">
                                         <h6 class="card-title">Target Audience</h6>
-                                        
+
                                         <div class="mb-3">
                                             <div class="form-check">
                                                 <input
@@ -380,11 +356,9 @@ function sendTestNotification() {
                                                     value="all"
                                                     id="recipientsAll"
                                                 />
-                                                <label class="form-check-label" for="recipientsAll">
-                                                    All users with push enabled
-                                                </label>
+                                                <label class="form-check-label" for="recipientsAll"> All users with push enabled </label>
                                             </div>
-                                            
+
                                             <div class="form-check">
                                                 <input
                                                     v-model="sendForm.recipients"
@@ -393,11 +367,9 @@ function sendTestNotification() {
                                                     value="push_enabled"
                                                     id="recipientsPush"
                                                 />
-                                                <label class="form-check-label" for="recipientsPush">
-                                                    Push notification subscribers
-                                                </label>
+                                                <label class="form-check-label" for="recipientsPush"> Push notification subscribers </label>
                                             </div>
-                                            
+
                                             <div class="form-check">
                                                 <input
                                                     v-model="sendForm.recipients"
@@ -406,9 +378,7 @@ function sendTestNotification() {
                                                     value="tier"
                                                     id="recipientsTier"
                                                 />
-                                                <label class="form-check-label" for="recipientsTier">
-                                                    Specific subscription tier
-                                                </label>
+                                                <label class="form-check-label" for="recipientsTier"> Specific subscription tier </label>
                                             </div>
                                         </div>
 
@@ -426,11 +396,7 @@ function sendTestNotification() {
                         </div>
 
                         <div class="mt-4">
-                            <button
-                                type="submit"
-                                class="btn btn-primary"
-                                :disabled="sendForm.processing"
-                            >
+                            <button type="submit" class="btn btn-primary" :disabled="sendForm.processing">
                                 <span v-if="sendForm.processing">
                                     <span class="spinner-border spinner-border-sm me-2"></span>
                                     Sending...
@@ -451,7 +417,7 @@ function sendTestNotification() {
                     <p class="text-muted mb-4">
                         Send a test notification to your own device. Make sure you have push notifications enabled in your profile settings.
                     </p>
-                    
+
                     <form @submit.prevent="sendTestNotification">
                         <div class="row">
                             <div class="col-lg-8">
@@ -513,15 +479,8 @@ function sendTestNotification() {
                                                     name="testIcon"
                                                     class="visually-hidden"
                                                 />
-                                                <div 
-                                                    class="icon-selector"
-                                                    :class="{ 'selected': testForm.icon === iconOption.value }"
-                                                >
-                                                    <img 
-                                                        :src="iconOption.preview" 
-                                                        :alt="iconOption.label"
-                                                        class="icon-preview"
-                                                    />
+                                                <div class="icon-selector" :class="{ selected: testForm.icon === iconOption.value }">
+                                                    <img :src="iconOption.preview" :alt="iconOption.label" class="icon-preview" />
                                                     <small class="d-block text-center mt-1">{{ iconOption.label }}</small>
                                                 </div>
                                             </label>
@@ -529,11 +488,7 @@ function sendTestNotification() {
                                     </div>
                                 </div>
 
-                                <button
-                                    type="submit"
-                                    class="btn btn-primary"
-                                    :disabled="testForm.processing"
-                                >
+                                <button type="submit" class="btn btn-primary" :disabled="testForm.processing">
                                     <span v-if="testForm.processing">
                                         <span class="spinner-border spinner-border-sm me-2"></span>
                                         Sending...

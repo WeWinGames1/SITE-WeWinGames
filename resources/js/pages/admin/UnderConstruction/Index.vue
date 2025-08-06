@@ -17,15 +17,8 @@
                             <form @submit.prevent="submit">
                                 <div class="mb-3">
                                     <div class="form-check form-switch">
-                                        <input
-                                            v-model="form.is_enabled"
-                                            type="checkbox"
-                                            class="form-check-input"
-                                            id="is_enabled"
-                                        />
-                                        <label class="form-check-label" for="is_enabled">
-                                            Enable Under Construction Mode
-                                        </label>
+                                        <input v-model="form.is_enabled" type="checkbox" class="form-check-input" id="is_enabled" />
+                                        <label class="form-check-label" for="is_enabled"> Enable Under Construction Mode </label>
                                     </div>
                                 </div>
 
@@ -65,16 +58,12 @@
                                 <div class="mb-3">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <label for="blurb" class="form-label mb-0">Message</label>
-                                        <button 
-                                            type="button" 
-                                            class="btn btn-sm btn-outline-secondary"
-                                            @click="toggleSourceView"
-                                        >
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" @click="toggleSourceView">
                                             <i class="bi" :class="showSourceCode ? 'bi-eye' : 'bi-code-slash'"></i>
                                             {{ showSourceCode ? 'Visual Editor' : 'Source Code' }}
                                         </button>
                                     </div>
-                                    
+
                                     <!-- Visual Editor -->
                                     <div v-if="!showSourceCode" class="editor-wrapper">
                                         <div class="editor-toolbar btn-toolbar mb-2" role="toolbar">
@@ -139,11 +128,7 @@
                                                 </button>
                                             </div>
                                         </div>
-                                        <EditorContent 
-                                            :editor="editor" 
-                                            class="form-control editor-content"
-                                            style="min-height: 200px;"
-                                        />
+                                        <EditorContent :editor="editor" class="form-control editor-content" style="min-height: 200px" />
                                     </div>
 
                                     <!-- Source Code Editor -->
@@ -153,16 +138,14 @@
                                             @input="updateSourceCode"
                                             class="form-control font-monospace"
                                             rows="10"
-                                            style="font-size: 0.875rem;"
+                                            style="font-size: 0.875rem"
                                         ></textarea>
                                     </div>
-                                    
+
                                     <div v-if="form.errors.blurb" class="invalid-feedback d-block">
                                         {{ form.errors.blurb }}
                                     </div>
-                                    <div class="form-text">
-                                        Format your message using the rich text editor above.
-                                    </div>
+                                    <div class="form-text">Format your message using the rich text editor above.</div>
                                 </div>
 
                                 <div class="d-flex justify-content-end">
@@ -195,21 +178,20 @@
                                 When enabled, visitors to your site will see an under construction page instead of the regular content.
                             </p>
                             <ul>
+                                <li><strong>Enable/Disable:</strong> Toggle to turn the under construction mode on or off immediately.</li>
                                 <li>
-                                    <strong>Enable/Disable:</strong> Toggle to turn the under construction mode on or off immediately.
+                                    <strong>Start Date:</strong> Optional. If set, the under construction mode will automatically activate at this
+                                    date/time.
                                 </li>
                                 <li>
-                                    <strong>Start Date:</strong> Optional. If set, the under construction mode will automatically activate at this date/time.
+                                    <strong>End Date:</strong> Optional. If set, the under construction mode will automatically deactivate at this
+                                    date/time.
                                 </li>
-                                <li>
-                                    <strong>End Date:</strong> Optional. If set, the under construction mode will automatically deactivate at this date/time.
-                                </li>
-                                <li>
-                                    <strong>Message:</strong> The message displayed to visitors. You can use HTML for formatting.
-                                </li>
+                                <li><strong>Message:</strong> The message displayed to visitors. You can use HTML for formatting.</li>
                             </ul>
                             <p class="card-text">
-                                <strong>Note:</strong> Admin users will always be able to access the site, even when under construction mode is active.
+                                <strong>Note:</strong> Admin users will always be able to access the site, even when under construction mode is
+                                active.
                             </p>
                         </div>
                     </div>
@@ -220,11 +202,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { Head, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { Editor, EditorContent } from '@tiptap/vue-3';
+import { Head, useForm } from '@inertiajs/vue3';
 import StarterKit from '@tiptap/starter-kit';
+import { Editor, EditorContent } from '@tiptap/vue-3';
+import { ref, watch } from 'vue';
 
 interface UnderConstructionSetting {
     id?: number;
@@ -244,21 +226,28 @@ const showSourceCode = ref(false);
 const sourceCode = ref('');
 
 // Tiptap editor setup
-const editor = ref(new Editor({
-    content: props.settings?.blurb || '<p>We\'re making some exciting improvements to our website! We\'ll be back online shortly. Thank you for your patience – see you soon! ✨</p>',
-    extensions: [StarterKit],
-    onUpdate: ({ editor }) => {
-        form.blurb = editor.getHTML();
-        if (showSourceCode.value) {
-            sourceCode.value = editor.getHTML();
-        }
-    },
-}));
+const editor = ref(
+    new Editor({
+        content:
+            props.settings?.blurb ||
+            "<p>We're making some exciting improvements to our website! We'll be back online shortly. Thank you for your patience – see you soon! ✨</p>",
+        extensions: [StarterKit],
+        onUpdate: ({ editor }) => {
+            form.blurb = editor.getHTML();
+            if (showSourceCode.value) {
+                sourceCode.value = editor.getHTML();
+            }
+        },
+    }),
+);
 
 // Keep editor in sync if settings change
-watch(() => props.settings?.blurb, (val) => {
-    if (val && editor.value) editor.value.commands.setContent(val);
-});
+watch(
+    () => props.settings?.blurb,
+    (val) => {
+        if (val && editor.value) editor.value.commands.setContent(val);
+    },
+);
 
 const formatDateForInput = (dateString: string | null): string => {
     if (!dateString) return '';
@@ -275,7 +264,9 @@ const form = useForm({
     is_enabled: props.settings?.is_enabled || false,
     start_date: formatDateForInput(props.settings?.start_date || null),
     end_date: formatDateForInput(props.settings?.end_date || null),
-    blurb: props.settings?.blurb || '<p>We\'re making some exciting improvements to our website! We\'ll be back online shortly. Thank you for your patience – see you soon! ✨</p>',
+    blurb:
+        props.settings?.blurb ||
+        "<p>We're making some exciting improvements to our website! We'll be back online shortly. Thank you for your patience – see you soon! ✨</p>",
 });
 
 const submit = () => {

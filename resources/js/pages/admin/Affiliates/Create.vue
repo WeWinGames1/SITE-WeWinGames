@@ -15,10 +15,10 @@ const form = useForm({
 function validateForm(): boolean {
     // Clear previous errors
     form.clearErrors();
-    
+
     let isValid = true;
     const errors: Record<string, string> = {};
-    
+
     // Required fields validation
     if (!form.name || !form.name.trim()) {
         errors.name = 'The name field is required.';
@@ -27,13 +27,13 @@ function validateForm(): boolean {
         errors.name = 'The name may not be greater than 255 characters.';
         isValid = false;
     }
-    
+
     // Optional fields validation
     if (form.code && form.code.length > 255) {
         errors.code = 'The code may not be greater than 255 characters.';
         isValid = false;
     }
-    
+
     if (form.email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(form.email)) {
@@ -44,12 +44,12 @@ function validateForm(): boolean {
             isValid = false;
         }
     }
-    
+
     if (form.phone && form.phone.length > 255) {
         errors.phone = 'The phone may not be greater than 255 characters.';
         isValid = false;
     }
-    
+
     // Commission rate validation
     if (form.commission_rate === null || form.commission_rate === undefined || form.commission_rate === '') {
         errors.commission_rate = 'The commission rate field is required.';
@@ -58,12 +58,12 @@ function validateForm(): boolean {
         errors.commission_rate = 'The commission rate must be between 0 and 100.';
         isValid = false;
     }
-    
+
     // Set errors if any
     if (!isValid) {
         form.setError(errors);
     }
-    
+
     return isValid;
 }
 
@@ -71,7 +71,7 @@ function submit() {
     if (!validateForm()) {
         return;
     }
-    
+
     form.post(route('admin.affiliates.store'));
 }
 </script>
@@ -79,7 +79,7 @@ function submit() {
 <template>
     <AdminLayout>
         <Head title="Create Affiliate" />
-        
+
         <div class="container-fluid">
             <!-- Header -->
             <div class="mb-4">
@@ -104,7 +104,7 @@ function submit() {
                         <div class="card mb-4">
                             <div class="card-body">
                                 <h5 class="card-title mb-4">Affiliate Information</h5>
-                                
+
                                 <div class="mb-3">
                                     <label for="name" class="form-label required">Name</label>
                                     <input
@@ -138,9 +138,7 @@ function submit() {
                                     <div v-if="form.errors.code" class="invalid-feedback">
                                         {{ form.errors.code }}
                                     </div>
-                                    <div class="form-text">
-                                        This code will be used in affiliate URLs (e.g., ?affiliate=CODE)
-                                    </div>
+                                    <div class="form-text">This code will be used in affiliate URLs (e.g., ?affiliate=CODE)</div>
                                 </div>
 
                                 <div class="row">
@@ -199,7 +197,7 @@ function submit() {
                         <div class="card mb-4">
                             <div class="card-body">
                                 <h5 class="card-title mb-4">Commission Settings</h5>
-                                
+
                                 <div class="mb-3">
                                     <label for="commission_rate" class="form-label required">Commission Rate (%)</label>
                                     <div class="input-group">
@@ -219,9 +217,7 @@ function submit() {
                                             {{ form.errors.commission_rate }}
                                         </div>
                                     </div>
-                                    <div class="form-text">
-                                        Percentage of revenue shared with this affiliate
-                                    </div>
+                                    <div class="form-text">Percentage of revenue shared with this affiliate</div>
                                 </div>
                             </div>
                         </div>
@@ -229,40 +225,20 @@ function submit() {
                         <div class="card">
                             <div class="card-body">
                                 <h5 class="card-title mb-4">Status</h5>
-                                
+
                                 <div class="form-check">
-                                    <input
-                                        v-model="form.is_active"
-                                        type="checkbox"
-                                        class="form-check-input"
-                                        id="is_active"
-                                    />
-                                    <label class="form-check-label" for="is_active">
-                                        Active
-                                    </label>
+                                    <input v-model="form.is_active" type="checkbox" class="form-check-input" id="is_active" />
+                                    <label class="form-check-label" for="is_active"> Active </label>
                                 </div>
-                                <div class="form-text">
-                                    Inactive affiliates cannot generate new referrals
-                                </div>
+                                <div class="form-text">Inactive affiliates cannot generate new referrals</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="d-flex gap-2 mt-4">
-                    <button
-                        type="submit"
-                        class="btn btn-primary"
-                        :disabled="form.processing"
-                    >
-                        Create Affiliate
-                    </button>
-                    <Link
-                        :href="route('admin.affiliates.index')"
-                        class="btn btn-outline-secondary"
-                    >
-                        Cancel
-                    </Link>
+                    <button type="submit" class="btn btn-primary" :disabled="form.processing">Create Affiliate</button>
+                    <Link :href="route('admin.affiliates.index')" class="btn btn-outline-secondary"> Cancel </Link>
                 </div>
             </form>
         </div>

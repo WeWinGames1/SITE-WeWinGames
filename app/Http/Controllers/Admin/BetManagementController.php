@@ -77,7 +77,7 @@ class BetManagementController extends Controller
             'stats' => $stats,
             'sports' => $filterOptions['sports'],
             'operators' => $filterOptions['operators'],
-            'statuses' => ['pending', 'won', 'loss', 'void', 'push'],
+            'statuses' => ['pending', 'won', 'loss', 'placed', 'push'],
             'betTypes' => [
                 'moneyline' => 'Moneyline',
                 'spread' => 'Point Spread',
@@ -232,6 +232,7 @@ class BetManagementController extends Controller
 
         // Define bet types
         $betTypes = [
+            'single_wager' => 'Single Wager',
             'moneyline' => 'Moneyline',
             'spread' => 'Point Spread',
             'total' => 'Over/Under (Total)',
@@ -272,12 +273,12 @@ class BetManagementController extends Controller
             'parlay_teams.*.name' => 'nullable|string|max:255',
             'tips' => 'nullable|string|max:500',
             'markets' => 'nullable|string|max:255',
-            'wager_type' => 'required|string|in:moneyline,spread,total,prop,parlay,futures,each_way',
+            'wager_type' => 'required|string|in:single_wager,moneyline,spread,total,prop,parlay,futures,each_way',
             'betting_date' => 'required|date',
             'game_date' => 'required|date',
             'wager_odds' => 'required|numeric',
             'wager_amount' => 'required|numeric|min:0',
-            'status' => 'required|in:pending,won,placed,loss,void,push',
+            'status' => 'required|in:pending,won,loss,placed,push',
             'membership' => 'required|in:bronze,silver,gold,platinum',
             'level' => 'nullable|string|max:50',
             'code' => 'nullable|string|max:255',
@@ -291,6 +292,7 @@ class BetManagementController extends Controller
             'dead_heat_players' => 'nullable|integer|min:2|required_if:is_dead_heat,true',
             'dead_heat_spots' => 'nullable|numeric|min:0|required_if:is_dead_heat,true',
             'golf_place' => 'nullable|boolean',
+            'golf_place_fraction' => 'nullable|numeric|between:0,1',
         ]);
 
         // Set the user_id to the authenticated admin
@@ -466,6 +468,7 @@ class BetManagementController extends Controller
 
         // Define bet types
         $betTypes = [
+            'single_wager' => 'Single Wager',
             'moneyline' => 'Moneyline',
             'spread' => 'Point Spread',
             'total' => 'Over/Under (Total)',
@@ -530,15 +533,15 @@ class BetManagementController extends Controller
             'team_two_id' => 'nullable|exists:teams,id',
             'team_two_is_new' => 'nullable|boolean',
             'tips' => 'nullable|string|max:500',
-            'wager_type' => 'required|string|in:moneyline,spread,total,prop,parlay,futures,each_way',
+            'wager_type' => 'required|string|in:single_wager,moneyline,spread,total,prop,parlay,futures,each_way',
             'betting_date' => 'required|date',
             'game_date' => 'required|date',
             'wager_odds' => 'required|numeric',
             'wager_amount' => 'required|numeric|min:0',
-            'winning_amount' => 'nullable|numeric|min:0',
+            'winning_amount' => 'nullable|numeric',
             'profit_amount' => 'nullable|numeric',
             'roi' => 'nullable|numeric',
-            'status' => 'required|in:pending,won,placed,loss,void,push',
+            'status' => 'required|in:pending,won,loss,placed,push',
             'membership' => 'required|in:bronze,silver,gold,platinum',
             'level' => 'nullable|string|max:50',
             'code' => 'nullable|string|max:255',
@@ -556,6 +559,7 @@ class BetManagementController extends Controller
             'dead_heat_players' => 'nullable|integer|min:2',
             'dead_heat_spots' => 'nullable|numeric|min:0',
             'golf_place' => 'nullable|boolean',
+            'golf_place_fraction' => 'nullable|numeric|between:0,1',
         ]);
         
         // Normalize sports name to lowercase
@@ -707,7 +711,7 @@ class BetManagementController extends Controller
         $validated = $request->validate([
             'bet_ids' => 'required|array',
             'bet_ids.*' => 'exists:bets,id',
-            'status' => 'required|in:won,lost,void,push',
+            'status' => 'required|in:won,loss,placed,push',
             'actual_result' => 'nullable|string',
         ]);
 

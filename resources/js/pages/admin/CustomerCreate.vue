@@ -16,10 +16,10 @@ const successMessage = ref<string | null>(null);
 function validateForm(): boolean {
     // Clear previous errors
     form.clearErrors();
-    
+
     let isValid = true;
     const errors: Record<string, string> = {};
-    
+
     // Required fields validation
     if (!form.name || !form.name.trim()) {
         errors.name = 'The name field is required.';
@@ -28,7 +28,7 @@ function validateForm(): boolean {
         errors.name = 'The name may not be greater than 255 characters.';
         isValid = false;
     }
-    
+
     if (!form.email || !form.email.trim()) {
         errors.email = 'The email field is required.';
         isValid = false;
@@ -43,7 +43,7 @@ function validateForm(): boolean {
             isValid = false;
         }
     }
-    
+
     if (!form.password) {
         errors.password = 'The password field is required.';
         isValid = false;
@@ -51,7 +51,7 @@ function validateForm(): boolean {
         errors.password = 'The password must be at least 8 characters.';
         isValid = false;
     }
-    
+
     if (!form.password_confirmation) {
         errors.password_confirmation = 'The password confirmation field is required.';
         isValid = false;
@@ -59,12 +59,12 @@ function validateForm(): boolean {
         errors.password_confirmation = 'The password confirmation does not match.';
         isValid = false;
     }
-    
+
     // Set errors if any
     if (!isValid) {
         form.setError(errors);
     }
-    
+
     return isValid;
 }
 
@@ -72,12 +72,12 @@ function submit() {
     // Clear previous messages
     errorMessage.value = null;
     successMessage.value = null;
-    
+
     if (!validateForm()) {
         errorMessage.value = 'Please fix the validation errors before submitting.';
         return;
     }
-    
+
     form.post(route('admin.customers.store'), {
         onSuccess: () => {
             successMessage.value = 'Customer created successfully!';
@@ -182,9 +182,7 @@ function submit() {
                                             <div v-if="form.errors.password" class="invalid-feedback">
                                                 {{ form.errors.password }}
                                             </div>
-                                            <small class="form-text text-muted">
-                                                Password must be at least 8 characters long
-                                            </small>
+                                            <small class="form-text text-muted"> Password must be at least 8 characters long </small>
                                         </div>
                                     </div>
 
@@ -218,9 +216,7 @@ function submit() {
                                             Create Customer
                                         </span>
                                     </button>
-                                    <Link :href="route('admin.customers.index')" class="btn btn-secondary ms-2">
-                                        Cancel
-                                    </Link>
+                                    <Link :href="route('admin.customers.index')" class="btn btn-secondary ms-2"> Cancel </Link>
                                 </div>
                             </form>
                         </div>

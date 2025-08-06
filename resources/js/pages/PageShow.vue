@@ -6,9 +6,9 @@ const props = defineProps<{ page: any }>();
 <template>
     <WelcomeLayout>
         <Head :title="props.page.title" />
-        <div class="min-vh-100" style="background-color: #0a0e1a;">
+        <div class="min-vh-100" style="background-color: #0a0e1a">
             <!-- Header Section -->
-            <section class="py-5" style="background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 100%);">
+            <section class="py-5" style="background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 100%)">
                 <div class="container">
                     <div class="text-center">
                         <h1 class="display-4 fw-bold text-white">{{ props.page.title }}</h1>
@@ -21,7 +21,7 @@ const props = defineProps<{ page: any }>();
                 <div class="container">
                     <div class="row justify-content-center">
                         <div class="col-lg-8">
-                            <div class="card" style="background-color: #1a2332; border: 1px solid #2e4057;">
+                            <div class="card" style="background-color: #1a2332; border: 1px solid #2e4057">
                                 <div class="card-body p-5">
                                     <img v-if="props.page.featured_image" :src="props.page.featured_image" class="img-fluid rounded mb-4" />
                                     <div class="page-content text-white" v-html="props.page.content"></div>

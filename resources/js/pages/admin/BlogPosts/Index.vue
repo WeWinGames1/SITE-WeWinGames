@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import BlogCategoryModal from '@/components/BlogCategoryModal.vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
 import { debounce } from 'lodash';
-import BlogCategoryModal from '@/components/BlogCategoryModal.vue';
+import { ref } from 'vue';
 
 interface Author {
     id: number;
@@ -84,9 +84,13 @@ function deletePost(post: Post) {
 }
 
 function duplicatePost(post: Post) {
-    router.post(route('admin.blog-posts.duplicate', post.slug), {}, {
-        preserveScroll: true,
-    });
+    router.post(
+        route('admin.blog-posts.duplicate', post.slug),
+        {},
+        {
+            preserveScroll: true,
+        },
+    );
 }
 
 async function loadStats() {
@@ -115,7 +119,7 @@ function formatDate(date: string | null): string {
     return new Date(date).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
-        day: 'numeric'
+        day: 'numeric',
     });
 }
 </script>
@@ -123,7 +127,7 @@ function formatDate(date: string | null): string {
 <template>
     <AdminLayout>
         <Head title="Blog Posts" />
-        
+
         <div class="container-fluid p-4">
             <!-- Page Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -146,7 +150,7 @@ function formatDate(date: string | null): string {
                     </Link>
                 </div>
             </div>
-            
+
             <!-- Statistics Panel -->
             <div v-if="showStats && stats" class="card mb-4">
                 <div class="card-body">
@@ -189,13 +193,16 @@ function formatDate(date: string | null): string {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <h6 class="mb-3">Popular Categories</h6>
                             <div class="list-group list-group-flush">
-                                <div v-for="cat in stats.popular_categories" :key="cat.category" 
-                                     class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div
+                                    v-for="cat in stats.popular_categories"
+                                    :key="cat.category"
+                                    class="list-group-item d-flex justify-content-between align-items-center px-0"
+                                >
                                     <span>{{ categories[cat.category] || cat.category }}</span>
                                     <span class="badge bg-secondary rounded-pill">{{ cat.count }} posts</span>
                                 </div>
@@ -204,10 +211,12 @@ function formatDate(date: string | null): string {
                         <div class="col-md-6">
                             <h6 class="mb-3">Top Posts by Views</h6>
                             <div class="list-group list-group-flush">
-                                <div v-for="post in stats.top_posts" :key="post.id" 
-                                     class="list-group-item d-flex justify-content-between align-items-center px-0">
-                                    <Link :href="route('admin.blog-posts.edit', post.slug)" 
-                                          class="text-decoration-none text-truncate me-2">
+                                <div
+                                    v-for="post in stats.top_posts"
+                                    :key="post.id"
+                                    class="list-group-item d-flex justify-content-between align-items-center px-0"
+                                >
+                                    <Link :href="route('admin.blog-posts.edit', post.slug)" class="text-decoration-none text-truncate me-2">
                                         {{ post.title }}
                                     </Link>
                                     <span class="badge bg-primary rounded-pill">{{ post.views_count }} views</span>
@@ -217,7 +226,7 @@ function formatDate(date: string | null): string {
                     </div>
                 </div>
             </div>
-            
+
             <!-- Filters -->
             <div class="card mb-4">
                 <div class="card-body">
@@ -229,7 +238,7 @@ function formatDate(date: string | null): string {
                                 <span class="input-group-text">
                                     <i class="bi bi-search"></i>
                                 </span>
-                                <input 
+                                <input
                                     type="search"
                                     class="form-control"
                                     placeholder="Search by title, content, or author..."
@@ -238,7 +247,7 @@ function formatDate(date: string | null): string {
                                 />
                             </div>
                         </div>
-                        
+
                         <div class="col-md-3">
                             <label class="form-label small">Status</label>
                             <select v-model="filterForm.status" @change="applyFilters" class="form-select">
@@ -248,7 +257,7 @@ function formatDate(date: string | null): string {
                                 <option value="scheduled">Scheduled</option>
                             </select>
                         </div>
-                        
+
                         <div class="col-md-3">
                             <label class="form-label small">Category</label>
                             <select v-model="filterForm.category" @change="applyFilters" class="form-select">
@@ -258,16 +267,14 @@ function formatDate(date: string | null): string {
                                 </option>
                             </select>
                         </div>
-                        
+
                         <div class="col-md-1">
-                            <button type="button" class="btn btn-secondary w-100" @click="clearFilters">
-                                Clear
-                            </button>
+                            <button type="button" class="btn btn-secondary w-100" @click="clearFilters">Clear</button>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Posts Table -->
             <div class="card mb-4">
                 <div class="table-responsive">
@@ -290,13 +297,10 @@ function formatDate(date: string | null): string {
                                         <div class="fw-medium">{{ post.title }}</div>
                                         <small class="text-muted">{{ post.slug }}</small>
                                         <div v-if="post.tags.length > 0" class="mt-1">
-                                            <span v-for="tag in post.tags.slice(0, 3)" :key="tag" 
-                                                  class="badge bg-secondary me-1">
+                                            <span v-for="tag in post.tags.slice(0, 3)" :key="tag" class="badge bg-secondary me-1">
                                                 <i class="bi bi-tag"></i> {{ tag }}
                                             </span>
-                                            <span v-if="post.tags.length > 3" class="text-muted small">
-                                                +{{ post.tags.length - 3 }} more
-                                            </span>
+                                            <span v-if="post.tags.length > 3" class="text-muted small"> +{{ post.tags.length - 3 }} more </span>
                                         </div>
                                     </div>
                                 </td>
@@ -319,33 +323,20 @@ function formatDate(date: string | null): string {
                                     </small>
                                 </td>
                                 <td>
-                                    <span class="badge bg-secondary">
-                                        <i class="bi bi-eye"></i> {{ post.views_count }}
-                                    </span>
+                                    <span class="badge bg-secondary"> <i class="bi bi-eye"></i> {{ post.views_count }} </span>
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
-                                        <a :href="route('blog.show', post.slug)" 
-                                           target="_blank"
-                                           class="btn btn-outline-secondary"
-                                           title="View">
+                                        <a :href="route('blog.show', post.slug)" target="_blank" class="btn btn-outline-secondary" title="View">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <Link :href="route('admin.blog-posts.edit', post.slug)" 
-                                              class="btn btn-outline-primary"
-                                              title="Edit">
+                                        <Link :href="route('admin.blog-posts.edit', post.slug)" class="btn btn-outline-primary" title="Edit">
                                             <i class="bi bi-pencil"></i>
                                         </Link>
-                                        <button type="button"
-                                                @click="duplicatePost(post)" 
-                                                class="btn btn-outline-secondary"
-                                                title="Duplicate">
+                                        <button type="button" @click="duplicatePost(post)" class="btn btn-outline-secondary" title="Duplicate">
                                             <i class="bi bi-files"></i>
                                         </button>
-                                        <button type="button"
-                                                @click="deletePost(post)" 
-                                                class="btn btn-outline-danger"
-                                                title="Delete">
+                                        <button type="button" @click="deletePost(post)" class="btn btn-outline-danger" title="Delete">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
@@ -354,7 +345,7 @@ function formatDate(date: string | null): string {
                         </tbody>
                     </table>
                 </div>
-                
+
                 <!-- Empty state -->
                 <div v-if="posts.data.length === 0" class="text-center py-5">
                     <i class="bi bi-file-text display-1 text-muted"></i>
@@ -364,22 +355,20 @@ function formatDate(date: string | null): string {
                         Create your first post
                     </Link>
                 </div>
-                
+
                 <!-- Pagination -->
                 <div v-if="posts.links.length > 3" class="card-footer">
                     <div class="d-flex justify-content-between align-items-center">
-                        <div class="text-muted">
-                            Showing {{ posts.meta.from }} to {{ posts.meta.to }} of {{ posts.meta.total }} results
-                        </div>
+                        <div class="text-muted">Showing {{ posts.meta.from }} to {{ posts.meta.to }} of {{ posts.meta.total }} results</div>
                         <nav>
                             <ul class="pagination pagination-sm mb-0">
-                                <li v-for="link in posts.links" :key="link.label" 
-                                    class="page-item" 
-                                    :class="{ 'active': link.active, 'disabled': !link.url }">
-                                    <button v-if="link.url"
-                                            @click="router.get(link.url)"
-                                            class="page-link"
-                                            v-html="link.label" />
+                                <li
+                                    v-for="link in posts.links"
+                                    :key="link.label"
+                                    class="page-item"
+                                    :class="{ active: link.active, disabled: !link.url }"
+                                >
+                                    <button v-if="link.url" @click="router.get(link.url)" class="page-link" v-html="link.label" />
                                     <span v-else class="page-link" v-html="link.label" />
                                 </li>
                             </ul>
@@ -388,11 +377,8 @@ function formatDate(date: string | null): string {
                 </div>
             </div>
         </div>
-        
+
         <!-- Category Management Modal -->
-        <BlogCategoryModal 
-            :show="showCategoryModal" 
-            @close="showCategoryModal = false"
-        />
+        <BlogCategoryModal :show="showCategoryModal" @close="showCategoryModal = false" />
     </AdminLayout>
 </template>

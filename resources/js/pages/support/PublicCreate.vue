@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
-import { ref, onMounted } from 'vue';
+import { Head, useForm } from '@inertiajs/vue3';
+import { onMounted, ref } from 'vue';
 
 declare global {
     interface Window {
@@ -47,15 +47,15 @@ onMounted(() => {
     if (window.turnstileConfig) {
         turnstileEnabled.value = window.turnstileConfig.enabled;
         turnstileSiteKey.value = window.turnstileConfig.siteKey;
-        
+
         if (turnstileEnabled.value && window.turnstile) {
             // Render Turnstile widget
             turnstileWidget.value = window.turnstile.render('#cf-turnstile', {
                 sitekey: turnstileSiteKey.value,
-                callback: function(token: string) {
+                callback: function (token: string) {
                     form['cf-turnstile-response'] = token;
                 },
-                'expired-callback': function() {
+                'expired-callback': function () {
                     form['cf-turnstile-response'] = '';
                 },
             });
@@ -79,9 +79,9 @@ const submit = () => {
     <WelcomeLayout>
         <Head title="Contact Support" />
 
-        <div class="min-vh-100" style="background-color: #0a0e1a;">
+        <div class="min-vh-100" style="background-color: #0a0e1a">
             <!-- Header Section -->
-            <section class="py-5" style="background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 100%);">
+            <section class="py-5" style="background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 100%)">
                 <div class="container">
                     <div class="text-center">
                         <h1 class="display-4 fw-bold text-white mb-3">How Can We Help?</h1>
@@ -95,19 +95,23 @@ const submit = () => {
                 <div class="container">
                     <div class="row justify-content-center">
                         <div class="col-lg-8">
-                            <div class="card" style="background-color: #1a2332; border: 1px solid #2e4057;">
+                            <div class="card" style="background-color: #1a2332; border: 1px solid #2e4057">
                                 <div class="card-body p-5">
                                     <h2 class="h3 fw-bold text-white mb-4">Submit a Support Ticket</h2>
-                                    
+
                                     <form @submit.prevent="submit">
                                         <!-- Guest Information (only show if not authenticated) -->
-                                        <div v-if="!isAuthenticated" class="alert alert-info mb-4" style="background-color: rgba(255, 193, 7, 0.1); border-color: #ffc107;">
+                                        <div
+                                            v-if="!isAuthenticated"
+                                            class="alert alert-info mb-4"
+                                            style="background-color: rgba(255, 193, 7, 0.1); border-color: #ffc107"
+                                        >
                                             <div class="d-flex align-items-start">
                                                 <i class="bi bi-info-circle text-warning me-3 mt-1"></i>
                                                 <div>
                                                     <p class="mb-2 text-white">
-                                                        You're submitting as a guest. For faster support and to track your tickets, 
-                                                        consider <a href="/login" class="text-warning">logging in</a> or 
+                                                        You're submitting as a guest. For faster support and to track your tickets, consider
+                                                        <a href="/login" class="text-warning">logging in</a> or
                                                         <a href="/register" class="text-warning">creating an account</a>.
                                                     </p>
                                                     <p class="mb-0 text-white-50 small">
@@ -119,7 +123,9 @@ const submit = () => {
 
                                         <div v-if="!isAuthenticated" class="row mb-4">
                                             <div class="col-md-6 mb-3 mb-md-0">
-                                                <label for="first_name" class="form-label text-white">First Name <span class="text-danger">*</span></label>
+                                                <label for="first_name" class="form-label text-white"
+                                                    >First Name <span class="text-danger">*</span></label
+                                                >
                                                 <input
                                                     id="first_name"
                                                     type="text"
@@ -133,7 +139,9 @@ const submit = () => {
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
-                                                <label for="last_name" class="form-label text-white">Last Name <span class="text-danger">*</span></label>
+                                                <label for="last_name" class="form-label text-white"
+                                                    >Last Name <span class="text-danger">*</span></label
+                                                >
                                                 <input
                                                     id="last_name"
                                                     type="text"
@@ -166,8 +174,10 @@ const submit = () => {
                                         <!-- Ticket Information -->
                                         <div class="row mb-4">
                                             <div class="col-md-8 mb-3 mb-md-0">
-                                                <label for="category" class="form-label text-white">Category <span class="text-danger">*</span></label>
-                                                <select 
+                                                <label for="category" class="form-label text-white"
+                                                    >Category <span class="text-danger">*</span></label
+                                                >
+                                                <select
                                                     id="category"
                                                     class="form-select"
                                                     v-model="form.category_id"
@@ -184,8 +194,10 @@ const submit = () => {
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
-                                                <label for="priority" class="form-label text-white">Priority <span class="text-danger">*</span></label>
-                                                <select 
+                                                <label for="priority" class="form-label text-white"
+                                                    >Priority <span class="text-danger">*</span></label
+                                                >
+                                                <select
                                                     id="priority"
                                                     class="form-select"
                                                     v-model="form.priority"
@@ -260,7 +272,7 @@ const submit = () => {
                                 <h3 class="h5 text-white mb-4">Other Ways to Reach Us</h3>
                                 <div class="row g-4">
                                     <div class="col-md-4">
-                                        <div class="p-4 rounded" style="background-color: rgba(255, 255, 255, 0.05);">
+                                        <div class="p-4 rounded" style="background-color: rgba(255, 255, 255, 0.05)">
                                             <i class="bi bi-envelope text-warning fs-2 mb-3 d-block"></i>
                                             <h5 class="text-white mb-2">Email</h5>
                                             <p class="text-white-50 small mb-0">
@@ -271,14 +283,14 @@ const submit = () => {
                                         </div>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="p-4 rounded" style="background-color: rgba(255, 255, 255, 0.05);">
+                                        <div class="p-4 rounded" style="background-color: rgba(255, 255, 255, 0.05)">
                                             <i class="bi bi-clock text-warning fs-2 mb-3 d-block"></i>
                                             <h5 class="text-white mb-2">Response Time</h5>
                                             <p class="text-white-50 small mb-0">24-48 hours</p>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="p-4 rounded" style="background-color: rgba(255, 255, 255, 0.05);">
+                                        <div class="p-4 rounded" style="background-color: rgba(255, 255, 255, 0.05)">
                                             <i class="bi bi-question-circle text-warning fs-2 mb-3 d-block"></i>
                                             <h5 class="text-white mb-2">FAQ</h5>
                                             <p class="small mb-0">
@@ -298,13 +310,15 @@ const submit = () => {
 
 <style scoped>
 /* Form control styles */
-.form-control, .form-select {
+.form-control,
+.form-select {
     background-color: rgba(255, 255, 255, 0.05);
     border-color: #2e4057;
     color: white;
 }
 
-.form-control:focus, .form-select:focus {
+.form-control:focus,
+.form-select:focus {
     background-color: rgba(255, 255, 255, 0.08);
     border-color: #ffc107;
     color: white;
@@ -322,7 +336,7 @@ const submit = () => {
 }
 
 /* Ensure the first disabled option is visible */
-.form-select option[value=""] {
+.form-select option[value=''] {
     color: rgba(255, 255, 255, 0.6);
 }
 </style>

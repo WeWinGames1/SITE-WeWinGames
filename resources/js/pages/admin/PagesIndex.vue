@@ -25,7 +25,7 @@ function formatDate(date: string): string {
     return new Date(date).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
-        day: 'numeric'
+        day: 'numeric',
     });
 }
 </script>
@@ -33,7 +33,7 @@ function formatDate(date: string): string {
 <template>
     <AdminLayout>
         <Head title="Pages" />
-        
+
         <div class="p-4">
             <!-- Page Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -41,10 +41,7 @@ function formatDate(date: string): string {
                     <h1 class="h2 fw-bold text-dark">Content Pages</h1>
                     <p class="text-muted small">Create and manage static content pages for your website</p>
                 </div>
-                <Link 
-                    :href="route('admin.pages.create')" 
-                    class="btn btn-primary"
-                >
+                <Link :href="route('admin.pages.create')" class="btn btn-primary">
                     <i class="bi bi-plus-lg me-1"></i>
                     New Page
                 </Link>
@@ -89,27 +86,13 @@ function formatDate(date: string): string {
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
-                                        <a 
-                                            :href="route('pages.show', page.slug)" 
-                                            target="_blank"
-                                            class="btn btn-outline-secondary"
-                                            title="View Page"
-                                        >
+                                        <a :href="route('pages.show', page.slug)" target="_blank" class="btn btn-outline-secondary" title="View Page">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <Link 
-                                            :href="route('admin.pages.edit', { page: page.id })" 
-                                            class="btn btn-outline-primary"
-                                            title="Edit Page"
-                                        >
+                                        <Link :href="route('admin.pages.edit', { page: page.id })" class="btn btn-outline-primary" title="Edit Page">
                                             <i class="bi bi-pencil"></i>
                                         </Link>
-                                        <button 
-                                            type="button"
-                                            @click="deletePage(page)" 
-                                            class="btn btn-outline-danger"
-                                            title="Delete Page"
-                                        >
+                                        <button type="button" @click="deletePage(page)" class="btn btn-outline-danger" title="Delete Page">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
@@ -118,22 +101,19 @@ function formatDate(date: string): string {
                         </tbody>
                     </table>
                 </div>
-                
+
                 <!-- Empty state -->
                 <div v-if="pages.length === 0" class="text-center py-5">
                     <i class="bi bi-file-text display-1 text-muted"></i>
                     <p class="mt-3 text-muted">No pages found</p>
                     <p class="text-muted small">Create your first content page to get started</p>
-                    <Link 
-                        :href="route('admin.pages.create')" 
-                        class="btn btn-primary"
-                    >
+                    <Link :href="route('admin.pages.create')" class="btn btn-primary">
                         <i class="bi bi-plus-lg me-1"></i>
                         Create First Page
                     </Link>
                 </div>
             </div>
-            
+
             <!-- Page Management Tips -->
             <div class="card mt-4">
                 <div class="card-header">
@@ -147,7 +127,9 @@ function formatDate(date: string): string {
                         <div class="col-md-6">
                             <h6 class="text-primary mb-2">Content Pages</h6>
                             <ul class="list-unstyled small text-muted mb-0">
-                                <li class="mb-1"><i class="bi bi-check-circle text-success me-1"></i> Use for static content like About, Privacy Policy, Terms</li>
+                                <li class="mb-1">
+                                    <i class="bi bi-check-circle text-success me-1"></i> Use for static content like About, Privacy Policy, Terms
+                                </li>
                                 <li class="mb-1"><i class="bi bi-check-circle text-success me-1"></i> SEO-friendly URLs with custom slugs</li>
                                 <li class="mb-1"><i class="bi bi-check-circle text-success me-1"></i> Rich text editor with formatting options</li>
                                 <li><i class="bi bi-check-circle text-success me-1"></i> Draft/published status control</li>

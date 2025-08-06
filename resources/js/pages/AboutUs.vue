@@ -24,9 +24,9 @@ defineProps<Props>();
             <meta v-if="page.meta_description" name="description" :content="page.meta_description" />
             <meta v-if="page.meta_keywords" name="keywords" :content="page.meta_keywords" />
         </Head>
-        
-        <div class="py-5" style="background: linear-gradient(180deg, #1a2332 0%, #0a1628 100%); min-height: 100vh;">
-            <article class="container-fluid px-4 px-lg-5" style="max-width: 1200px;">
+
+        <div class="py-5" style="background: linear-gradient(180deg, #1a2332 0%, #0a1628 100%); min-height: 100vh">
+            <article class="container-fluid px-4 px-lg-5" style="max-width: 1200px">
                 <!-- Article Header -->
                 <header class="mb-5">
                     <h1 class="display-4 fw-bold text-white mb-4">

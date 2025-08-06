@@ -4,7 +4,7 @@ export const socialMediaLinks = {
     facebook: 'https://facebook.com/wewingames',
     linkedin: '#', // Placeholder - update when available
     youtube: '#', // Placeholder - update when available
-    github: '#' // Placeholder - update when available
+    github: '#', // Placeholder - update when available
 };
 
 export const socialIcons = {
@@ -13,5 +13,5 @@ export const socialIcons = {
     facebook: 'bi-facebook',
     linkedin: 'bi-linkedin',
     youtube: 'bi-youtube',
-    github: 'bi-github'
+    github: 'bi-github',
 };

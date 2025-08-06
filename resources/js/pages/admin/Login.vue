@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import InputError from '@/components/InputError.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import InputError from '@/components/InputError.vue';
 
 defineProps<{
     canResetPassword?: boolean;
@@ -52,20 +52,23 @@ const floatingIcons = [
         <div class="position-absolute top-0 start-0 w-100 h-100">
             <!-- Grid Pattern -->
             <div class="grid-pattern position-absolute top-0 start-0 w-100 h-100"></div>
-            
+
             <!-- Floating Icons -->
-            <div v-for="(item, index) in floatingIcons" :key="index" 
+            <div
+                v-for="(item, index) in floatingIcons"
+                :key="index"
                 class="position-absolute opacity-10 text-white floating-icon"
-                :style="`${item.style} animation-delay: ${item.delay};`">
+                :style="`${item.style} animation-delay: ${item.delay};`"
+            >
                 <i :class="[item.icon, 'display-1']"></i>
             </div>
-            
+
             <!-- Gradient Overlay -->
             <div class="position-absolute top-0 start-0 w-100 h-100 gradient-overlay"></div>
         </div>
 
         <!-- Login Card -->
-        <div class="position-relative z-index-1 w-100" style="max-width: 400px; z-index: 10;">
+        <div class="position-relative z-index-1 w-100" style="max-width: 400px; z-index: 10">
             <div class="login-card rounded shadow">
                 <!-- Header -->
                 <div class="card-header-gradient p-5 text-center">
@@ -81,9 +84,7 @@ const floatingIcons = [
                     <form @submit.prevent="submit">
                         <!-- Email Input -->
                         <div class="mb-3">
-                            <label for="email" class="form-label text-light">
-                                Administrator Email
-                            </label>
+                            <label for="email" class="form-label text-light"> Administrator Email </label>
                             <div class="input-group">
                                 <span class="input-group-text bg-dark border-secondary">
                                     <i class="bi bi-person text-muted"></i>
@@ -104,9 +105,7 @@ const floatingIcons = [
 
                         <!-- Password Input -->
                         <div class="mb-3">
-                            <label for="password" class="form-label text-light">
-                                Password
-                            </label>
+                            <label for="password" class="form-label text-light"> Password </label>
                             <div class="input-group">
                                 <span class="input-group-text bg-dark border-secondary">
                                     <i class="bi bi-lock text-muted"></i>
@@ -120,11 +119,7 @@ const floatingIcons = [
                                     required
                                     autocomplete="current-password"
                                 />
-                                <button
-                                    type="button"
-                                    @click="showPassword = !showPassword"
-                                    class="btn btn-outline-secondary"
-                                >
+                                <button type="button" @click="showPassword = !showPassword" class="btn btn-outline-secondary">
                                     <i :class="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
                                 </button>
                             </div>
@@ -134,15 +129,8 @@ const floatingIcons = [
                         <!-- Remember Me -->
                         <div class="mb-4">
                             <div class="form-check">
-                                <input
-                                    type="checkbox"
-                                    v-model="form.remember"
-                                    class="form-check-input"
-                                    id="remember"
-                                />
-                                <label class="form-check-label text-light" for="remember">
-                                    Remember me
-                                </label>
+                                <input type="checkbox" v-model="form.remember" class="form-check-input" id="remember" />
+                                <label class="form-check-label text-light" for="remember"> Remember me </label>
                             </div>
                         </div>
 
@@ -152,24 +140,16 @@ const floatingIcons = [
                         </div>
 
                         <!-- Demo Account Button for Local Environment -->
-                        <div v-if="isLocal" class="mb-3 p-3 rounded" style="background-color: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107;">
+                        <div v-if="isLocal" class="mb-3 p-3 rounded" style="background-color: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107">
                             <p class="mb-2 fw-bold text-warning"><i class="bi bi-info-circle me-2"></i>Demo Account</p>
-                            <button 
-                                type="button"
-                                class="btn btn-sm btn-outline-warning w-100"
-                                @click="fillAdminCredentials"
-                            >
+                            <button type="button" class="btn btn-sm btn-outline-warning w-100" @click="fillAdminCredentials">
                                 <i class="bi bi-person-fill me-2"></i>
                                 <strong>Admin:</strong> admin@wewingames.test
                             </button>
                         </div>
 
                         <!-- Submit Button -->
-                        <button
-                            type="submit"
-                            class="btn btn-primary w-100 py-2"
-                            :disabled="form.processing"
-                        >
+                        <button type="submit" class="btn btn-primary w-100 py-2" :disabled="form.processing">
                             <span v-if="!form.processing">Access Admin Portal</span>
                             <span v-else>
                                 <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -181,9 +161,7 @@ const floatingIcons = [
 
                 <!-- Footer -->
                 <div class="card-footer text-center py-3">
-                    <small class="text-muted">
-                        Authorized personnel only. All activities are logged and monitored.
-                    </small>
+                    <small class="text-muted"> Authorized personnel only. All activities are logged and monitored. </small>
                 </div>
             </div>
         </div>
@@ -196,7 +174,7 @@ const floatingIcons = [
 }
 
 .grid-pattern {
-    background-image: 
+    background-image:
         linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
         linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
     background-size: 50px 50px;
@@ -207,7 +185,8 @@ const floatingIcons = [
 }
 
 @keyframes float {
-    0%, 100% {
+    0%,
+    100% {
         transform: translateY(0) rotate(0deg);
         opacity: 0.1;
     }

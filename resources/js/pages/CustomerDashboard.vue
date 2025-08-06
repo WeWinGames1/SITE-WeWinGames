@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, Link, usePage } from '@inertiajs/vue3';
 import CustomerLayout from '@/layouts/CustomerLayout.vue';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 const page = usePage();
@@ -37,22 +37,16 @@ const subscriptionBadge = computed(() => {
     <CustomerLayout>
         <Head title="Dashboard" />
 
-        <div class="min-vh-100" style="background-color: var(--bs-body-bg);">
+        <div class="min-vh-100" style="background-color: var(--bs-body-bg)">
             <!-- Welcome Section -->
-            <section class="py-5" style="background: linear-gradient(135deg, #7C3AED 0%, #111827 100%);">
+            <section class="py-5" style="background: linear-gradient(135deg, #7c3aed 0%, #111827 100%)">
                 <div class="container">
                     <div class="row align-items-center">
                         <div class="col-lg-8">
-                            <h1 class="display-4 fw-bold text-white mb-3">
-                                Welcome back, {{ user.name }}!
-                            </h1>
-                            <p class="fs-5 text-gray-light mb-4">
-                                Track your betting performance and access today's expert picks
-                            </p>
+                            <h1 class="display-4 fw-bold text-white mb-3">Welcome back, {{ user.name }}!</h1>
+                            <p class="fs-5 text-gray-light mb-4">Track your betting performance and access today's expert picks</p>
                             <div class="d-flex align-items-center gap-3">
-                                <span :class="subscriptionBadge.class" class="badge fs-6 px-3 py-2">
-                                    {{ subscriptionBadge.text }} Member
-                                </span>
+                                <span :class="subscriptionBadge.class" class="badge fs-6 px-3 py-2"> {{ subscriptionBadge.text }} Member </span>
                                 <span class="text-gray-light">
                                     Member since {{ new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }}
                                 </span>
@@ -74,7 +68,7 @@ const subscriptionBadge = computed(() => {
                     <div class="row g-4 mb-5">
                         <!-- Win Rate Card -->
                         <div class="col-12 col-sm-6 col-lg-3">
-                            <div class="card h-100" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
+                            <div class="card h-100" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)">
                                 <div class="card-body p-4">
                                     <div class="d-flex align-items-center justify-content-between mb-3">
                                         <div class="rounded-circle bg-success bg-opacity-10 p-3">
@@ -90,7 +84,7 @@ const subscriptionBadge = computed(() => {
 
                         <!-- Total Picks Card -->
                         <div class="col-12 col-sm-6 col-lg-3">
-                            <div class="card h-100" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
+                            <div class="card h-100" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)">
                                 <div class="card-body p-4">
                                     <div class="d-flex align-items-center justify-content-between mb-3">
                                         <div class="rounded-circle bg-primary bg-opacity-10 p-3">
@@ -106,7 +100,7 @@ const subscriptionBadge = computed(() => {
 
                         <!-- Profit Card -->
                         <div class="col-12 col-sm-6 col-lg-3">
-                            <div class="card h-100" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
+                            <div class="card h-100" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)">
                                 <div class="card-body p-4">
                                     <div class="d-flex align-items-center justify-content-between mb-3">
                                         <div class="rounded-circle bg-warning bg-opacity-10 p-3">
@@ -122,7 +116,7 @@ const subscriptionBadge = computed(() => {
 
                         <!-- Today's Picks Card -->
                         <div class="col-12 col-sm-6 col-lg-3">
-                            <div class="card h-100" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
+                            <div class="card h-100" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)">
                                 <div class="card-body p-4">
                                     <div class="d-flex align-items-center justify-content-between mb-3">
                                         <div class="rounded-circle bg-purple bg-opacity-10 p-3">
@@ -143,7 +137,11 @@ const subscriptionBadge = computed(() => {
                             <h2 class="h4 fw-bold text-white mb-4">Quick Actions</h2>
                         </div>
                         <div class="col-12 col-sm-6 col-lg-3">
-                            <Link href="/todays-bets" class="card h-100 text-decoration-none" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
+                            <Link
+                                href="/todays-bets"
+                                class="card h-100 text-decoration-none"
+                                style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)"
+                            >
                                 <div class="card-body p-4 text-center">
                                     <i class="bi bi-lightning-charge text-purple fs-1 mb-3"></i>
                                     <h5 class="text-white">Today's Picks</h5>
@@ -152,7 +150,11 @@ const subscriptionBadge = computed(() => {
                             </Link>
                         </div>
                         <div class="col-12 col-sm-6 col-lg-3">
-                            <Link href="/betting-results" class="card h-100 text-decoration-none" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
+                            <Link
+                                href="/betting-results"
+                                class="card h-100 text-decoration-none"
+                                style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)"
+                            >
                                 <div class="card-body p-4 text-center">
                                     <i class="bi bi-trophy text-warning fs-1 mb-3"></i>
                                     <h5 class="text-white">Results</h5>
@@ -161,7 +163,11 @@ const subscriptionBadge = computed(() => {
                             </Link>
                         </div>
                         <div class="col-12 col-sm-6 col-lg-3">
-                            <Link href="/settings/billing" class="card h-100 text-decoration-none" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
+                            <Link
+                                href="/settings/billing"
+                                class="card h-100 text-decoration-none"
+                                style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)"
+                            >
                                 <div class="card-body p-4 text-center">
                                     <i class="bi bi-credit-card text-info fs-1 mb-3"></i>
                                     <h5 class="text-white">Billing</h5>
@@ -170,7 +176,11 @@ const subscriptionBadge = computed(() => {
                             </Link>
                         </div>
                         <div class="col-12 col-sm-6 col-lg-3">
-                            <Link href="/support/tickets" class="card h-100 text-decoration-none" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
+                            <Link
+                                href="/support/tickets"
+                                class="card h-100 text-decoration-none"
+                                style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)"
+                            >
                                 <div class="card-body p-4 text-center">
                                     <i class="bi bi-headset text-success fs-1 mb-3"></i>
                                     <h5 class="text-white">Support</h5>
@@ -186,7 +196,7 @@ const subscriptionBadge = computed(() => {
                             <h2 class="h4 fw-bold text-white mb-4">Recent Winning Picks</h2>
                         </div>
                         <div class="col-12">
-                            <div class="card" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border);">
+                            <div class="card" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)">
                                 <div class="card-body p-0">
                                     <div class="table-responsive">
                                         <table class="table table-dark table-hover mb-0">
@@ -243,7 +253,9 @@ const subscriptionBadge = computed(() => {
 
 <style scoped>
 .card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
 }
 
 a.card:hover {

@@ -9,7 +9,8 @@ import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
                 <h1 class="text-4xl font-bold mb-8 text-white">How to become a more profitable Sports Bettor</h1>
                 <img src="/images/blog/profitable-bettor.jpg" alt="How to become a more profitable Sports Bettor" class="mb-8 rounded shadow" />
                 <p class="mb-4">
-                    Becoming a more profitable sports bettor requires discipline, research, and a willingness to learn from both wins and losses. Here are some tips to help you improve your betting results:
+                    Becoming a more profitable sports bettor requires discipline, research, and a willingness to learn from both wins and losses. Here
+                    are some tips to help you improve your betting results:
                 </p>
                 <ul class="list-disc list-inside mb-4 space-y-2">
                     <li>Set a budget and stick to it. Never bet more than you can afford to lose.</li>
@@ -22,7 +23,9 @@ import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
                 </ul>
                 <div class="bg-gray-800 rounded-lg p-4 mt-10">
                     <p class="text-xs text-gray-400">
-                        DISCLAIMER: This site is 100% for entertainment purposes only and does not involve real money betting. Gambling can be addictive, please play responsibly. If you or someone you know has a gambling problem and wants help, call 1-800 GAMBLER in the U.S. This service is intended for adult users 21+ only.
+                        DISCLAIMER: This site is 100% for entertainment purposes only and does not involve real money betting. Gambling can be
+                        addictive, please play responsibly. If you or someone you know has a gambling problem and wants help, call 1-800 GAMBLER in
+                        the U.S. This service is intended for adult users 21+ only.
                     </p>
                     <p class="text-xs text-gray-400 mt-2">
                         The sports betting app world is taking off and we want you to enjoy it more by becoming a profitable sports bettor.

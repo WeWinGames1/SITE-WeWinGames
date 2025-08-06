@@ -1,33 +1,12 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
-import { Line, Doughnut } from 'vue-chartjs';
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend,
-    ArcElement,
-    Filler
-} from 'chart.js';
+import { ArcElement, CategoryScale, Chart as ChartJS, Filler, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
+import { computed } from 'vue';
+import { Doughnut, Line } from 'vue-chartjs';
 
 // Register Chart.js components
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend,
-    ArcElement,
-    Filler
-);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, Filler);
 
 interface Stats {
     users: {
@@ -95,11 +74,11 @@ const props = defineProps<Props>();
 
 // Chart configurations
 const lineChartData = computed(() => ({
-    labels: props.charts.daily_metrics.map(d => new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+    labels: props.charts.daily_metrics.map((d) => new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
     datasets: [
         {
             label: 'New Users',
-            data: props.charts.daily_metrics.map(d => d.users),
+            data: props.charts.daily_metrics.map((d) => d.users),
             borderColor: 'rgb(59, 130, 246)',
             backgroundColor: 'rgba(59, 130, 246, 0.1)',
             tension: 0.4,
@@ -107,7 +86,7 @@ const lineChartData = computed(() => ({
         },
         {
             label: 'Revenue ($)',
-            data: props.charts.daily_metrics.map(d => d.revenue),
+            data: props.charts.daily_metrics.map((d) => d.revenue),
             borderColor: 'rgb(16, 185, 129)',
             backgroundColor: 'rgba(16, 185, 129, 0.1)',
             tension: 0.4,
@@ -116,7 +95,7 @@ const lineChartData = computed(() => ({
         },
         {
             label: 'Bets',
-            data: props.charts.daily_metrics.map(d => d.bets),
+            data: props.charts.daily_metrics.map((d) => d.bets),
             borderColor: 'rgb(168, 85, 247)',
             backgroundColor: 'rgba(168, 85, 247, 0.1)',
             tension: 0.4,
@@ -162,16 +141,13 @@ const lineChartOptions = {
 };
 
 const doughnutChartData = computed(() => ({
-    labels: props.charts.tier_breakdown.map(t => t.tier),
-    datasets: [{
-        data: props.charts.tier_breakdown.map(t => t.count),
-        backgroundColor: [
-            'rgb(251, 191, 36)',
-            'rgb(156, 163, 175)',
-            'rgb(252, 211, 77)',
-            'rgb(168, 85, 247)',
-        ],
-    }],
+    labels: props.charts.tier_breakdown.map((t) => t.tier),
+    datasets: [
+        {
+            data: props.charts.tier_breakdown.map((t) => t.count),
+            backgroundColor: ['rgb(251, 191, 36)', 'rgb(156, 163, 175)', 'rgb(252, 211, 77)', 'rgb(168, 85, 247)'],
+        },
+    ],
 }));
 
 const doughnutChartOptions = {
@@ -239,12 +215,12 @@ function formatTime(time: string): string {
 
 function getActivityIconColor(color: string): string {
     const colorMap: Record<string, string> = {
-        'blue': 'text-primary',
-        'green': 'text-success',
-        'yellow': 'text-warning',
-        'red': 'text-danger',
-        'purple': 'text-purple',
-        'orange': 'text-orange'
+        blue: 'text-primary',
+        green: 'text-success',
+        yellow: 'text-warning',
+        red: 'text-danger',
+        purple: 'text-purple',
+        orange: 'text-orange',
     };
     return colorMap[color] || 'text-secondary';
 }
@@ -253,7 +229,7 @@ function getActivityIconColor(color: string): string {
 <template>
     <AdminLayout>
         <Head title="Admin Dashboard" />
-        
+
         <div class="p-4">
             <!-- Header -->
             <div class="mb-4">
@@ -272,7 +248,12 @@ function getActivityIconColor(color: string): string {
                                     <i class="bi bi-people fs-4 text-primary"></i>
                                 </div>
                                 <div class="d-flex align-items-center small">
-                                    <i :class="[stats.users.growth_rate >= 0 ? 'bi-arrow-up-right text-success' : 'bi-arrow-down-right text-danger', 'me-1']"></i>
+                                    <i
+                                        :class="[
+                                            stats.users.growth_rate >= 0 ? 'bi-arrow-up-right text-success' : 'bi-arrow-down-right text-danger',
+                                            'me-1',
+                                        ]"
+                                    ></i>
                                     <span :class="stats.users.growth_rate >= 0 ? 'text-success' : 'text-danger'">
                                         {{ Math.abs(stats.users.growth_rate) }}%
                                     </span>
@@ -280,7 +261,7 @@ function getActivityIconColor(color: string): string {
                             </div>
                             <h3 class="h4 mb-1">{{ formatNumber(stats.users.total) }}</h3>
                             <p class="text-muted small mb-2">Total Users</p>
-                            <div class="text-muted" style="font-size: 0.75rem;">
+                            <div class="text-muted" style="font-size: 0.75rem">
                                 <span class="fw-medium text-dark">{{ stats.users.active_subscribers }}</span> active subscribers
                             </div>
                         </div>
@@ -296,7 +277,12 @@ function getActivityIconColor(color: string): string {
                                     <i class="bi bi-cash-stack fs-4 text-success"></i>
                                 </div>
                                 <div class="d-flex align-items-center small">
-                                    <i :class="[stats.revenue.growth_rate >= 0 ? 'bi-arrow-up-right text-success' : 'bi-arrow-down-right text-danger', 'me-1']"></i>
+                                    <i
+                                        :class="[
+                                            stats.revenue.growth_rate >= 0 ? 'bi-arrow-up-right text-success' : 'bi-arrow-down-right text-danger',
+                                            'me-1',
+                                        ]"
+                                    ></i>
                                     <span :class="stats.revenue.growth_rate >= 0 ? 'text-success' : 'text-danger'">
                                         {{ Math.abs(stats.revenue.growth_rate) }}%
                                     </span>
@@ -304,7 +290,7 @@ function getActivityIconColor(color: string): string {
                             </div>
                             <h3 class="h4 mb-1">{{ formatCurrency(stats.revenue.mrr) }}</h3>
                             <p class="text-muted small mb-2">Monthly Recurring Revenue</p>
-                            <div class="text-muted" style="font-size: 0.75rem;">
+                            <div class="text-muted" style="font-size: 0.75rem">
                                 <span class="fw-medium text-dark">{{ formatCurrency(stats.revenue.this_month) }}</span> this month
                             </div>
                         </div>
@@ -316,17 +302,15 @@ function getActivityIconColor(color: string): string {
                     <div class="card h-100">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-3">
-                                <div class="p-3 bg-purple bg-opacity-10 rounded" style="background-color: rgba(168, 85, 247, 0.1);">
-                                    <i class="bi bi-bar-chart fs-4" style="color: rgb(168, 85, 247);"></i>
+                                <div class="p-3 bg-purple bg-opacity-10 rounded" style="background-color: rgba(168, 85, 247, 0.1)">
+                                    <i class="bi bi-bar-chart fs-4" style="color: rgb(168, 85, 247)"></i>
                                 </div>
-                                <div class="small fw-medium" style="color: rgb(168, 85, 247);">
-                                    {{ stats.bets.win_rate }}% Win
-                                </div>
+                                <div class="small fw-medium" style="color: rgb(168, 85, 247)">{{ stats.bets.win_rate }}% Win</div>
                             </div>
                             <h3 class="h4 mb-1">{{ formatNumber(stats.bets.total) }}</h3>
                             <p class="text-muted small mb-2">Total Bets</p>
-                            <div class="text-muted" style="font-size: 0.75rem;">
-                                <span class="fw-medium text-dark">{{ stats.bets.today }}</span> today • 
+                            <div class="text-muted" style="font-size: 0.75rem">
+                                <span class="fw-medium text-dark">{{ stats.bets.today }}</span> today •
                                 <span class="fw-medium text-dark">{{ stats.bets.active }}</span> active
                             </div>
                         </div>
@@ -338,16 +322,14 @@ function getActivityIconColor(color: string): string {
                     <div class="card h-100">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-3">
-                                <div class="p-3 bg-orange bg-opacity-10 rounded" style="background-color: rgba(251, 146, 60, 0.1);">
-                                    <i class="bi bi-file-text fs-4" style="color: rgb(251, 146, 60);"></i>
+                                <div class="p-3 bg-orange bg-opacity-10 rounded" style="background-color: rgba(251, 146, 60, 0.1)">
+                                    <i class="bi bi-file-text fs-4" style="color: rgb(251, 146, 60)"></i>
                                 </div>
-                                <div class="small fw-medium" style="color: rgb(251, 146, 60);">
-                                    {{ formatNumber(stats.content.page_views) }} views
-                                </div>
+                                <div class="small fw-medium" style="color: rgb(251, 146, 60)">{{ formatNumber(stats.content.page_views) }} views</div>
                             </div>
                             <h3 class="h4 mb-1">{{ stats.content.published }}</h3>
                             <p class="text-muted small mb-2">Published Posts</p>
-                            <div class="text-muted" style="font-size: 0.75rem;">
+                            <div class="text-muted" style="font-size: 0.75rem">
                                 <span class="fw-medium text-dark">{{ stats.content.this_month }}</span> this month
                             </div>
                         </div>
@@ -364,7 +346,7 @@ function getActivityIconColor(color: string): string {
                             <h5 class="card-title mb-0">Platform Activity</h5>
                         </div>
                         <div class="card-body">
-                            <div style="height: 300px;">
+                            <div style="height: 300px">
                                 <Line :data="lineChartData" :options="lineChartOptions" />
                             </div>
                         </div>
@@ -378,7 +360,7 @@ function getActivityIconColor(color: string): string {
                             <h5 class="card-title mb-0">Subscription Tiers</h5>
                         </div>
                         <div class="card-body">
-                            <div style="height: 300px;">
+                            <div style="height: 300px">
                                 <Doughnut :data="doughnutChartData" :options="doughnutChartOptions" />
                             </div>
                         </div>
@@ -395,14 +377,14 @@ function getActivityIconColor(color: string): string {
                             <h5 class="card-title mb-0">Recent Activity</h5>
                         </div>
                         <div class="card-body">
-                            <div class="overflow-auto" style="max-height: 400px;">
+                            <div class="overflow-auto" style="max-height: 400px">
                                 <div v-for="(activity, index) in recentActivity" :key="index" class="d-flex align-items-start mb-3">
                                     <div :class="`p-2 rounded bg-${activity.color} bg-opacity-10 me-3`">
                                         <i :class="[`bi bi-${activity.icon}`, getActivityIconColor(activity.color), 'fs-6']"></i>
                                     </div>
                                     <div class="flex-grow-1">
                                         <p class="mb-1 small">{{ activity.message }}</p>
-                                        <div class="d-flex align-items-center text-muted" style="font-size: 0.75rem;">
+                                        <div class="d-flex align-items-center text-muted" style="font-size: 0.75rem">
                                             <i class="bi bi-clock me-1"></i>
                                             {{ formatTime(activity.time) }}
                                         </div>
@@ -457,7 +439,9 @@ function getActivityIconColor(color: string): string {
                                         <i class="bi bi-list-task me-3 text-muted fs-5"></i>
                                         <div>
                                             <p class="mb-0 fw-medium">Queue</p>
-                                            <small class="text-muted">{{ systemHealth.queue.pending }} pending, {{ systemHealth.queue.failed }} failed</small>
+                                            <small class="text-muted"
+                                                >{{ systemHealth.queue.pending }} pending, {{ systemHealth.queue.failed }} failed</small
+                                            >
                                         </div>
                                     </div>
                                     <span :class="getStatusBadgeClass(systemHealth.queue.status)">

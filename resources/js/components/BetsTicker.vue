@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
+import { onMounted, onUnmounted, ref } from 'vue';
 
 interface Bet {
     id: number;
@@ -50,22 +50,22 @@ const getLevelClass = (level: string) => {
 // Animation logic
 const startAnimation = () => {
     if (!tickerContainer.value || !tickerWrapper.value) return;
-    
+
     const animate = () => {
         position.value -= 0.8; // Animation speed
-        
+
         // Get the width of one set of ticker items
         const firstTickerItems = tickerContainer.value?.querySelector('.ticker-items');
         const itemsWidth = firstTickerItems?.offsetWidth || 0;
-        
+
         // Reset position when first set has completely scrolled out of view
         if (position.value <= -itemsWidth) {
             position.value = 0;
         }
-        
+
         animationId.value = requestAnimationFrame(animate);
     };
-    
+
     // Start from position 0
     position.value = 0;
     animate();
@@ -90,10 +90,10 @@ const handleResize = () => {
 
 onMounted(() => {
     fetchBets();
-    
+
     // Add resize listener
     window.addEventListener('resize', handleResize);
-    
+
     setTimeout(() => {
         if (bets.value.length > 0) {
             startAnimation();
@@ -110,11 +110,7 @@ onUnmounted(() => {
 <template>
     <div ref="tickerWrapper" class="ticker-wrapper" v-if="!loading && bets.length > 0">
         <div class="ticker-container" @click="viewAllPicks">
-            <div 
-                ref="tickerContainer"
-                class="ticker-content"
-                :style="{ transform: `translateX(${position}px)` }"
-            >
+            <div ref="tickerContainer" class="ticker-content" :style="{ transform: `translateX(${position}px)` }">
                 <!-- Duplicate content for seamless loop -->
                 <div class="ticker-items">
                     <div v-for="bet in bets" :key="`bet-1-${bet.id}`" class="ticker-item">

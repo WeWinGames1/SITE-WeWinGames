@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { ref } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
 
 interface Testimonial {
     id: number;
@@ -34,24 +33,30 @@ function deleteTestimonial(id: number) {
 }
 
 function togglePublished(testimonial: Testimonial) {
-    router.put(route('admin.testimonials.update', testimonial.id), {
-        ...testimonial,
-        published: !testimonial.published
-    }, {
-        preserveScroll: true
-    });
+    router.put(
+        route('admin.testimonials.update', testimonial.id),
+        {
+            ...testimonial,
+            published: !testimonial.published,
+        },
+        {
+            preserveScroll: true,
+        },
+    );
 }
 
 // Star rating display
 function getStarArray(rating: number) {
-    return Array(5).fill(0).map((_, i) => i < rating);
+    return Array(5)
+        .fill(0)
+        .map((_, i) => i < rating);
 }
 </script>
 
 <template>
     <AdminLayout>
         <Head title="Testimonials" />
-        
+
         <div class="container-fluid p-4">
             <!-- Page Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -59,10 +64,7 @@ function getStarArray(rating: number) {
                     <h1 class="h2 mb-0">Testimonials</h1>
                     <p class="text-muted mb-0">Manage customer reviews and testimonials</p>
                 </div>
-                <Link 
-                    :href="route('admin.testimonials.create')" 
-                    class="btn btn-primary"
-                >
+                <Link :href="route('admin.testimonials.create')" class="btn btn-primary">
                     <i class="bi bi-plus-circle me-2"></i>
                     Add Testimonial
                 </Link>
@@ -74,15 +76,12 @@ function getStarArray(rating: number) {
                     <div v-if="props.testimonials.data.length === 0" class="text-center py-5">
                         <i class="bi bi-chat-quote display-1 text-muted mb-3 d-block"></i>
                         <p class="text-muted">No testimonials found. Add your first testimonial to get started.</p>
-                        <Link 
-                            :href="route('admin.testimonials.create')" 
-                            class="btn btn-primary mt-3"
-                        >
+                        <Link :href="route('admin.testimonials.create')" class="btn btn-primary mt-3">
                             <i class="bi bi-plus-circle me-2"></i>
                             Add First Testimonial
                         </Link>
                     </div>
-                    
+
                     <div v-else class="table-responsive">
                         <table class="table table-hover align-middle">
                             <thead>
@@ -99,31 +98,27 @@ function getStarArray(rating: number) {
                             <tbody>
                                 <tr v-for="testimonial in props.testimonials.data" :key="testimonial.id">
                                     <td>
-                                        <input 
-                                            type="number" 
+                                        <input
+                                            type="number"
                                             class="form-control form-control-sm"
-                                            style="width: 60px;"
+                                            style="width: 60px"
                                             :value="testimonial.sort_order"
                                             disabled
                                         />
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <div 
+                                            <div
                                                 v-if="testimonial.image"
                                                 class="rounded-circle overflow-hidden me-3"
-                                                style="width: 40px; height: 40px;"
+                                                style="width: 40px; height: 40px"
                                             >
-                                                <img 
-                                                    :src="testimonial.image" 
-                                                    :alt="testimonial.name"
-                                                    class="w-100 h-100 object-fit-cover"
-                                                />
+                                                <img :src="testimonial.image" :alt="testimonial.name" class="w-100 h-100 object-fit-cover" />
                                             </div>
-                                            <div 
+                                            <div
                                                 v-else
                                                 class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3"
-                                                style="width: 40px; height: 40px; font-size: 14px; font-weight: 600;"
+                                                style="width: 40px; height: 40px; font-size: 14px; font-weight: 600"
                                             >
                                                 {{ testimonial.initials }}
                                             </div>
@@ -134,18 +129,18 @@ function getStarArray(rating: number) {
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="text-truncate" style="max-width: 300px;">
+                                        <div class="text-truncate" style="max-width: 300px">
                                             {{ testimonial.review }}
                                         </div>
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-1">
-                                            <i 
-                                                v-for="(filled, index) in getStarArray(testimonial.stars)" 
+                                            <i
+                                                v-for="(filled, index) in getStarArray(testimonial.stars)"
                                                 :key="index"
                                                 class="bi"
                                                 :class="filled ? 'bi-star-fill text-warning' : 'bi-star text-muted'"
-                                                style="font-size: 14px;"
+                                                style="font-size: 14px"
                                             ></i>
                                         </div>
                                     </td>
@@ -153,7 +148,7 @@ function getStarArray(rating: number) {
                                         <small class="text-muted">{{ testimonial.formatted_date }}</small>
                                     </td>
                                     <td class="text-center">
-                                        <button 
+                                        <button
                                             @click="togglePublished(testimonial)"
                                             class="btn btn-sm"
                                             :class="testimonial.published ? 'btn-success' : 'btn-secondary'"
@@ -163,15 +158,15 @@ function getStarArray(rating: number) {
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm" role="group">
-                                            <Link 
-                                                :href="route('admin.testimonials.edit', testimonial.id)" 
+                                            <Link
+                                                :href="route('admin.testimonials.edit', testimonial.id)"
                                                 class="btn btn-outline-primary"
                                                 title="Edit testimonial"
                                             >
                                                 <i class="bi bi-pencil"></i>
                                             </Link>
-                                            <button 
-                                                @click="deleteTestimonial(testimonial.id)" 
+                                            <button
+                                                @click="deleteTestimonial(testimonial.id)"
                                                 class="btn btn-outline-danger"
                                                 title="Delete testimonial"
                                             >
@@ -189,31 +184,27 @@ function getStarArray(rating: number) {
                         <nav>
                             <ul class="pagination justify-content-center mb-0">
                                 <li class="page-item" :class="{ disabled: props.testimonials.current_page === 1 }">
-                                    <Link 
-                                        class="page-link" 
+                                    <Link
+                                        class="page-link"
                                         :href="route('admin.testimonials.index', { page: props.testimonials.current_page - 1 })"
                                         preserve-scroll
                                     >
                                         Previous
                                     </Link>
                                 </li>
-                                <li 
-                                    v-for="page in props.testimonials.last_page" 
+                                <li
+                                    v-for="page in props.testimonials.last_page"
                                     :key="page"
-                                    class="page-item" 
+                                    class="page-item"
                                     :class="{ active: page === props.testimonials.current_page }"
                                 >
-                                    <Link 
-                                        class="page-link" 
-                                        :href="route('admin.testimonials.index', { page })"
-                                        preserve-scroll
-                                    >
+                                    <Link class="page-link" :href="route('admin.testimonials.index', { page })" preserve-scroll>
                                         {{ page }}
                                     </Link>
                                 </li>
                                 <li class="page-item" :class="{ disabled: props.testimonials.current_page === props.testimonials.last_page }">
-                                    <Link 
-                                        class="page-link" 
+                                    <Link
+                                        class="page-link"
                                         :href="route('admin.testimonials.index', { page: props.testimonials.current_page + 1 })"
                                         preserve-scroll
                                     >

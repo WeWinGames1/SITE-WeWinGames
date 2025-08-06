@@ -1,11 +1,16 @@
 <template>
-    <div class="card h-100 position-relative overflow-hidden" style="background-color: #1a2332; border: 2px solid #2a3441; border-radius: 12px;" @mouseenter="showDetails = true" @mouseleave="showDetails = false">
+    <div
+        class="card h-100 position-relative overflow-hidden"
+        style="background-color: #1a2332; border: 2px solid #2a3441; border-radius: 12px"
+        @mouseenter="showDetails = true"
+        @mouseleave="showDetails = false"
+    >
         <!-- Header -->
-        <div class="px-4 py-3" style="background-color: #0a1628; border-bottom: 1px solid #2a3441;">
+        <div class="px-4 py-3" style="background-color: #0a1628; border-bottom: 1px solid #2a3441">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
-                        <i class="bi bi-trophy text-white" style="font-size: 16px;"></i>
+                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px">
+                        <i class="bi bi-trophy text-white" style="font-size: 16px"></i>
                     </div>
                     <h6 class="text-white mb-0 fw-bold">{{ bet.sport || 'Football' }}</h6>
                 </div>
@@ -15,9 +20,8 @@
                 </div>
             </div>
         </div>
-        
-        <div class="card-body p-4">
 
+        <div class="card-body p-4">
             <!-- Teams Section -->
             <div class="text-center mb-4">
                 <div class="d-flex align-items-center justify-content-center gap-4">
@@ -26,7 +30,7 @@
                             :src="bet.team_one_logo || '/images/team-placeholder.svg'"
                             :alt="bet.team_one"
                             class="mb-2"
-                            style="width: 64px; height: 64px; object-fit: contain;"
+                            style="width: 64px; height: 64px; object-fit: contain"
                         />
                         <p class="fw-bold text-white mb-0">{{ bet.team_one }}</p>
                     </div>
@@ -36,23 +40,23 @@
                             :src="bet.team_two_logo || '/images/team-placeholder.svg'"
                             :alt="bet.team_two"
                             class="mb-2"
-                            style="width: 64px; height: 64px; object-fit: contain;"
+                            style="width: 64px; height: 64px; object-fit: contain"
                         />
                         <p class="fw-bold text-white mb-0">{{ bet.team_two }}</p>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Game Level Badge -->
             <div class="text-center mb-4">
-                <span class="badge px-4 py-2" :class="getMembershipBadgeClass()" style="font-size: 14px; border-radius: 20px;">
+                <span class="badge px-4 py-2" :class="getMembershipBadgeClass()" style="font-size: 14px; border-radius: 20px">
                     Game Level: {{ bet.membership.toUpperCase() }}
                 </span>
             </div>
 
             <!-- Betting Button -->
             <div class="text-center">
-                <button class="btn btn-warning btn-lg w-100 fw-bold text-dark" style="border-radius: 8px; padding: 12px;">
+                <button class="btn btn-warning btn-lg w-100 fw-bold text-dark" style="border-radius: 8px; padding: 12px">
                     {{ bet.tips || 'Ohio Moneyline' }} - {{ bet.wager_odds || '110' }}
                 </button>
                 <!-- Each Way Indicator -->
@@ -61,14 +65,16 @@
                         <i class="bi bi-check2-circle me-1"></i>
                         Each Way
                     </span>
-                    <small v-if="bet.place_fraction" class="text-muted ms-2">
-                        ({{ formatPlaceFraction(bet.place_fraction) }} odds for place)
-                    </small>
+                    <small v-if="bet.place_fraction" class="text-muted ms-2"> ({{ formatPlaceFraction(bet.place_fraction) }} odds for place) </small>
                 </div>
             </div>
-            
+
             <!-- Additional Info (hidden by default, shown on hover) -->
-            <div class="position-absolute bottom-0 start-0 end-0 p-3 bg-dark" style="background-color: rgba(10, 22, 40, 0.95) !important; transform: translateY(100%); transition: transform 0.3s ease;" :style="showDetails ? 'transform: translateY(0);' : ''">
+            <div
+                class="position-absolute bottom-0 start-0 end-0 p-3 bg-dark"
+                style="background-color: rgba(10, 22, 40, 0.95) !important; transform: translateY(100%); transition: transform 0.3s ease"
+                :style="showDetails ? 'transform: translateY(0);' : ''"
+            >
                 <div class="small">
                     <div class="d-flex justify-content-between mb-1">
                         <span class="text-gray-light">Market:</span>
@@ -90,9 +96,9 @@
             </div>
 
             <!-- Admin Actions -->
-            <div v-if="isAdmin" class="mt-4 pt-3 border-top" style="border-color: var(--bs-gray-medium) !important;">
+            <div v-if="isAdmin" class="mt-4 pt-3 border-top" style="border-color: var(--bs-gray-medium) !important">
                 <h6 class="text-white mb-3">Admin Controls</h6>
-                
+
                 <div class="row g-3">
                     <div class="col-6">
                         <label class="form-label text-gray-light small">Status</label>
@@ -104,27 +110,25 @@
                             <option value="Push">Push</option>
                         </select>
                     </div>
-                    
+
                     <div class="col-6">
                         <label class="form-label text-gray-light small">Date</label>
                         <input type="date" v-model="updatedDate" class="form-control form-control-sm" />
                     </div>
-                    
+
                     <div class="col-12">
                         <label class="form-label text-gray-light small">Referrer</label>
                         <input type="text" v-model="updatedReferrer" class="form-control form-control-sm" placeholder="Optional" />
                     </div>
-                    
+
                     <div class="col-12">
                         <label class="form-label text-gray-light small">Place Fraction</label>
                         <input type="number" v-model="updatedPlaceFraction" class="form-control form-control-sm" step="0.01" min="0" max="1" />
                     </div>
                 </div>
-                
+
                 <div class="d-flex gap-2 mt-3">
-                    <button @click="updateBet" class="btn btn-primary btn-sm flex-fill">
-                        <i class="bi bi-check-circle me-1"></i> Update
-                    </button>
+                    <button @click="updateBet" class="btn btn-primary btn-sm flex-fill"><i class="bi bi-check-circle me-1"></i> Update</button>
                     <button @click="deleteBet" class="btn btn-danger btn-sm">
                         <i class="bi bi-trash"></i>
                     </button>
@@ -135,10 +139,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineEmits } from 'vue';
+import { formatPlaceFraction } from '@/utils/betting';
 import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
-import { formatPlaceFraction } from '@/utils/betting';
+import { defineEmits, ref } from 'vue';
 
 const props = defineProps({
     bet: {
@@ -160,7 +164,7 @@ if (typeof window !== 'undefined') {
     console.log('BetPickCard - Auth state:', {
         user: pageProps.auth?.user,
         isAdmin: pageProps.auth?.isAdmin,
-        calculatedIsAdmin: isAdmin
+        calculatedIsAdmin: isAdmin,
     });
 }
 
@@ -172,42 +176,54 @@ const showDetails = ref(false);
 
 const formatDate = (date: string) => {
     if (!date) return 'N/A';
-    return new Date(date).toLocaleDateString('en-US', { 
-        weekday: 'short', 
-        month: 'short', 
-        day: 'numeric' 
+    return new Date(date).toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
     });
 };
 
 const getMembershipBadgeClass = () => {
     const membership = props.bet.membership.toUpperCase();
     switch (membership) {
-        case 'BRONZE': return 'bg-danger';
-        case 'SILVER': return 'bg-secondary';
-        case 'GOLD': return 'bg-warning text-dark';
-        case 'PLATINUM': return 'bg-purple';
-        default: return 'bg-dark';
+        case 'BRONZE':
+            return 'bg-danger';
+        case 'SILVER':
+            return 'bg-secondary';
+        case 'GOLD':
+            return 'bg-warning text-dark';
+        case 'PLATINUM':
+            return 'bg-purple';
+        default:
+            return 'bg-dark';
     }
 };
 
 const getStatusBadgeClass = () => {
     switch (props.bet.status) {
-        case 'Won': return 'bg-success';
-        case 'Lost': return 'bg-danger';
-        case 'Push': return 'bg-warning text-dark';
-        default: return 'bg-secondary';
+        case 'Won':
+            return 'bg-success';
+        case 'Lost':
+            return 'bg-danger';
+        case 'Push':
+            return 'bg-warning text-dark';
+        default:
+            return 'bg-secondary';
     }
 };
 
 const getStatusIcon = () => {
     switch (props.bet.status) {
-        case 'Won': return 'bi bi-check-circle-fill';
-        case 'Lost': return 'bi bi-x-circle-fill';
-        case 'Push': return 'bi bi-dash-circle-fill';
-        default: return '';
+        case 'Won':
+            return 'bi bi-check-circle-fill';
+        case 'Lost':
+            return 'bi bi-x-circle-fill';
+        case 'Push':
+            return 'bi bi-dash-circle-fill';
+        default:
+            return '';
     }
 };
-
 
 const updateBet = async () => {
     const formData = new FormData();
@@ -216,7 +232,7 @@ const updateBet = async () => {
     formData.append('betting_date', updatedDate.value);
     formData.append('referrer', updatedReferrer.value);
     formData.append('place_fraction', updatedPlaceFraction.value);
-    
+
     try {
         const response = await axios.post(`/api/bets/${props.bet.id}`, formData, {
             headers: {
@@ -241,12 +257,13 @@ const deleteBet = async () => {
         }
     }
 };
-
 </script>
 
 <style scoped>
 .card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
 }
 
 .card:hover {

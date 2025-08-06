@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
 import axios from 'axios';
+import { computed, ref } from 'vue';
 
 interface Bet {
     id: number;
@@ -54,25 +54,25 @@ const hasUnsavedChanges = computed(() => editedBets.value.size > 0);
 // Get display value for a bet
 function getDisplayValue(bet: Bet, field: 'winning_amount' | 'profit_amount'): number {
     const edited = editedBets.value.get(bet.id);
-    return edited ? edited[field] : (bet[field] || 0);
+    return edited ? edited[field] : bet[field] || 0;
 }
 
 // Update a bet value
 function updateBetValue(bet: Bet, field: 'winning_amount' | 'profit_amount', value: string) {
     const numValue = parseFloat(value) || 0;
-    
+
     const current = editedBets.value.get(bet.id) || {
         winning_amount: bet.winning_amount || 0,
         profit_amount: bet.profit_amount || 0,
     };
-    
+
     current[field] = numValue;
-    
+
     // Auto-calculate profit when winning amount changes
     if (field === 'winning_amount') {
         current.profit_amount = numValue - bet.wager_amount;
     }
-    
+
     editedBets.value.set(bet.id, current);
 }
 
@@ -84,18 +84,18 @@ function isEdited(betId: number): boolean {
 // Save all changes
 async function saveChanges() {
     if (!hasUnsavedChanges.value) return;
-    
+
     const updates = Array.from(editedBets.value.entries()).map(([id, values]) => ({
         id,
         winning_amount: values.winning_amount,
         profit_amount: values.profit_amount,
     }));
-    
+
     try {
         const response = await axios.post(route('admin.bets.mass-edit.update'), {
             updates,
         });
-        
+
         if (response.data.success || response.status === 200) {
             // Clear edited values and refresh
             editedBets.value.clear();
@@ -135,7 +135,7 @@ function formatDate(date: string): string {
 <template>
     <AdminLayout>
         <Head title="Mass Edit Bets" />
-        
+
         <div class="container-fluid">
             <div class="row mb-4">
                 <div class="col">
@@ -167,11 +167,7 @@ function formatDate(date: string): string {
                         <div class="row g-3">
                             <div class="col-md-2">
                                 <label for="sport" class="form-label">Sport</label>
-                                <select
-                                    id="sport"
-                                    v-model="filterForm.sport"
-                                    class="form-select"
-                                >
+                                <select id="sport" v-model="filterForm.sport" class="form-select">
                                     <option value="">All Sports</option>
                                     <option v-for="sport in sports" :key="sport" :value="sport">
                                         {{ sport }}
@@ -180,11 +176,7 @@ function formatDate(date: string): string {
                             </div>
                             <div class="col-md-2">
                                 <label for="status" class="form-label">Status</label>
-                                <select
-                                    id="status"
-                                    v-model="filterForm.status"
-                                    class="form-select"
-                                >
+                                <select id="status" v-model="filterForm.status" class="form-select">
                                     <option value="">All Status</option>
                                     <option value="won">Won</option>
                                     <option value="placed">Placed</option>
@@ -200,37 +192,22 @@ function formatDate(date: string): string {
                                         class="form-check-input"
                                         value="1"
                                         :true-value="'1'"
-                                        :false-value="''">
-                                    <label for="each_way" class="form-check-label">
-                                        Each Way Bets Only
-                                    </label>
+                                        :false-value="''"
+                                    />
+                                    <label for="each_way" class="form-check-label"> Each Way Bets Only </label>
                                 </div>
                             </div>
                             <div class="col-md-2">
                                 <label for="date_from" class="form-label">Date From</label>
-                                <input
-                                    id="date_from"
-                                    v-model="filterForm.date_from"
-                                    type="date"
-                                    class="form-control"
-                                />
+                                <input id="date_from" v-model="filterForm.date_from" type="date" class="form-control" />
                             </div>
                             <div class="col-md-2">
                                 <label for="date_to" class="form-label">Date To</label>
-                                <input
-                                    id="date_to"
-                                    v-model="filterForm.date_to"
-                                    type="date"
-                                    class="form-control"
-                                />
+                                <input id="date_to" v-model="filterForm.date_to" type="date" class="form-control" />
                             </div>
                             <div class="col-md-2 d-flex align-items-end gap-2">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-funnel me-1"></i>Apply Filters
-                                </button>
-                                <button type="button" class="btn btn-secondary" @click="clearFilters">
-                                    Clear
-                                </button>
+                                <button type="submit" class="btn btn-primary"><i class="bi bi-funnel me-1"></i>Apply Filters</button>
+                                <button type="button" class="btn btn-secondary" @click="clearFilters">Clear</button>
                             </div>
                         </div>
                     </form>
@@ -241,11 +218,7 @@ function formatDate(date: string): string {
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Bets ({{ bets.meta?.total || bets.data.length }} total)</h5>
-                    <button
-                        v-if="hasUnsavedChanges"
-                        class="btn btn-success"
-                        @click="saveChanges"
-                    >
+                    <button v-if="hasUnsavedChanges" class="btn btn-success" @click="saveChanges">
                         <i class="bi bi-check-circle me-1"></i>
                         Save {{ editedBets.size }} Changes
                     </button>
@@ -272,11 +245,14 @@ function formatDate(date: string): string {
                                     <td>{{ bet.sports }}</td>
                                     <td>{{ bet.matches || 'Unknown' }}</td>
                                     <td>
-                                        <span class="badge" :class="{
-                                            'bg-success': bet.status === 'won',
-                                            'bg-info': bet.status === 'placed',
-                                            'bg-danger': bet.status === 'lost'
-                                        }">
+                                        <span
+                                            class="badge"
+                                            :class="{
+                                                'bg-success': bet.status === 'won',
+                                                'bg-info': bet.status === 'placed',
+                                                'bg-danger': bet.status === 'lost',
+                                            }"
+                                        >
                                             {{ bet.status }}
                                         </span>
                                     </td>
@@ -287,7 +263,7 @@ function formatDate(date: string): string {
                                     <td>{{ (bet.odds || bet.wager_odds || 0) > 0 ? '+' : '' }}{{ bet.odds || bet.wager_odds || 0 }}</td>
                                     <td>${{ bet.wager_amount.toFixed(2) }}</td>
                                     <td>
-                                        <div class="input-group input-group-sm" style="width: 120px;">
+                                        <div class="input-group input-group-sm" style="width: 120px">
                                             <span class="input-group-text">$</span>
                                             <input
                                                 type="number"
@@ -299,7 +275,7 @@ function formatDate(date: string): string {
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="input-group input-group-sm" style="width: 120px;">
+                                        <div class="input-group input-group-sm" style="width: 120px">
                                             <span class="input-group-text">$</span>
                                             <input
                                                 type="number"
@@ -318,19 +294,8 @@ function formatDate(date: string): string {
                 <div v-if="bets.meta && bets.meta.last_page > 1" class="card-footer">
                     <nav>
                         <ul class="pagination mb-0">
-                            <li
-                                v-for="link in bets.links"
-                                :key="link.label"
-                                class="page-item"
-                                :class="{ active: link.active, disabled: !link.url }"
-                            >
-                                <Link
-                                    v-if="link.url"
-                                    :href="link.url"
-                                    class="page-link"
-                                    preserve-scroll
-                                    v-html="link.label"
-                                />
+                            <li v-for="link in bets.links" :key="link.label" class="page-item" :class="{ active: link.active, disabled: !link.url }">
+                                <Link v-if="link.url" :href="link.url" class="page-link" preserve-scroll v-html="link.label" />
                                 <span v-else class="page-link" v-html="link.label" />
                             </li>
                         </ul>

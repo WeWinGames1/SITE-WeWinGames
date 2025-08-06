@@ -74,6 +74,7 @@ class RegisteredUserController extends Controller
                 $user = User::create([
                     'name' => $request->name,
                     'email' => strtolower($request->email),
+                    'phone' => $request->phone,
                     'password' => Hash::make($request->password),
                     'discord_username' => $request->discord_username,
                     'affiliate_id' => $affiliateId,

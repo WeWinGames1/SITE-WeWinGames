@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
 
 interface Sport {
     id: number;
@@ -37,10 +36,10 @@ const form = useForm({
 function validateForm(): boolean {
     // Clear previous errors
     form.clearErrors();
-    
+
     let isValid = true;
     const errors: Record<string, string> = {};
-    
+
     // Required fields validation
     if (!form.name || !form.name.trim()) {
         errors.name = 'The name field is required.';
@@ -49,23 +48,23 @@ function validateForm(): boolean {
         errors.name = 'The name may not be greater than 255 characters.';
         isValid = false;
     }
-    
+
     if (!form.sport_id) {
         errors.sport_id = 'The sport field is required.';
         isValid = false;
     }
-    
+
     // Optional fields validation
     if (form.abbreviation && form.abbreviation.length > 10) {
         errors.abbreviation = 'The abbreviation may not be greater than 10 characters.';
         isValid = false;
     }
-    
+
     // Set errors if any
     if (!isValid) {
         form.setError(errors);
     }
-    
+
     return isValid;
 }
 
@@ -73,20 +72,20 @@ function submit() {
     if (!validateForm()) {
         return;
     }
-    
+
     console.log('Submitting league update:', {
         id: props.league.id,
         data: form.data(),
-        route: route('admin.leagues.update', props.league.id)
+        route: route('admin.leagues.update', props.league.id),
     });
-    
+
     form.put(route('admin.leagues.update', props.league.id), {
         onError: (errors) => {
             console.error('League update errors:', errors);
         },
         onSuccess: () => {
             console.log('League updated successfully');
-        }
+        },
     });
 }
 </script>
@@ -94,7 +93,7 @@ function submit() {
 <template>
     <AdminLayout>
         <Head :title="`Edit League: ${league.name}`" />
-        
+
         <div class="container-fluid p-4">
             <!-- Header -->
             <div class="mb-4">
@@ -185,19 +184,10 @@ function submit() {
 
                                 <div class="mb-4">
                                     <div class="form-check">
-                                        <input
-                                            v-model="form.is_active"
-                                            type="checkbox"
-                                            class="form-check-input"
-                                            id="is_active"
-                                        />
-                                        <label class="form-check-label" for="is_active">
-                                            Active
-                                        </label>
+                                        <input v-model="form.is_active" type="checkbox" class="form-check-input" id="is_active" />
+                                        <label class="form-check-label" for="is_active"> Active </label>
                                     </div>
-                                    <div class="form-text">
-                                        Inactive leagues won't be available for new teams.
-                                    </div>
+                                    <div class="form-text">Inactive leagues won't be available for new teams.</div>
                                 </div>
 
                                 <div v-if="league.teams_count > 0" class="alert alert-info">
@@ -205,19 +195,8 @@ function submit() {
                                 </div>
 
                                 <div class="d-flex gap-2">
-                                    <button
-                                        type="submit"
-                                        class="btn btn-primary"
-                                        :disabled="form.processing"
-                                    >
-                                        Update League
-                                    </button>
-                                    <Link
-                                        :href="route('admin.leagues.index')"
-                                        class="btn btn-outline-secondary"
-                                    >
-                                        Cancel
-                                    </Link>
+                                    <button type="submit" class="btn btn-primary" :disabled="form.processing">Update League</button>
+                                    <Link :href="route('admin.leagues.index')" class="btn btn-outline-secondary"> Cancel </Link>
                                 </div>
                             </form>
                         </div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, useForm, usePage, router } from '@inertiajs/vue3';
 import CustomerLayout from '@/layouts/CustomerLayout.vue';
+import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 interface TicketReply {
@@ -46,14 +46,14 @@ const statusClasses = {
     pending: 'bg-warning',
     resolved: 'bg-success',
     closed: 'bg-secondary',
-    'user-requests-close': 'bg-warning'
+    'user-requests-close': 'bg-warning',
 };
 
 const priorityClasses = {
     low: 'bg-secondary',
     medium: 'bg-primary',
     high: 'bg-warning',
-    urgent: 'bg-danger'
+    urgent: 'bg-danger',
 };
 
 // Format date
@@ -63,18 +63,18 @@ function formatDate(date: string) {
         day: 'numeric',
         year: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
     });
 }
 
 // Format status display name
 function formatStatus(status: string) {
     const statusLabels: Record<string, string> = {
-        'open': 'Open',
-        'pending': 'Pending',
-        'resolved': 'Resolved',
-        'closed': 'Closed',
-        'user-requests-close': 'Awaiting Closure'
+        open: 'Open',
+        pending: 'Pending',
+        resolved: 'Resolved',
+        closed: 'Closed',
+        'user-requests-close': 'Awaiting Closure',
     };
     return statusLabels[status] || status;
 }
@@ -105,7 +105,7 @@ function reopenTicket() {
 <template>
     <CustomerLayout>
         <Head :title="`Ticket #${ticket.ticket_number}`" />
-        
+
         <div class="container py-4">
             <div class="row">
                 <div class="col-lg-12">
@@ -116,23 +116,17 @@ function reopenTicket() {
                             <p class="text-muted mb-0">{{ ticket.subject }}</p>
                         </div>
                         <div>
-                            <button 
-                                v-if="ticket.status !== 'closed' && ticket.status !== 'user-requests-close'" 
+                            <button
+                                v-if="ticket.status !== 'closed' && ticket.status !== 'user-requests-close'"
                                 @click="requestCloseTicket"
                                 class="btn btn-outline-secondary me-2"
                             >
                                 <i class="bi bi-x-circle me-1"></i> Request to Close
                             </button>
-                            <button 
-                                v-else-if="ticket.status === 'closed'"
-                                @click="reopenTicket"
-                                class="btn btn-outline-primary"
-                            >
+                            <button v-else-if="ticket.status === 'closed'" @click="reopenTicket" class="btn btn-outline-primary">
                                 <i class="bi bi-arrow-repeat me-1"></i> Reopen Ticket
                             </button>
-                            <a href="/support" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left me-1"></i> Back to Tickets
-                            </a>
+                            <a href="/support" class="btn btn-secondary"> <i class="bi bi-arrow-left me-1"></i> Back to Tickets </a>
                         </div>
                     </div>
 
@@ -208,8 +202,8 @@ function reopenTicket() {
                         <div class="card-body">
                             <form @submit.prevent="submitReply">
                                 <div class="mb-3">
-                                    <textarea 
-                                        v-model="replyForm.content" 
+                                    <textarea
+                                        v-model="replyForm.content"
                                         class="form-control"
                                         :class="{ 'is-invalid': replyForm.errors.content }"
                                         rows="5"
@@ -238,7 +232,7 @@ function reopenTicket() {
                         <i class="bi bi-clock-history me-2"></i>
                         You have requested to close this ticket. Our support team will review and close it soon.
                     </div>
-                    
+
                     <div v-else-if="ticket.status === 'closed'" class="alert alert-info">
                         <i class="bi bi-info-circle me-2"></i>
                         This ticket is closed. Please reopen it if you need further assistance.

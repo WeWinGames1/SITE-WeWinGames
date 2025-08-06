@@ -70,7 +70,7 @@ class BetMassEditController extends Controller
         $validated = $request->validate([
             'updates' => 'required|array',
             'updates.*.id' => 'required|exists:bets,id',
-            'updates.*.winning_amount' => 'required|numeric|min:0',
+            'updates.*.winning_amount' => 'required|numeric',
             'updates.*.profit_amount' => 'nullable|numeric',
         ]);
 

@@ -23,10 +23,7 @@ const tabs = [
             :key="value"
             type="button"
             @click="updateAppearance(value)"
-            :class="[
-                'btn',
-                appearance === value ? 'btn-primary' : 'btn-outline-secondary'
-            ]"
+            :class="['btn', appearance === value ? 'btn-primary' : 'btn-outline-secondary']"
         >
             <i :class="[icon, 'me-2']"></i>
             {{ label }}

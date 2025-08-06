@@ -1,54 +1,40 @@
 <template>
-    <div class="knowledgebase-sidebar" :class="{ 'show': isVisible }">
+    <div class="knowledgebase-sidebar" :class="{ show: isVisible }">
         <div class="sidebar-header">
             <h5 class="mb-0">Help & Documentation</h5>
-            <button 
-                type="button" 
-                class="btn-close"
-                @click="close"
-                aria-label="Close"
-            ></button>
+            <button type="button" class="btn-close" @click="close" aria-label="Close"></button>
         </div>
-        
+
         <div class="sidebar-content">
             <div v-if="loading" class="text-center py-5">
                 <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">Loading...</span>
                 </div>
             </div>
-            
+
             <div v-else-if="article" class="article-content">
                 <h6 class="article-title">{{ article.title }}</h6>
                 <div class="article-main-content" v-html="article.content"></div>
-                
+
                 <div v-if="article.sections && article.sections.length > 0" class="sections">
                     <div v-for="section in article.sections" :key="section.title" class="section">
                         <h6 class="section-title">{{ section.title }}</h6>
                         <div class="section-content" v-html="section.content"></div>
                     </div>
                 </div>
-                
+
                 <div v-if="article.screenshot_path" class="screenshot mt-3">
-                    <img 
-                        :src="article.screenshot_path" 
-                        :alt="`Screenshot for ${article.title}`"
-                        class="img-fluid rounded"
-                    >
+                    <img :src="article.screenshot_path" :alt="`Screenshot for ${article.title}`" class="img-fluid rounded" />
                 </div>
             </div>
-            
+
             <div v-else class="no-article">
                 <p class="text-muted">No documentation available for this page.</p>
-                <p class="text-muted small">
-                    If you need help with this page, please contact support.
-                </p>
+                <p class="text-muted small">If you need help with this page, please contact support.</p>
             </div>
-            
+
             <div class="sidebar-footer">
-                <Link 
-                    :href="route('admin.knowledgebase.index')" 
-                    class="btn btn-sm btn-outline-primary w-100"
-                >
+                <Link :href="route('admin.knowledgebase.index')" class="btn btn-sm btn-outline-primary w-100">
                     <i class="bi bi-book me-1"></i>
                     View All Documentation
                 </Link>
@@ -58,10 +44,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
-import { route } from 'ziggy-js';
 import axios from 'axios';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { route } from 'ziggy-js';
 
 const props = defineProps<{
     isVisible: boolean;
@@ -82,23 +68,23 @@ const close = () => {
 const loadArticleForCurrentPage = async () => {
     loading.value = true;
     article.value = null;
-    
+
     try {
         // Get current route name
         const routeName = page.props.route_name as string;
-        
+
         if (!routeName) {
             loading.value = false;
             return;
         }
-        
+
         // Use the general knowledgebase API route that works from both admin and frontend
         const response = await axios.get(route('knowledgebase.api.page'), {
             params: {
-                page_identifier: routeName
-            }
+                page_identifier: routeName,
+            },
         });
-        
+
         if (response.data.article) {
             article.value = response.data.article;
         }
@@ -110,11 +96,14 @@ const loadArticleForCurrentPage = async () => {
 };
 
 // Load article when sidebar becomes visible
-watch(() => props.isVisible, (newValue) => {
-    if (newValue) {
-        loadArticleForCurrentPage();
-    }
-});
+watch(
+    () => props.isVisible,
+    (newValue) => {
+        if (newValue) {
+            loadArticleForCurrentPage();
+        }
+    },
+);
 
 // Handle escape key
 const handleEscape = (e: KeyboardEvent) => {

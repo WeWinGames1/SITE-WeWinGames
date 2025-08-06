@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
 import axios from 'axios';
+import { ref, watch } from 'vue';
 
 interface Media {
     id: number;
@@ -43,12 +43,15 @@ const fileInputKey = ref(0);
 const hasLoadedInitially = ref(false);
 
 // Load media when modal is shown
-watch(() => props.show, (newValue) => {
-    if (newValue && !hasLoadedInitially.value) {
-        loadMedia();
-        hasLoadedInitially.value = true;
-    }
-});
+watch(
+    () => props.show,
+    (newValue) => {
+        if (newValue && !hasLoadedInitially.value) {
+            loadMedia();
+            hasLoadedInitially.value = true;
+        }
+    },
+);
 
 async function loadMedia(page = 1) {
     loading.value = true;
@@ -59,7 +62,7 @@ async function loadMedia(page = 1) {
                 search: searchQuery.value,
             },
         });
-        
+
         media.value = response.data.data;
         currentPage.value = response.data.current_page;
         lastPage.value = response.data.last_page;
@@ -85,7 +88,7 @@ async function uploadFiles() {
     uploadProgress.value = 0;
 
     const formData = new FormData();
-    selectedFiles.value.forEach(file => {
+    selectedFiles.value.forEach((file) => {
         formData.append('files[]', file);
     });
 
@@ -103,7 +106,7 @@ async function uploadFiles() {
 
         // Reload media to show new uploads
         await loadMedia();
-        
+
         // Reset file input
         selectedFiles.value = [];
         fileInputKey.value++;
@@ -124,7 +127,7 @@ async function uploadFiles() {
 
 function toggleSelection(item: Media) {
     if (props.multiple) {
-        const index = selectedMedia.value.findIndex(m => m.id === item.id);
+        const index = selectedMedia.value.findIndex((m) => m.id === item.id);
         if (index > -1) {
             selectedMedia.value.splice(index, 1);
         } else {
@@ -136,18 +139,18 @@ function toggleSelection(item: Media) {
 }
 
 function isSelected(item: Media): boolean {
-    return selectedMedia.value.some(m => m.id === item.id);
+    return selectedMedia.value.some((m) => m.id === item.id);
 }
 
 function selectMedia() {
     if (selectedMedia.value.length === 0) return;
-    
+
     if (props.multiple) {
         emit('select', selectedMedia.value);
     } else {
         emit('select', selectedMedia.value[0]);
     }
-    
+
     // Reset selection
     selectedMedia.value = [];
 }
@@ -185,18 +188,10 @@ function formatFileSize(bytes: number): string {
                     <div class="mb-3">
                         <div class="row align-items-center">
                             <div class="col">
-                                <input
-                                    v-model="searchQuery"
-                                    type="text"
-                                    class="form-control"
-                                    placeholder="Search images..."
-                                    @keyup.enter="search"
-                                >
+                                <input v-model="searchQuery" type="text" class="form-control" placeholder="Search images..." @keyup.enter="search" />
                             </div>
                             <div class="col-auto">
-                                <button @click="search" class="btn btn-secondary">
-                                    <i class="bi bi-search"></i> Search
-                                </button>
+                                <button @click="search" class="btn btn-secondary"><i class="bi bi-search"></i> Search</button>
                             </div>
                             <div class="col-auto">
                                 <input
@@ -225,12 +220,12 @@ function formatFileSize(bytes: number): string {
                             <div class="flex-grow-1">
                                 <div>Uploading...</div>
                                 <div class="progress mt-2">
-                                    <div 
-                                        class="progress-bar" 
-                                        role="progressbar" 
+                                    <div
+                                        class="progress-bar"
+                                        role="progressbar"
                                         :style="`width: ${uploadProgress}%`"
-                                        :aria-valuenow="uploadProgress" 
-                                        aria-valuemin="0" 
+                                        :aria-valuenow="uploadProgress"
+                                        aria-valuemin="0"
                                         aria-valuemax="100"
                                     >
                                         {{ uploadProgress }}%
@@ -250,25 +245,16 @@ function formatFileSize(bytes: number): string {
                     <!-- Media Grid -->
                     <div v-else-if="media.length > 0" class="row g-3">
                         <div v-for="item in media" :key="item.id" class="col-6 col-md-4 col-lg-3">
-                            <div 
-                                class="card cursor-pointer media-item" 
-                                :class="{ 'selected': isSelected(item) }"
-                                @click="toggleSelection(item)"
-                            >
+                            <div class="card cursor-pointer media-item" :class="{ selected: isSelected(item) }" @click="toggleSelection(item)">
                                 <div class="position-relative">
-                                    <img 
-                                        :src="item.thumb_url" 
-                                        :alt="item.name"
-                                        class="card-img-top"
-                                        style="height: 150px; object-fit: cover;"
-                                    >
+                                    <img :src="item.thumb_url" :alt="item.name" class="card-img-top" style="height: 150px; object-fit: cover" />
                                     <div v-if="isSelected(item)" class="selected-overlay">
                                         <i class="bi bi-check-circle-fill text-white fs-3"></i>
                                     </div>
                                 </div>
                                 <div class="card-body p-2">
                                     <p class="mb-0 small text-truncate" :title="item.name">{{ item.name }}</p>
-                                    <p class="mb-0 text-muted" style="font-size: 0.75rem;">
+                                    <p class="mb-0 text-muted" style="font-size: 0.75rem">
                                         {{ formatFileSize(item.size) }}
                                     </p>
                                 </div>
@@ -278,7 +264,7 @@ function formatFileSize(bytes: number): string {
 
                     <!-- Empty State -->
                     <div v-else class="text-center py-5">
-                        <i class="bi bi-images text-muted" style="font-size: 3rem;"></i>
+                        <i class="bi bi-images text-muted" style="font-size: 3rem"></i>
                         <p class="mt-3 text-muted">No images found.</p>
                     </div>
 
@@ -286,33 +272,22 @@ function formatFileSize(bytes: number): string {
                     <nav v-if="lastPage > 1" class="mt-3">
                         <ul class="pagination justify-content-center mb-0">
                             <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                                <a class="page-link" href="#" @click.prevent="loadMedia(currentPage - 1)">
-                                    Previous
-                                </a>
+                                <a class="page-link" href="#" @click.prevent="loadMedia(currentPage - 1)"> Previous </a>
                             </li>
-                            
+
                             <li class="page-item active">
-                                <span class="page-link">
-                                    Page {{ currentPage }} of {{ lastPage }}
-                                </span>
+                                <span class="page-link"> Page {{ currentPage }} of {{ lastPage }} </span>
                             </li>
-                            
+
                             <li class="page-item" :class="{ disabled: currentPage === lastPage }">
-                                <a class="page-link" href="#" @click.prevent="loadMedia(currentPage + 1)">
-                                    Next
-                                </a>
+                                <a class="page-link" href="#" @click.prevent="loadMedia(currentPage + 1)"> Next </a>
                             </li>
                         </ul>
                     </nav>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" @click="close">Cancel</button>
-                    <button 
-                        type="button" 
-                        class="btn btn-primary" 
-                        @click="selectMedia"
-                        :disabled="selectedMedia.length === 0"
-                    >
+                    <button type="button" class="btn btn-primary" @click="selectMedia" :disabled="selectedMedia.length === 0">
                         Select {{ selectedMedia.length > 0 ? `(${selectedMedia.length})` : '' }}
                     </button>
                 </div>

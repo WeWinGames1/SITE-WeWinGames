@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useForm, usePage } from '@inertiajs/vue3';
-import { ref } from 'vue';
 
 const page = usePage();
 const categories = page.props.categories || [];
@@ -40,18 +39,9 @@ function submitTicket() {
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label">Category</label>
-                            <select 
-                                v-model="form.category_id" 
-                                class="form-select"
-                                :class="{ 'is-invalid': form.errors.category_id }"
-                                required
-                            >
+                            <select v-model="form.category_id" class="form-select" :class="{ 'is-invalid': form.errors.category_id }" required>
                                 <option value="">Select a category</option>
-                                <option 
-                                    v-for="category in categories" 
-                                    :key="category.id"
-                                    :value="category.id"
-                                >
+                                <option v-for="category in categories" :key="category.id" :value="category.id">
                                     {{ category.name }}
                                 </option>
                             </select>
@@ -62,9 +52,9 @@ function submitTicket() {
 
                         <div class="mb-3">
                             <label class="form-label">Subject</label>
-                            <input 
-                                v-model="form.subject" 
-                                type="text" 
+                            <input
+                                v-model="form.subject"
+                                type="text"
                                 class="form-control"
                                 :class="{ 'is-invalid': form.errors.subject }"
                                 placeholder="Brief description of your issue"
@@ -77,11 +67,7 @@ function submitTicket() {
 
                         <div class="mb-3">
                             <label class="form-label">Priority</label>
-                            <select 
-                                v-model="form.priority" 
-                                class="form-select"
-                                :class="{ 'is-invalid': form.errors.priority }"
-                            >
+                            <select v-model="form.priority" class="form-select" :class="{ 'is-invalid': form.errors.priority }">
                                 <option value="low">Low</option>
                                 <option value="medium">Medium</option>
                                 <option value="high">High</option>
@@ -94,8 +80,8 @@ function submitTicket() {
 
                         <div class="mb-3">
                             <label class="form-label">Description</label>
-                            <textarea 
-                                v-model="form.content" 
+                            <textarea
+                                v-model="form.content"
                                 class="form-control"
                                 :class="{ 'is-invalid': form.errors.content }"
                                 rows="5"
@@ -113,9 +99,7 @@ function submitTicket() {
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            Cancel
-                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary" :disabled="form.processing">
                             <span v-if="form.processing">
                                 <span class="spinner-border spinner-border-sm me-2"></span>

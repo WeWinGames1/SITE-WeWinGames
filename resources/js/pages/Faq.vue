@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
+import { Head } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 interface Faq {
@@ -41,16 +41,12 @@ function isOpen(id: number): boolean {
         <Head title="Frequently Asked Questions" />
 
         <!-- Hero Section -->
-        <section class="py-5" style="background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 100%);">
+        <section class="py-5" style="background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 100%)">
             <div class="container">
                 <div class="row justify-content-center text-center">
                     <div class="col-lg-8">
-                        <h1 class="display-4 fw-bold text-white mb-3">
-                            Frequently Asked <span class="text-warning">Questions</span>
-                        </h1>
-                        <p class="lead text-gray-light">
-                            Find answers to common questions about our service, subscriptions, and betting tips.
-                        </p>
+                        <h1 class="display-4 fw-bold text-white mb-3">Frequently Asked <span class="text-warning">Questions</span></h1>
+                        <p class="lead text-gray-light">Find answers to common questions about our service, subscriptions, and betting tips.</p>
                     </div>
                 </div>
             </div>
@@ -62,7 +58,7 @@ function isOpen(id: number): boolean {
                 <div class="row">
                     <!-- Category Navigation -->
                     <div class="col-lg-3 mb-4">
-                        <div class="card bg-dark border-secondary sticky-lg-top" style="top: 2rem;">
+                        <div class="card bg-dark border-secondary sticky-lg-top" style="top: 2rem">
                             <div class="card-body">
                                 <h5 class="card-title text-white mb-3">Categories</h5>
                                 <div class="list-group list-group-flush">
@@ -72,9 +68,9 @@ function isOpen(id: number): boolean {
                                         @click="setActiveCategory(category)"
                                         :class="[
                                             'list-group-item list-group-item-action bg-transparent border-0 px-0 py-2',
-                                            activeCategory === category ? 'text-warning fw-bold' : 'text-gray-light'
+                                            activeCategory === category ? 'text-warning fw-bold' : 'text-gray-light',
                                         ]"
-                                        style="border-radius: 0;"
+                                        style="border-radius: 0"
                                     >
                                         <i class="bi bi-chevron-right me-2"></i>
                                         {{ category }}
@@ -87,11 +83,7 @@ function isOpen(id: number): boolean {
                     <!-- FAQ Items -->
                     <div class="col-lg-9">
                         <div v-if="activeCategory && faqs[activeCategory]" class="accordion" :id="`accordion-${activeCategory}`">
-                            <div
-                                v-for="faq in faqs[activeCategory]"
-                                :key="faq.id"
-                                class="accordion-item bg-dark border-secondary mb-3"
-                            >
+                            <div v-for="faq in faqs[activeCategory]" :key="faq.id" class="accordion-item bg-dark border-secondary mb-3">
                                 <h2 class="accordion-header" :id="`heading-${faq.id}`">
                                     <button
                                         class="accordion-button bg-dark text-white"
@@ -130,9 +122,7 @@ function isOpen(id: number): boolean {
         <section class="py-5 bg-dark">
             <div class="container text-center">
                 <h2 class="h3 text-white mb-3">Still Have Questions?</h2>
-                <p class="text-gray-light mb-4">
-                    Can't find the answer you're looking for? Our support team is here to help.
-                </p>
+                <p class="text-gray-light mb-4">Can't find the answer you're looking for? Our support team is here to help.</p>
                 <a href="/support" class="btn btn-warning btn-lg">
                     <i class="bi bi-headset me-2"></i>
                     Contact Support

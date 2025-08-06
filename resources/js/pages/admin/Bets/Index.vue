@@ -1,25 +1,24 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import { ref, computed, watch } from 'vue';
-import { debounce } from 'lodash';
-import { 
-    MagnifyingGlassIcon,
-    FunnelIcon,
-    ArrowDownTrayIcon,
-    PlusIcon,
-    PencilIcon,
-    TrashIcon,
-    CheckIcon,
-    XMarkIcon,
-    BanknotesIcon,
-    TrophyIcon,
-    ChartBarIcon,
-    CalendarIcon,
+import {
     ArrowsUpDownIcon,
+    BanknotesIcon,
+    CalendarIcon,
+    ChartBarIcon,
+    CheckIcon,
+    ChevronDownIcon,
     ChevronUpIcon,
-    ChevronDownIcon
+    FunnelIcon,
+    MagnifyingGlassIcon,
+    PencilIcon,
+    PlusIcon,
+    TrashIcon,
+    TrophyIcon,
+    XMarkIcon,
 } from '@heroicons/vue/24/outline';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { debounce } from 'lodash';
+import { computed, ref, watch } from 'vue';
 
 interface Team {
     id: number;
@@ -148,14 +147,18 @@ const debouncedSearch = debounce((value: string) => {
 
 // Apply filters with page reset
 const applyFilters = () => {
-    router.get(route('admin.bets.index'), {
-        ...filterForm.data(),
-        page: 1,
-    }, {
-        preserveState: true,
-        preserveScroll: true,
-        replace: true,
-    });
+    router.get(
+        route('admin.bets.index'),
+        {
+            ...filterForm.data(),
+            page: 1,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        },
+    );
 };
 
 // Sort functionality
@@ -172,17 +175,17 @@ const sortBy = (field: string) => {
 // Generate pagination URL with current filters
 const getPaginationUrl = (page: number) => {
     const params = new URLSearchParams();
-    
+
     // Add all current filters
     Object.entries(filterForm.data()).forEach(([key, value]) => {
         if (value !== '' && value !== null && value !== undefined) {
             params.append(key, String(value));
         }
     });
-    
+
     // Update page number
     params.set('page', String(page));
-    
+
     return `?${params.toString()}`;
 };
 
@@ -192,29 +195,29 @@ const getSortIcon = (field: string) => {
 };
 
 // Watch for non-search filter changes
-watch(() => ({
-    status: filterForm.status,
-    sport_id: filterForm.sport_id,
-    operator_id: filterForm.operator_id,
-    date_from: filterForm.date_from,
-    date_to: filterForm.date_to,
-    wager_type: filterForm.wager_type,
-    is_featured: filterForm.is_featured,
-    min_confidence: filterForm.min_confidence,
-    profit_status: filterForm.profit_status,
-    per_page: filterForm.per_page,
-}), () => {
-    applyFilters();
-}, { deep: true });
+watch(
+    () => ({
+        status: filterForm.status,
+        sport_id: filterForm.sport_id,
+        operator_id: filterForm.operator_id,
+        date_from: filterForm.date_from,
+        date_to: filterForm.date_to,
+        wager_type: filterForm.wager_type,
+        is_featured: filterForm.is_featured,
+        min_confidence: filterForm.min_confidence,
+        profit_status: filterForm.profit_status,
+        per_page: filterForm.per_page,
+    }),
+    () => {
+        applyFilters();
+    },
+    { deep: true },
+);
 
 // Computed properties
-const allSelected = computed(() => 
-    props.bets.data.length > 0 && selectedBets.value.length === props.bets.data.length
-);
+const allSelected = computed(() => props.bets.data.length > 0 && selectedBets.value.length === props.bets.data.length);
 
-const someSelected = computed(() => 
-    selectedBets.value.length > 0 && selectedBets.value.length < props.bets.data.length
-);
+const someSelected = computed(() => selectedBets.value.length > 0 && selectedBets.value.length < props.bets.data.length);
 
 // Generate pagination pages with ellipsis
 const paginationPages = computed(() => {
@@ -222,34 +225,34 @@ const paginationPages = computed(() => {
     const last = props.bets.last_page;
     const delta = 2;
     const pages: (number | string)[] = [];
-    
+
     // Always show first page
     pages.push(1);
-    
+
     // Calculate range around current page
     const rangeStart = Math.max(2, current - delta);
     const rangeEnd = Math.min(last - 1, current + delta);
-    
+
     // Add ellipsis if needed before range
     if (rangeStart > 2) {
         pages.push('...');
     }
-    
+
     // Add pages in range
     for (let i = rangeStart; i <= rangeEnd; i++) {
         pages.push(i);
     }
-    
+
     // Add ellipsis if needed after range
     if (rangeEnd < last - 1) {
         pages.push('...');
     }
-    
+
     // Always show last page if there's more than one page
     if (last > 1) {
         pages.push(last);
     }
-    
+
     return pages;
 });
 
@@ -257,7 +260,7 @@ const paginationPages = computed(() => {
 function getTeamName(bet: Bet, position: 'one' | 'two'): string {
     // Simply return the text field value
     const textField = position === 'one' ? bet.team_one : bet.team_two;
-    
+
     // If the field contains a JSON string, parse it
     if (textField && typeof textField === 'string' && textField.startsWith('{')) {
         try {
@@ -267,7 +270,7 @@ function getTeamName(bet: Bet, position: 'one' | 'two'): string {
             return textField;
         }
     }
-    
+
     return textField || '';
 }
 
@@ -275,7 +278,7 @@ function toggleAll() {
     if (allSelected.value) {
         selectedBets.value = [];
     } else {
-        selectedBets.value = props.bets.data.map(bet => bet.id);
+        selectedBets.value = props.bets.data.map((bet) => bet.id);
     }
 }
 
@@ -319,7 +322,7 @@ function bulkUpdateStatus() {
         alert('Please select a status');
         return;
     }
-    
+
     bulkStatusForm.bet_ids = selectedBets.value;
     bulkStatusForm.post(route('admin.bets.bulk-update-status'), {
         onSuccess: () => {
@@ -405,43 +408,25 @@ function formatCurrency(amount: number | null | undefined): string {
 <template>
     <AdminLayout>
         <Head title="Bet Management" />
-        
+
         <div class="container-fluid p-4">
             <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h1 class="h2 mb-0">Bet Management</h1>
-                    <p class="text-muted mb-0">
-                        Manage all betting picks and predictions
-                    </p>
+                    <p class="text-muted mb-0">Manage all betting picks and predictions</p>
                 </div>
                 <div class="d-flex gap-2">
-                    <Link
-                        :href="route('admin.bets.mass-edit.index')"
-                        class="btn btn-warning"
-                    >
+                    <Link :href="route('admin.bets.mass-edit.index')" class="btn btn-warning">
                         <i class="bi bi-pencil-square me-2"></i>Mass Edit
                     </Link>
-                    <button
-                        @click="exportBets"
-                        type="button"
-                        class="btn btn-outline-secondary"
-                    >
+                    <button @click="exportBets" type="button" class="btn btn-outline-secondary">
                         <i class="bi bi-download me-2"></i>Export Current
                     </button>
-                    <button
-                        @click="exportAllBets"
-                        type="button"
-                        class="btn btn-outline-secondary"
-                    >
+                    <button @click="exportAllBets" type="button" class="btn btn-outline-secondary">
                         <i class="bi bi-download me-2"></i>Export All
                     </button>
-                    <Link
-                        :href="route('admin.bets.create')"
-                        class="btn btn-primary"
-                    >
-                        <i class="bi bi-plus-circle me-2"></i>Add Bet
-                    </Link>
+                    <Link :href="route('admin.bets.create')" class="btn btn-primary"> <i class="bi bi-plus-circle me-2"></i>Add Bet </Link>
                 </div>
             </div>
 
@@ -455,7 +440,7 @@ function formatCurrency(amount: number | null | undefined): string {
                                     <p class="text-muted mb-1 small">Total Bets</p>
                                     <h4 class="mb-0">{{ stats.total_bets || 0 }}</h4>
                                 </div>
-                                <ChartBarIcon class="text-muted" style="width: 2rem; height: 2rem;" />
+                                <ChartBarIcon class="text-muted" style="width: 2rem; height: 2rem" />
                             </div>
                         </div>
                     </div>
@@ -468,7 +453,7 @@ function formatCurrency(amount: number | null | undefined): string {
                                     <p class="text-muted mb-1 small">Pending</p>
                                     <h4 class="mb-0 text-primary">{{ stats.pending_bets || 0 }}</h4>
                                 </div>
-                                <CalendarIcon class="text-primary" style="width: 2rem; height: 2rem;" />
+                                <CalendarIcon class="text-primary" style="width: 2rem; height: 2rem" />
                             </div>
                         </div>
                     </div>
@@ -481,7 +466,7 @@ function formatCurrency(amount: number | null | undefined): string {
                                     <p class="text-muted mb-1 small">Total Stake</p>
                                     <h4 class="mb-0">{{ formatMoney(stats.total_stake) }}</h4>
                                 </div>
-                                <BanknotesIcon class="text-muted" style="width: 2rem; height: 2rem;" />
+                                <BanknotesIcon class="text-muted" style="width: 2rem; height: 2rem" />
                             </div>
                         </div>
                     </div>
@@ -496,7 +481,10 @@ function formatCurrency(amount: number | null | undefined): string {
                                         {{ formatMoney(stats.total_profit) }}
                                     </h4>
                                 </div>
-                                <TrophyIcon :class="(stats.total_profit || 0) >= 0 ? 'text-success' : 'text-danger'" style="width: 2rem; height: 2rem;" />
+                                <TrophyIcon
+                                    :class="(stats.total_profit || 0) >= 0 ? 'text-success' : 'text-danger'"
+                                    style="width: 2rem; height: 2rem"
+                                />
                             </div>
                         </div>
                     </div>
@@ -509,7 +497,7 @@ function formatCurrency(amount: number | null | undefined): string {
                                     <p class="text-muted mb-1 small">Win Rate</p>
                                     <h4 class="mb-0">{{ stats.win_rate || 0 }}%</h4>
                                 </div>
-                                <CheckIcon class="text-success" style="width: 2rem; height: 2rem;" />
+                                <CheckIcon class="text-success" style="width: 2rem; height: 2rem" />
                             </div>
                         </div>
                     </div>
@@ -520,11 +508,9 @@ function formatCurrency(amount: number | null | undefined): string {
                             <div class="d-flex align-items-center">
                                 <div class="flex-grow-1">
                                     <p class="text-muted mb-1 small">ROI</p>
-                                    <h4 class="mb-0" :class="(stats.roi || 0) >= 0 ? 'text-success' : 'text-danger'">
-                                        {{ stats.roi || 0 }}%
-                                    </h4>
+                                    <h4 class="mb-0" :class="(stats.roi || 0) >= 0 ? 'text-success' : 'text-danger'">{{ stats.roi || 0 }}%</h4>
                                 </div>
-                                <TrophyIcon :class="(stats.roi || 0) >= 0 ? 'text-success' : 'text-danger'" style="width: 2rem; height: 2rem;" />
+                                <TrophyIcon :class="(stats.roi || 0) >= 0 ? 'text-success' : 'text-danger'" style="width: 2rem; height: 2rem" />
                             </div>
                         </div>
                     </div>
@@ -541,7 +527,7 @@ function formatCurrency(amount: number | null | undefined): string {
                                 <div class="col">
                                     <div class="input-group">
                                         <span class="input-group-text">
-                                            <MagnifyingGlassIcon style="width: 1rem; height: 1rem;" />
+                                            <MagnifyingGlassIcon style="width: 1rem; height: 1rem" />
                                         </span>
                                         <input
                                             :value="filterForm.search"
@@ -553,16 +539,10 @@ function formatCurrency(amount: number | null | undefined): string {
                                     </div>
                                 </div>
                                 <div class="col-auto">
-                                    <button
-                                        @click="showFilters = !showFilters"
-                                        type="button"
-                                        class="btn btn-outline-secondary"
-                                    >
-                                        <FunnelIcon style="width: 1rem; height: 1rem;" class="me-1" />
+                                    <button @click="showFilters = !showFilters" type="button" class="btn btn-outline-secondary">
+                                        <FunnelIcon style="width: 1rem; height: 1rem" class="me-1" />
                                         Filters
-                                        <span v-if="Object.values(filterForm.data()).some(v => v)" class="badge bg-primary ms-1">
-                                            Active
-                                        </span>
+                                        <span v-if="Object.values(filterForm.data()).some((v) => v)" class="badge bg-primary ms-1"> Active </span>
                                     </button>
                                 </div>
                             </div>
@@ -572,99 +552,73 @@ function formatCurrency(amount: number | null | undefined): string {
                                 <div class="row g-3">
                                     <div class="col-lg-3 col-md-4 col-sm-6">
                                         <label class="form-label">Status</label>
-                                        <select
-                                            v-model="filterForm.status"
-                                            class="form-select"
-                                        >
+                                        <select v-model="filterForm.status" class="form-select">
                                             <option value="">All Statuses</option>
                                             <option v-for="status in statuses" :key="status" :value="status">
                                                 {{ status.charAt(0).toUpperCase() + status.slice(1) }}
                                             </option>
                                         </select>
                                     </div>
-                                    
+
                                     <div class="col-lg-3 col-md-4 col-sm-6">
                                         <label class="form-label">Sport</label>
-                                        <select
-                                            v-model="filterForm.sport_id"
-                                            class="form-select"
-                                        >
+                                        <select v-model="filterForm.sport_id" class="form-select">
                                             <option value="">All Sports</option>
-                                            <option v-for="sport in (sports || [])" :key="sport?.id || Math.random()" :value="sport?.id">
+                                            <option v-for="sport in sports || []" :key="sport?.id || Math.random()" :value="sport?.id">
                                                 {{ sport?.name || 'Loading...' }}
                                             </option>
                                         </select>
                                     </div>
-                                    
+
                                     <div class="col-lg-3 col-md-4 col-sm-6">
                                         <label class="form-label">Operator</label>
-                                        <select
-                                            v-model="filterForm.operator_id"
-                                            class="form-select"
-                                        >
+                                        <select v-model="filterForm.operator_id" class="form-select">
                                             <option value="">All Operators</option>
-                                            <option v-for="operator in (operators || [])" :key="operator?.id || Math.random()" :value="operator?.id">
+                                            <option v-for="operator in operators || []" :key="operator?.id || Math.random()" :value="operator?.id">
                                                 {{ operator?.name || 'Loading...' }}
                                             </option>
                                         </select>
                                     </div>
-                                    
+
                                     <div class="col-lg-3 col-md-4 col-sm-6">
-                                        <label class="form-label">Bet Type</label>
-                                        <select
-                                            v-model="filterForm.wager_type"
-                                            class="form-select"
-                                        >
+                                        <label class="form-label">Wager Type</label>
+                                        <select v-model="filterForm.wager_type" class="form-select">
                                             <option value="">All Types</option>
                                             <option v-for="(label, value) in betTypes" :key="value" :value="value">
                                                 {{ label }}
                                             </option>
                                         </select>
                                     </div>
-                                    
+
                                     <div class="col-lg-3 col-md-4 col-sm-6">
                                         <label class="form-label">Date From</label>
-                                        <input
-                                            v-model="filterForm.date_from"
-                                            type="date"
-                                            class="form-control"
-                                        />
+                                        <input v-model="filterForm.date_from" type="date" class="form-control" />
                                     </div>
-                                    
+
                                     <div class="col-lg-3 col-md-4 col-sm-6">
                                         <label class="form-label">Date To</label>
-                                        <input
-                                            v-model="filterForm.date_to"
-                                            type="date"
-                                            class="form-control"
-                                        />
+                                        <input v-model="filterForm.date_to" type="date" class="form-control" />
                                     </div>
-                                    
+
                                     <div class="col-lg-3 col-md-4 col-sm-6">
                                         <label class="form-label">Featured</label>
-                                        <select
-                                            v-model="filterForm.is_featured"
-                                            class="form-select"
-                                        >
+                                        <select v-model="filterForm.is_featured" class="form-select">
                                             <option value="">All Bets</option>
                                             <option value="true">Featured Only</option>
                                             <option value="false">Non-Featured</option>
                                         </select>
                                     </div>
-                                    
+
                                     <div class="col-lg-3 col-md-4 col-sm-6">
                                         <label class="form-label">Profit Status</label>
-                                        <select
-                                            v-model="filterForm.profit_status"
-                                            class="form-select"
-                                        >
+                                        <select v-model="filterForm.profit_status" class="form-select">
                                             <option value="">All</option>
                                             <option value="profit">Profitable</option>
                                             <option value="loss">Loss</option>
                                             <option value="breakeven">Breakeven</option>
                                         </select>
                                     </div>
-                                    
+
                                     <div class="col-lg-3 col-md-4 col-sm-6">
                                         <label class="form-label">Min Confidence</label>
                                         <input
@@ -676,13 +630,10 @@ function formatCurrency(amount: number | null | undefined): string {
                                             class="form-control"
                                         />
                                     </div>
-                                    
+
                                     <div class="col-lg-3 col-md-4 col-sm-6">
                                         <label class="form-label">Per Page</label>
-                                        <select
-                                            v-model="filterForm.per_page"
-                                            class="form-select"
-                                        >
+                                        <select v-model="filterForm.per_page" class="form-select">
                                             <option value="10">10</option>
                                             <option value="25">25</option>
                                             <option value="50">50</option>
@@ -690,15 +641,9 @@ function formatCurrency(amount: number | null | undefined): string {
                                         </select>
                                     </div>
                                 </div>
-                                
+
                                 <div class="mt-3 text-end">
-                                    <button
-                                        @click="clearFilters"
-                                        type="button"
-                                        class="btn btn-link text-muted p-0"
-                                    >
-                                        Clear all filters
-                                    </button>
+                                    <button @click="clearFilters" type="button" class="btn btn-link text-muted p-0">Clear all filters</button>
                                 </div>
                             </div>
                         </div>
@@ -710,14 +655,9 @@ function formatCurrency(amount: number | null | undefined): string {
             <div v-if="selectedBets.length > 0" class="row mb-4">
                 <div class="col">
                     <div class="alert alert-primary d-flex align-items-center justify-content-between">
-                        <span>
-                            {{ selectedBets.length }} bet{{ selectedBets.length === 1 ? '' : 's' }} selected
-                        </span>
+                        <span> {{ selectedBets.length }} bet{{ selectedBets.length === 1 ? '' : 's' }} selected </span>
                         <div class="d-flex align-items-center gap-2">
-                            <select
-                                v-model="bulkStatusForm.status"
-                                class="form-select form-select-sm"
-                            >
+                            <select v-model="bulkStatusForm.status" class="form-select form-select-sm">
                                 <option value="">Select status...</option>
                                 <option value="won">Mark as Won</option>
                                 <option value="loss">Mark as Loss</option>
@@ -744,7 +684,7 @@ function formatCurrency(amount: number | null | undefined): string {
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th class="text-center" style="width: 50px;">
+                                        <th class="text-center" style="width: 50px">
                                             <div class="form-check">
                                                 <input
                                                     type="checkbox"
@@ -758,36 +698,36 @@ function formatCurrency(amount: number | null | undefined): string {
                                         <th>Teams / Membership</th>
                                         <th>Sport / League</th>
                                         <th>
-                                            Type / 
+                                            Type /
                                             <button @click="sortBy('wager_odds')" class="btn btn-link p-0 text-muted text-decoration-none">
                                                 Odds
-                                                <component :is="getSortIcon('wager_odds')" style="width: 0.75rem; height: 0.75rem;" class="ms-1" />
+                                                <component :is="getSortIcon('wager_odds')" style="width: 0.75rem; height: 0.75rem" class="ms-1" />
                                             </button>
                                         </th>
                                         <th>
                                             <button @click="sortBy('wager_amount')" class="btn btn-link p-0 text-muted text-decoration-none">
                                                 Stake
-                                                <component :is="getSortIcon('wager_amount')" style="width: 0.75rem; height: 0.75rem;" class="ms-1" />
+                                                <component :is="getSortIcon('wager_amount')" style="width: 0.75rem; height: 0.75rem" class="ms-1" />
                                             </button>
-                                            / 
+                                            /
                                             <button @click="sortBy('winning_amount')" class="btn btn-link p-0 text-muted text-decoration-none">
                                                 Win
-                                                <component :is="getSortIcon('winning_amount')" style="width: 0.75rem; height: 0.75rem;" class="ms-1" />
+                                                <component :is="getSortIcon('winning_amount')" style="width: 0.75rem; height: 0.75rem" class="ms-1" />
                                             </button>
                                         </th>
                                         <th>
                                             <button @click="sortBy('status')" class="btn btn-link p-0 text-muted text-decoration-none">
                                                 Status
-                                                <component :is="getSortIcon('status')" style="width: 0.75rem; height: 0.75rem;" class="ms-1" />
+                                                <component :is="getSortIcon('status')" style="width: 0.75rem; height: 0.75rem" class="ms-1" />
                                             </button>
                                         </th>
                                         <th>
                                             <button @click="sortBy('betting_date')" class="btn btn-link p-0 text-muted text-decoration-none">
                                                 Game Date
-                                                <component :is="getSortIcon('betting_date')" style="width: 0.75rem; height: 0.75rem;" class="ms-1" />
+                                                <component :is="getSortIcon('betting_date')" style="width: 0.75rem; height: 0.75rem" class="ms-1" />
                                             </button>
                                         </th>
-                                        <th class="text-center" style="width: 100px;">Actions</th>
+                                        <th class="text-center" style="width: 100px">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -807,9 +747,7 @@ function formatCurrency(amount: number | null | undefined): string {
                                                 <div class="fw-medium">
                                                     {{ getTeamName(bet, 'one') || bet.tips || 'N/A' }}
                                                 </div>
-                                                <div v-if="getTeamName(bet, 'two')" class="text-muted small">
-                                                    vs {{ getTeamName(bet, 'two') }}
-                                                </div>
+                                                <div v-if="getTeamName(bet, 'two')" class="text-muted small">vs {{ getTeamName(bet, 'two') }}</div>
                                                 <div class="mt-1 text-muted small">{{ bet.membership || 'All' }}</div>
                                             </div>
                                         </td>
@@ -831,38 +769,39 @@ function formatCurrency(amount: number | null | undefined): string {
                                             <div>
                                                 <div>{{ formatCurrency(bet.wager_amount) }}</div>
                                                 <div class="text-muted small">Win: {{ formatCurrency(bet.winning_amount) }}</div>
-                                                <div v-if="bet.profit_amount !== null" class="fw-medium" :class="(bet.profit_amount || 0) >= 0 ? 'text-success' : 'text-danger'">
+                                                <div
+                                                    v-if="bet.profit_amount !== null"
+                                                    class="fw-medium"
+                                                    :class="(bet.profit_amount || 0) >= 0 ? 'text-success' : 'text-danger'"
+                                                >
                                                     {{ (bet.profit_amount || 0) >= 0 ? '+' : '' }}{{ formatCurrency(bet.profit_amount) }}
                                                 </div>
                                             </div>
                                         </td>
                                         <td>
                                             <span :class="getStatusColor(bet.status)">
-                                                <component v-if="getStatusIcon(bet.status)" :is="getStatusIcon(bet.status)" style="width: 0.75rem; height: 0.75rem;" class="me-1" />
+                                                <component
+                                                    v-if="getStatusIcon(bet.status)"
+                                                    :is="getStatusIcon(bet.status)"
+                                                    style="width: 0.75rem; height: 0.75rem"
+                                                    class="me-1"
+                                                />
                                                 {{ bet.status.charAt(0).toUpperCase() + bet.status.slice(1) }}
                                             </span>
                                         </td>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <CalendarIcon style="width: 1rem; height: 1rem;" class="text-muted me-1" />
+                                                <CalendarIcon style="width: 1rem; height: 1rem" class="text-muted me-1" />
                                                 <span class="small">{{ formatDate(bet.betting_date) }}</span>
                                             </div>
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group btn-group-sm" role="group">
-                                                <Link
-                                                    :href="route('admin.bets.edit', bet.id)"
-                                                    class="btn btn-outline-primary"
-                                                    title="Edit"
-                                                >
-                                                    <PencilIcon style="width: 1rem; height: 1rem;" />
+                                                <Link :href="route('admin.bets.edit', bet.id)" class="btn btn-outline-primary" title="Edit">
+                                                    <PencilIcon style="width: 1rem; height: 1rem" />
                                                 </Link>
-                                                <button
-                                                    @click="deleteBet(bet)"
-                                                    class="btn btn-outline-danger"
-                                                    title="Delete"
-                                                >
-                                                    <TrashIcon style="width: 1rem; height: 1rem;" />
+                                                <button @click="deleteBet(bet)" class="btn btn-outline-danger" title="Delete">
+                                                    <TrashIcon style="width: 1rem; height: 1rem" />
                                                 </button>
                                             </div>
                                         </td>
@@ -873,17 +812,12 @@ function formatCurrency(amount: number | null | undefined): string {
 
                         <!-- Empty State -->
                         <div v-if="bets.data.length === 0" class="text-center py-5">
-                            <ChartBarIcon class="mx-auto text-muted" style="width: 3rem; height: 3rem;" />
+                            <ChartBarIcon class="mx-auto text-muted" style="width: 3rem; height: 3rem" />
                             <h5 class="mt-3">No bets found</h5>
-                            <p class="text-muted">
-                                Get started by creating a new bet or adjusting your filters.
-                            </p>
+                            <p class="text-muted">Get started by creating a new bet or adjusting your filters.</p>
                             <div class="mt-4">
-                                <Link
-                                    :href="route('admin.bets.create')"
-                                    class="btn btn-primary"
-                                >
-                                    <PlusIcon style="width: 1rem; height: 1rem;" class="me-1" />
+                                <Link :href="route('admin.bets.create')" class="btn btn-primary">
+                                    <PlusIcon style="width: 1rem; height: 1rem" class="me-1" />
                                     New Bet
                                 </Link>
                             </div>
@@ -940,12 +874,7 @@ function formatCurrency(amount: number | null | undefined): string {
                                                         <span class="page-link">...</span>
                                                     </li>
                                                     <li v-else class="page-item" :class="{ active: page === bets.current_page }">
-                                                        <Link
-                                                            :href="getPaginationUrl(page)"
-                                                            preserve-scroll
-                                                            preserve-state
-                                                            class="page-link"
-                                                        >
+                                                        <Link :href="getPaginationUrl(page)" preserve-scroll preserve-state class="page-link">
                                                             {{ page }}
                                                         </Link>
                                                     </li>

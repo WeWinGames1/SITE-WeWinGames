@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { computed, ref } from 'vue';
 
 interface StripeProduct {
     id: number;
@@ -87,9 +87,9 @@ const editForm = useForm({
 // Grouped products by billing period
 const groupedProducts = computed(() => {
     const grouped: Record<string, StripeProduct[]> = {};
-    props.billing_periods.forEach(period => {
+    props.billing_periods.forEach((period) => {
         grouped[period] = props.products
-            .filter(p => p.billing_period === period)
+            .filter((p) => p.billing_period === period)
             .sort((a, b) => {
                 const tierOrder = ['Bronze', 'Silver', 'Gold', 'Platinum'];
                 return tierOrder.indexOf(a.tier) - tierOrder.indexOf(b.tier);
@@ -111,7 +111,7 @@ function removeFeature(form: typeof createForm | typeof editForm, index: number)
 function createProduct() {
     // Use the auto-generated name
     createForm.name = generatedProductName.value;
-    
+
     createForm.post(route('admin.stripe-products.store'), {
         onSuccess: () => {
             showCreateModal.value = false;
@@ -133,7 +133,7 @@ function editProduct(product: StripeProduct) {
 
 function updateProduct() {
     if (!selectedProduct.value) return;
-    
+
     editForm.put(route('admin.stripe-products.update', selectedProduct.value.id), {
         onSuccess: () => {
             showEditModal.value = false;
@@ -147,7 +147,7 @@ function deleteProduct(product: StripeProduct) {
         alert('Cannot delete a product connected to Stripe. Disconnect it first.');
         return;
     }
-    
+
     if (confirm(`Delete ${product.name}?`)) {
         router.delete(route('admin.stripe-products.destroy', product.id));
     }
@@ -196,7 +196,7 @@ function openConnectModal(product: StripeProduct) {
 
 async function connectToStripe() {
     if (!selectedProduct.value || !selectedStripeProductId.value || !selectedStripePriceId.value) return;
-    
+
     try {
         const response = await fetch(route('admin.stripe-products.connect', selectedProduct.value.id), {
             method: 'POST',
@@ -209,7 +209,7 @@ async function connectToStripe() {
                 stripe_price_id: selectedStripePriceId.value,
             }),
         });
-        
+
         const data = await response.json();
         if (data.success) {
             router.reload();
@@ -233,7 +233,7 @@ async function createInStripe(product: StripeProduct) {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                 },
             });
-            
+
             const data = await response.json();
             if (data.success) {
                 router.reload();
@@ -257,7 +257,7 @@ async function disconnectFromStripe(product: StripeProduct) {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                 },
             });
-            
+
             const data = await response.json();
             if (data.success) {
                 router.reload();
@@ -274,11 +274,16 @@ async function disconnectFromStripe(product: StripeProduct) {
 // Get tier badge class
 function getTierBadgeClass(tier: string) {
     switch (tier) {
-        case 'Bronze': return 'bg-warning';
-        case 'Silver': return 'bg-secondary';
-        case 'Gold': return 'bg-warning';
-        case 'Platinum': return 'bg-purple';
-        default: return 'bg-secondary';
+        case 'Bronze':
+            return 'bg-warning';
+        case 'Silver':
+            return 'bg-secondary';
+        case 'Gold':
+            return 'bg-warning';
+        case 'Platinum':
+            return 'bg-purple';
+        default:
+            return 'bg-secondary';
     }
 }
 </script>
@@ -286,7 +291,7 @@ function getTierBadgeClass(tier: string) {
 <template>
     <AdminLayout>
         <Head title="Stripe Product Management" />
-        
+
         <div class="container-fluid p-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h2 mb-0">Stripe Product Management</h1>
@@ -295,7 +300,7 @@ function getTierBadgeClass(tier: string) {
                     Add New Product
                 </button>
             </div>
-            
+
             <!-- How To Section -->
             <div class="card bg-info bg-opacity-10 border-info mb-4">
                 <div class="card-header bg-transparent border-info cursor-pointer" @click="showInstructions = !showInstructions">
@@ -307,7 +312,7 @@ function getTierBadgeClass(tier: string) {
                         <i :class="showInstructions ? 'bi-chevron-up' : 'bi-chevron-down'" class="bi text-info"></i>
                     </div>
                 </div>
-                
+
                 <div v-if="showInstructions" class="card-body">
                     <div class="row">
                         <div class="col-md-6">
@@ -317,7 +322,7 @@ function getTierBadgeClass(tier: string) {
                                 <li>Set your desired prices and features</li>
                                 <li>Choose one of two connection methods:</li>
                             </ol>
-                            
+
                             <div class="ms-4 mt-3">
                                 <div class="mb-3">
                                     <div class="fw-bold text-primary">Option A: Connect to Existing</div>
@@ -329,7 +334,7 @@ function getTierBadgeClass(tier: string) {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="col-md-6">
                             <h6 class="fw-bold mb-3">⚡ Important Notes</h6>
                             <ul class="small text-dark">
@@ -340,20 +345,21 @@ function getTierBadgeClass(tier: string) {
                                 <li>The system uses these products automatically at checkout</li>
                                 <li>Legacy env variables are still supported as fallback</li>
                             </ul>
-                            
+
                             <div class="alert alert-warning small p-2 mt-3">
-                                <strong>Purpose:</strong> This system links your website's subscription tiers (Bronze, Silver, Gold, Platinum) with corresponding Stripe products for proper billing integration. Names are auto-generated to ensure consistency.
+                                <strong>Purpose:</strong> This system links your website's subscription tiers (Bronze, Silver, Gold, Platinum) with
+                                corresponding Stripe products for proper billing integration. Names are auto-generated to ensure consistency.
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Products by Billing Period -->
             <div class="row g-4">
                 <div v-for="(period, key) in groupedProducts" :key="key" class="col-12">
                     <h4 class="text-capitalize mb-3">{{ key }} Plans</h4>
-                    
+
                     <div class="card">
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
@@ -382,54 +388,48 @@ function getTierBadgeClass(tier: string) {
                                         </td>
                                         <td class="fw-bold">{{ product.formatted_price }}</td>
                                         <td>
-                                            <span v-if="product.is_active" class="text-success">
-                                                <i class="bi bi-check-circle me-1"></i>Active
-                                            </span>
-                                            <span v-else class="text-danger">
-                                                <i class="bi bi-x-circle me-1"></i>Inactive
-                                            </span>
+                                            <span v-if="product.is_active" class="text-success"> <i class="bi bi-check-circle me-1"></i>Active </span>
+                                            <span v-else class="text-danger"> <i class="bi bi-x-circle me-1"></i>Inactive </span>
                                         </td>
                                         <td>
                                             <div v-if="product.is_connected">
-                                                <div class="text-success small">
-                                                    <i class="bi bi-check-circle-fill me-1"></i>Connected
-                                                </div>
-                                                <div class="text-muted" style="font-size: 0.75rem;">{{ product.stripe_price_id }}</div>
+                                                <div class="text-success small"><i class="bi bi-check-circle-fill me-1"></i>Connected</div>
+                                                <div class="text-muted" style="font-size: 0.75rem">{{ product.stripe_price_id }}</div>
                                             </div>
                                             <span v-else class="text-muted">Not connected</span>
                                         </td>
                                         <td>
                                             <div class="btn-group btn-group-sm" role="group">
-                                                <button @click="editProduct(product)" 
-                                                        class="btn btn-outline-primary"
-                                                        title="Edit">
-                                                    Edit
-                                                </button>
-                                                
+                                                <button @click="editProduct(product)" class="btn btn-outline-primary" title="Edit">Edit</button>
+
                                                 <template v-if="!product.is_connected">
-                                                    <button @click="openConnectModal(product)" 
-                                                            class="btn btn-outline-success"
-                                                            title="Connect to Stripe">
+                                                    <button
+                                                        @click="openConnectModal(product)"
+                                                        class="btn btn-outline-success"
+                                                        title="Connect to Stripe"
+                                                    >
                                                         Connect
                                                     </button>
-                                                    <button @click="createInStripe(product)" 
-                                                            class="btn btn-outline-purple"
-                                                            title="Create in Stripe">
+                                                    <button @click="createInStripe(product)" class="btn btn-outline-purple" title="Create in Stripe">
                                                         Create
                                                     </button>
                                                 </template>
                                                 <template v-else>
-                                                    <button @click="disconnectFromStripe(product)" 
-                                                            class="btn btn-outline-warning"
-                                                            title="Disconnect from Stripe">
+                                                    <button
+                                                        @click="disconnectFromStripe(product)"
+                                                        class="btn btn-outline-warning"
+                                                        title="Disconnect from Stripe"
+                                                    >
                                                         Disconnect
                                                     </button>
                                                 </template>
-                                                
-                                                <button v-if="!product.is_connected" 
-                                                        @click="deleteProduct(product)" 
-                                                        class="btn btn-outline-danger"
-                                                        title="Delete">
+
+                                                <button
+                                                    v-if="!product.is_connected"
+                                                    @click="deleteProduct(product)"
+                                                    class="btn btn-outline-danger"
+                                                    title="Delete"
+                                                >
                                                     Delete
                                                 </button>
                                             </div>
@@ -442,7 +442,7 @@ function getTierBadgeClass(tier: string) {
                 </div>
             </div>
         </div>
-        
+
         <!-- Create Modal -->
         <div class="modal fade" :class="{ show: showCreateModal, 'd-block': showCreateModal }" tabindex="-1">
             <div class="modal-dialog modal-lg">
@@ -461,7 +461,7 @@ function getTierBadgeClass(tier: string) {
                                     </select>
                                     <div v-if="createForm.errors.tier" class="text-danger small mt-1">{{ createForm.errors.tier }}</div>
                                 </div>
-                                
+
                                 <div class="col-md-6 mb-3">
                                     <label for="billing_period" class="form-label">Billing Period</label>
                                     <select v-model="createForm.billing_period" id="billing_period" class="form-select">
@@ -469,13 +469,15 @@ function getTierBadgeClass(tier: string) {
                                             {{ period.charAt(0).toUpperCase() + period.slice(1) }}
                                         </option>
                                     </select>
-                                    <div v-if="createForm.errors.billing_period" class="text-danger small mt-1">{{ createForm.errors.billing_period }}</div>
+                                    <div v-if="createForm.errors.billing_period" class="text-danger small mt-1">
+                                        {{ createForm.errors.billing_period }}
+                                    </div>
                                 </div>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label class="form-label">Product Name (Auto-Generated)</label>
-                                <div class="form-control bg-light" style="cursor: not-allowed;">
+                                <div class="form-control bg-light" style="cursor: not-allowed">
                                     {{ generatedProductName }}
                                 </div>
                                 <div class="form-text text-muted">
@@ -483,19 +485,25 @@ function getTierBadgeClass(tier: string) {
                                     Product names are automatically generated to maintain consistency between your website tiers and Stripe products.
                                 </div>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="price" class="form-label">Price (USD)</label>
                                 <input v-model.number="createForm.price" id="price" type="number" step="0.01" min="0" class="form-control" required />
                                 <div v-if="createForm.errors.price" class="text-danger small mt-1">{{ createForm.errors.price }}</div>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="badge_text" class="form-label">Badge Text (optional)</label>
-                                <input v-model="createForm.badge_text" id="badge_text" type="text" class="form-control" placeholder="e.g., Best Value" />
+                                <input
+                                    v-model="createForm.badge_text"
+                                    id="badge_text"
+                                    type="text"
+                                    class="form-control"
+                                    placeholder="e.g., Best Value"
+                                />
                                 <div v-if="createForm.errors.badge_text" class="text-danger small mt-1">{{ createForm.errors.badge_text }}</div>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label class="form-label">Features</label>
                                 <div v-for="(feature, index) in createForm.features" :key="index" class="d-flex gap-2 mb-2">
@@ -521,7 +529,7 @@ function getTierBadgeClass(tier: string) {
             </div>
         </div>
         <div v-if="showCreateModal" class="modal-backdrop fade show"></div>
-        
+
         <!-- Edit Modal -->
         <div class="modal fade" :class="{ show: showEditModal, 'd-block': showEditModal }" tabindex="-1">
             <div class="modal-dialog modal-lg">
@@ -534,7 +542,7 @@ function getTierBadgeClass(tier: string) {
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label for="edit-name" class="form-label">Product Name</label>
-                                <div class="form-control bg-light" style="cursor: not-allowed;">
+                                <div class="form-control bg-light" style="cursor: not-allowed">
                                     {{ editForm.name }}
                                 </div>
                                 <div class="form-text text-muted">
@@ -542,19 +550,33 @@ function getTierBadgeClass(tier: string) {
                                     Product names cannot be changed to maintain consistency with Stripe.
                                 </div>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="edit-price" class="form-label">Price (USD)</label>
-                                <input v-model.number="editForm.price" id="edit-price" type="number" step="0.01" min="0" class="form-control" required />
+                                <input
+                                    v-model.number="editForm.price"
+                                    id="edit-price"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    class="form-control"
+                                    required
+                                />
                                 <div v-if="editForm.errors.price" class="text-danger small mt-1">{{ editForm.errors.price }}</div>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="edit-badge" class="form-label">Badge Text (optional)</label>
-                                <input v-model="editForm.badge_text" id="edit-badge" type="text" class="form-control" placeholder="e.g., Best Value" />
+                                <input
+                                    v-model="editForm.badge_text"
+                                    id="edit-badge"
+                                    type="text"
+                                    class="form-control"
+                                    placeholder="e.g., Best Value"
+                                />
                                 <div v-if="editForm.errors.badge_text" class="text-danger small mt-1">{{ editForm.errors.badge_text }}</div>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label class="form-label">Features</label>
                                 <div v-for="(feature, index) in editForm.features" :key="index" class="d-flex gap-2 mb-2">
@@ -567,7 +589,7 @@ function getTierBadgeClass(tier: string) {
                                     <i class="bi bi-plus me-1"></i> Add Feature
                                 </button>
                             </div>
-                            
+
                             <div class="form-check">
                                 <input type="checkbox" v-model="editForm.is_active" class="form-check-input" id="edit-active" />
                                 <label class="form-check-label" for="edit-active">Active</label>
@@ -585,7 +607,7 @@ function getTierBadgeClass(tier: string) {
             </div>
         </div>
         <div v-if="showEditModal" class="modal-backdrop fade show"></div>
-        
+
         <!-- Connect to Stripe Modal -->
         <div class="modal fade" :class="{ show: showConnectModal, 'd-block': showConnectModal }" tabindex="-1">
             <div class="modal-dialog">
@@ -597,9 +619,7 @@ function getTierBadgeClass(tier: string) {
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label">Select Stripe Product</label>
-                            <div v-if="loadingStripe" class="text-muted">
-                                <span class="spinner-border spinner-border-sm me-2"></span>Loading...
-                            </div>
+                            <div v-if="loadingStripe" class="text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading...</div>
                             <select v-else v-model="selectedStripeProductId" @change="fetchStripePrices($event.target.value)" class="form-select">
                                 <option value="">Select a product...</option>
                                 <option v-for="product in stripeProducts" :key="product.id" :value="product.id">
@@ -607,16 +627,14 @@ function getTierBadgeClass(tier: string) {
                                 </option>
                             </select>
                         </div>
-                        
+
                         <div v-if="selectedStripeProductId && stripePrices.length > 0" class="mb-3">
                             <label class="form-label">Select Price</label>
                             <select v-model="selectedStripePriceId" class="form-select">
                                 <option value="">Select a price...</option>
                                 <option v-for="price in stripePrices" :key="price.id" :value="price.id">
                                     ${{ price.unit_amount_dollars }} {{ price.currency.toUpperCase() }}
-                                    <template v-if="price.recurring">
-                                        / {{ price.recurring.interval }}
-                                    </template>
+                                    <template v-if="price.recurring"> / {{ price.recurring.interval }} </template>
                                     ({{ price.id }})
                                 </option>
                             </select>

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
 import axios from 'axios';
+import { computed, ref } from 'vue';
 
 interface Media {
     id: number;
@@ -60,14 +60,14 @@ async function uploadFiles() {
     uploadProgress.value = 0;
 
     const formData = new FormData();
-    selectedFiles.value.forEach(file => {
+    selectedFiles.value.forEach((file) => {
         formData.append('files[]', file);
     });
 
     try {
         // Get CSRF token
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        
+
         const response = await axios.post(route('admin.media-library.store'), formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
@@ -82,14 +82,14 @@ async function uploadFiles() {
 
         // Refresh the page to show new media
         router.reload({ only: ['media'] });
-        
+
         // Reset file input
         selectedFiles.value = [];
         fileInputKey.value++;
     } catch (error: any) {
         console.error('Upload error:', error);
         console.error('Error response:', error.response?.data);
-        
+
         if (error.response?.status === 413) {
             alert('File too large. Maximum file size is 20MB. Please use a smaller image.');
         } else if (error.response?.status === 422) {
@@ -125,7 +125,7 @@ function toggleSelectAll() {
     if (isAllSelected.value) {
         selectedMedia.value = [];
     } else {
-        selectedMedia.value = props.media.data.map(m => m.id);
+        selectedMedia.value = props.media.data.map((m) => m.id);
     }
 }
 
@@ -144,11 +144,11 @@ async function deleteMedia() {
         mediaToDelete.value = null;
     } catch (error: any) {
         console.error('Delete error:', error);
-        
+
         // Show detailed error message from backend
         const errorMessage = error.response?.data?.message || 'Error deleting media. Please try again.';
         alert(errorMessage);
-        
+
         showDeleteModal.value = false;
         mediaToDelete.value = null;
     }
@@ -187,21 +187,13 @@ function copyUrl(url: string) {
 <template>
     <AdminLayout>
         <Head title="Media Library" />
-        
+
         <div class="p-4">
             <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h2 fw-bold text-dark">Media Library</h1>
                 <div>
-                    <input
-                        type="file"
-                        id="file-upload"
-                        multiple
-                        accept="image/*"
-                        @change="handleFileChange"
-                        class="d-none"
-                        :key="fileInputKey"
-                    />
+                    <input type="file" id="file-upload" multiple accept="image/*" @change="handleFileChange" class="d-none" :key="fileInputKey" />
                     <label for="file-upload" class="btn btn-primary">
                         <i class="bi bi-upload me-2"></i>
                         Upload Images
@@ -218,12 +210,12 @@ function copyUrl(url: string) {
                     <div class="flex-grow-1">
                         <div>Uploading {{ selectedFiles.length }} file(s)...</div>
                         <div class="progress mt-2">
-                            <div 
-                                class="progress-bar" 
-                                role="progressbar" 
+                            <div
+                                class="progress-bar"
+                                role="progressbar"
                                 :style="`width: ${uploadProgress}%`"
-                                :aria-valuenow="uploadProgress" 
-                                aria-valuemin="0" 
+                                :aria-valuenow="uploadProgress"
+                                aria-valuemin="0"
                                 aria-valuemax="100"
                             >
                                 {{ uploadProgress }}%
@@ -245,7 +237,13 @@ function copyUrl(url: string) {
                             <i class="bi bi-cloud-upload me-1"></i>
                             Upload
                         </button>
-                        <button @click="selectedFiles = []; fileInputKey++" class="btn btn-sm btn-secondary">
+                        <button
+                            @click="
+                                selectedFiles = [];
+                                fileInputKey++;
+                            "
+                            class="btn btn-sm btn-secondary"
+                        >
                             Cancel
                         </button>
                     </div>
@@ -257,16 +255,8 @@ function copyUrl(url: string) {
                 <!-- Select All -->
                 <div class="mb-3">
                     <div class="form-check">
-                        <input 
-                            class="form-check-input" 
-                            type="checkbox" 
-                            id="selectAll"
-                            :checked="isAllSelected"
-                            @change="toggleSelectAll"
-                        >
-                        <label class="form-check-label text-dark" for="selectAll">
-                            Select All
-                        </label>
+                        <input class="form-check-input" type="checkbox" id="selectAll" :checked="isAllSelected" @change="toggleSelectAll" />
+                        <label class="form-check-label text-dark" for="selectAll"> Select All </label>
                     </div>
                 </div>
 
@@ -276,54 +266,50 @@ function copyUrl(url: string) {
                         <div class="card h-100" :class="{ 'border-primary': selectedMedia.includes(item.id) }">
                             <!-- Image -->
                             <div class="position-relative">
-                                <img 
-                                    :src="item.thumb_url || item.full_url || '/storage/placeholder.png'" 
+                                <img
+                                    :src="item.thumb_url || item.full_url || '/storage/placeholder.png'"
                                     :alt="item.name"
                                     class="card-img-top cursor-pointer"
-                                    style="height: 150px; object-fit: cover;"
+                                    style="height: 150px; object-fit: cover"
                                     @click="previewImage(item)"
-                                    @error="(e) => { (e.target as HTMLImageElement).src = '/storage/placeholder.png' }"
-                                >
+                                    @error="
+                                        (e) => {
+                                            (e.target as HTMLImageElement).src = '/storage/placeholder.png';
+                                        }
+                                    "
+                                />
                                 <!-- Selection checkbox -->
                                 <div class="position-absolute top-0 start-0 p-2">
-                                    <input 
-                                        class="form-check-input" 
-                                        type="checkbox" 
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
                                         :checked="selectedMedia.includes(item.id)"
                                         @change="toggleSelection(item.id)"
                                         @click.stop
-                                    >
+                                    />
                                 </div>
                             </div>
-                            
+
                             <!-- Info -->
                             <div class="card-body p-2">
                                 <p class="mb-1 small text-truncate" :title="item.name">{{ item.name }}</p>
-                                <p class="mb-1 text-muted" style="font-size: 0.75rem;">
+                                <p class="mb-1 text-muted" style="font-size: 0.75rem">
                                     {{ formatFileSize(item.size) }}
                                 </p>
-                                
+
                                 <!-- Actions -->
                                 <div class="btn-group btn-group-sm w-100" role="group">
-                                    <button 
-                                        @click="copyUrl(item.full_url || item.thumb_url || '')" 
+                                    <button
+                                        @click="copyUrl(item.full_url || item.thumb_url || '')"
                                         class="btn btn-sm btn-outline-secondary"
                                         title="Copy URL"
                                     >
                                         <i class="bi bi-link-45deg"></i>
                                     </button>
-                                    <button 
-                                        @click="previewImage(item)" 
-                                        class="btn btn-sm btn-outline-primary"
-                                        title="Preview"
-                                    >
+                                    <button @click="previewImage(item)" class="btn btn-sm btn-outline-primary" title="Preview">
                                         <i class="bi bi-eye"></i>
                                     </button>
-                                    <button 
-                                        @click="confirmDelete(item)" 
-                                        class="btn btn-sm btn-outline-danger"
-                                        title="Delete"
-                                    >
+                                    <button @click="confirmDelete(item)" class="btn btn-sm btn-outline-danger" title="Delete">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
@@ -336,29 +322,15 @@ function copyUrl(url: string) {
                 <nav v-if="media.last_page > 1" class="mt-4">
                     <ul class="pagination justify-content-center">
                         <li class="page-item" :class="{ disabled: !media.prev_page_url }">
-                            <Link 
-                                class="page-link" 
-                                :href="media.prev_page_url || '#'"
-                                preserve-scroll
-                            >
-                                Previous
-                            </Link>
+                            <Link class="page-link" :href="media.prev_page_url || '#'" preserve-scroll> Previous </Link>
                         </li>
-                        
+
                         <li class="page-item active">
-                            <span class="page-link">
-                                Page {{ media.current_page }} of {{ media.last_page }}
-                            </span>
+                            <span class="page-link"> Page {{ media.current_page }} of {{ media.last_page }} </span>
                         </li>
-                        
+
                         <li class="page-item" :class="{ disabled: !media.next_page_url }">
-                            <Link 
-                                class="page-link" 
-                                :href="media.next_page_url || '#'"
-                                preserve-scroll
-                            >
-                                Next
-                            </Link>
+                            <Link class="page-link" :href="media.next_page_url || '#'" preserve-scroll> Next </Link>
                         </li>
                     </ul>
                 </nav>
@@ -366,21 +338,14 @@ function copyUrl(url: string) {
 
             <!-- Empty State -->
             <div v-else class="text-center py-5">
-                <i class="bi bi-images text-muted" style="font-size: 4rem;"></i>
+                <i class="bi bi-images text-muted" style="font-size: 4rem"></i>
                 <h3 class="mt-3">No Images Yet</h3>
                 <p class="text-muted">Upload your first image to get started.</p>
                 <label for="file-upload-empty" class="btn btn-primary">
                     <i class="bi bi-upload me-2"></i>
                     Upload Images
                 </label>
-                <input
-                    type="file"
-                    id="file-upload-empty"
-                    multiple
-                    accept="image/*"
-                    @change="handleFileChange"
-                    class="d-none"
-                />
+                <input type="file" id="file-upload-empty" multiple accept="image/*" @change="handleFileChange" class="d-none" />
             </div>
         </div>
 
@@ -421,38 +386,42 @@ function copyUrl(url: string) {
                         <button type="button" class="btn-close" @click="showPreviewModal = false"></button>
                     </div>
                     <div class="modal-body text-center">
-                        <img 
-                            v-if="previewMedia" 
-                            :src="previewMedia.preview_url || previewMedia.full_url || ''" 
+                        <img
+                            v-if="previewMedia"
+                            :src="previewMedia.preview_url || previewMedia.full_url || ''"
                             :alt="previewMedia.name"
                             class="img-fluid"
-                            @error="(e) => { (e.target as HTMLImageElement).src = '/storage/placeholder.png' }"
-                        >
+                            @error="
+                                (e) => {
+                                    (e.target as HTMLImageElement).src = '/storage/placeholder.png';
+                                }
+                            "
+                        />
                         <div v-if="previewMedia" class="mt-3">
                             <dl class="row">
                                 <dt class="col-sm-3">File Name:</dt>
                                 <dd class="col-sm-9">{{ previewMedia.file_name }}</dd>
-                                
+
                                 <dt class="col-sm-3">Size:</dt>
                                 <dd class="col-sm-9">{{ formatFileSize(previewMedia.size) }}</dd>
-                                
+
                                 <dt class="col-sm-3">Type:</dt>
                                 <dd class="col-sm-9">{{ previewMedia.mime_type }}</dd>
-                                
+
                                 <dt class="col-sm-3">Uploaded:</dt>
                                 <dd class="col-sm-9">{{ formatDate(previewMedia.created_at) }}</dd>
-                                
+
                                 <dt class="col-sm-3">URL:</dt>
                                 <dd class="col-sm-9">
                                     <div class="input-group">
-                                        <input 
-                                            type="text" 
-                                            class="form-control form-control-sm" 
-                                            :value="previewMedia.full_url || previewMedia.preview_url || ''" 
+                                        <input
+                                            type="text"
+                                            class="form-control form-control-sm"
+                                            :value="previewMedia.full_url || previewMedia.preview_url || ''"
                                             readonly
-                                        >
-                                        <button 
-                                            class="btn btn-sm btn-outline-secondary" 
+                                        />
+                                        <button
+                                            class="btn btn-sm btn-outline-secondary"
                                             @click="copyUrl(previewMedia.full_url || previewMedia.preview_url || '')"
                                         >
                                             <i class="bi bi-clipboard"></i>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, useForm, Link } from '@inertiajs/vue3';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 
 defineProps<{
     status?: string;
@@ -21,7 +21,7 @@ const logout = () => {
     <WelcomeLayout>
         <Head title="Email Verification" />
 
-        <div class="min-vh-100 d-flex align-items-center" style="background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 100%);">
+        <div class="min-vh-100 d-flex align-items-center" style="background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 100%)">
             <div class="container py-5">
                 <div class="row justify-content-center">
                     <div class="col-md-8 col-lg-6">
@@ -29,23 +29,22 @@ const logout = () => {
                             <h1 class="display-4 fw-bold text-white mb-2">Verify Your Email</h1>
                             <p class="fs-5 text-gray-light">Almost there! Please check your inbox</p>
                         </div>
-                        
-                        <div class="card" style="background-color: #1a2332; border: 1px solid #2e4057;">
+
+                        <div class="card" style="background-color: #1a2332; border: 1px solid #2e4057">
                             <div class="card-body p-5">
                                 <div class="text-center">
                                     <div class="mb-4">
                                         <i class="bi bi-envelope-check fs-1 text-warning"></i>
                                     </div>
-                                    
+
                                     <h2 class="h4 fw-bold text-white mb-3">Check Your Email</h2>
-                                    
+
                                     <p class="text-gray-light mb-4">
-                                        Thanks for signing up! Before getting started, please verify your email address by clicking on the link we just emailed to you.
+                                        Thanks for signing up! Before getting started, please verify your email address by clicking on the link we
+                                        just emailed to you.
                                     </p>
-                                    
-                                    <p class="text-gray-light mb-4">
-                                        If you didn't receive the email, we will gladly send you another.
-                                    </p>
+
+                                    <p class="text-gray-light mb-4">If you didn't receive the email, we will gladly send you another.</p>
 
                                     <div v-if="status === 'verification-link-sent'" class="alert alert-success mb-4">
                                         <i class="bi bi-check-circle me-2"></i>
@@ -63,8 +62,12 @@ const logout = () => {
                                     </form>
 
                                     <div class="position-relative my-4">
-                                        <hr class="text-gray-medium">
-                                        <span class="position-absolute top-50 start-50 translate-middle bg-dark px-3 text-gray-light small" style="background-color: #1a2332;">OR</span>
+                                        <hr class="text-gray-medium" />
+                                        <span
+                                            class="position-absolute top-50 start-50 translate-middle bg-dark px-3 text-gray-light small"
+                                            style="background-color: #1a2332"
+                                            >OR</span
+                                        >
                                     </div>
 
                                     <button @click="logout" type="button" class="btn btn-outline-secondary w-100">
@@ -74,12 +77,12 @@ const logout = () => {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Help Section -->
                         <div class="text-center mt-4">
                             <p class="text-gray-light small">
                                 <i class="bi bi-question-circle me-1"></i>
-                                Having trouble? Please check your spam folder or 
+                                Having trouble? Please check your spam folder or
                                 <Link href="/support" class="text-warning text-decoration-none">contact support</Link>
                             </p>
                         </div>

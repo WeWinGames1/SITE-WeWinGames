@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { usePage } from '@inertiajs/vue3';
 import ImpersonationBanner from '@/components/ImpersonationBanner.vue';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
+import { usePage } from '@inertiajs/vue3';
 
 const page = usePage();
 const isImpersonating = page.props.impersonation?.isImpersonating || false;
@@ -13,7 +13,7 @@ const isImpersonating = page.props.impersonation?.isImpersonating || false;
     <WelcomeLayout>
         <!-- Impersonation Banner -->
         <ImpersonationBanner v-if="isImpersonating" />
-        
+
         <!-- Main Content -->
         <slot />
     </WelcomeLayout>

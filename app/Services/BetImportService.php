@@ -228,6 +228,20 @@ class BetImportService
 
     private function processRecord(array $record, int $lineNumber): void
     {
+        // Skip completely empty rows
+        $hasNonEmptyValue = false;
+        foreach ($record as $value) {
+            if (!empty(trim($value))) {
+                $hasNonEmptyValue = true;
+                break;
+            }
+        }
+        
+        if (!$hasNonEmptyValue) {
+            \Log::info('Skipping empty row at line ' . $lineNumber);
+            return;
+        }
+        
         // Map the record using column mappings if provided
         if (! empty($this->columnMappings)) {
             $mappedRecord = [];
@@ -236,6 +250,16 @@ class BetImportService
                     $mappedRecord[$field] = $record[$csvColumn];
                 }
             }
+            
+            // Debug log for missing sport mapping
+            if (empty($mappedRecord['sport']) && $lineNumber >= 1741 && $lineNumber <= 1743) {
+                \Log::warning("Line {$lineNumber}: Sport field not mapped properly", [
+                    'original_record' => $record,
+                    'column_mappings' => $this->columnMappings,
+                    'mapped_record' => $mappedRecord,
+                ]);
+            }
+            
             $record = $mappedRecord;
         }
 
@@ -267,13 +291,53 @@ class BetImportService
             return;
         }
 
+        // Check if this is a partially empty row (has some data but missing critical fields)
+        $criticalFields = ['sport', 'game', 'wager_name', 'odds', 'game_date'];
+        $missingCriticalFields = [];
+        $hasAnyCriticalData = false;
+        $nonEmptyFieldCount = 0;
+        
+        // Count all non-empty fields
+        foreach ($record as $field => $value) {
+            if (!empty(trim($value))) {
+                $nonEmptyFieldCount++;
+            }
+        }
+        
+        foreach ($criticalFields as $field) {
+            if (!empty($record[$field])) {
+                $hasAnyCriticalData = true;
+            } else {
+                $missingCriticalFields[] = $field;
+            }
+        }
+        
+        // If row has very few non-empty fields (likely an empty or header row), skip it
+        if ($nonEmptyFieldCount < 3) {
+            \Log::info('Skipping row with insufficient data at line ' . $lineNumber . ' (only ' . $nonEmptyFieldCount . ' non-empty fields)');
+            return;
+        }
+        
+        // If row has no critical data at all, skip it
+        if (!$hasAnyCriticalData) {
+            \Log::info('Skipping row with no critical data at line ' . $lineNumber);
+            return;
+        }
+        
         // Validate record
         $validation = $this->validateRecord($record);
         if (! $validation['valid']) {
+            // Add more context to the error message
+            $errorMessage = "Row {$lineNumber}: ";
+            if (!empty($missingCriticalFields)) {
+                $errorMessage .= "Missing critical fields: " . implode(', ', $missingCriticalFields) . ". ";
+            }
+            
             $this->errors[] = [
                 'line' => $lineNumber,
                 'errors' => $validation['errors'],
                 'data' => $record,
+                'message' => $errorMessage,
             ];
 
             // If skipErrors is false, throw exception to stop processing
@@ -469,6 +533,22 @@ class BetImportService
             // Handle golf_place field if available
             if (isset($record['golf_place'])) {
                 $betData['golf_place'] = filter_var($record['golf_place'], FILTER_VALIDATE_BOOLEAN);
+            }
+            
+            // Handle golf_place_fraction field if available
+            if (isset($record['golf_place_fraction']) && !empty($record['golf_place_fraction'])) {
+                // Convert fraction string to decimal if needed
+                $value = $record['golf_place_fraction'];
+                if (strpos($value, '/') !== false) {
+                    // It's a fraction like "1/5"
+                    $parts = explode('/', $value);
+                    if (count($parts) == 2 && is_numeric($parts[0]) && is_numeric($parts[1]) && $parts[1] != 0) {
+                        $betData['golf_place_fraction'] = (float)$parts[0] / (float)$parts[1];
+                    }
+                } elseif (is_numeric($value)) {
+                    // It's already a decimal
+                    $betData['golf_place_fraction'] = (float)$value;
+                }
             }
             
             if (in_array($betData['status'], ['won', 'lost', 'placed'])) {
@@ -908,7 +988,7 @@ class BetImportService
             'status' => 'required|string|max:50',
             'roi' => 'nullable|numeric',
             'profits' => 'nullable|numeric',
-            'winning_amount' => 'nullable|numeric|min:0',
+            'winning_amount' => 'nullable|numeric',
             // Game is required - we'll parse teams from it during import
             'game' => 'required|string|max:250',  // Updated to 250
             'home_team' => 'required|string|max:255',  // Required - parsed from game
@@ -918,6 +998,7 @@ class BetImportService
             'description' => 'nullable|string|max:500',
             'placed_at' => 'nullable|string',
             'referrer' => 'nullable|string|max:255',
+            'golf_place_fraction' => 'nullable|numeric|between:0,1',
         ];
 
         $validator = Validator::make($record, $rules);

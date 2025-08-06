@@ -57,6 +57,7 @@ class Bet extends Model
         'bet_result_type',
         'place_terms_denominator',
         'golf_place',
+        'golf_place_fraction',
     ];
     
     protected $casts = [
@@ -73,6 +74,7 @@ class Bet extends Model
         'dead_heat_spots' => 'decimal:4',
         'place_terms_denominator' => 'integer',
         'golf_place' => 'boolean',
+        'golf_place_fraction' => 'decimal:4',
     ];
 
     // Relationships

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Head, useForm, usePage } from '@inertiajs/vue3';
 import CustomerLayout from '@/layouts/CustomerLayout.vue';
-import { ref, computed, onMounted } from 'vue';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { loadStripe } from '@stripe/stripe-js';
 import axios from 'axios';
+import { computed, onMounted, ref } from 'vue';
 
 interface PaymentMethod {
     id: string;
@@ -51,7 +51,7 @@ const hasPaymentMethods = computed(() => props.paymentMethods && props.paymentMe
 
 // Set default payment method if available
 if (hasPaymentMethods.value) {
-    const defaultMethod = props.paymentMethods?.find(m => m.is_default);
+    const defaultMethod = props.paymentMethods?.find((m) => m.is_default);
     if (defaultMethod) {
         selectedPaymentMethod.value = defaultMethod.id;
         useExistingCard.value = true;
@@ -62,7 +62,7 @@ if (hasPaymentMethods.value) {
 const total = computed(() => {
     const basePrice = parseFloat(props.plan.price.replace('$', ''));
     if (!discount.value) return basePrice;
-    
+
     if (discount.value.percent_off) {
         return basePrice * (1 - discount.value.percent_off / 100);
     } else if (discount.value.amount_off) {
@@ -75,11 +75,11 @@ const initializeCardElement = async () => {
     if (!stripe.value) {
         stripe.value = await loadStripe(props.stripeKey);
     }
-    
+
     if (!elements.value) {
         elements.value = stripe.value.elements();
     }
-    
+
     // Create card element
     cardElement.value = elements.value.create('card', {
         style: {
@@ -92,14 +92,14 @@ const initializeCardElement = async () => {
             },
         },
     });
-    
+
     // Wait for next tick to ensure element exists
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     const cardElementDiv = document.getElementById('card-element');
     if (cardElementDiv) {
         cardElement.value.mount('#card-element');
-        
+
         // Listen for card errors
         cardElement.value.on('change', (event: any) => {
             cardError.value = event.error ? event.error.message : '';
@@ -110,17 +110,17 @@ const initializeCardElement = async () => {
 onMounted(async () => {
     // Initialize Stripe (but not card element yet)
     stripe.value = await loadStripe(props.stripeKey);
-    
+
     // If no existing payment methods, show new card form
     if (!hasPaymentMethods.value) {
         showNewCardForm.value = true;
         await initializeCardElement();
     }
-    
+
     // Check for automatic discounts
     const urlParams = new URLSearchParams(window.location.search);
     const discountCode = urlParams.get('discountCode');
-    
+
     if (discountCode) {
         form.coupon = discountCode;
         await validateCoupon();
@@ -136,12 +136,12 @@ const validateCoupon = async () => {
         discount.value = null;
         return;
     }
-    
+
     try {
         const response = await axios.post(route('subscription.validate-coupon'), {
-            code: form.coupon
+            code: form.coupon,
         });
-        
+
         if (response.data.valid) {
             discount.value = response.data.discount;
             form.clearErrors('coupon');
@@ -158,7 +158,7 @@ const validateCoupon = async () => {
 const submit = async () => {
     processing.value = true;
     cardError.value = '';
-    
+
     try {
         if (useExistingCard.value && selectedPaymentMethod.value) {
             // Use existing payment method
@@ -169,16 +169,16 @@ const submit = async () => {
                 type: 'card',
                 card: cardElement.value,
             });
-            
+
             if (error) {
                 cardError.value = error.message;
                 processing.value = false;
                 return;
             }
-            
+
             form.payment_method = paymentMethod.id;
         }
-        
+
         // Submit to backend
         form.post(route('subscription.process'), {
             onFinish: () => {
@@ -195,12 +195,12 @@ const submit = async () => {
 <template>
     <CustomerLayout>
         <Head title="Checkout" />
-        
+
         <div class="container py-5">
             <div class="row justify-content-center">
                 <div class="col-lg-8">
                     <h2 class="mb-4">Complete Your Subscription</h2>
-                    
+
                     <div class="row">
                         <!-- Order Summary -->
                         <div class="col-md-5 order-md-2 mb-4">
@@ -216,19 +216,19 @@ const submit = async () => {
                                         </div>
                                         <span class="fw-bold">{{ plan.price }}</span>
                                     </div>
-                                    
+
                                     <div v-if="discount" class="d-flex justify-content-between text-success mb-3">
                                         <span>Discount ({{ form.coupon }})</span>
-                                        <span>-{{ discount.percent_off ? discount.percent_off + '%' : '$' + (discount.amount_off / 100) }}</span>
+                                        <span>-{{ discount.percent_off ? discount.percent_off + '%' : '$' + discount.amount_off / 100 }}</span>
                                     </div>
-                                    
-                                    <hr>
-                                    
+
+                                    <hr />
+
                                     <div class="d-flex justify-content-between">
                                         <h6 class="mb-0">Total</h6>
                                         <h5 class="mb-0">${{ total.toFixed(2) }}</h5>
                                     </div>
-                                    
+
                                     <div class="mt-3">
                                         <small class="text-muted">
                                             <i class="bi bi-shield-check me-1"></i>
@@ -237,7 +237,7 @@ const submit = async () => {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Benefits -->
                             <div class="card mt-3">
                                 <div class="card-body">
@@ -259,7 +259,7 @@ const submit = async () => {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Payment Form -->
                         <div class="col-md-7 order-md-1">
                             <form @submit.prevent="submit">
@@ -275,14 +275,8 @@ const submit = async () => {
                                                 :class="{ 'is-invalid': form.errors.coupon }"
                                                 placeholder="Enter discount code"
                                                 @blur="validateCoupon"
-                                            >
-                                            <button
-                                                type="button"
-                                                class="btn btn-outline-secondary"
-                                                @click="validateCoupon"
-                                            >
-                                                Apply
-                                            </button>
+                                            />
+                                            <button type="button" class="btn btn-outline-secondary" @click="validateCoupon">Apply</button>
                                             <div v-if="form.errors.coupon" class="invalid-feedback">
                                                 {{ form.errors.coupon }}
                                             </div>
@@ -293,23 +287,26 @@ const submit = async () => {
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Payment Details -->
                                 <div class="card">
                                     <div class="card-body">
                                         <h5 class="card-title mb-4">Payment Details</h5>
-                                        
+
                                         <!-- Existing Payment Methods -->
                                         <div v-if="hasPaymentMethods" class="mb-4">
                                             <div class="form-check mb-3" v-for="method in paymentMethods" :key="method.id">
-                                                <input 
-                                                    class="form-check-input" 
-                                                    type="radio" 
+                                                <input
+                                                    class="form-check-input"
+                                                    type="radio"
                                                     :id="`method-${method.id}`"
                                                     :value="method.id"
                                                     v-model="selectedPaymentMethod"
-                                                    @change="useExistingCard = true; showNewCardForm = false"
-                                                >
+                                                    @change="
+                                                        useExistingCard = true;
+                                                        showNewCardForm = false;
+                                                    "
+                                                />
                                                 <label class="form-check-label d-flex align-items-center" :for="`method-${method.id}`">
                                                     <i class="bi bi-credit-card-fill text-primary me-2"></i>
                                                     <span>
@@ -319,45 +316,45 @@ const submit = async () => {
                                                     <span v-if="method.is_default" class="badge bg-success ms-auto">Default</span>
                                                 </label>
                                             </div>
-                                            
+
                                             <div class="form-check">
-                                                <input 
-                                                    class="form-check-input" 
-                                                    type="radio" 
+                                                <input
+                                                    class="form-check-input"
+                                                    type="radio"
                                                     id="new-card"
                                                     value="new"
-                                                    @change="useExistingCard = false; showNewCardForm = true; initializeCardElement()"
-                                                >
+                                                    @change="
+                                                        useExistingCard = false;
+                                                        showNewCardForm = true;
+                                                        initializeCardElement();
+                                                    "
+                                                />
                                                 <label class="form-check-label" for="new-card">
                                                     <i class="bi bi-plus-circle text-primary me-2"></i>
                                                     <strong>Add a new card</strong>
                                                 </label>
                                             </div>
                                         </div>
-                                        
+
                                         <!-- New Card Form -->
                                         <div v-if="showNewCardForm" class="mb-3">
                                             <label class="form-label">Card Information</label>
-                                            <div id="card-element" class="form-control" style="padding: 12px;"></div>
+                                            <div id="card-element" class="form-control" style="padding: 12px"></div>
                                             <div v-if="cardError" class="text-danger mt-2">
                                                 {{ cardError }}
                                             </div>
                                         </div>
-                                        
+
                                         <div class="alert alert-info">
                                             <i class="bi bi-info-circle me-2"></i>
                                             Your subscription will renew automatically. You can cancel anytime from your billing settings.
                                         </div>
-                                        
-                                        <button
-                                            type="submit"
-                                            class="btn btn-primary btn-lg w-100"
-                                            :disabled="processing || form.processing"
-                                        >
+
+                                        <button type="submit" class="btn btn-primary btn-lg w-100" :disabled="processing || form.processing">
                                             <span v-if="processing || form.processing" class="spinner-border spinner-border-sm me-2"></span>
                                             {{ processing || form.processing ? 'Processing...' : `Subscribe for ${plan.price}` }}
                                         </button>
-                                        
+
                                         <p class="text-center text-muted mt-3 mb-0">
                                             <small>
                                                 By subscribing, you agree to our

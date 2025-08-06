@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 interface JobPosition {
@@ -52,14 +52,18 @@ const filters = ref({
 });
 
 function applyFilters() {
-    router.get(route('admin.resume-submissions.index'), {
-        status: filters.value.status !== 'all' ? filters.value.status : undefined,
-        position: filters.value.position || undefined,
-        search: filters.value.search || undefined,
-    }, {
-        preserveState: true,
-        preserveScroll: true,
-    });
+    router.get(
+        route('admin.resume-submissions.index'),
+        {
+            status: filters.value.status !== 'all' ? filters.value.status : undefined,
+            position: filters.value.position || undefined,
+            search: filters.value.search || undefined,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
 }
 
 function resetFilters() {
@@ -143,12 +147,18 @@ function deleteSubmission(submission: ResumeSubmission) {
 // Status badge colors
 function getStatusBadgeClass(status: string) {
     switch (status) {
-        case 'new': return 'bg-primary';
-        case 'reviewed': return 'bg-info';
-        case 'contacted': return 'bg-warning';
-        case 'hired': return 'bg-success';
-        case 'rejected': return 'bg-danger';
-        default: return 'bg-secondary';
+        case 'new':
+            return 'bg-primary';
+        case 'reviewed':
+            return 'bg-info';
+        case 'contacted':
+            return 'bg-warning';
+        case 'hired':
+            return 'bg-success';
+        case 'rejected':
+            return 'bg-danger';
+        default:
+            return 'bg-secondary';
     }
 }
 </script>
@@ -156,7 +166,7 @@ function getStatusBadgeClass(status: string) {
 <template>
     <AdminLayout>
         <Head title="Resume Submissions" />
-        
+
         <div class="container-fluid p-4">
             <!-- Page Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -185,7 +195,7 @@ function getStatusBadgeClass(status: string) {
                         <div class="card-body">
                             <h6 class="text-muted mb-2">New Submissions</h6>
                             <h3 class="mb-0 text-primary">
-                                {{ submissions.data.filter(s => s.status === 'new').length }}
+                                {{ submissions.data.filter((s) => s.status === 'new').length }}
                             </h3>
                         </div>
                     </div>
@@ -194,7 +204,7 @@ function getStatusBadgeClass(status: string) {
                     <div class="card">
                         <div class="card-body">
                             <h6 class="text-muted mb-2">Active Positions</h6>
-                            <h3 class="mb-0">{{ jobPositions.filter(p => p.is_active).length }}</h3>
+                            <h3 class="mb-0">{{ jobPositions.filter((p) => p.is_active).length }}</h3>
                         </div>
                     </div>
                 </div>
@@ -233,7 +243,7 @@ function getStatusBadgeClass(status: string) {
                                     <td class="fw-medium">{{ position.title }}</td>
                                     <td class="text-muted small">{{ position.description || '-' }}</td>
                                     <td class="text-center">
-                                        <button 
+                                        <button
                                             @click="togglePosition(position)"
                                             :class="position.is_active ? 'btn btn-sm btn-success' : 'btn btn-sm btn-danger'"
                                         >
@@ -284,13 +294,13 @@ function getStatusBadgeClass(status: string) {
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Search</label>
-                            <input 
+                            <input
                                 v-model="filters.search"
                                 @keyup.enter="applyFilters"
-                                type="text" 
-                                class="form-control" 
+                                type="text"
+                                class="form-control"
                                 placeholder="Search by name, email, or phone..."
-                            >
+                            />
                         </div>
                         <div class="col-md-2 d-flex align-items-end">
                             <button @click="resetFilters" class="btn btn-secondary w-100">
@@ -309,7 +319,7 @@ function getStatusBadgeClass(status: string) {
                         <i class="bi bi-file-earmark-person display-1 text-muted mb-3 d-block"></i>
                         <p class="text-muted">No resume submissions found.</p>
                     </div>
-                    
+
                     <div v-else class="table-responsive">
                         <table class="table table-hover">
                             <thead>
@@ -338,7 +348,7 @@ function getStatusBadgeClass(status: string) {
                                     <td>{{ submission.position }}</td>
                                     <td class="text-center">
                                         <div class="dropdown">
-                                            <button 
+                                            <button
                                                 :class="`btn btn-sm ${getStatusBadgeClass(submission.status)} dropdown-toggle`"
                                                 type="button"
                                                 data-bs-toggle="dropdown"
@@ -348,7 +358,9 @@ function getStatusBadgeClass(status: string) {
                                             <ul class="dropdown-menu">
                                                 <li><a @click="updateStatus(submission, 'new')" class="dropdown-item" href="#">New</a></li>
                                                 <li><a @click="updateStatus(submission, 'reviewed')" class="dropdown-item" href="#">Reviewed</a></li>
-                                                <li><a @click="updateStatus(submission, 'contacted')" class="dropdown-item" href="#">Contacted</a></li>
+                                                <li>
+                                                    <a @click="updateStatus(submission, 'contacted')" class="dropdown-item" href="#">Contacted</a>
+                                                </li>
                                                 <li><a @click="updateStatus(submission, 'hired')" class="dropdown-item" href="#">Hired</a></li>
                                                 <li><a @click="updateStatus(submission, 'rejected')" class="dropdown-item" href="#">Rejected</a></li>
                                             </ul>
@@ -359,18 +371,14 @@ function getStatusBadgeClass(status: string) {
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group btn-group-sm">
-                                            <Link 
+                                            <Link
                                                 :href="route('admin.resume-submissions.show', submission.id)"
                                                 class="btn btn-outline-primary"
                                                 title="View Details"
                                             >
                                                 <i class="bi bi-eye"></i>
                                             </Link>
-                                            <button 
-                                                @click="deleteSubmission(submission)"
-                                                class="btn btn-outline-danger"
-                                                title="Delete"
-                                            >
+                                            <button @click="deleteSubmission(submission)" class="btn btn-outline-danger" title="Delete">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
@@ -387,7 +395,7 @@ function getStatusBadgeClass(status: string) {
                 <nav>
                     <ul class="pagination">
                         <li class="page-item" :class="{ disabled: submissions.current_page === 1 }">
-                            <Link 
+                            <Link
                                 :href="route('admin.resume-submissions.index', { ...filters, page: submissions.current_page - 1 })"
                                 class="page-link"
                                 preserve-state
@@ -395,22 +403,18 @@ function getStatusBadgeClass(status: string) {
                                 Previous
                             </Link>
                         </li>
-                        <li 
-                            v-for="page in submissions.last_page" 
+                        <li
+                            v-for="page in submissions.last_page"
                             :key="page"
-                            class="page-item" 
+                            class="page-item"
                             :class="{ active: page === submissions.current_page }"
                         >
-                            <Link 
-                                :href="route('admin.resume-submissions.index', { ...filters, page })"
-                                class="page-link"
-                                preserve-state
-                            >
+                            <Link :href="route('admin.resume-submissions.index', { ...filters, page })" class="page-link" preserve-state>
                                 {{ page }}
                             </Link>
                         </li>
                         <li class="page-item" :class="{ disabled: submissions.current_page === submissions.last_page }">
-                            <Link 
+                            <Link
                                 :href="route('admin.resume-submissions.index', { ...filters, page: submissions.current_page + 1 })"
                                 class="page-link"
                                 preserve-state
@@ -424,7 +428,7 @@ function getStatusBadgeClass(status: string) {
         </div>
 
         <!-- Position Modal -->
-        <div v-if="showPositionModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div v-if="showPositionModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5)">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -437,20 +441,20 @@ function getStatusBadgeClass(status: string) {
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label class="form-label">Position Title <span class="text-danger">*</span></label>
-                                <input 
+                                <input
                                     v-model="positionForm.title"
-                                    type="text" 
+                                    type="text"
                                     class="form-control"
                                     :class="{ 'is-invalid': positionForm.errors.title }"
                                     required
-                                >
+                                />
                                 <div v-if="positionForm.errors.title" class="invalid-feedback">
                                     {{ positionForm.errors.title }}
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Description</label>
-                                <textarea 
+                                <textarea
                                     v-model="positionForm.description"
                                     class="form-control"
                                     :class="{ 'is-invalid': positionForm.errors.description }"
@@ -462,13 +466,13 @@ function getStatusBadgeClass(status: string) {
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Sort Order</label>
-                                <input 
+                                <input
                                     v-model.number="positionForm.sort_order"
-                                    type="number" 
+                                    type="number"
                                     class="form-control"
                                     :class="{ 'is-invalid': positionForm.errors.sort_order }"
                                     min="0"
-                                >
+                                />
                                 <div v-if="positionForm.errors.sort_order" class="invalid-feedback">
                                     {{ positionForm.errors.sort_order }}
                                 </div>
@@ -476,22 +480,13 @@ function getStatusBadgeClass(status: string) {
                             </div>
                             <div class="mb-3">
                                 <div class="form-check form-switch">
-                                    <input 
-                                        v-model="positionForm.is_active"
-                                        type="checkbox" 
-                                        class="form-check-input"
-                                        id="is_active"
-                                    >
-                                    <label class="form-check-label" for="is_active">
-                                        Active (shown in dropdown)
-                                    </label>
+                                    <input v-model="positionForm.is_active" type="checkbox" class="form-check-input" id="is_active" />
+                                    <label class="form-check-label" for="is_active"> Active (shown in dropdown) </label>
                                 </div>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button @click="showPositionModal = false" type="button" class="btn btn-secondary">
-                                Cancel
-                            </button>
+                            <button @click="showPositionModal = false" type="button" class="btn btn-secondary">Cancel</button>
                             <button type="submit" class="btn btn-primary" :disabled="positionForm.processing">
                                 <span v-if="positionForm.processing" class="spinner-border spinner-border-sm me-2"></span>
                                 {{ editingPosition ? 'Update' : 'Create' }} Position

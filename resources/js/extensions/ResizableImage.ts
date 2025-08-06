@@ -4,13 +4,13 @@ import ResizableImageView from './ResizableImageView.vue';
 
 export const ResizableImage = Node.create({
     name: 'resizableImage',
-    
+
     group: 'block',
-    
+
     atom: true,
-    
+
     draggable: true,
-    
+
     addAttributes() {
         return {
             src: {
@@ -24,7 +24,7 @@ export const ResizableImage = Node.create({
             },
         };
     },
-    
+
     parseHTML() {
         return [
             {
@@ -40,7 +40,7 @@ export const ResizableImage = Node.create({
             },
         ];
     },
-    
+
     renderHTML({ HTMLAttributes }) {
         return [
             'div',
@@ -51,7 +51,7 @@ export const ResizableImage = Node.create({
             ['img', { src: HTMLAttributes.src, alt: HTMLAttributes.alt, class: 'img-fluid' }],
         ];
     },
-    
+
     addNodeView() {
         return VueNodeViewRenderer(ResizableImageView);
     },

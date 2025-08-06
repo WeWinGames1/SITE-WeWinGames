@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, useForm, usePage } from '@inertiajs/vue3';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 defineProps<{
@@ -30,7 +30,7 @@ const submit = () => {
         },
         onError: (errors) => {
             console.error('Login errors:', errors);
-        }
+        },
     });
 };
 
@@ -50,7 +50,7 @@ function fillCredentials(email: string, password: string) {
     <WelcomeLayout>
         <Head title="Log in" />
 
-        <div class="min-vh-100 d-flex align-items-center" style="background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 100%);">
+        <div class="min-vh-100 d-flex align-items-center" style="background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 100%)">
             <div class="container py-5">
                 <div class="row justify-content-center">
                     <div class="col-md-8 col-lg-7">
@@ -58,8 +58,8 @@ function fillCredentials(email: string, password: string) {
                             <h1 class="display-4 fw-bold text-white mb-2">Welcome Back</h1>
                             <p class="fs-5 text-gray-light">Sign in to access your picks</p>
                         </div>
-                        
-                        <div class="card" style="background-color: #1a2332; border: 1px solid #2e4057;">
+
+                        <div class="card" style="background-color: #1a2332; border: 1px solid #2e4057">
                             <div class="card-body p-5">
                                 <h2 class="h4 fw-bold text-white mb-4">Sign in to your account</h2>
 
@@ -68,11 +68,15 @@ function fillCredentials(email: string, password: string) {
                                 </div>
 
                                 <!-- Test Credentials for Local Environment -->
-                                <div v-if="isLocal" class="mb-4 p-3 rounded" style="background-color: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107;">
+                                <div
+                                    v-if="isLocal"
+                                    class="mb-4 p-3 rounded"
+                                    style="background-color: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107"
+                                >
                                     <p class="mb-2 fw-bold text-warning"><i class="bi bi-info-circle me-2"></i>Demo Accounts</p>
                                     <div class="d-grid gap-2">
-                                        <button 
-                                            v-for="cred in testCredentials" 
+                                        <button
+                                            v-for="cred in testCredentials"
                                             :key="cred.email"
                                             type="button"
                                             class="btn btn-sm btn-outline-warning text-start"
@@ -127,15 +131,8 @@ function fillCredentials(email: string, password: string) {
 
                                     <div class="mb-4">
                                         <div class="form-check">
-                                            <input
-                                                id="remember"
-                                                type="checkbox"
-                                                class="form-check-input"
-                                                v-model="form.remember"
-                                            />
-                                            <label for="remember" class="form-check-label text-gray-light">
-                                                Remember me for 30 days
-                                            </label>
+                                            <input id="remember" type="checkbox" class="form-check-input" v-model="form.remember" />
+                                            <label for="remember" class="form-check-label text-gray-light"> Remember me for 30 days </label>
                                         </div>
                                     </div>
 
@@ -148,10 +145,14 @@ function fillCredentials(email: string, password: string) {
                                             <i class="bi bi-arrow-right ms-2"></i>
                                         </button>
                                     </div>
-                                    
+
                                     <div class="position-relative">
-                                        <hr class="text-gray-medium">
-                                        <span class="position-absolute top-50 start-50 translate-middle bg-dark px-3 text-gray-light small" style="background-color: #1a2332;">OR</span>
+                                        <hr class="text-gray-medium" />
+                                        <span
+                                            class="position-absolute top-50 start-50 translate-middle bg-dark px-3 text-gray-light small"
+                                            style="background-color: #1a2332"
+                                            >OR</span
+                                        >
                                     </div>
                                 </form>
 
@@ -165,7 +166,7 @@ function fillCredentials(email: string, password: string) {
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Security Note -->
                     <div class="text-center mt-5">
                         <p class="text-gray-light small mb-0">

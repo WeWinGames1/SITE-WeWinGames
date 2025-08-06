@@ -1,14 +1,14 @@
 <script setup lang="ts">
+import BetsExport from '@/components/BetsExport.vue';
+import BetsUpload from '@/components/BetsUpload.vue';
 import CustomerLayout from '@/layouts/CustomerLayout.vue';
 import { Head, usePage } from '@inertiajs/vue3';
+import axios from 'axios';
+import { computed, ref } from 'vue';
 import BetPickCard from '../components/BetPickCard.vue';
 import NewBetPickForm from '../components/NewBetPickForm.vue';
-import SubscriptionROIChart from '../components/SubscriptionROIChart.vue';
 import SportProfitAndROIChart from '../components/SportProfitAndROIChart.vue';
-import BetsUpload from '@/components/BetsUpload.vue';
-import { ref, computed } from 'vue';
-import axios from 'axios';
-import BetsExport from '@/components/BetsExport.vue';
+import SubscriptionROIChart from '../components/SubscriptionROIChart.vue';
 const page = usePage<SharedData>();
 
 const user = page.props.auth.user.data as User;
@@ -21,9 +21,7 @@ const sportProfitRoiData = page.props.sportProfitRoiData || {};
 const pageSize = 15;
 const currentPage = ref(1);
 const totalPages = computed(() => Math.ceil(bets.length / pageSize));
-const paginatedBets = computed(() =>
-    bets.slice((currentPage.value - 1) * pageSize, currentPage.value * pageSize)
-);
+const paginatedBets = computed(() => bets.slice((currentPage.value - 1) * pageSize, currentPage.value * pageSize));
 
 function goToPage(pageNum: number) {
     if (pageNum >= 1 && pageNum <= totalPages.value) {
@@ -78,7 +76,7 @@ const updateBet = async (betId, formData) => {
 };
 
 const updateBetInArray = (updatedBet) => {
-    const idx = bets.findIndex(b => b.id === updatedBet.id);
+    const idx = bets.findIndex((b) => b.id === updatedBet.id);
     if (idx !== -1) {
         bets[idx] = updatedBet;
     }
@@ -100,8 +98,7 @@ const updateBetInArray = (updatedBet) => {
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
 
-         
-              <!-- Admin Notification Form -->
+            <!-- Admin Notification Form -->
             <div v-if="user.roles[0] && user.roles[0].name == 'admin'" class="mb-5">
                 <div class="d-flex justify-content-center mb-4">
                     <BetsExport />
@@ -116,17 +113,23 @@ const updateBetInArray = (updatedBet) => {
                                 <form @submit.prevent="sendNotification">
                                     <div class="mb-3">
                                         <label class="form-label">Title</label>
-                                        <input v-model="notifyTitle" type="text" class="form-control bg-secondary text-white border-secondary" required />
+                                        <input
+                                            v-model="notifyTitle"
+                                            type="text"
+                                            class="form-control bg-secondary text-white border-secondary"
+                                            required
+                                        />
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Body</label>
-                                        <textarea v-model="notifyBody" class="form-control bg-secondary text-white border-secondary" rows="3" required></textarea>
+                                        <textarea
+                                            v-model="notifyBody"
+                                            class="form-control bg-secondary text-white border-secondary"
+                                            rows="3"
+                                            required
+                                        ></textarea>
                                     </div>
-                                    <button
-                                        type="submit"
-                                        class="btn btn-primary"
-                                        :disabled="notifyLoading"
-                                    >
+                                    <button type="submit" class="btn btn-primary" :disabled="notifyLoading">
                                         <span v-if="notifyLoading">
                                             <span class="spinner-border spinner-border-sm me-2"></span>
                                             Sending...
@@ -148,7 +151,7 @@ const updateBetInArray = (updatedBet) => {
             <div v-if="user.roles[0] && user.roles[0].name == 'admin'" class="mb-4">
                 <NewBetPickForm />
             </div>
-             
+
             <SubscriptionROIChart :roi-data="roiData" v-if="user.roles[0] && user.roles[0].name == 'admin'" class="mb-5" />
             <section class="bg-dark text-white rounded p-5 mb-5">
                 <div class="text-center">
@@ -161,39 +164,32 @@ const updateBetInArray = (updatedBet) => {
             <div v-if="user.roles[0] && user.roles[0].name == 'admin'">
                 <div class="row g-4">
                     <div class="col-md-6 col-lg-4" v-for="bet in paginatedBets" :key="bet.id">
-                        <BetPickCard
-                            :bet="bet"
-                            @bet-updated="updateBetInArray"
-                        />
+                        <BetPickCard :bet="bet" @bet-updated="updateBetInArray" />
                     </div>
                 </div>
                 <!-- Pagination Controls -->
                 <nav v-if="totalPages > 1" class="mt-4">
                     <ul class="pagination justify-content-center">
-                        <li class="page-item" :class="{disabled: currentPage === 1}">
-                            <button class="page-link" @click="goToPage(currentPage - 1)" :disabled="currentPage === 1">
-                                Previous
-                            </button>
+                        <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                            <button class="page-link" @click="goToPage(currentPage - 1)" :disabled="currentPage === 1">Previous</button>
                         </li>
                         <li class="page-item active">
                             <span class="page-link">Page {{ currentPage }} of {{ totalPages }}</span>
                         </li>
-                        <li class="page-item" :class="{disabled: currentPage === totalPages}">
-                            <button class="page-link" @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages">
-                                Next
-                            </button>
+                        <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                            <button class="page-link" @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages">Next</button>
                         </li>
                     </ul>
                 </nav>
             </div>
 
             <!-- Subscription Section -->
-            <div v-if="user.subscriptions.length > 0" class="card bg-light" style="min-height: 50vh;">
+            <div v-if="user.subscriptions.length > 0" class="card bg-light" style="min-height: 50vh">
                 <div class="card-body">
                     <!-- Additional content can go here -->
                 </div>
             </div>
-            <div v-else-if="user.roles[0] && user.roles[0].name !== 'admin'" class="card bg-light" style="min-height: 50vh;">
+            <div v-else-if="user.roles[0] && user.roles[0].name !== 'admin'" class="card bg-light" style="min-height: 50vh">
                 <div class="card-body d-flex align-items-center justify-content-center">
                     <div class="text-center">
                         <h5 class="text-muted">You aren't subscribed to any subscriptions</h5>

@@ -4,7 +4,7 @@
         <div class="odds-ribbon">
             {{ getOdds(bet) }}
         </div>
-        
+
         <!-- Header -->
         <div class="bet-header d-flex align-items-center gap-2 mb-2">
             <i class="bi bi-trophy-fill text-white"></i>
@@ -13,42 +13,34 @@
                 <span class="text-white small">{{ bet.league || 'Premier League' }}</span>
             </div>
         </div>
-        
+
         <!-- Date -->
         <div class="text-white small mb-3">Date: {{ formatDate(bet.game_date || bet.betting_date) }}</div>
-        
+
         <!-- Teams - Side by Side -->
         <div class="teams-section mb-3">
             <div class="d-flex align-items-center justify-content-between">
                 <div class="team-box text-center">
-                    <img 
-                        :src="bet.team_one_logo || '/images/team-placeholder.svg'" 
-                        :alt="bet.team_one"
-                        class="team-logo mb-2"
-                    />
+                    <img :src="bet.team_one_logo || '/images/team-placeholder.svg'" :alt="bet.team_one" class="team-logo mb-2" />
                     <div class="text-white small">{{ bet.team_one }}</div>
                 </div>
-                
+
                 <div class="text-white fw-bold">VS</div>
-                
+
                 <div class="team-box text-center">
-                    <img 
-                        :src="bet.team_two_logo || '/images/team-placeholder.svg'" 
-                        :alt="bet.team_two"
-                        class="team-logo mb-2"
-                    />
+                    <img :src="bet.team_two_logo || '/images/team-placeholder.svg'" :alt="bet.team_two" class="team-logo mb-2" />
                     <div class="text-white small">{{ bet.team_two }}</div>
                 </div>
             </div>
         </div>
-        
+
         <!-- Game Level -->
         <div class="text-center mb-3">
             <span class="badge text-uppercase" :style="{ backgroundColor: levelBgColor, color: levelTextColor }">
                 Game Level: {{ bet.membership }}
             </span>
         </div>
-        
+
         <!-- Betting Pick -->
         <button class="btn w-100 fw-bold" :style="{ backgroundColor: '#ffc107', color: '#000' }">
             {{ formatBetTip(bet) }}
@@ -62,16 +54,16 @@ import { computed } from 'vue';
 const props = defineProps({
     bet: {
         type: Object,
-        required: true
-    }
+        required: true,
+    },
 });
 
 const formatDate = (date: string) => {
     if (!date) return '21 May';
     const d = new Date(date);
-    return d.toLocaleDateString('en-US', { 
+    return d.toLocaleDateString('en-US', {
         day: 'numeric',
-        month: 'short'
+        month: 'short',
     });
 };
 
@@ -82,7 +74,7 @@ const formatBetTip = (bet: any) => {
         const tipText = bet.tips.split(' - ')[0] || bet.tips;
         return tipText;
     }
-    
+
     // Otherwise, create a default bet text
     const team = bet.bet_team || bet.team_one;
     const type = bet.bet_type || 'Moneyline';
@@ -94,7 +86,7 @@ const getOdds = (bet: any) => {
     if (bet.wager_odds) {
         return formatOddsDisplay(bet.wager_odds);
     }
-    
+
     // Try to extract from tips text
     if (bet.tips && bet.tips.includes(' - ')) {
         const parts = bet.tips.split(' - ');
@@ -102,7 +94,7 @@ const getOdds = (bet: any) => {
             return formatOddsDisplay(parts[1]);
         }
     }
-    
+
     return '-110'; // Default odds
 };
 
@@ -157,7 +149,7 @@ const levelTextColor = computed(() => {
     font-weight: bold;
     font-size: 14px;
     transform: rotate(45deg);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .team-box {

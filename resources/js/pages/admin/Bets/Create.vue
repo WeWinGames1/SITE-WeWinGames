@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref, watch, computed, onMounted, nextTick } from 'vue';
 import axios from 'axios';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 interface User {
     id: number;
@@ -90,7 +90,7 @@ onMounted(() => {
 // Computed properties
 const filteredLeagues = computed(() => {
     if (!form.sport_id) return [];
-    return props.leagues.filter(league => league.sport_id === form.sport_id);
+    return props.leagues.filter((league) => league.sport_id === form.sport_id);
 });
 
 const isParlay = computed(() => form.wager_type === 'parlay');
@@ -114,56 +114,65 @@ const teamTwoLogo = computed(() => {
 });
 
 // Watch for sport changes to update the sport name and reset league
-watch(() => form.sport_id, (newSportId) => {
-    if (newSportId) {
-        const sport = props.sports.find(s => s.id === newSportId);
-        if (sport) {
-            form.sports = sport.name;
+watch(
+    () => form.sport_id,
+    (newSportId) => {
+        if (newSportId) {
+            const sport = props.sports.find((s) => s.id === newSportId);
+            if (sport) {
+                form.sports = sport.name;
+            }
+        } else {
+            // Clear sport name if no sport selected
+            form.sports = '';
         }
-    } else {
-        // Clear sport name if no sport selected
-        form.sports = '';
-    }
-    // Reset league if it doesn't belong to the new sport
-    if (form.league_id) {
-        const league = props.leagues.find(l => l.id === form.league_id);
-        if (!league || league.sport_id !== newSportId) {
-            form.league_id = null;
-            form.league = '';
+        // Reset league if it doesn't belong to the new sport
+        if (form.league_id) {
+            const league = props.leagues.find((l) => l.id === form.league_id);
+            if (!league || league.sport_id !== newSportId) {
+                form.league_id = null;
+                form.league = '';
+            }
         }
-    }
-    
-    // Reinitialize Select2 dropdowns with new sport filter
-    nextTick(() => {
-        initializeSelect2();
-    });
-});
+
+        // Reinitialize Select2 dropdowns with new sport filter
+        nextTick(() => {
+            initializeSelect2();
+        });
+    },
+);
 
 // Watch for league changes to update the league name
-watch(() => form.league_id, (newLeagueId) => {
-    if (newLeagueId) {
-        const league = props.leagues.find(l => l.id === newLeagueId);
-        if (league) {
-            form.league = league.name;
+watch(
+    () => form.league_id,
+    (newLeagueId) => {
+        if (newLeagueId) {
+            const league = props.leagues.find((l) => l.id === newLeagueId);
+            if (league) {
+                form.league = league.name;
+            }
         }
-    }
-    
-    // Reinitialize Select2 dropdowns with new league filter
-    nextTick(() => {
-        initializeSelect2();
-    });
-});
+
+        // Reinitialize Select2 dropdowns with new league filter
+        nextTick(() => {
+            initializeSelect2();
+        });
+    },
+);
 
 // Watch for bet type changes to reinitialize Select2 and reset golf_place
-watch(() => form.wager_type, () => {
-    // Reset golf_place if bet type is not each_way
-    if (form.wager_type !== 'each_way') {
-        form.golf_place = false;
-    }
-    nextTick(() => {
-        initializeSelect2();
-    });
-});
+watch(
+    () => form.wager_type,
+    () => {
+        // Reset golf_place if bet type is not each_way
+        if (form.wager_type !== 'each_way') {
+            form.golf_place = false;
+        }
+        nextTick(() => {
+            initializeSelect2();
+        });
+    },
+);
 
 // Calculate potential win when odds or stake change
 watch([() => form.wager_odds, () => form.wager_amount], () => {
@@ -171,21 +180,24 @@ watch([() => form.wager_odds, () => form.wager_amount], () => {
 });
 
 // Calculate profit when status changes
-watch(() => form.status, () => {
-    calculateProfit();
-});
+watch(
+    () => form.status,
+    () => {
+        calculateProfit();
+    },
+);
 
 function calculatePotentialWin() {
     const odds = typeof form.wager_odds === 'string' ? parseFloat(form.wager_odds) : form.wager_odds;
     const stake = Number(form.wager_amount);
-    
+
     if (odds && stake) {
         if (odds > 0) {
             // Positive American odds
-            form.winning_amount = stake + (stake * odds / 100);
+            form.winning_amount = stake + (stake * odds) / 100;
         } else {
             // Negative American odds
-            form.winning_amount = stake + (stake * 100 / Math.abs(odds));
+            form.winning_amount = stake + (stake * 100) / Math.abs(odds);
         }
     } else {
         form.winning_amount = 0;
@@ -195,7 +207,7 @@ function calculatePotentialWin() {
 function calculateProfit() {
     const stake = Number(form.wager_amount);
     const winning = Number(form.winning_amount);
-    
+
     if (form.status === 'won') {
         form.profit_amount = winning - stake;
     } else if (form.status === 'loss') {
@@ -216,14 +228,14 @@ function initializeSelect2() {
 function initTeamSelect(elementId: string, teamType: 'one' | 'two') {
     const element = document.getElementById(elementId) as any;
     if (!element || !window.$) return;
-    
+
     const $element = window.$(element);
-    
+
     // Destroy existing instance if it exists
     if ($element.hasClass('select2-hidden-accessible')) {
         $element.select2('destroy');
     }
-    
+
     $element.select2({
         ajax: {
             url: route('admin.api.teams.search'),
@@ -240,27 +252,25 @@ function initTeamSelect(elementId: string, teamType: 'one' | 'two') {
                 // Add option to create new team if no results or search term doesn't match
                 const results = data.results || [];
                 const searchTerm = data.q || '';
-                
+
                 // Check if search term exactly matches any result
-                const exactMatch = results.some((team: any) => 
-                    team.name.toLowerCase() === searchTerm.toLowerCase()
-                );
-                
+                const exactMatch = results.some((team: any) => team.name.toLowerCase() === searchTerm.toLowerCase());
+
                 // Add "create new" option if search term exists and no exact match
                 if (searchTerm && searchTerm.length >= 2 && !exactMatch) {
                     results.unshift({
                         id: `new:${searchTerm}`,
                         name: searchTerm,
                         text: `Add "${searchTerm}" as new team/player`,
-                        isNew: true
+                        isNew: true,
                     });
                 }
-                
+
                 return {
-                    results: results
+                    results: results,
                 };
             },
-            cache: true
+            cache: true,
         },
         placeholder: `Search or enter ${teamType === 'one' ? 'team one/player' : 'team two'} name...`,
         minimumInputLength: 2,
@@ -273,24 +283,24 @@ function initTeamSelect(elementId: string, teamType: 'one' | 'two') {
             if (!term || term.length < 2) {
                 return null;
             }
-            
+
             return {
                 id: `new:${term}`,
                 name: term,
                 text: term,
-                isNew: true
+                isNew: true,
             };
         },
-        dropdownParent: window.$('.modal').length ? window.$('.modal') : window.$('body')
+        dropdownParent: window.$('.modal').length ? window.$('.modal') : window.$('body'),
     });
-    
+
     // Handle selection
     $element.on('select2:select', function (e: any) {
         const data = e.params.data;
-        
+
         // Check if this is a new team/player
         const isNewTeam = data.isNew || (typeof data.id === 'string' && data.id.startsWith('new:'));
-        
+
         if (teamType === 'one') {
             if (isNewTeam) {
                 // For new teams, store the name and set ID to null
@@ -303,7 +313,7 @@ function initTeamSelect(elementId: string, teamType: 'one' | 'two') {
                     sport_id: form.sport_id!,
                     league_id: form.league_id,
                     logo_url: null,
-                    isNew: true
+                    isNew: true,
                 };
             } else {
                 form.team_one_id = data.id;
@@ -314,7 +324,7 @@ function initTeamSelect(elementId: string, teamType: 'one' | 'two') {
                     name: data.name,
                     sport_id: data.sport_id || form.sport_id!,
                     league_id: data.league_id || form.league_id,
-                    logo_url: data.logo_url
+                    logo_url: data.logo_url,
                 };
             }
         } else {
@@ -329,7 +339,7 @@ function initTeamSelect(elementId: string, teamType: 'one' | 'two') {
                     sport_id: form.sport_id!,
                     league_id: form.league_id,
                     logo_url: null,
-                    isNew: true
+                    isNew: true,
                 };
             } else {
                 form.team_two_id = data.id;
@@ -340,12 +350,12 @@ function initTeamSelect(elementId: string, teamType: 'one' | 'two') {
                     name: data.name,
                     sport_id: data.sport_id || form.sport_id!,
                     league_id: data.league_id || form.league_id,
-                    logo_url: data.logo_url
+                    logo_url: data.logo_url,
                 };
             }
         }
     });
-    
+
     // Handle clearing
     $element.on('select2:clear', function () {
         if (teamType === 'one') {
@@ -364,16 +374,18 @@ function initTeamSelect(elementId: string, teamType: 'one' | 'two') {
 
 function formatTeam(team: any) {
     if (!team.id) return team.text;
-    
+
     // Check if this is a new team option
     const isNewTeam = team.isNew || (typeof team.id === 'string' && team.id.startsWith('new:'));
-    
+
     const $container = window.$('<div class="d-flex align-items-center">');
-    
+
     if (isNewTeam) {
         // Show special formatting for new team option
-        $container.append('<div class="me-2" style="width: 30px; height: 30px; background: #28a745; border-radius: 4px; display: flex; align-items: center; justify-content: center;"><i class="bi bi-plus text-white"></i></div>');
-        
+        $container.append(
+            '<div class="me-2" style="width: 30px; height: 30px; background: #28a745; border-radius: 4px; display: flex; align-items: center; justify-content: center;"><i class="bi bi-plus text-white"></i></div>',
+        );
+
         const $text = window.$('<div>');
         if (team.text && team.text.includes('Add "')) {
             // This is the "Add as new" option
@@ -392,16 +404,16 @@ function formatTeam(team: any) {
         } else {
             $container.append('<div class="me-2" style="width: 30px; height: 30px; background: #e9ecef; border-radius: 4px;"></div>');
         }
-        
+
         const $text = window.$('<div>');
         $text.append(`<div>${team.name}</div>`);
         if (team.sport || team.league) {
             $text.append(`<small class="text-muted">${team.sport || ''} ${team.league ? '• ' + team.league : ''}</small>`);
         }
-        
+
         $container.append($text);
     }
-    
+
     return $container;
 }
 
@@ -411,7 +423,7 @@ function formatTeamSelection(team: any) {
 
 function openLogoModal(teamType: 'one' | 'two') {
     logoModalTeam.value = teamType;
-    
+
     // Get the selected team
     if (teamType === 'one' && form.team_one_id && teamOne.value) {
         selectedTeamForLogo.value = teamOne.value;
@@ -420,7 +432,7 @@ function openLogoModal(teamType: 'one' | 'two') {
     } else {
         return; // No team selected
     }
-    
+
     showLogoModal.value = true;
 }
 
@@ -433,21 +445,17 @@ function handleLogoFileChange(event: Event) {
 
 async function uploadLogo() {
     if (!logoFile.value || !selectedTeamForLogo.value) return;
-    
+
     const formData = new FormData();
     formData.append('logo', logoFile.value);
-    
+
     try {
-        const response = await axios.post(
-            route('admin.api.teams.update-logo', selectedTeamForLogo.value.id),
-            formData,
-            {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            }
-        );
-        
+        const response = await axios.post(route('admin.api.teams.update-logo', selectedTeamForLogo.value.id), formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+
         if (response.data.success) {
             // Update the team logo in the local state
             const logoUrl = response.data.logo_url.replace('/storage/', '');
@@ -456,7 +464,7 @@ async function uploadLogo() {
             } else if (logoModalTeam.value === 'two' && teamTwo.value) {
                 teamTwo.value.logo_url = logoUrl;
             }
-            
+
             // Close modal and reset
             showLogoModal.value = false;
             logoFile.value = null;
@@ -474,7 +482,7 @@ function addParlayTeam() {
         name: '',
         sport_id: form.sport_id!,
         league_id: form.league_id,
-        logo_url: null
+        logo_url: null,
     });
 }
 
@@ -485,69 +493,69 @@ function removeParlayTeam(index: number) {
 function validateForm(): boolean {
     // Clear previous errors
     form.clearErrors();
-    
+
     let isValid = true;
     const errors: Record<string, string> = {};
-    
+
     // Required fields validation
     if (!form.wager_type) {
         errors.wager_type = 'The bet type field is required.';
         isValid = false;
     }
-    
+
     if (!form.sports || !form.sport_id) {
         errors.sports = 'The sport field is required.';
         isValid = false;
     }
-    
+
     if (!form.betting_date) {
         errors.betting_date = 'The betting date field is required.';
         isValid = false;
     }
-    
+
     if (!form.game_date) {
         errors.game_date = 'The game date field is required.';
         isValid = false;
     }
-    
+
     if (!form.wager_odds) {
         errors.wager_odds = 'The odds field is required.';
         isValid = false;
     }
-    
+
     if (form.wager_amount === null || form.wager_amount === undefined || form.wager_amount < 0) {
         errors.wager_amount = 'The wager amount must be at least 0.';
         isValid = false;
     }
-    
+
     if (!form.status) {
         errors.status = 'The status field is required.';
         isValid = false;
     }
-    
+
     if (!form.membership) {
         errors.membership = 'The membership field is required.';
         isValid = false;
     }
-    
+
     // Numeric validation
     if (form.wager_odds && isNaN(parseFloat(form.wager_odds as string))) {
         errors.wager_odds = 'The odds must be a number.';
         isValid = false;
     }
-    
+
     if (form.place_fraction !== null && form.place_fraction !== undefined) {
         if (form.place_fraction < 0 || form.place_fraction > 1) {
             errors.place_fraction = 'The place fraction must be between 0 and 1.';
             isValid = false;
         }
     }
-    
+
     // Set errors if any
     if (!isValid) {
         form.setError(errors);
     }
-    
+
     return isValid;
 }
 
@@ -556,9 +564,9 @@ function submit() {
         // Set is_each_way based on wager_type
         const data = {
             ...form.data(),
-            is_each_way: form.wager_type === 'each_way'
+            is_each_way: form.wager_type === 'each_way',
         };
-        
+
         form.transform(() => data).post(route('admin.bets.store'));
     }
 }
@@ -566,15 +574,15 @@ function submit() {
 // Helper function to calculate place odds
 function calculatePlaceOdds(americanOdds: number, placeFraction: number): number {
     if (!americanOdds || !placeFraction) return 0;
-    
+
     if (americanOdds > 0) {
         // Positive odds: +2200 with 1/5 = +440
         return americanOdds * placeFraction;
     } else {
         // Negative odds: Convert to decimal, apply fraction, convert back
-        const decimal = (americanOdds < 0) ? (100 / Math.abs(americanOdds)) + 1 : (americanOdds / 100) + 1;
-        const placeDecimal = 1 + ((decimal - 1) * placeFraction);
-        
+        const decimal = americanOdds < 0 ? 100 / Math.abs(americanOdds) + 1 : americanOdds / 100 + 1;
+        const placeDecimal = 1 + (decimal - 1) * placeFraction;
+
         // Convert back to American
         if (placeDecimal >= 2) {
             return (placeDecimal - 1) * 100;
@@ -595,7 +603,7 @@ function calculateEachWayPayout(type: 'win' | 'place'): number {
     const stake = (form.wager_amount || 10) / 2; // Each Way splits the stake
     const winOdds = parseFloat(form.wager_odds) || 0;
     const placeOdds = calculatePlaceOdds(winOdds, form.place_fraction);
-    
+
     if (type === 'win') {
         // Win = both win and place parts pay out
         const winPayout = calculateAmericanOddsPayout(stake, winOdds);
@@ -610,13 +618,13 @@ function calculateEachWayPayout(type: 'win' | 'place'): number {
 // Helper function to calculate payout from American odds
 function calculateAmericanOddsPayout(stake: number, odds: number): number {
     if (!stake || !odds) return stake;
-    
+
     if (odds > 0) {
         // Positive odds: profit = stake * (odds/100)
-        return stake + (stake * odds / 100);
+        return stake + (stake * odds) / 100;
     } else {
         // Negative odds: profit = stake * (100/|odds|)
-        return stake + (stake * 100 / Math.abs(odds));
+        return stake + (stake * 100) / Math.abs(odds);
     }
 }
 
@@ -638,7 +646,7 @@ declare global {
 <template>
     <AdminLayout>
         <Head title="Create Bet" />
-        
+
         <div class="container-fluid">
             <!-- Header -->
             <div class="row mb-4">
@@ -672,15 +680,15 @@ declare global {
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
 
-                <!-- Bet Type Card -->
+                <!-- Wager Type Card -->
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h3 class="h5 mb-0">Bet Type</h3>
+                        <h3 class="h5 mb-0">Wager Type</h3>
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-12">
-                                <label for="wager_type" class="form-label">Select Bet Type <span class="text-danger">*</span></label>
+                                <label for="wager_type" class="form-label">Select Wager Type <span class="text-danger">*</span></label>
                                 <select
                                     id="wager_type"
                                     v-model="form.wager_type"
@@ -773,17 +781,12 @@ declare global {
                                         Please select a <strong>Sport</strong> and <strong>League</strong> first to enable team/player selection.
                                     </div>
                                 </div>
-                                
+
                                 <!-- Team One -->
                                 <div v-if="canSelectTeams" class="col-md-6">
                                     <label for="team_one_select" class="form-label">Team One / Player</label>
                                     <div class="input-group">
-                                        <select
-                                            id="team_one_select"
-                                            class="form-control"
-                                            style="width: calc(100% - 50px);"
-                                        >
-                                        </select>
+                                        <select id="team_one_select" class="form-control" style="width: calc(100% - 50px)"></select>
                                         <button
                                             v-if="teamOneLogo"
                                             type="button"
@@ -791,7 +794,7 @@ declare global {
                                             @click="openLogoModal('one')"
                                             title="View/Update Logo"
                                         >
-                                            <img :src="teamOneLogo" alt="Logo" style="width: 20px; height: 20px; object-fit: contain;">
+                                            <img :src="teamOneLogo" alt="Logo" style="width: 20px; height: 20px; object-fit: contain" />
                                         </button>
                                         <button
                                             v-else-if="form.team_one_id"
@@ -811,12 +814,7 @@ declare global {
                                 <div v-if="canSelectTeams" class="col-md-6">
                                     <label for="team_two_select" class="form-label">Team Two</label>
                                     <div class="input-group">
-                                        <select
-                                            id="team_two_select"
-                                            class="form-control"
-                                            style="width: calc(100% - 50px);"
-                                        >
-                                        </select>
+                                        <select id="team_two_select" class="form-control" style="width: calc(100% - 50px)"></select>
                                         <button
                                             v-if="teamTwoLogo"
                                             type="button"
@@ -824,7 +822,7 @@ declare global {
                                             @click="openLogoModal('two')"
                                             title="View/Update Logo"
                                         >
-                                            <img :src="teamTwoLogo" alt="Logo" style="width: 20px; height: 20px; object-fit: contain;">
+                                            <img :src="teamTwoLogo" alt="Logo" style="width: 20px; height: 20px; object-fit: contain" />
                                         </button>
                                         <button
                                             v-else-if="form.team_two_id"
@@ -847,26 +845,13 @@ declare global {
                                     <label class="form-label">Parlay Teams</label>
                                     <div v-for="(team, index) in form.parlay_teams" :key="index" class="mb-2">
                                         <div class="input-group">
-                                            <input
-                                                v-model="team.name"
-                                                type="text"
-                                                class="form-control"
-                                                :placeholder="`Team ${index + 1}`"
-                                            />
-                                            <button
-                                                type="button"
-                                                class="btn btn-outline-danger"
-                                                @click="removeParlayTeam(index)"
-                                            >
+                                            <input v-model="team.name" type="text" class="form-control" :placeholder="`Team ${index + 1}`" />
+                                            <button type="button" class="btn btn-outline-danger" @click="removeParlayTeam(index)">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
                                     </div>
-                                    <button
-                                        type="button"
-                                        class="btn btn-outline-primary btn-sm"
-                                        @click="addParlayTeam"
-                                    >
+                                    <button type="button" class="btn btn-outline-primary btn-sm" @click="addParlayTeam">
                                         <i class="bi bi-plus-circle me-1"></i> Add Team
                                     </button>
                                 </div>
@@ -887,7 +872,7 @@ declare global {
                                     {{ form.errors.betting_date }}
                                 </div>
                             </div>
-                            
+
                             <!-- Game Date -->
                             <div class="col-md-6">
                                 <label for="game_date" class="form-label">Game Date <span class="text-danger">*</span></label>
@@ -1002,13 +987,7 @@ declare global {
                             <!-- Status -->
                             <div class="col-md-4">
                                 <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
-                                <select
-                                    id="status"
-                                    v-model="form.status"
-                                    class="form-select"
-                                    :class="{ 'is-invalid': form.errors.status }"
-                                    required
-                                >
+                                <select id="status" v-model="form.status" class="form-select" :class="{ 'is-invalid': form.errors.status }" required>
                                     <option value="">Select status...</option>
                                     <option value="pending">Pending</option>
                                     <option value="won">Won</option>
@@ -1055,7 +1034,6 @@ declare global {
                                 </div>
                             </div>
 
-
                             <!-- Place Fraction -->
                             <div v-if="form.wager_type === 'each_way'" class="col-md-6">
                                 <label for="place_fraction" class="form-label">Place Fraction</label>
@@ -1078,15 +1056,16 @@ declare global {
                             <!-- Place Odds Preview -->
                             <div v-if="form.wager_type === 'each_way'" class="col-md-6">
                                 <label class="form-label">Place Odds Preview</label>
-                                <div class="border rounded p-2" style="background-color: #f8f9fa;">
+                                <div class="border rounded p-2" style="background-color: #f8f9fa">
                                     <div class="small text-muted mb-2">
-                                        Place Odds: <strong>{{ formatOdds(calculatePlaceOdds(parseFloat(form.wager_odds), form.place_fraction)) }}</strong>
+                                        Place Odds:
+                                        <strong>{{ formatOdds(calculatePlaceOdds(parseFloat(form.wager_odds), form.place_fraction)) }}</strong>
                                     </div>
                                     <table class="table table-sm table-hover mb-0">
                                         <thead>
                                             <tr>
-                                                <th class="text-center" style="width: 60px;">Position</th>
-                                                <th class="text-end">Payout (per ${{ form.wager_amount/2 || 5 }})</th>
+                                                <th class="text-center" style="width: 60px">Position</th>
+                                                <th class="text-end">Payout (per ${{ form.wager_amount / 2 || 5 }})</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -1097,7 +1076,11 @@ declare global {
                                                     <small class="text-muted d-block">Win + Place</small>
                                                 </td>
                                             </tr>
-                                            <tr v-for="position in [2, 3, 4, 5, 6, 7, 8, 9, 10]" :key="position" :class="{ 'table-info': position <= 5, 'text-muted': position > 5 }">
+                                            <tr
+                                                v-for="position in [2, 3, 4, 5, 6, 7, 8, 9, 10]"
+                                                :key="position"
+                                                :class="{ 'table-info': position <= 5, 'text-muted': position > 5 }"
+                                            >
                                                 <td class="text-center">{{ getOrdinal(position) }}</td>
                                                 <td class="text-end">
                                                     <span v-if="position <= 5">
@@ -1118,7 +1101,7 @@ declare global {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Golf Only: Place -->
                             <div v-if="form.wager_type === 'each_way'" class="col-12 mt-3">
                                 <div class="form-check">
@@ -1223,17 +1206,8 @@ declare global {
 
                 <!-- Submit Buttons -->
                 <div class="d-flex justify-content-end gap-2">
-                    <Link
-                        :href="route('admin.bets.index')"
-                        class="btn btn-secondary"
-                    >
-                        Cancel
-                    </Link>
-                    <button
-                        type="submit"
-                        class="btn btn-primary"
-                        :disabled="form.processing"
-                    >
+                    <Link :href="route('admin.bets.index')" class="btn btn-secondary"> Cancel </Link>
+                    <button type="submit" class="btn btn-primary" :disabled="form.processing">
                         <span v-if="form.processing" class="spinner-border spinner-border-sm me-2"></span>
                         {{ form.processing ? 'Creating...' : 'Create Bet' }}
                     </button>
@@ -1242,7 +1216,7 @@ declare global {
         </div>
 
         <!-- Logo Upload Modal -->
-        <div v-if="showLogoModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+        <div v-if="showLogoModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0, 0, 0, 0.5)">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -1251,38 +1225,27 @@ declare global {
                     </div>
                     <div class="modal-body">
                         <div v-if="selectedTeamForLogo">
-                            <p>Update logo for: <strong>{{ selectedTeamForLogo.name }}</strong></p>
-                            
+                            <p>
+                                Update logo for: <strong>{{ selectedTeamForLogo.name }}</strong>
+                            </p>
+
                             <div v-if="selectedTeamForLogo.logo_url" class="text-center mb-3">
-                                <img 
-                                    :src="`/storage/${selectedTeamForLogo.logo_url}`" 
+                                <img
+                                    :src="`/storage/${selectedTeamForLogo.logo_url}`"
                                     :alt="selectedTeamForLogo.name"
-                                    style="max-width: 200px; max-height: 200px;"
+                                    style="max-width: 200px; max-height: 200px"
                                 />
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="logoFile" class="form-label">Choose new logo</label>
-                                <input 
-                                    type="file" 
-                                    id="logoFile" 
-                                    class="form-control" 
-                                    accept="image/*"
-                                    @change="handleLogoFileChange"
-                                />
+                                <input type="file" id="logoFile" class="form-control" accept="image/*" @change="handleLogoFileChange" />
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" @click="showLogoModal = false">Cancel</button>
-                        <button 
-                            type="button" 
-                            class="btn btn-primary" 
-                            @click="uploadLogo"
-                            :disabled="!logoFile"
-                        >
-                            Upload Logo
-                        </button>
+                        <button type="button" class="btn btn-primary" @click="uploadLogo" :disabled="!logoFile">Upload Logo</button>
                     </div>
                 </div>
             </div>
@@ -1293,8 +1256,8 @@ declare global {
 <style>
 /* Select2 Bootstrap 5 Theme */
 .select2-container--default .select2-selection--single {
-    height: calc(1.5em + .75rem + 2px);
-    padding: .375rem .75rem;
+    height: calc(1.5em + 0.75rem + 2px);
+    padding: 0.375rem 0.75rem;
     font-size: 1rem;
     font-weight: 400;
     line-height: 1.5;
@@ -1302,8 +1265,10 @@ declare global {
     background-color: #fff;
     background-clip: padding-box;
     border: 1px solid #ced4da;
-    border-radius: .25rem;
-    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    border-radius: 0.25rem;
+    transition:
+        border-color 0.15s ease-in-out,
+        box-shadow 0.15s ease-in-out;
 }
 
 .select2-container--default .select2-selection--single .select2-selection__rendered {
@@ -1312,20 +1277,20 @@ declare global {
 }
 
 .select2-container--default .select2-selection--single .select2-selection__arrow {
-    height: calc(1.5em + .75rem);
+    height: calc(1.5em + 0.75rem);
     top: 1px;
     right: 10px;
 }
 
 .select2-dropdown {
     border: 1px solid #ced4da;
-    border-radius: .25rem;
+    border-radius: 0.25rem;
 }
 
 .select2-search--dropdown .select2-search__field {
-    padding: .375rem .75rem;
+    padding: 0.375rem 0.75rem;
     border: 1px solid #ced4da;
-    border-radius: .25rem;
+    border-radius: 0.25rem;
 }
 
 .select2-results__option--highlighted[aria-selected] {

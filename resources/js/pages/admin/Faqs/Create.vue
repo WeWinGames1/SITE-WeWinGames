@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import AdminLayout from '@/layouts/AdminLayout.vue';
 import InputError from '@/components/InputError.vue';
+import AdminLayout from '@/layouts/AdminLayout.vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 const props = defineProps<{
@@ -16,7 +16,7 @@ const form = useForm({
     answer: '',
     category: '',
     is_active: true,
-    sort_order: 0
+    sort_order: 0,
 });
 
 function handleCategoryChange() {
@@ -32,10 +32,10 @@ function handleCategoryChange() {
 function validateForm(): boolean {
     // Clear previous errors
     form.clearErrors();
-    
+
     let isValid = true;
     const errors: Record<string, string> = {};
-    
+
     // Required fields validation
     if (!form.question || !form.question.trim()) {
         errors.question = 'The question field is required.';
@@ -44,23 +44,23 @@ function validateForm(): boolean {
         errors.question = 'The question may not be greater than 500 characters.';
         isValid = false;
     }
-    
+
     if (!form.answer || !form.answer.trim()) {
         errors.answer = 'The answer field is required.';
         isValid = false;
     }
-    
+
     // Optional fields validation
     if (form.category && form.category.length > 100) {
         errors.category = 'The category may not be greater than 100 characters.';
         isValid = false;
     }
-    
+
     if (newCategory.value && newCategory.value.length > 100) {
         errors.category = 'The category may not be greater than 100 characters.';
         isValid = false;
     }
-    
+
     // Numeric validation
     if (form.sort_order !== null && form.sort_order !== undefined) {
         if (!Number.isInteger(form.sort_order)) {
@@ -68,12 +68,12 @@ function validateForm(): boolean {
             isValid = false;
         }
     }
-    
+
     // Set errors if any
     if (!isValid) {
         form.setError(errors);
     }
-    
+
     return isValid;
 }
 
@@ -81,11 +81,11 @@ function submit() {
     if (showNewCategory.value && newCategory.value) {
         form.category = newCategory.value;
     }
-    
+
     if (!validateForm()) {
         return;
     }
-    
+
     form.post(route('admin.faqs.store'));
 }
 </script>
@@ -93,7 +93,7 @@ function submit() {
 <template>
     <AdminLayout>
         <Head title="Create FAQ" />
-        
+
         <div class="container-fluid p-4">
             <!-- Page Header -->
             <div class="mb-4">
@@ -120,23 +120,23 @@ function submit() {
                                 <!-- Question -->
                                 <div class="mb-3">
                                     <label for="question" class="form-label">Question <span class="text-danger">*</span></label>
-                                    <input 
+                                    <input
                                         id="question"
                                         v-model="form.question"
-                                        type="text" 
+                                        type="text"
                                         class="form-control"
                                         :class="{ 'is-invalid': form.errors.question }"
                                         placeholder="Enter the question"
                                         maxlength="500"
                                         required
-                                    >
+                                    />
                                     <InputError class="mt-2" :message="form.errors.question" />
                                 </div>
 
                                 <!-- Answer -->
                                 <div class="mb-3">
                                     <label for="answer" class="form-label">Answer <span class="text-danger">*</span></label>
-                                    <textarea 
+                                    <textarea
                                         id="answer"
                                         v-model="form.answer"
                                         class="form-control"
@@ -154,7 +154,7 @@ function submit() {
                                 <!-- Category -->
                                 <div class="mb-3">
                                     <label for="category" class="form-label">Category</label>
-                                    <select 
+                                    <select
                                         v-if="!showNewCategory"
                                         id="category"
                                         v-model="form.category"
@@ -169,16 +169,19 @@ function submit() {
                                         <option value="__new__">+ Add New Category</option>
                                     </select>
                                     <div v-else class="input-group">
-                                        <input 
+                                        <input
                                             v-model="newCategory"
-                                            type="text" 
+                                            type="text"
                                             class="form-control"
                                             placeholder="Enter new category"
                                             maxlength="100"
-                                        >
-                                        <button 
-                                            @click="showNewCategory = false; form.category = ''"
-                                            type="button" 
+                                        />
+                                        <button
+                                            @click="
+                                                showNewCategory = false;
+                                                form.category = '';
+                                            "
+                                            type="button"
                                             class="btn btn-outline-secondary"
                                         >
                                             Cancel
@@ -190,14 +193,14 @@ function submit() {
                                 <!-- Sort Order -->
                                 <div class="mb-3">
                                     <label for="sort_order" class="form-label">Sort Order</label>
-                                    <input 
+                                    <input
                                         id="sort_order"
                                         v-model.number="form.sort_order"
-                                        type="number" 
+                                        type="number"
                                         class="form-control"
                                         :class="{ 'is-invalid': form.errors.sort_order }"
                                         min="0"
-                                    >
+                                    />
                                     <InputError class="mt-2" :message="form.errors.sort_order" />
                                     <small class="form-text text-muted">Lower numbers appear first.</small>
                                 </div>
@@ -205,16 +208,8 @@ function submit() {
                                 <!-- Status -->
                                 <div class="mb-3">
                                     <div class="form-check form-switch">
-                                        <input 
-                                            id="is_active"
-                                            v-model="form.is_active"
-                                            type="checkbox" 
-                                            class="form-check-input"
-                                            role="switch"
-                                        >
-                                        <label class="form-check-label" for="is_active">
-                                            Active
-                                        </label>
+                                        <input id="is_active" v-model="form.is_active" type="checkbox" class="form-check-input" role="switch" />
+                                        <label class="form-check-label" for="is_active"> Active </label>
                                     </div>
                                     <small class="form-text text-muted">Only active FAQs are shown to users.</small>
                                 </div>
@@ -223,18 +218,11 @@ function submit() {
 
                         <!-- Form Actions -->
                         <div class="d-flex justify-content-between mt-4">
-                            <Link 
-                                :href="route('admin.faqs.index')"
-                                class="btn btn-secondary"
-                            >
+                            <Link :href="route('admin.faqs.index')" class="btn btn-secondary">
                                 <i class="bi bi-arrow-left me-2"></i>
                                 Cancel
                             </Link>
-                            <button 
-                                type="submit" 
-                                class="btn btn-primary"
-                                :disabled="form.processing"
-                            >
+                            <button type="submit" class="btn btn-primary" :disabled="form.processing">
                                 <span v-if="form.processing">
                                     <span class="spinner-border spinner-border-sm me-2"></span>
                                     Creating...

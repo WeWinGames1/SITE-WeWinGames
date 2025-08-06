@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
+import { MagnifyingGlassIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { ref, computed, watch } from 'vue';
-import { PlusIcon, PencilIcon, TrashIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import { debounce } from 'lodash';
+import { computed, watch } from 'vue';
 
 interface Sport {
     id: number;
@@ -58,14 +58,20 @@ const applyFilters = debounce(() => {
 }, 300);
 
 // Watch for search changes
-watch(() => filterForm.search, () => {
-    applyFilters();
-});
+watch(
+    () => filterForm.search,
+    () => {
+        applyFilters();
+    },
+);
 
 // Watch for filter changes
-watch(() => [filterForm.sport_id, filterForm.is_active], () => {
-    applyFilters();
-});
+watch(
+    () => [filterForm.sport_id, filterForm.is_active],
+    () => {
+        applyFilters();
+    },
+);
 
 // Generate pagination pages with ellipsis
 const paginationPages = computed(() => {
@@ -73,34 +79,34 @@ const paginationPages = computed(() => {
     const last = props.leagues.last_page;
     const delta = 2;
     const pages: (number | string)[] = [];
-    
+
     // Always show first page
     pages.push(1);
-    
+
     // Calculate range around current page
     const rangeStart = Math.max(2, current - delta);
     const rangeEnd = Math.min(last - 1, current + delta);
-    
+
     // Add ellipsis if needed before range
     if (rangeStart > 2) {
         pages.push('...');
     }
-    
+
     // Add pages in range
     for (let i = rangeStart; i <= rangeEnd; i++) {
         pages.push(i);
     }
-    
+
     // Add ellipsis if needed after range
     if (rangeEnd < last - 1) {
         pages.push('...');
     }
-    
+
     // Always show last page if there's more than one page
     if (last > 1) {
         pages.push(last);
     }
-    
+
     return pages;
 });
 
@@ -116,21 +122,16 @@ function deleteLeague(league: League) {
 <template>
     <AdminLayout>
         <Head title="Leagues Management" />
-        
+
         <div class="container-fluid p-4">
             <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h1 class="h2 mb-0">Leagues Management</h1>
-                    <p class="text-muted mb-0">
-                        Manage leagues within each sport
-                    </p>
+                    <p class="text-muted mb-0">Manage leagues within each sport</p>
                 </div>
-                <Link
-                    :href="route('admin.leagues.create')"
-                    class="btn btn-primary"
-                >
-                    <PlusIcon style="width: 1rem; height: 1rem;" class="me-1" />
+                <Link :href="route('admin.leagues.create')" class="btn btn-primary">
+                    <PlusIcon style="width: 1rem; height: 1rem" class="me-1" />
                     Add League
                 </Link>
             </div>
@@ -142,14 +143,9 @@ function deleteLeague(league: League) {
                         <div class="col-md-4">
                             <div class="input-group">
                                 <span class="input-group-text">
-                                    <MagnifyingGlassIcon style="width: 1rem; height: 1rem;" />
+                                    <MagnifyingGlassIcon style="width: 1rem; height: 1rem" />
                                 </span>
-                                <input
-                                    v-model="filterForm.search"
-                                    type="text"
-                                    class="form-control"
-                                    placeholder="Search leagues..."
-                                />
+                                <input v-model="filterForm.search" type="text" class="form-control" placeholder="Search leagues..." />
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -182,7 +178,7 @@ function deleteLeague(league: League) {
                                 <th>Abbreviation</th>
                                 <th>Teams</th>
                                 <th>Status</th>
-                                <th class="text-center" style="width: 100px;">Actions</th>
+                                <th class="text-center" style="width: 100px">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -205,12 +201,8 @@ function deleteLeague(league: League) {
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm" role="group">
-                                        <Link
-                                            :href="route('admin.leagues.edit', league.id)"
-                                            class="btn btn-outline-primary"
-                                            title="Edit"
-                                        >
-                                            <PencilIcon style="width: 1rem; height: 1rem;" />
+                                        <Link :href="route('admin.leagues.edit', league.id)" class="btn btn-outline-primary" title="Edit">
+                                            <PencilIcon style="width: 1rem; height: 1rem" />
                                         </Link>
                                         <button
                                             @click="deleteLeague(league)"
@@ -218,7 +210,7 @@ function deleteLeague(league: League) {
                                             title="Delete"
                                             :disabled="league.teams_count > 0"
                                         >
-                                            <TrashIcon style="width: 1rem; height: 1rem;" />
+                                            <TrashIcon style="width: 1rem; height: 1rem" />
                                         </button>
                                     </div>
                                 </td>
@@ -230,14 +222,9 @@ function deleteLeague(league: League) {
                 <!-- Empty State -->
                 <div v-if="leagues.data.length === 0" class="text-center py-5">
                     <h5 class="mt-3">No leagues found</h5>
-                    <p class="text-muted">
-                        Get started by adding your first league.
-                    </p>
-                    <Link
-                        :href="route('admin.leagues.create')"
-                        class="btn btn-primary mt-3"
-                    >
-                        <PlusIcon style="width: 1rem; height: 1rem;" class="me-1" />
+                    <p class="text-muted">Get started by adding your first league.</p>
+                    <Link :href="route('admin.leagues.create')" class="btn btn-primary mt-3">
+                        <PlusIcon style="width: 1rem; height: 1rem" class="me-1" />
                         Add League
                     </Link>
                 </div>
@@ -245,42 +232,24 @@ function deleteLeague(league: League) {
                 <!-- Pagination -->
                 <div v-if="leagues.last_page > 1" class="card-footer">
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted small">
-                            Showing {{ leagues.from }} to {{ leagues.to }} of {{ leagues.total }} results
-                        </span>
+                        <span class="text-muted small"> Showing {{ leagues.from }} to {{ leagues.to }} of {{ leagues.total }} results </span>
                         <nav>
                             <ul class="pagination pagination-sm mb-0">
                                 <li class="page-item" :class="{ disabled: leagues.current_page === 1 }">
-                                    <Link
-                                        :href="`?page=${leagues.current_page - 1}`"
-                                        preserve-scroll
-                                        class="page-link"
-                                    >
-                                        Previous
-                                    </Link>
+                                    <Link :href="`?page=${leagues.current_page - 1}`" preserve-scroll class="page-link"> Previous </Link>
                                 </li>
                                 <template v-for="(page, index) in paginationPages" :key="index">
                                     <li v-if="page === '...'" class="page-item disabled">
                                         <span class="page-link">...</span>
                                     </li>
                                     <li v-else class="page-item" :class="{ active: page === leagues.current_page }">
-                                        <Link
-                                            :href="`?page=${page}`"
-                                            preserve-scroll
-                                            class="page-link"
-                                        >
+                                        <Link :href="`?page=${page}`" preserve-scroll class="page-link">
                                             {{ page }}
                                         </Link>
                                     </li>
                                 </template>
                                 <li class="page-item" :class="{ disabled: leagues.current_page === leagues.last_page }">
-                                    <Link
-                                        :href="`?page=${leagues.current_page + 1}`"
-                                        preserve-scroll
-                                        class="page-link"
-                                    >
-                                        Next
-                                    </Link>
+                                    <Link :href="`?page=${leagues.current_page + 1}`" preserve-scroll class="page-link"> Next </Link>
                                 </li>
                             </ul>
                         </nav>

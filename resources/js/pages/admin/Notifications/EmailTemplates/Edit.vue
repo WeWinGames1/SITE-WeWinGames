@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-import { useEditor, EditorContent } from '@tiptap/vue-3';
-import StarterKit from '@tiptap/starter-kit';
-import TiptapLink from '@tiptap/extension-link';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import Image from '@tiptap/extension-image';
+import TiptapLink from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
+import StarterKit from '@tiptap/starter-kit';
+import { EditorContent, useEditor } from '@tiptap/vue-3';
+import { computed, onBeforeUnmount, ref } from 'vue';
 
 interface EmailTemplate {
     id: number;
@@ -42,7 +42,7 @@ const showSourceCode = ref(false);
 const sourceCode = ref('');
 
 const availableVariablesText = computed(() => {
-    return props.template.available_variables.map(v => `{{${v}}}`).join(', ');
+    return props.template.available_variables.map((v) => `{{${v}}}`).join(', ');
 });
 
 // Rich text editor setup
@@ -73,10 +73,10 @@ onBeforeUnmount(() => {
 function validateForm(): boolean {
     // Clear previous errors
     form.clearErrors();
-    
+
     let isValid = true;
     const errors: Record<string, string> = {};
-    
+
     // Required fields validation
     if (!form.subject || !form.subject.trim()) {
         errors.subject = 'The subject field is required.';
@@ -85,12 +85,12 @@ function validateForm(): boolean {
         errors.subject = 'The subject may not be greater than 255 characters.';
         isValid = false;
     }
-    
+
     if (!form.body_html || !form.body_html.trim() || form.body_html === '<p></p>') {
         errors.body_html = 'The body html field is required.';
         isValid = false;
     }
-    
+
     // Optional fields validation
     if (form.from_email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -102,17 +102,17 @@ function validateForm(): boolean {
             isValid = false;
         }
     }
-    
+
     if (form.from_name && form.from_name.length > 255) {
         errors.from_name = 'The from name may not be greater than 255 characters.';
         isValid = false;
     }
-    
+
     // Set errors if any
     if (!isValid) {
         form.setError(errors);
     }
-    
+
     return isValid;
 }
 
@@ -120,7 +120,7 @@ function updateTemplate() {
     if (!validateForm()) {
         return;
     }
-    
+
     form.put(`/admin/notifications/email-templates/${props.template.id}`, {
         preserveScroll: true,
     });
@@ -129,7 +129,7 @@ function updateTemplate() {
 async function previewTemplate() {
     showPreview.value = true;
     previewLoading.value = true;
-    
+
     try {
         const response = await fetch(`/admin/notifications/email-templates/${props.template.id}/preview`);
         previewData.value = await response.json();
@@ -142,9 +142,13 @@ async function previewTemplate() {
 
 function resetToDefault() {
     if (confirm('Are you sure you want to reset this template to its default content? This cannot be undone.')) {
-        router.post(`/admin/notifications/email-templates/${props.template.id}/reset`, {}, {
-            preserveScroll: true,
-        });
+        router.post(
+            `/admin/notifications/email-templates/${props.template.id}/reset`,
+            {},
+            {
+                preserveScroll: true,
+            },
+        );
     }
 }
 
@@ -159,11 +163,11 @@ function insertVariable(variable: string) {
             const before = text.substring(0, start);
             const after = text.substring(end, text.length);
             sourceCode.value = before + `{{${variable}}}` + after;
-            
+
             // Update form and editor
             form.body_html = sourceCode.value;
             editor.value?.commands.setContent(sourceCode.value);
-            
+
             // Set cursor position after inserted text
             setTimeout(() => {
                 textarea.selectionStart = textarea.selectionEnd = start + variable.length + 4;
@@ -240,7 +244,7 @@ function removeLink() {
 <template>
     <AdminLayout>
         <Head :title="`Edit ${template.name} Template`" />
-        
+
         <div class="container-fluid p-4">
             <div class="row mb-4">
                 <div class="col">
@@ -251,10 +255,7 @@ function removeLink() {
                                 {{ template.description }}
                             </p>
                         </div>
-                        <Link 
-                            href="/admin/notifications/email-templates"
-                            class="btn btn-outline-secondary"
-                        >
+                        <Link href="/admin/notifications/email-templates" class="btn btn-outline-secondary">
                             <i class="bi bi-arrow-left me-2"></i>
                             Back to Templates
                         </Link>
@@ -273,9 +274,9 @@ function removeLink() {
                             <div class="card-body">
                                 <div class="mb-3">
                                     <label for="subject" class="form-label text-dark fw-medium">Subject Line</label>
-                                    <input 
-                                        v-model="form.subject" 
-                                        type="text" 
+                                    <input
+                                        v-model="form.subject"
+                                        type="text"
                                         class="form-control"
                                         :class="{ 'is-invalid': form.errors.subject }"
                                         id="subject"
@@ -290,9 +291,9 @@ function removeLink() {
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="from_name" class="form-label text-dark fw-medium">From Name</label>
-                                            <input 
-                                                v-model="form.from_name" 
-                                                type="text" 
+                                            <input
+                                                v-model="form.from_name"
+                                                type="text"
                                                 class="form-control"
                                                 :class="{ 'is-invalid': form.errors.from_name }"
                                                 id="from_name"
@@ -306,9 +307,9 @@ function removeLink() {
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="from_email" class="form-label text-dark fw-medium">From Email</label>
-                                            <input 
-                                                v-model="form.from_email" 
-                                                type="email" 
+                                            <input
+                                                v-model="form.from_email"
+                                                type="email"
                                                 class="form-control"
                                                 :class="{ 'is-invalid': form.errors.from_email }"
                                                 id="from_email"
@@ -327,23 +328,19 @@ function removeLink() {
                         <div class="card mb-4">
                             <div class="card-header bg-light d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">Email Content</h5>
-                                <button 
-                                    type="button"
-                                    @click="toggleSourceView"
-                                    class="btn btn-sm btn-outline-secondary"
-                                >
+                                <button type="button" @click="toggleSourceView" class="btn btn-sm btn-outline-secondary">
                                     <i class="bi" :class="showSourceCode ? 'bi-eye' : 'bi-code'"></i>
                                     {{ showSourceCode ? 'Visual Editor' : 'Source Code' }}
                                 </button>
                             </div>
-                            
+
                             <!-- Rich Text Editor -->
                             <div v-if="!showSourceCode" class="card-body p-0">
                                 <!-- Toolbar -->
                                 <div class="border-bottom p-2 d-flex flex-wrap gap-1">
                                     <!-- Text Formatting -->
                                     <div class="btn-group" role="group">
-                                        <button 
+                                        <button
                                             type="button"
                                             @click="toggleBold"
                                             class="btn btn-sm btn-outline-secondary"
@@ -352,7 +349,7 @@ function removeLink() {
                                         >
                                             <i class="bi bi-type-bold"></i>
                                         </button>
-                                        <button 
+                                        <button
                                             type="button"
                                             @click="toggleItalic"
                                             class="btn btn-sm btn-outline-secondary"
@@ -361,7 +358,7 @@ function removeLink() {
                                         >
                                             <i class="bi bi-type-italic"></i>
                                         </button>
-                                        <button 
+                                        <button
                                             type="button"
                                             @click="toggleStrike"
                                             class="btn btn-sm btn-outline-secondary"
@@ -374,7 +371,7 @@ function removeLink() {
 
                                     <!-- Headings -->
                                     <div class="btn-group" role="group">
-                                        <button 
+                                        <button
                                             type="button"
                                             @click="setParagraph"
                                             class="btn btn-sm btn-outline-secondary"
@@ -383,7 +380,7 @@ function removeLink() {
                                         >
                                             P
                                         </button>
-                                        <button 
+                                        <button
                                             type="button"
                                             @click="setHeading(1)"
                                             class="btn btn-sm btn-outline-secondary"
@@ -392,7 +389,7 @@ function removeLink() {
                                         >
                                             H1
                                         </button>
-                                        <button 
+                                        <button
                                             type="button"
                                             @click="setHeading(2)"
                                             class="btn btn-sm btn-outline-secondary"
@@ -401,7 +398,7 @@ function removeLink() {
                                         >
                                             H2
                                         </button>
-                                        <button 
+                                        <button
                                             type="button"
                                             @click="setHeading(3)"
                                             class="btn btn-sm btn-outline-secondary"
@@ -414,7 +411,7 @@ function removeLink() {
 
                                     <!-- Lists -->
                                     <div class="btn-group" role="group">
-                                        <button 
+                                        <button
                                             type="button"
                                             @click="toggleBulletList"
                                             class="btn btn-sm btn-outline-secondary"
@@ -423,7 +420,7 @@ function removeLink() {
                                         >
                                             <i class="bi bi-list-ul"></i>
                                         </button>
-                                        <button 
+                                        <button
                                             type="button"
                                             @click="toggleOrderedList"
                                             class="btn btn-sm btn-outline-secondary"
@@ -436,7 +433,7 @@ function removeLink() {
 
                                     <!-- Links -->
                                     <div class="btn-group" role="group">
-                                        <button 
+                                        <button
                                             type="button"
                                             @click="addLink"
                                             class="btn btn-sm btn-outline-secondary"
@@ -445,7 +442,7 @@ function removeLink() {
                                         >
                                             <i class="bi bi-link"></i>
                                         </button>
-                                        <button 
+                                        <button
                                             type="button"
                                             @click="removeLink"
                                             class="btn btn-sm btn-outline-secondary"
@@ -459,11 +456,7 @@ function removeLink() {
 
                                 <!-- Editor Content -->
                                 <div class="p-3">
-                                    <editor-content 
-                                        :editor="editor" 
-                                        class="tiptap-editor"
-                                        :class="{ 'is-invalid': form.errors.body_html }"
-                                    />
+                                    <editor-content :editor="editor" class="tiptap-editor" :class="{ 'is-invalid': form.errors.body_html }" />
                                     <div v-if="form.errors.body_html" class="invalid-feedback">
                                         {{ form.errors.body_html }}
                                     </div>
@@ -473,7 +466,7 @@ function removeLink() {
                             <!-- Source Code Editor -->
                             <div v-else class="card-body">
                                 <div class="mb-3">
-                                    <textarea 
+                                    <textarea
                                         v-model="sourceCode"
                                         @input="updateSourceCode"
                                         id="sourceCodeTextarea"
@@ -499,8 +492,8 @@ function removeLink() {
                             </div>
                             <div class="card-body">
                                 <div class="mb-3">
-                                    <textarea 
-                                        v-model="form.body_text" 
+                                    <textarea
+                                        v-model="form.body_text"
                                         class="form-control font-monospace"
                                         :class="{ 'is-invalid': form.errors.body_text }"
                                         id="body_text"
@@ -522,9 +515,7 @@ function removeLink() {
                                 <h5 class="mb-0">Available Variables</h5>
                             </div>
                             <div class="card-body">
-                                <p class="small text-muted mb-3">
-                                    Click on a variable to insert it at cursor position
-                                </p>
+                                <p class="small text-muted mb-3">Click on a variable to insert it at cursor position</p>
                                 <div class="d-flex flex-wrap gap-2">
                                     <button
                                         v-for="variable in template.available_variables"
@@ -536,9 +527,9 @@ function removeLink() {
                                         {{ variable }}
                                     </button>
                                 </div>
-                                <hr class="my-3">
+                                <hr class="my-3" />
                                 <p class="small text-muted mb-0">
-                                    <strong>Default variables:</strong><br>
+                                    <strong>Default variables:</strong><br />
                                     <code>app_name</code>, <code>app_url</code>
                                 </p>
                             </div>
@@ -551,30 +542,17 @@ function removeLink() {
                             </div>
                             <div class="card-body">
                                 <div class="form-check form-switch">
-                                    <input 
-                                        v-model="form.is_active" 
-                                        type="checkbox" 
-                                        class="form-check-input" 
-                                        id="is_active"
-                                    />
-                                    <label class="form-check-label text-dark" for="is_active">
-                                        Template is active
-                                    </label>
+                                    <input v-model="form.is_active" type="checkbox" class="form-check-input" id="is_active" />
+                                    <label class="form-check-label text-dark" for="is_active"> Template is active </label>
                                 </div>
-                                <small class="text-muted">
-                                    Inactive templates will not be sent
-                                </small>
+                                <small class="text-muted"> Inactive templates will not be sent </small>
                             </div>
                         </div>
 
                         <!-- Actions -->
                         <div class="card">
                             <div class="card-body">
-                                <button 
-                                    type="submit" 
-                                    class="btn btn-primary w-100 mb-2"
-                                    :disabled="form.processing"
-                                >
+                                <button type="submit" class="btn btn-primary w-100 mb-2" :disabled="form.processing">
                                     <span v-if="form.processing">
                                         <span class="spinner-border spinner-border-sm me-2"></span>
                                         Saving...
@@ -584,21 +562,13 @@ function removeLink() {
                                         Save Changes
                                     </span>
                                 </button>
-                                
-                                <button 
-                                    type="button"
-                                    @click="previewTemplate"
-                                    class="btn btn-outline-primary w-100 mb-2"
-                                >
+
+                                <button type="button" @click="previewTemplate" class="btn btn-outline-primary w-100 mb-2">
                                     <i class="bi bi-eye me-2"></i>
                                     Preview
                                 </button>
-                                
-                                <button 
-                                    type="button"
-                                    @click="resetToDefault"
-                                    class="btn btn-outline-danger w-100"
-                                >
+
+                                <button type="button" @click="resetToDefault" class="btn btn-outline-danger w-100">
                                     <i class="bi bi-arrow-clockwise me-2"></i>
                                     Reset to Default
                                 </button>

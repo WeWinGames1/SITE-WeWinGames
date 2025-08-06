@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
 import { debounce } from 'lodash';
+import { ref } from 'vue';
 
 interface DiscountCode {
     id: number;
@@ -129,7 +129,7 @@ function createDiscount() {
 async function viewDetails(code: DiscountCode) {
     selectedCode.value = code;
     showDetailsModal.value = true;
-    
+
     // Fetch detailed info including redemptions
     try {
         const response = await fetch(route('admin.discounts.show', code.id));
@@ -142,9 +142,13 @@ async function viewDetails(code: DiscountCode) {
 
 function deactivateCode(code: DiscountCode) {
     if (confirm(`Deactivate discount code ${code.code}?`)) {
-        router.post(route('admin.discounts.deactivate', code.id), {}, {
-            preserveScroll: true,
-        });
+        router.post(
+            route('admin.discounts.deactivate', code.id),
+            {},
+            {
+                preserveScroll: true,
+            },
+        );
     }
 }
 
@@ -168,7 +172,7 @@ function editCode(code: DiscountCode) {
 
 function updateDiscount() {
     if (!selectedCode.value) return;
-    
+
     editForm.put(route('admin.discounts.update', selectedCode.value.id), {
         onSuccess: () => {
             showEditModal.value = false;
@@ -180,11 +184,15 @@ function updateDiscount() {
 
 function reactivateCode(code: DiscountCode) {
     if (confirm(`Reactivate discount code ${code.code}?`)) {
-        router.put(route('admin.discounts.update', code.id), {
-            is_active: true
-        }, {
-            preserveScroll: true,
-        });
+        router.put(
+            route('admin.discounts.update', code.id),
+            {
+                is_active: true,
+            },
+            {
+                preserveScroll: true,
+            },
+        );
     }
 }
 
@@ -243,7 +251,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
 <template>
     <AdminLayout>
         <Head title="Discount Codes" />
-        
+
         <div class="container-fluid p-4">
             <!-- Page Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -253,7 +261,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
                     Create Discount Code
                 </button>
             </div>
-            
+
             <!-- Filters -->
             <div class="card mb-4">
                 <div class="card-body">
@@ -264,7 +272,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                 <span class="input-group-text">
                                     <i class="bi bi-search"></i>
                                 </span>
-                                <input 
+                                <input
                                     type="search"
                                     class="form-control"
                                     placeholder="Search codes..."
@@ -273,7 +281,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                 />
                             </div>
                         </div>
-                        
+
                         <div class="col-md-4">
                             <label class="form-label small text-dark fw-medium">Status</label>
                             <select v-model="filterForm.status" @change="applyFilters" class="form-select">
@@ -283,16 +291,14 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                 <option value="inactive">Inactive</option>
                             </select>
                         </div>
-                        
+
                         <div class="col-md-2">
-                            <button type="button" class="btn btn-secondary w-100" @click="clearFilters">
-                                Clear
-                            </button>
+                            <button type="button" class="btn btn-secondary w-100" @click="clearFilters">Clear</button>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Discount Codes Table -->
             <div class="card">
                 <div class="table-responsive">
@@ -314,11 +320,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                     <div>
                                         <div class="d-flex align-items-center">
                                             <code class="fw-medium me-2">{{ code.code }}</code>
-                                            <button 
-                                                @click="copyToClipboard(code.code)"
-                                                class="btn btn-sm btn-link p-0"
-                                                title="Copy to clipboard"
-                                            >
+                                            <button @click="copyToClipboard(code.code)" class="btn btn-sm btn-link p-0" title="Copy to clipboard">
                                                 <i v-if="copiedCode !== code.code" class="bi bi-clipboard"></i>
                                                 <i v-else class="bi bi-check-circle text-success"></i>
                                             </button>
@@ -338,9 +340,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                 <td>
                                     <div>
                                         <div>{{ code.times_used }} / {{ code.max_uses || '∞' }}</div>
-                                        <small class="text-muted">
-                                            Max {{ code.max_uses_per_customer }} per customer
-                                        </small>
+                                        <small class="text-muted"> Max {{ code.max_uses_per_customer }} per customer </small>
                                     </div>
                                 </td>
                                 <td>
@@ -353,26 +353,16 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
-                                        <button @click="viewDetails(code)" 
-                                                class="btn btn-outline-primary"
-                                                title="View Details">
+                                        <button @click="viewDetails(code)" class="btn btn-outline-primary" title="View Details">
                                             <i class="bi bi-eye"></i>
                                         </button>
-                                        <button @click="editCode(code)" 
-                                                class="btn btn-outline-secondary"
-                                                title="Edit">
+                                        <button @click="editCode(code)" class="btn btn-outline-secondary" title="Edit">
                                             <i class="bi bi-pencil"></i>
                                         </button>
-                                        <button v-if="code.is_active"
-                                                @click="deactivateCode(code)" 
-                                                class="btn btn-outline-danger"
-                                                title="Deactivate">
+                                        <button v-if="code.is_active" @click="deactivateCode(code)" class="btn btn-outline-danger" title="Deactivate">
                                             <i class="bi bi-x-circle"></i>
                                         </button>
-                                        <button v-else
-                                                @click="reactivateCode(code)" 
-                                                class="btn btn-outline-success"
-                                                title="Reactivate">
+                                        <button v-else @click="reactivateCode(code)" class="btn btn-outline-success" title="Reactivate">
                                             <i class="bi bi-check-circle"></i>
                                         </button>
                                     </div>
@@ -381,7 +371,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
                         </tbody>
                     </table>
                 </div>
-                
+
                 <!-- Empty state -->
                 <div v-if="discountCodes.data.length === 0" class="text-center py-5">
                     <i class="bi bi-percent display-1 text-muted"></i>
@@ -391,7 +381,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
                         Create your first discount
                     </button>
                 </div>
-                
+
                 <!-- Pagination -->
                 <div v-if="discountCodes.links.length > 3" class="card-footer">
                     <div class="d-flex justify-content-between align-items-center">
@@ -400,13 +390,13 @@ function getStatusBadgeClass(code: DiscountCode): string {
                         </div>
                         <nav>
                             <ul class="pagination pagination-sm mb-0">
-                                <li v-for="link in discountCodes.links" :key="link.label" 
-                                    class="page-item" 
-                                    :class="{ 'active': link.active, 'disabled': !link.url }">
-                                    <button v-if="link.url"
-                                            @click="router.get(link.url)"
-                                            class="page-link"
-                                            v-html="link.label" />
+                                <li
+                                    v-for="link in discountCodes.links"
+                                    :key="link.label"
+                                    class="page-item"
+                                    :class="{ active: link.active, disabled: !link.url }"
+                                >
+                                    <button v-if="link.url" @click="router.get(link.url)" class="page-link" v-html="link.label" />
                                     <span v-else class="page-link" v-html="link.label" />
                                 </li>
                             </ul>
@@ -415,9 +405,9 @@ function getStatusBadgeClass(code: DiscountCode): string {
                 </div>
             </div>
         </div>
-        
+
         <!-- Create Discount Modal -->
-        <div class="modal fade" :class="{ 'show': showCreateModal }" :style="{ display: showCreateModal ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal fade" :class="{ show: showCreateModal }" :style="{ display: showCreateModal ? 'block' : 'none' }" tabindex="-1">
             <div class="modal-dialog modal-xl">
                 <div class="modal-content bg-light text-dark">
                     <div class="modal-header">
@@ -435,36 +425,38 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label for="code" class="form-label text-dark fw-medium">Discount Code</label>
-                                            <input 
-                                                v-model="createForm.code" 
-                                                id="code" 
+                                            <input
+                                                v-model="createForm.code"
+                                                id="code"
                                                 type="text"
-                                                class="form-control text-uppercase font-monospace bg-white text-dark" 
+                                                class="form-control text-uppercase font-monospace bg-white text-dark"
                                                 :class="{ 'is-invalid': createForm.errors.code }"
                                                 placeholder="e.g., SAVE20"
-                                                @input="e => createForm.code = e.target.value.toUpperCase()"
+                                                @input="(e) => (createForm.code = e.target.value.toUpperCase())"
                                             />
                                             <div class="form-text text-muted">Enter a unique code or leave blank to auto-generate</div>
                                             <div v-if="createForm.errors.code" class="invalid-feedback">{{ createForm.errors.code }}</div>
                                         </div>
-                                        
+
                                         <div class="col-md-6">
                                             <label for="description" class="form-label text-dark fw-medium">Internal Description</label>
-                                            <input 
-                                                v-model="createForm.description" 
-                                                id="description" 
+                                            <input
+                                                v-model="createForm.description"
+                                                id="description"
                                                 type="text"
-                                                class="form-control bg-white text-dark" 
+                                                class="form-control bg-white text-dark"
                                                 :class="{ 'is-invalid': createForm.errors.description }"
                                                 placeholder="e.g., Black Friday 2024 promotion"
                                             />
                                             <div class="form-text text-muted">For admin reference only (not shown to customers)</div>
-                                            <div v-if="createForm.errors.description" class="invalid-feedback">{{ createForm.errors.description }}</div>
+                                            <div v-if="createForm.errors.description" class="invalid-feedback">
+                                                {{ createForm.errors.description }}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Discount Configuration -->
                             <div class="card mb-4 bg-white">
                                 <div class="card-header bg-light">
@@ -479,31 +471,33 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                                 <option value="fixed">Fixed Amount Off</option>
                                             </select>
                                         </div>
-                                        
+
                                         <div class="col-md-4">
                                             <label for="discount_amount" class="form-label text-dark fw-medium">Discount Amount</label>
                                             <div class="input-group">
                                                 <span v-if="createForm.discount_type === 'fixed'" class="input-group-text">$</span>
-                                                <input 
-                                                    v-model.number="createForm.discount_amount" 
-                                                    id="discount_amount" 
-                                                    type="number" 
-                                                    step="0.01" 
+                                                <input
+                                                    v-model.number="createForm.discount_amount"
+                                                    id="discount_amount"
+                                                    type="number"
+                                                    step="0.01"
                                                     min="0"
                                                     :max="createForm.discount_type === 'percentage' ? 100 : null"
-                                                    class="form-control bg-white text-dark" 
+                                                    class="form-control bg-white text-dark"
                                                     :class="{ 'is-invalid': createForm.errors.discount_amount }"
-                                                    required 
+                                                    required
                                                 />
                                                 <span v-if="createForm.discount_type === 'percentage'" class="input-group-text">%</span>
-                                                <div v-if="createForm.errors.discount_amount" class="invalid-feedback">{{ createForm.errors.discount_amount }}</div>
+                                                <div v-if="createForm.errors.discount_amount" class="invalid-feedback">
+                                                    {{ createForm.errors.discount_amount }}
+                                                </div>
                                             </div>
                                             <div class="form-text text-muted">
                                                 <span v-if="createForm.discount_type === 'percentage'">Enter 0-100</span>
                                                 <span v-else>Amount in dollars</span>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="col-md-4">
                                             <label for="apply_to" class="form-label text-dark fw-medium">Duration</label>
                                             <select v-model="createForm.apply_to" id="apply_to" class="form-select bg-white text-dark">
@@ -513,24 +507,28 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                             </select>
                                         </div>
                                     </div>
-                                    
+
                                     <div v-if="createForm.apply_to === 'specific_months'" class="row g-3 mt-1">
                                         <div class="col-md-4">
                                             <label for="months_count" class="form-label text-dark fw-medium">Number of Months</label>
-                                            <input v-model.number="createForm.months_count" 
-                                                   id="months_count" 
-                                                   type="number" 
-                                                   min="1" 
-                                                   class="form-control bg-white text-dark" 
-                                                   :class="{ 'is-invalid': createForm.errors.months_count }"
-                                                   required />
+                                            <input
+                                                v-model.number="createForm.months_count"
+                                                id="months_count"
+                                                type="number"
+                                                min="1"
+                                                class="form-control bg-white text-dark"
+                                                :class="{ 'is-invalid': createForm.errors.months_count }"
+                                                required
+                                            />
                                             <div class="form-text text-muted">Discount will apply for this many billing cycles</div>
-                                            <div v-if="createForm.errors.months_count" class="invalid-feedback">{{ createForm.errors.months_count }}</div>
+                                            <div v-if="createForm.errors.months_count" class="invalid-feedback">
+                                                {{ createForm.errors.months_count }}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Usage Limits -->
                             <div class="card mb-4 bg-white">
                                 <div class="card-header bg-light">
@@ -540,37 +538,39 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label for="max_uses" class="form-label text-dark fw-medium">Total Usage Limit</label>
-                                            <input 
-                                                v-model.number="createForm.max_uses" 
-                                                id="max_uses" 
-                                                type="number" 
-                                                min="1" 
-                                                class="form-control bg-white text-dark" 
+                                            <input
+                                                v-model.number="createForm.max_uses"
+                                                id="max_uses"
+                                                type="number"
+                                                min="1"
+                                                class="form-control bg-white text-dark"
                                                 :class="{ 'is-invalid': createForm.errors.max_uses }"
                                                 placeholder="Unlimited"
                                             />
                                             <div class="form-text text-muted">Maximum total redemptions (leave empty for unlimited)</div>
                                             <div v-if="createForm.errors.max_uses" class="invalid-feedback">{{ createForm.errors.max_uses }}</div>
                                         </div>
-                                        
+
                                         <div class="col-md-6">
                                             <label for="max_uses_per_customer" class="form-label text-dark fw-medium">Per Customer Limit</label>
-                                            <input 
-                                                v-model.number="createForm.max_uses_per_customer" 
-                                                id="max_uses_per_customer" 
-                                                type="number" 
-                                                min="1" 
-                                                class="form-control bg-white text-dark" 
+                                            <input
+                                                v-model.number="createForm.max_uses_per_customer"
+                                                id="max_uses_per_customer"
+                                                type="number"
+                                                min="1"
+                                                class="form-control bg-white text-dark"
                                                 :class="{ 'is-invalid': createForm.errors.max_uses_per_customer }"
-                                                required 
+                                                required
                                             />
                                             <div class="form-text text-muted">How many times each customer can use this code</div>
-                                            <div v-if="createForm.errors.max_uses_per_customer" class="invalid-feedback">{{ createForm.errors.max_uses_per_customer }}</div>
+                                            <div v-if="createForm.errors.max_uses_per_customer" class="invalid-feedback">
+                                                {{ createForm.errors.max_uses_per_customer }}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Validity Period -->
                             <div class="card mb-4 bg-white">
                                 <div class="card-header bg-light">
@@ -580,40 +580,48 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label for="valid_from" class="form-label text-dark fw-medium">Start Date</label>
-                                            <input v-model="createForm.valid_from" 
-                                                   id="valid_from" 
-                                                   type="datetime-local" 
-                                                   class="form-control bg-white text-dark"
-                                                   :class="{ 'is-invalid': createForm.errors.valid_from }" />
+                                            <input
+                                                v-model="createForm.valid_from"
+                                                id="valid_from"
+                                                type="datetime-local"
+                                                class="form-control bg-white text-dark"
+                                                :class="{ 'is-invalid': createForm.errors.valid_from }"
+                                            />
                                             <div class="form-text text-muted">When this code becomes active (optional)</div>
                                             <div v-if="createForm.errors.valid_from" class="invalid-feedback">{{ createForm.errors.valid_from }}</div>
                                         </div>
-                                        
+
                                         <div class="col-md-6">
                                             <label for="valid_until" class="form-label text-dark fw-medium">Expiration Date</label>
-                                            <input v-model="createForm.valid_until" 
-                                                   id="valid_until" 
-                                                   type="datetime-local" 
-                                                   class="form-control bg-white text-dark"
-                                                   :class="{ 'is-invalid': createForm.errors.valid_until }" />
+                                            <input
+                                                v-model="createForm.valid_until"
+                                                id="valid_until"
+                                                type="datetime-local"
+                                                class="form-control bg-white text-dark"
+                                                :class="{ 'is-invalid': createForm.errors.valid_until }"
+                                            />
                                             <div class="form-text text-muted">When this code expires (optional)</div>
-                                            <div v-if="createForm.errors.valid_until" class="invalid-feedback">{{ createForm.errors.valid_until }}</div>
+                                            <div v-if="createForm.errors.valid_until" class="invalid-feedback">
+                                                {{ createForm.errors.valid_until }}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Product Restrictions -->
                             <div class="card mb-4 bg-white">
                                 <div class="card-header bg-light">
                                     <h6 class="mb-0 text-dark">Product Restrictions</h6>
                                 </div>
                                 <div class="card-body">
-                                    <p class="text-muted mb-3">Select which products this discount applies to. Leave empty to apply to all products.</p>
-                                    <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                    <p class="text-muted mb-3">
+                                        Select which products this discount applies to. Leave empty to apply to all products.
+                                    </p>
+                                    <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto">
                                         <div v-for="product in products" :key="product.id" class="form-check">
-                                            <input 
-                                                type="checkbox" 
+                                            <input
+                                                type="checkbox"
                                                 :id="`product-${product.id}`"
                                                 :value="product.id"
                                                 v-model="createForm.applicable_products"
@@ -624,17 +632,19 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                             </label>
                                         </div>
                                     </div>
-                                    <div v-if="createForm.errors.applicable_products" class="text-danger mt-2">{{ createForm.errors.applicable_products }}</div>
+                                    <div v-if="createForm.errors.applicable_products" class="text-danger mt-2">
+                                        {{ createForm.errors.applicable_products }}
+                                    </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Stripe Integration -->
                             <div class="alert alert-info">
                                 <div class="form-check">
                                     <input type="checkbox" v-model="createForm.create_in_stripe" class="form-check-input" id="create_in_stripe" />
                                     <label class="form-check-label" for="create_in_stripe">
                                         <strong>Create in Stripe</strong>
-                                        <br>
+                                        <br />
                                         <small>Also create this discount code in your Stripe account for automatic application</small>
                                     </label>
                                 </div>
@@ -655,14 +665,22 @@ function getStatusBadgeClass(code: DiscountCode): string {
             </div>
         </div>
         <div v-if="showCreateModal" class="modal-backdrop fade show"></div>
-        
+
         <!-- Details Modal -->
-        <div class="modal fade" :class="{ 'show': showDetailsModal }" :style="{ display: showDetailsModal ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal fade" :class="{ show: showDetailsModal }" :style="{ display: showDetailsModal ? 'block' : 'none' }" tabindex="-1">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content bg-light text-dark">
                     <div class="modal-header">
                         <h5 class="modal-title">Discount Code Details</h5>
-                        <button type="button" class="btn-close" @click="showDetailsModal = false; selectedCode = null; codeDetails = null"></button>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            @click="
+                                showDetailsModal = false;
+                                selectedCode = null;
+                                codeDetails = null;
+                            "
+                        ></button>
                     </div>
                     <div v-if="selectedCode && codeDetails" class="modal-body">
                         <div class="row g-4">
@@ -676,7 +694,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                     {{ getStatusLabel(codeDetails.discount_code) }}
                                 </span>
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <h6 class="text-muted mb-1">Discount</h6>
                                 <p class="mb-0">{{ codeDetails.discount_code.formatted_discount }} ({{ codeDetails.discount_code.discount_type }})</p>
@@ -685,7 +703,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                 <h6 class="text-muted mb-1">Applies To</h6>
                                 <p class="mb-0">{{ getApplyToLabel(codeDetails.discount_code.apply_to, codeDetails.discount_code.months_count) }}</p>
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <h6 class="text-muted mb-1">Usage</h6>
                                 <p class="mb-0">{{ codeDetails.discount_code.times_used }} / {{ codeDetails.discount_code.max_uses || '∞' }}</p>
@@ -694,24 +712,36 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                 <h6 class="text-muted mb-1">Per Customer Limit</h6>
                                 <p class="mb-0">{{ codeDetails.discount_code.max_uses_per_customer }}</p>
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <h6 class="text-muted mb-1">Valid From</h6>
-                                <p class="mb-0">{{ codeDetails.discount_code.valid_from ? new Date(codeDetails.discount_code.valid_from).toLocaleString() : 'Always' }}</p>
+                                <p class="mb-0">
+                                    {{
+                                        codeDetails.discount_code.valid_from
+                                            ? new Date(codeDetails.discount_code.valid_from).toLocaleString()
+                                            : 'Always'
+                                    }}
+                                </p>
                             </div>
                             <div class="col-md-6">
                                 <h6 class="text-muted mb-1">Valid Until</h6>
-                                <p class="mb-0">{{ codeDetails.discount_code.valid_until ? new Date(codeDetails.discount_code.valid_until).toLocaleString() : 'Never expires' }}</p>
+                                <p class="mb-0">
+                                    {{
+                                        codeDetails.discount_code.valid_until
+                                            ? new Date(codeDetails.discount_code.valid_until).toLocaleString()
+                                            : 'Never expires'
+                                    }}
+                                </p>
                             </div>
-                            
+
                             <div v-if="codeDetails.discount_code.description" class="col-12">
                                 <h6 class="text-muted mb-1">Description</h6>
                                 <p class="mb-0">{{ codeDetails.discount_code.description }}</p>
                             </div>
                         </div>
-                        
-                        <hr class="my-4">
-                        
+
+                        <hr class="my-4" />
+
                         <h6 class="mb-3">Redemptions ({{ codeDetails.redemptions.length }})</h6>
                         <div v-if="codeDetails.redemptions.length > 0" class="table-responsive">
                             <table class="table table-sm">
@@ -741,7 +771,15 @@ function getStatusBadgeClass(code: DiscountCode): string {
                         <p v-else class="text-muted">No redemptions yet</p>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" @click="showDetailsModal = false; selectedCode = null; codeDetails = null">
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            @click="
+                                showDetailsModal = false;
+                                selectedCode = null;
+                                codeDetails = null;
+                            "
+                        >
                             Close
                         </button>
                     </div>
@@ -749,14 +787,22 @@ function getStatusBadgeClass(code: DiscountCode): string {
             </div>
         </div>
         <div v-if="showDetailsModal" class="modal-backdrop fade show"></div>
-        
+
         <!-- Edit Modal -->
-        <div class="modal fade" :class="{ 'show': showEditModal }" :style="{ display: showEditModal ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal fade" :class="{ show: showEditModal }" :style="{ display: showEditModal ? 'block' : 'none' }" tabindex="-1">
             <div class="modal-dialog modal-xl">
                 <div class="modal-content bg-light text-dark">
                     <div class="modal-header">
                         <h5 class="modal-title">Edit Discount Code</h5>
-                        <button type="button" class="btn-close" @click="showEditModal = false; selectedCode = null; editForm.reset()"></button>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            @click="
+                                showEditModal = false;
+                                selectedCode = null;
+                                editForm.reset();
+                            "
+                        ></button>
                     </div>
                     <form @submit.prevent="updateDiscount">
                         <div class="modal-body">
@@ -769,24 +815,24 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label for="edit-code" class="form-label text-dark fw-medium">Discount Code</label>
-                                            <input 
-                                                v-model="editForm.code" 
-                                                id="edit-code" 
+                                            <input
+                                                v-model="editForm.code"
+                                                id="edit-code"
                                                 type="text"
-                                                class="form-control text-uppercase font-monospace bg-white text-dark" 
+                                                class="form-control text-uppercase font-monospace bg-white text-dark"
                                                 :class="{ 'is-invalid': editForm.errors.code }"
-                                                @input="e => editForm.code = e.target.value.toUpperCase()"
+                                                @input="(e) => (editForm.code = e.target.value.toUpperCase())"
                                             />
                                             <div v-if="editForm.errors.code" class="invalid-feedback">{{ editForm.errors.code }}</div>
                                         </div>
-                                        
+
                                         <div class="col-md-6">
                                             <label for="edit-description" class="form-label text-dark fw-medium">Internal Description</label>
-                                            <input 
-                                                v-model="editForm.description" 
-                                                id="edit-description" 
+                                            <input
+                                                v-model="editForm.description"
+                                                id="edit-description"
                                                 type="text"
-                                                class="form-control bg-white text-dark" 
+                                                class="form-control bg-white text-dark"
                                                 :class="{ 'is-invalid': editForm.errors.description }"
                                                 placeholder="e.g., Black Friday 2024 promotion"
                                             />
@@ -796,7 +842,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Discount Configuration -->
                             <div class="card mb-4 bg-white">
                                 <div class="card-header bg-light">
@@ -811,27 +857,29 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                                 <option value="fixed">Fixed Amount Off</option>
                                             </select>
                                         </div>
-                                        
+
                                         <div class="col-md-4">
                                             <label for="edit-discount_amount" class="form-label text-dark fw-medium">Discount Amount</label>
                                             <div class="input-group">
                                                 <span v-if="editForm.discount_type === 'fixed'" class="input-group-text">$</span>
-                                                <input 
-                                                    v-model.number="editForm.discount_amount" 
-                                                    id="edit-discount_amount" 
-                                                    type="number" 
-                                                    step="0.01" 
+                                                <input
+                                                    v-model.number="editForm.discount_amount"
+                                                    id="edit-discount_amount"
+                                                    type="number"
+                                                    step="0.01"
                                                     min="0"
                                                     :max="editForm.discount_type === 'percentage' ? 100 : null"
-                                                    class="form-control bg-white text-dark" 
+                                                    class="form-control bg-white text-dark"
                                                     :class="{ 'is-invalid': editForm.errors.discount_amount }"
-                                                    required 
+                                                    required
                                                 />
                                                 <span v-if="editForm.discount_type === 'percentage'" class="input-group-text">%</span>
-                                                <div v-if="editForm.errors.discount_amount" class="invalid-feedback">{{ editForm.errors.discount_amount }}</div>
+                                                <div v-if="editForm.errors.discount_amount" class="invalid-feedback">
+                                                    {{ editForm.errors.discount_amount }}
+                                                </div>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="col-md-4">
                                             <label for="edit-apply_to" class="form-label text-dark fw-medium">Duration</label>
                                             <select v-model="editForm.apply_to" id="edit-apply_to" class="form-select bg-white text-dark">
@@ -841,23 +889,25 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                             </select>
                                         </div>
                                     </div>
-                                    
+
                                     <div v-if="editForm.apply_to === 'specific_months'" class="row g-3 mt-1">
                                         <div class="col-md-4">
                                             <label for="edit-months_count" class="form-label text-dark fw-medium">Number of Months</label>
-                                            <input v-model.number="editForm.months_count" 
-                                                   id="edit-months_count" 
-                                                   type="number" 
-                                                   min="1" 
-                                                   class="form-control bg-white text-dark" 
-                                                   :class="{ 'is-invalid': editForm.errors.months_count }"
-                                                   required />
+                                            <input
+                                                v-model.number="editForm.months_count"
+                                                id="edit-months_count"
+                                                type="number"
+                                                min="1"
+                                                class="form-control bg-white text-dark"
+                                                :class="{ 'is-invalid': editForm.errors.months_count }"
+                                                required
+                                            />
                                             <div v-if="editForm.errors.months_count" class="invalid-feedback">{{ editForm.errors.months_count }}</div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Usage Limits -->
                             <div class="card mb-4 bg-white">
                                 <div class="card-header bg-light">
@@ -867,12 +917,12 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label for="edit-max_uses" class="form-label text-dark fw-medium">Total Usage Limit</label>
-                                            <input 
-                                                v-model.number="editForm.max_uses" 
-                                                id="edit-max_uses" 
-                                                type="number" 
-                                                min="1" 
-                                                class="form-control bg-white text-dark" 
+                                            <input
+                                                v-model.number="editForm.max_uses"
+                                                id="edit-max_uses"
+                                                type="number"
+                                                min="1"
+                                                class="form-control bg-white text-dark"
                                                 :class="{ 'is-invalid': editForm.errors.max_uses }"
                                                 placeholder="Unlimited"
                                             />
@@ -881,24 +931,26 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                             </div>
                                             <div v-if="editForm.errors.max_uses" class="invalid-feedback">{{ editForm.errors.max_uses }}</div>
                                         </div>
-                                        
+
                                         <div class="col-md-6">
                                             <label for="edit-max_uses_per_customer" class="form-label text-dark fw-medium">Per Customer Limit</label>
-                                            <input 
-                                                v-model.number="editForm.max_uses_per_customer" 
-                                                id="edit-max_uses_per_customer" 
-                                                type="number" 
-                                                min="1" 
-                                                class="form-control bg-white text-dark" 
+                                            <input
+                                                v-model.number="editForm.max_uses_per_customer"
+                                                id="edit-max_uses_per_customer"
+                                                type="number"
+                                                min="1"
+                                                class="form-control bg-white text-dark"
                                                 :class="{ 'is-invalid': editForm.errors.max_uses_per_customer }"
-                                                required 
+                                                required
                                             />
-                                            <div v-if="editForm.errors.max_uses_per_customer" class="invalid-feedback">{{ editForm.errors.max_uses_per_customer }}</div>
+                                            <div v-if="editForm.errors.max_uses_per_customer" class="invalid-feedback">
+                                                {{ editForm.errors.max_uses_per_customer }}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Validity Period -->
                             <div class="card mb-4 bg-white">
                                 <div class="card-header bg-light">
@@ -908,40 +960,46 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label for="edit-valid_from" class="form-label text-dark fw-medium">Start Date</label>
-                                            <input v-model="editForm.valid_from" 
-                                                   id="edit-valid_from" 
-                                                   type="datetime-local" 
-                                                   class="form-control bg-white text-dark"
-                                                   :class="{ 'is-invalid': editForm.errors.valid_from }" />
+                                            <input
+                                                v-model="editForm.valid_from"
+                                                id="edit-valid_from"
+                                                type="datetime-local"
+                                                class="form-control bg-white text-dark"
+                                                :class="{ 'is-invalid': editForm.errors.valid_from }"
+                                            />
                                             <div class="form-text text-muted">When this code becomes active (optional)</div>
                                             <div v-if="editForm.errors.valid_from" class="invalid-feedback">{{ editForm.errors.valid_from }}</div>
                                         </div>
-                                        
+
                                         <div class="col-md-6">
                                             <label for="edit-valid_until" class="form-label text-dark fw-medium">Expiration Date</label>
-                                            <input v-model="editForm.valid_until" 
-                                                   id="edit-valid_until" 
-                                                   type="datetime-local" 
-                                                   class="form-control bg-white text-dark"
-                                                   :class="{ 'is-invalid': editForm.errors.valid_until }" />
+                                            <input
+                                                v-model="editForm.valid_until"
+                                                id="edit-valid_until"
+                                                type="datetime-local"
+                                                class="form-control bg-white text-dark"
+                                                :class="{ 'is-invalid': editForm.errors.valid_until }"
+                                            />
                                             <div class="form-text text-muted">When this code expires (optional)</div>
                                             <div v-if="editForm.errors.valid_until" class="invalid-feedback">{{ editForm.errors.valid_until }}</div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Product Restrictions -->
                             <div class="card mb-4 bg-white">
                                 <div class="card-header bg-light">
                                     <h6 class="mb-0 text-dark">Product Restrictions</h6>
                                 </div>
                                 <div class="card-body">
-                                    <p class="text-muted mb-3">Select which products this discount applies to. Leave empty to apply to all products.</p>
-                                    <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                    <p class="text-muted mb-3">
+                                        Select which products this discount applies to. Leave empty to apply to all products.
+                                    </p>
+                                    <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto">
                                         <div v-for="product in products" :key="product.id" class="form-check">
-                                            <input 
-                                                type="checkbox" 
+                                            <input
+                                                type="checkbox"
                                                 :id="`edit-product-${product.id}`"
                                                 :value="product.id"
                                                 v-model="editForm.applicable_products"
@@ -952,29 +1010,34 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                             </label>
                                         </div>
                                     </div>
-                                    <div v-if="editForm.errors.applicable_products" class="text-danger mt-2">{{ editForm.errors.applicable_products }}</div>
+                                    <div v-if="editForm.errors.applicable_products" class="text-danger mt-2">
+                                        {{ editForm.errors.applicable_products }}
+                                    </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Status -->
                             <div class="alert alert-info">
                                 <div class="form-check form-switch">
-                                    <input 
-                                        v-model="editForm.is_active" 
-                                        class="form-check-input" 
-                                        type="checkbox" 
-                                        id="edit-is-active"
-                                    />
+                                    <input v-model="editForm.is_active" class="form-check-input" type="checkbox" id="edit-is-active" />
                                     <label class="form-check-label" for="edit-is-active">
                                         <strong>Active</strong>
-                                        <br>
+                                        <br />
                                         <small>Inactive codes cannot be used at checkout</small>
                                     </label>
                                 </div>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" @click="showEditModal = false; selectedCode = null; editForm.reset()">
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                @click="
+                                    showEditModal = false;
+                                    selectedCode = null;
+                                    editForm.reset();
+                                "
+                            >
                                 Cancel
                             </button>
                             <button type="submit" class="btn btn-primary" :disabled="editForm.processing">

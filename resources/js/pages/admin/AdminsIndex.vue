@@ -15,7 +15,7 @@ interface User {
     email: string;
 }
 
-const props = defineProps<{ 
+const props = defineProps<{
     admins: Admin[];
     users: User[];
 }>();
@@ -54,7 +54,7 @@ function addAdmin() {
                     alert('Your session has expired. Please refresh the page and try again.');
                     window.location.reload();
                 }
-            }
+            },
         });
     }
 }
@@ -100,25 +100,15 @@ function createCustomer() {
 <template>
     <AdminLayout>
         <Head title="Manage Admins" />
-        
+
         <div class="container-fluid p-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h2 mb-0">Admin Users</h1>
                 <div class="d-flex gap-2">
-                    <button 
-                        type="button" 
-                        class="btn btn-success"
-                        @click="openCreateCustomerModal"
-                    >
+                    <button type="button" class="btn btn-success" @click="openCreateCustomerModal">
                         <i class="bi bi-person-plus-fill me-2"></i>Create Customer
                     </button>
-                    <button 
-                        type="button" 
-                        class="btn btn-primary"
-                        @click="openAddModal"
-                    >
-                        <i class="bi bi-person-plus me-2"></i>Add Admin
-                    </button>
+                    <button type="button" class="btn btn-primary" @click="openAddModal"><i class="bi bi-person-plus me-2"></i>Add Admin</button>
                 </div>
             </div>
 
@@ -209,7 +199,9 @@ function createCustomer() {
                                     <td>{{ admin.id }}</td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <div class="avatar-sm bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3">
+                                            <div
+                                                class="avatar-sm bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3"
+                                            >
                                                 <i class="bi bi-person text-primary"></i>
                                             </div>
                                             <div>
@@ -222,9 +214,7 @@ function createCustomer() {
                                         <span v-if="admin.id === 1" class="badge bg-warning">
                                             <i class="bi bi-shield-check me-1"></i>Super Admin
                                         </span>
-                                        <span v-else class="badge bg-primary">
-                                            <i class="bi bi-person-check me-1"></i>Admin
-                                        </span>
+                                        <span v-else class="badge bg-primary"> <i class="bi bi-person-check me-1"></i>Admin </span>
                                     </td>
                                     <td>
                                         <span class="text-muted">{{ new Date(admin.created_at).toLocaleDateString() }}</span>
@@ -238,9 +228,7 @@ function createCustomer() {
                                         >
                                             <i class="bi bi-trash me-1"></i>Remove
                                         </button>
-                                        <span v-else class="text-muted small">
-                                            <i class="bi bi-lock me-1"></i>Protected
-                                        </span>
+                                        <span v-else class="text-muted small"> <i class="bi bi-lock me-1"></i>Protected </span>
                                     </td>
                                 </tr>
                             </tbody>
@@ -251,36 +239,25 @@ function createCustomer() {
         </div>
 
         <!-- Add Admin Modal -->
-        <div 
-            class="modal fade" 
-            :class="{ show: showAddModal }"
-            :style="{ display: showAddModal ? 'block' : 'none' }"
-            tabindex="-1"
-        >
+        <div class="modal fade" :class="{ show: showAddModal }" :style="{ display: showAddModal ? 'block' : 'none' }" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Add New Admin</h5>
-                        <button 
-                            type="button" 
-                            class="btn-close" 
-                            @click="closeAddModal"
-                        ></button>
+                        <button type="button" class="btn-close" @click="closeAddModal"></button>
                     </div>
                     <form @submit.prevent="addAdmin">
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label for="user_select" class="form-label">Select User</label>
-                                <select 
+                                <select
                                     id="user_select"
-                                    v-model="addForm.user_id" 
+                                    v-model="addForm.user_id"
                                     class="form-select"
                                     :class="{ 'is-invalid': addForm.errors.user_id }"
                                 >
                                     <option value="">Choose a user to make admin...</option>
-                                    <option v-for="user in users" :key="user.id" :value="user.id">
-                                        {{ user.name }} ({{ user.email }})
-                                    </option>
+                                    <option v-for="user in users" :key="user.id" :value="user.id">{{ user.name }} ({{ user.email }})</option>
                                 </select>
                                 <div v-if="addForm.errors.user_id" class="invalid-feedback">
                                     {{ addForm.errors.user_id }}
@@ -292,25 +269,13 @@ function createCustomer() {
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button 
-                                type="button" 
-                                class="btn btn-secondary" 
-                                @click="closeAddModal"
-                            >
-                                Cancel
-                            </button>
-                            <button 
-                                type="submit" 
-                                class="btn btn-primary"
-                                :disabled="addForm.processing || !addForm.user_id"
-                            >
+                            <button type="button" class="btn btn-secondary" @click="closeAddModal">Cancel</button>
+                            <button type="submit" class="btn btn-primary" :disabled="addForm.processing || !addForm.user_id">
                                 <span v-if="addForm.processing">
                                     <span class="spinner-border spinner-border-sm me-2"></span>
                                     Adding...
                                 </span>
-                                <span v-else>
-                                    <i class="bi bi-person-plus me-2"></i>Add Admin
-                                </span>
+                                <span v-else> <i class="bi bi-person-plus me-2"></i>Add Admin </span>
                             </button>
                         </div>
                     </form>
@@ -319,21 +284,12 @@ function createCustomer() {
         </div>
 
         <!-- Remove Admin Confirmation Modal -->
-        <div 
-            class="modal fade" 
-            :class="{ show: showRemoveModal }"
-            :style="{ display: showRemoveModal ? 'block' : 'none' }"
-            tabindex="-1"
-        >
+        <div class="modal fade" :class="{ show: showRemoveModal }" :style="{ display: showRemoveModal ? 'block' : 'none' }" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Remove Admin Access</h5>
-                        <button 
-                            type="button" 
-                            class="btn-close" 
-                            @click="showRemoveModal = false"
-                        ></button>
+                        <button type="button" class="btn-close" @click="showRemoveModal = false"></button>
                     </div>
                     <div class="modal-body">
                         <div class="alert alert-warning">
@@ -347,26 +303,13 @@ function createCustomer() {
                         <p>This action will revoke all administrative access for this user. They will become a regular user.</p>
                     </div>
                     <div class="modal-footer">
-                        <button 
-                            type="button" 
-                            class="btn btn-secondary" 
-                            @click="showRemoveModal = false"
-                        >
-                            Cancel
-                        </button>
-                        <button 
-                            type="button" 
-                            class="btn btn-danger"
-                            @click="removeAdmin"
-                            :disabled="removeForm.processing"
-                        >
+                        <button type="button" class="btn btn-secondary" @click="showRemoveModal = false">Cancel</button>
+                        <button type="button" class="btn btn-danger" @click="removeAdmin" :disabled="removeForm.processing">
                             <span v-if="removeForm.processing">
                                 <span class="spinner-border spinner-border-sm me-2"></span>
                                 Removing...
                             </span>
-                            <span v-else>
-                                <i class="bi bi-trash me-2"></i>Remove Admin
-                            </span>
+                            <span v-else> <i class="bi bi-trash me-2"></i>Remove Admin </span>
                         </button>
                     </div>
                 </div>
@@ -374,8 +317,8 @@ function createCustomer() {
         </div>
 
         <!-- Create Customer Modal -->
-        <div 
-            class="modal fade" 
+        <div
+            class="modal fade"
             :class="{ show: showCreateCustomerModal }"
             :style="{ display: showCreateCustomerModal ? 'block' : 'none' }"
             tabindex="-1"
@@ -384,19 +327,15 @@ function createCustomer() {
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Create New Customer</h5>
-                        <button 
-                            type="button" 
-                            class="btn-close" 
-                            @click="closeCreateCustomerModal"
-                        ></button>
+                        <button type="button" class="btn-close" @click="closeCreateCustomerModal"></button>
                     </div>
                     <form @submit.prevent="createCustomer">
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label for="customer_name" class="form-label">Name</label>
-                                <input 
+                                <input
                                     id="customer_name"
-                                    v-model="createCustomerForm.name" 
+                                    v-model="createCustomerForm.name"
                                     type="text"
                                     class="form-control"
                                     :class="{ 'is-invalid': createCustomerForm.errors.name }"
@@ -408,9 +347,9 @@ function createCustomer() {
                             </div>
                             <div class="mb-3">
                                 <label for="customer_email" class="form-label">Email</label>
-                                <input 
+                                <input
                                     id="customer_email"
-                                    v-model="createCustomerForm.email" 
+                                    v-model="createCustomerForm.email"
                                     type="email"
                                     class="form-control"
                                     :class="{ 'is-invalid': createCustomerForm.errors.email }"
@@ -422,9 +361,9 @@ function createCustomer() {
                             </div>
                             <div class="mb-3">
                                 <label for="customer_password" class="form-label">Password</label>
-                                <input 
+                                <input
                                     id="customer_password"
-                                    v-model="createCustomerForm.password" 
+                                    v-model="createCustomerForm.password"
                                     type="password"
                                     class="form-control"
                                     :class="{ 'is-invalid': createCustomerForm.errors.password }"
@@ -436,9 +375,9 @@ function createCustomer() {
                             </div>
                             <div class="mb-3">
                                 <label for="customer_password_confirmation" class="form-label">Confirm Password</label>
-                                <input 
+                                <input
                                     id="customer_password_confirmation"
-                                    v-model="createCustomerForm.password_confirmation" 
+                                    v-model="createCustomerForm.password_confirmation"
                                     type="password"
                                     class="form-control"
                                     :class="{ 'is-invalid': createCustomerForm.errors.password_confirmation }"
@@ -450,29 +389,18 @@ function createCustomer() {
                             </div>
                             <div class="alert alert-info">
                                 <i class="bi bi-info-circle me-2"></i>
-                                <strong>Note:</strong> This will create a new customer account. The user will receive a welcome email with their login credentials.
+                                <strong>Note:</strong> This will create a new customer account. The user will receive a welcome email with their login
+                                credentials.
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button 
-                                type="button" 
-                                class="btn btn-secondary" 
-                                @click="closeCreateCustomerModal"
-                            >
-                                Cancel
-                            </button>
-                            <button 
-                                type="submit" 
-                                class="btn btn-success"
-                                :disabled="createCustomerForm.processing"
-                            >
+                            <button type="button" class="btn btn-secondary" @click="closeCreateCustomerModal">Cancel</button>
+                            <button type="submit" class="btn btn-success" :disabled="createCustomerForm.processing">
                                 <span v-if="createCustomerForm.processing">
                                     <span class="spinner-border spinner-border-sm me-2"></span>
                                     Creating...
                                 </span>
-                                <span v-else>
-                                    <i class="bi bi-person-plus-fill me-2"></i>Create Customer
-                                </span>
+                                <span v-else> <i class="bi bi-person-plus-fill me-2"></i>Create Customer </span>
                             </button>
                         </div>
                     </form>
@@ -481,10 +409,14 @@ function createCustomer() {
         </div>
 
         <!-- Modal Backdrop -->
-        <div 
-            v-if="showAddModal || showRemoveModal || showCreateCustomerModal" 
+        <div
+            v-if="showAddModal || showRemoveModal || showCreateCustomerModal"
             class="modal-backdrop fade show"
-            @click="showAddModal = false; showRemoveModal = false; showCreateCustomerModal = false"
+            @click="
+                showAddModal = false;
+                showRemoveModal = false;
+                showCreateCustomerModal = false;
+            "
         ></div>
     </AdminLayout>
 </template>

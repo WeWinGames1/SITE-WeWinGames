@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { ref, watch, computed } from 'vue';
+import { ref, watch } from 'vue';
 
 interface Sender {
     id: number;
@@ -44,18 +44,21 @@ const searchForm = useForm({
 
 const searchTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
 
-watch(() => searchForm.search, (newValue) => {
-    if (searchTimeout.value) {
-        clearTimeout(searchTimeout.value);
-    }
-    
-    searchTimeout.value = setTimeout(() => {
-        searchForm.get(route('admin.notifications.push.index'), {
-            preserveState: true,
-            preserveScroll: true,
-        });
-    }, 300);
-});
+watch(
+    () => searchForm.search,
+    (newValue) => {
+        if (searchTimeout.value) {
+            clearTimeout(searchTimeout.value);
+        }
+
+        searchTimeout.value = setTimeout(() => {
+            searchForm.get(route('admin.notifications.push.index'), {
+                preserveState: true,
+                preserveScroll: true,
+            });
+        }, 300);
+    },
+);
 
 function formatDate(date: string): string {
     return new Date(date).toLocaleString('en-US', {
@@ -75,7 +78,7 @@ function truncate(text: string, length: number = 50): string {
 <template>
     <AdminLayout>
         <Head title="Push Notifications" />
-        
+
         <div class="container-fluid p-4">
             <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -83,10 +86,7 @@ function truncate(text: string, length: number = 50): string {
                     <h1 class="h2 mb-0">Push Notifications</h1>
                     <p class="text-muted mb-0">Manage and track push notifications sent to users</p>
                 </div>
-                <Link
-                    :href="route('admin.notifications.push.create')"
-                    class="btn btn-primary"
-                >
+                <Link :href="route('admin.notifications.push.create')" class="btn btn-primary">
                     <i class="bi bi-plus-lg me-2"></i>
                     Send New Notification
                 </Link>
@@ -101,12 +101,7 @@ function truncate(text: string, length: number = 50): string {
                                 <span class="input-group-text">
                                     <i class="bi bi-search"></i>
                                 </span>
-                                <input
-                                    v-model="searchForm.search"
-                                    type="text"
-                                    class="form-control"
-                                    placeholder="Search by title or message..."
-                                />
+                                <input v-model="searchForm.search" type="text" class="form-control" placeholder="Search by title or message..." />
                             </div>
                         </div>
                     </div>
@@ -133,12 +128,12 @@ function truncate(text: string, length: number = 50): string {
                             <tr v-for="notification in notifications.data" :key="notification.id">
                                 <td class="fw-medium">
                                     <div class="d-flex align-items-center">
-                                        <img 
-                                            v-if="notification.icon" 
-                                            :src="notification.icon" 
+                                        <img
+                                            v-if="notification.icon"
+                                            :src="notification.icon"
                                             :alt="notification.title"
                                             class="me-2"
-                                            style="width: 24px; height: 24px; object-fit: contain;"
+                                            style="width: 24px; height: 24px; object-fit: contain"
                                         />
                                         {{ notification.title }}
                                     </div>
@@ -149,11 +144,14 @@ function truncate(text: string, length: number = 50): string {
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="badge" :class="{
-                                        'bg-primary': notification.recipients_type === 'all',
-                                        'bg-info': notification.recipients_type === 'push_enabled',
-                                        'bg-warning text-dark': notification.recipients_type === 'tier'
-                                    }">
+                                    <span
+                                        class="badge"
+                                        :class="{
+                                            'bg-primary': notification.recipients_type === 'all',
+                                            'bg-info': notification.recipients_type === 'push_enabled',
+                                            'bg-warning text-dark': notification.recipients_type === 'tier',
+                                        }"
+                                    >
                                         {{ notification.recipients_label }}
                                     </span>
                                 </td>
@@ -168,13 +166,13 @@ function truncate(text: string, length: number = 50): string {
                                     </span>
                                 </td>
                                 <td>
-                                    <div class="progress" style="width: 100px; height: 20px;">
-                                        <div 
+                                    <div class="progress" style="width: 100px; height: 20px">
+                                        <div
                                             class="progress-bar"
                                             :class="{
                                                 'bg-success': notification.success_rate >= 90,
                                                 'bg-warning': notification.success_rate >= 75 && notification.success_rate < 90,
-                                                'bg-danger': notification.success_rate < 75
+                                                'bg-danger': notification.success_rate < 75,
                                             }"
                                             :style="`width: ${notification.success_rate}%`"
                                         >
@@ -190,11 +188,7 @@ function truncate(text: string, length: number = 50): string {
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <button 
-                                            v-if="notification.url"
-                                            class="btn btn-outline-secondary"
-                                            :title="`URL: ${notification.url}`"
-                                        >
+                                        <button v-if="notification.url" class="btn btn-outline-secondary" :title="`URL: ${notification.url}`">
                                             <i class="bi bi-link-45deg"></i>
                                         </button>
                                     </div>
@@ -202,13 +196,13 @@ function truncate(text: string, length: number = 50): string {
                             </tr>
                         </tbody>
                     </table>
-                    
+
                     <div v-if="notifications.data.length === 0" class="text-center py-5">
-                        <i class="bi bi-bell-slash text-muted" style="font-size: 3rem;"></i>
+                        <i class="bi bi-bell-slash text-muted" style="font-size: 3rem"></i>
                         <p class="text-muted mt-3">No push notifications sent yet</p>
                     </div>
                 </div>
-                
+
                 <!-- Pagination -->
                 <div v-if="notifications.links.length > 3" class="card-footer d-flex justify-content-between align-items-center">
                     <div class="text-muted small">
@@ -216,15 +210,13 @@ function truncate(text: string, length: number = 50): string {
                     </div>
                     <nav>
                         <ul class="pagination mb-0">
-                            <li v-for="link in notifications.links" :key="link.label" 
-                                class="page-item" 
-                                :class="{ active: link.active, disabled: !link.url }">
-                                <button
-                                    v-if="link.url"
-                                    @click="router.get(link.url)"
-                                    class="page-link"
-                                    v-html="link.label"
-                                />
+                            <li
+                                v-for="link in notifications.links"
+                                :key="link.label"
+                                class="page-item"
+                                :class="{ active: link.active, disabled: !link.url }"
+                            >
+                                <button v-if="link.url" @click="router.get(link.url)" class="page-link" v-html="link.label" />
                                 <span v-else class="page-link" v-html="link.label" />
                             </li>
                         </ul>

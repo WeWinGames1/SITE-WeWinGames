@@ -7,7 +7,7 @@
  */
 export function formatPlaceFraction(fraction: number): string {
     if (!fraction) return '';
-    
+
     // Common Each Way place fractions with their decimal values
     const fractionMap: Record<number, string> = {
         0.125: '1/8',
@@ -17,19 +17,19 @@ export function formatPlaceFraction(fraction: number): string {
         0.333: '1/3',
         0.5: '1/2',
     };
-    
+
     // Check for exact matches first
     if (fractionMap[fraction]) {
         return fractionMap[fraction];
     }
-    
+
     // Check for close matches (to handle floating point precision issues)
     for (const [decimal, fractionStr] of Object.entries(fractionMap)) {
         if (Math.abs(fraction - parseFloat(decimal)) < 0.001) {
             return fractionStr;
         }
     }
-    
+
     // If no match found, return the decimal value
     return fraction.toFixed(3);
 }
@@ -41,7 +41,7 @@ export function formatPlaceFraction(fraction: number): string {
  */
 export function fractionToDecimal(fractionStr: string): number {
     if (!fractionStr) return 0;
-    
+
     const fractionMap: Record<string, number> = {
         '1/8': 0.125,
         '1/6': 0.167,
@@ -50,7 +50,7 @@ export function fractionToDecimal(fractionStr: string): number {
         '1/3': 0.333,
         '1/2': 0.5,
     };
-    
+
     return fractionMap[fractionStr] || 0;
 }
 

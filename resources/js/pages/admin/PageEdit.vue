@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import AdminLayout from '@/layouts/AdminLayout.vue';
-import { Head, useForm, Link } from '@inertiajs/vue3';
-import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
-import { Editor, EditorContent } from '@tiptap/vue-3';
-import StarterKit from '@tiptap/starter-kit';
-import TiptapLink from '@tiptap/extension-link';
-import Image from '@tiptap/extension-image';
 import MediaPicker from '@/components/MediaPicker.vue';
 import { useImageResize } from '@/composables/useImageResize';
+import AdminLayout from '@/layouts/AdminLayout.vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import Image from '@tiptap/extension-image';
+import TiptapLink from '@tiptap/extension-link';
+import StarterKit from '@tiptap/starter-kit';
+import { Editor, EditorContent } from '@tiptap/vue-3';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 const props = defineProps<{ page: any | null }>();
 
@@ -28,27 +28,32 @@ const showContentMediaPicker = ref(false);
 const fileInputKey = ref(0);
 
 // Tiptap setup
-const editor = ref(new Editor({
-    content: form.content,
-    extensions: [
-        StarterKit,
-        TiptapLink.configure({
-            openOnClick: false,
-        }),
-        Image,
-    ],
-    onUpdate: ({ editor }) => {
-        form.content = editor.getHTML();
-        if (showSourceCode.value) {
-            sourceCode.value = editor.getHTML();
-        }
-    },
-}));
+const editor = ref(
+    new Editor({
+        content: form.content,
+        extensions: [
+            StarterKit,
+            TiptapLink.configure({
+                openOnClick: false,
+            }),
+            Image,
+        ],
+        onUpdate: ({ editor }) => {
+            form.content = editor.getHTML();
+            if (showSourceCode.value) {
+                sourceCode.value = editor.getHTML();
+            }
+        },
+    }),
+);
 
 // Keep editor in sync if editing existing page
-watch(() => props.page?.content, (val) => {
-    if (val && editor.value) editor.value.commands.setContent(val);
-});
+watch(
+    () => props.page?.content,
+    (val) => {
+        if (val && editor.value) editor.value.commands.setContent(val);
+    },
+);
 
 // Setup image resize functionality
 let cleanupImageResize: (() => void) | null = null;
@@ -84,10 +89,10 @@ function handleImageChange(event: Event) {
 function validateForm(): boolean {
     // Clear previous errors
     form.clearErrors();
-    
+
     let isValid = true;
     const errors: Record<string, string> = {};
-    
+
     // Required fields validation
     if (!form.title || !form.title.trim()) {
         errors.title = 'The title field is required.';
@@ -96,7 +101,7 @@ function validateForm(): boolean {
         errors.title = 'The title may not be greater than 255 characters.';
         isValid = false;
     }
-    
+
     if (!form.slug || !form.slug.trim()) {
         errors.slug = 'The slug field is required.';
         isValid = false;
@@ -104,12 +109,12 @@ function validateForm(): boolean {
         errors.slug = 'The slug may not be greater than 255 characters.';
         isValid = false;
     }
-    
+
     if (!form.content || form.content.trim() === '' || form.content.trim() === '<p></p>') {
         errors.content = 'The content field is required.';
         isValid = false;
     }
-    
+
     // File validation
     if (form.featured_image) {
         const maxSize = 20 * 1024 * 1024; // 20MB in bytes
@@ -117,7 +122,7 @@ function validateForm(): boolean {
             errors.featured_image = 'The featured image may not be greater than 20MB.';
             isValid = false;
         }
-        
+
         // Check file type
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/svg+xml', 'image/webp'];
         if (!allowedTypes.includes(form.featured_image.type)) {
@@ -125,12 +130,12 @@ function validateForm(): boolean {
             isValid = false;
         }
     }
-    
+
     // Set errors if any
     if (!isValid) {
         form.setError(errors);
     }
-    
+
     return isValid;
 }
 
@@ -138,7 +143,7 @@ function submit() {
     if (!validateForm()) {
         return;
     }
-    
+
     if (props.page) {
         form.put(route('admin.pages.update', props.page.id));
     } else {
@@ -179,11 +184,11 @@ function updateSourceCode(event: Event) {
 function selectFeaturedImage(media: any) {
     // media can be a single object or array depending on picker mode
     const selectedMedia = Array.isArray(media) ? media[0] : media;
-    
+
     form.featured_image_media_id = selectedMedia.id;
     preview.value = selectedMedia.full_url;
     showMediaPicker.value = false;
-    
+
     // Clear file input since we're using media library
     form.featured_image = null;
     fileInputKey.value++;
@@ -192,21 +197,29 @@ function selectFeaturedImage(media: any) {
 function selectContentImage(media: any) {
     // media can be a single object or array depending on picker mode
     const selectedMedia = Array.isArray(media) ? media[0] : media;
-    
+
     if (editor.value) {
         // Ask for image size
         const selectedOption = prompt(
-            'Select image size:\n1. Small (25%)\n2. Medium (50%)\n3. Large (75%)\n4. Full Size (100%)\n\nEnter number (1-4) or percentage (e.g., 60):', 
-            '4'
+            'Select image size:\n1. Small (25%)\n2. Medium (50%)\n3. Large (75%)\n4. Full Size (100%)\n\nEnter number (1-4) or percentage (e.g., 60):',
+            '4',
         );
-        
+
         let width = '100%';
         if (selectedOption) {
             switch (selectedOption) {
-                case '1': width = '25%'; break;
-                case '2': width = '50%'; break;
-                case '3': width = '75%'; break;
-                case '4': width = '100%'; break;
+                case '1':
+                    width = '25%';
+                    break;
+                case '2':
+                    width = '50%';
+                    break;
+                case '3':
+                    width = '75%';
+                    break;
+                case '4':
+                    width = '100%';
+                    break;
                 default:
                     // Allow custom percentage
                     const customWidth = parseInt(selectedOption);
@@ -215,7 +228,7 @@ function selectContentImage(media: any) {
                     }
             }
         }
-        
+
         // Insert image with Bootstrap classes and custom width
         const imgHtml = `<div style="width: ${width}; display: inline-block;"><img src="${selectedMedia.full_url}" alt="${selectedMedia.name || 'Image'}" class="img-fluid" /></div>`;
         editor.value.chain().focus().insertContent(imgHtml).run();
@@ -247,14 +260,11 @@ const addImage = () => {
 <template>
     <AdminLayout>
         <Head :title="page ? 'Edit Page' : 'Create Page'" />
-        
+
         <div class="p-4">
             <!-- Header -->
             <div class="mb-4">
-                <Link
-                    :href="route('admin.pages.index')"
-                    class="btn btn-link text-decoration-none p-0 mb-3"
-                >
+                <Link :href="route('admin.pages.index')" class="btn btn-link text-decoration-none p-0 mb-3">
                     <i class="bi bi-arrow-left me-2"></i>
                     Back to Pages
                 </Link>
@@ -271,14 +281,12 @@ const addImage = () => {
                         <!-- Title -->
                         <div class="card mb-4">
                             <div class="card-body">
-                                <label for="title" class="form-label text-dark fw-medium">
-                                    Page Title <span class="text-danger">*</span>
-                                </label>
-                                <input 
-                                    v-model="form.title" 
-                                    id="title" 
+                                <label for="title" class="form-label text-dark fw-medium"> Page Title <span class="text-danger">*</span> </label>
+                                <input
+                                    v-model="form.title"
+                                    id="title"
                                     type="text"
-                                    class="form-control" 
+                                    class="form-control"
                                     placeholder="Enter page title"
                                     maxlength="255"
                                     required
@@ -293,15 +301,13 @@ const addImage = () => {
                         <!-- Slug -->
                         <div class="card mb-4">
                             <div class="card-body">
-                                <label for="slug" class="form-label text-dark fw-medium">
-                                    URL Slug <span class="text-danger">*</span>
-                                </label>
+                                <label for="slug" class="form-label text-dark fw-medium"> URL Slug <span class="text-danger">*</span> </label>
                                 <p class="text-secondary small mb-2">The URL path for this page (e.g., /pages/your-page-slug)</p>
-                                <input 
-                                    v-model="form.slug" 
-                                    id="slug" 
+                                <input
+                                    v-model="form.slug"
+                                    id="slug"
                                     type="text"
-                                    class="form-control" 
+                                    class="form-control"
                                     placeholder="page-url-slug"
                                     pattern="[a-z0-9-]+"
                                     maxlength="255"
@@ -322,13 +328,13 @@ const addImage = () => {
                                     <i class="bi bi-info-circle me-1"></i>
                                     Tip: Double-click on any image to resize it
                                 </div>
-                                
+
                                 <!-- Editor Toolbar -->
                                 <div v-if="editor" class="border rounded-top bg-light p-2 d-flex flex-wrap align-items-center gap-1">
                                     <button
                                         type="button"
                                         @click="editor.chain().focus().toggleBold().run()"
-                                        :class="{ 'active': editor.isActive('bold') }"
+                                        :class="{ active: editor.isActive('bold') }"
                                         class="btn btn-sm btn-outline-secondary"
                                         title="Bold"
                                         :disabled="showSourceCode"
@@ -338,7 +344,7 @@ const addImage = () => {
                                     <button
                                         type="button"
                                         @click="editor.chain().focus().toggleItalic().run()"
-                                        :class="{ 'active': editor.isActive('italic') }"
+                                        :class="{ active: editor.isActive('italic') }"
                                         class="btn btn-sm btn-outline-secondary"
                                         title="Italic"
                                         :disabled="showSourceCode"
@@ -349,7 +355,7 @@ const addImage = () => {
                                     <button
                                         type="button"
                                         @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
-                                        :class="{ 'active': editor.isActive('heading', { level: 1 }) }"
+                                        :class="{ active: editor.isActive('heading', { level: 1 }) }"
                                         class="btn btn-sm btn-outline-secondary"
                                         title="Heading 1"
                                         :disabled="showSourceCode"
@@ -359,7 +365,7 @@ const addImage = () => {
                                     <button
                                         type="button"
                                         @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
-                                        :class="{ 'active': editor.isActive('heading', { level: 2 }) }"
+                                        :class="{ active: editor.isActive('heading', { level: 2 }) }"
                                         class="btn btn-sm btn-outline-secondary"
                                         title="Heading 2"
                                         :disabled="showSourceCode"
@@ -369,7 +375,7 @@ const addImage = () => {
                                     <button
                                         type="button"
                                         @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
-                                        :class="{ 'active': editor.isActive('heading', { level: 3 }) }"
+                                        :class="{ active: editor.isActive('heading', { level: 3 }) }"
                                         class="btn btn-sm btn-outline-secondary"
                                         title="Heading 3"
                                         :disabled="showSourceCode"
@@ -380,7 +386,7 @@ const addImage = () => {
                                     <button
                                         type="button"
                                         @click="editor.chain().focus().toggleBulletList().run()"
-                                        :class="{ 'active': editor.isActive('bulletList') }"
+                                        :class="{ active: editor.isActive('bulletList') }"
                                         class="btn btn-sm btn-outline-secondary"
                                         title="Bullet List"
                                         :disabled="showSourceCode"
@@ -390,7 +396,7 @@ const addImage = () => {
                                     <button
                                         type="button"
                                         @click="editor.chain().focus().toggleOrderedList().run()"
-                                        :class="{ 'active': editor.isActive('orderedList') }"
+                                        :class="{ active: editor.isActive('orderedList') }"
                                         class="btn btn-sm btn-outline-secondary"
                                         title="Numbered List"
                                         :disabled="showSourceCode"
@@ -401,7 +407,7 @@ const addImage = () => {
                                     <button
                                         type="button"
                                         @click="addLink"
-                                        :class="{ 'active': editor.isActive('link') }"
+                                        :class="{ active: editor.isActive('link') }"
                                         class="btn btn-sm btn-outline-secondary"
                                         title="Add Link"
                                         :disabled="showSourceCode"
@@ -421,7 +427,7 @@ const addImage = () => {
                                     <button
                                         type="button"
                                         @click="toggleSourceView"
-                                        :class="{ 'active': showSourceCode }"
+                                        :class="{ active: showSourceCode }"
                                         class="btn btn-sm btn-outline-secondary"
                                         title="Show Source Code"
                                     >
@@ -431,20 +437,16 @@ const addImage = () => {
 
                                 <!-- Editor Content -->
                                 <div v-if="!showSourceCode">
-                                    <EditorContent 
-                                        :editor="editor" 
-                                        class="border border-top-0 rounded-bottom p-3"
-                                        style="min-height: 300px;"
-                                    />
+                                    <EditorContent :editor="editor" class="border border-top-0 rounded-bottom p-3" style="min-height: 300px" />
                                 </div>
-                                
+
                                 <!-- Source Code Editor -->
                                 <div v-else>
                                     <textarea
                                         v-model="sourceCode"
                                         @input="updateSourceCode"
                                         class="form-control border border-top-0 rounded-bottom"
-                                        style="min-height: 300px; font-family: 'Courier New', monospace; font-size: 14px;"
+                                        style="min-height: 300px; font-family: 'Courier New', monospace; font-size: 14px"
                                         placeholder="Enter HTML source code..."
                                     ></textarea>
                                 </div>
@@ -457,114 +459,81 @@ const addImage = () => {
 
                     <!-- Sidebar -->
                     <div class="col-lg-4">
-                        <div class="sticky-top" style="top: 1rem;">
-                        <!-- Publish Settings -->
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0">Publish Settings</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="form-check mb-3">
-                                    <input
-                                        id="published"
-                                        v-model="form.published"
-                                        type="checkbox"
-                                        class="form-check-input"
-                                    />
-                                    <label for="published" class="form-check-label text-dark">
-                                        Published
-                                    </label>
+                        <div class="sticky-top" style="top: 1rem">
+                            <!-- Publish Settings -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Publish Settings</h5>
                                 </div>
+                                <div class="card-body">
+                                    <div class="form-check mb-3">
+                                        <input id="published" v-model="form.published" type="checkbox" class="form-check-input" />
+                                        <label for="published" class="form-check-label text-dark"> Published </label>
+                                    </div>
 
-                                <div class="d-grid gap-2">
-                                    <button
-                                        type="submit"
-                                        class="btn btn-primary"
-                                        :disabled="form.processing"
-                                    >
-                                        <span v-if="form.processing" class="spinner-border spinner-border-sm me-2"></span>
-                                        {{ form.processing ? (page ? 'Updating...' : 'Creating...') : (page ? 'Update Page' : 'Create Page') }}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Featured Image -->
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0">Featured Image</h5>
-                            </div>
-                            <div class="card-body">
-                                <div v-if="preview" class="mb-3">
-                                    <div class="position-relative">
-                                        <img :src="preview" alt="Preview" class="img-fluid rounded">
-                                        <button
-                                            type="button"
-                                            @click="removeImage"
-                                            class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2"
-                                        >
-                                            <i class="bi bi-x"></i>
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-primary" :disabled="form.processing">
+                                            <span v-if="form.processing" class="spinner-border spinner-border-sm me-2"></span>
+                                            {{ form.processing ? (page ? 'Updating...' : 'Creating...') : page ? 'Update Page' : 'Create Page' }}
                                         </button>
                                     </div>
                                 </div>
-                                
-                                <div class="mb-3">
-                                    <button
-                                        type="button"
-                                        @click="showMediaPicker = true"
-                                        class="btn btn-primary me-2"
-                                    >
-                                        <i class="bi bi-images me-1"></i>
-                                        Choose from Library
-                                    </button>
-                                    <span class="text-muted">or</span>
-                                </div>
-                                
-                                <input
-                                    type="file"
-                                    @change="handleImageChange"
-                                    accept="image/*"
-                                    class="form-control"
-                                    :key="fileInputKey"
-                                />
-                                <div class="text-secondary small mt-1">Optional header image for the page</div>
                             </div>
-                        </div>
 
-                        <!-- Page Preview -->
-                        <div v-if="page" class="card mb-4">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0">Actions</h5>
+                            <!-- Featured Image -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Featured Image</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div v-if="preview" class="mb-3">
+                                        <div class="position-relative">
+                                            <img :src="preview" alt="Preview" class="img-fluid rounded" />
+                                            <button
+                                                type="button"
+                                                @click="removeImage"
+                                                class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2"
+                                            >
+                                                <i class="bi bi-x"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <button type="button" @click="showMediaPicker = true" class="btn btn-primary me-2">
+                                            <i class="bi bi-images me-1"></i>
+                                            Choose from Library
+                                        </button>
+                                        <span class="text-muted">or</span>
+                                    </div>
+
+                                    <input type="file" @change="handleImageChange" accept="image/*" class="form-control" :key="fileInputKey" />
+                                    <div class="text-secondary small mt-1">Optional header image for the page</div>
+                                </div>
                             </div>
-                            <div class="card-body">
-                                <a 
-                                    :href="route('pages.show', page.slug)" 
-                                    target="_blank"
-                                    class="btn btn-outline-primary btn-sm w-100"
-                                >
-                                    <i class="bi bi-eye me-1"></i>
-                                    View Page
-                                </a>
+
+                            <!-- Page Preview -->
+                            <div v-if="page" class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Actions</h5>
+                                </div>
+                                <div class="card-body">
+                                    <a :href="route('pages.show', page.slug)" target="_blank" class="btn btn-outline-primary btn-sm w-100">
+                                        <i class="bi bi-eye me-1"></i>
+                                        View Page
+                                    </a>
+                                </div>
                             </div>
-                        </div>
                         </div>
                     </div>
                 </div>
             </form>
         </div>
-        
+
         <!-- Media Pickers -->
-        <MediaPicker 
-            :show="showMediaPicker" 
-            @select="selectFeaturedImage"
-            @close="showMediaPicker = false"
-        />
-        
-        <MediaPicker 
-            :show="showContentMediaPicker" 
-            @select="selectContentImage"
-            @close="showContentMediaPicker = false"
-        />
+        <MediaPicker :show="showMediaPicker" @select="selectFeaturedImage" @close="showMediaPicker = false" />
+
+        <MediaPicker :show="showContentMediaPicker" @select="selectContentImage" @close="showContentMediaPicker = false" />
     </AdminLayout>
 </template>
 
@@ -609,17 +578,17 @@ const addImage = () => {
 }
 
 /* Fix file input styling for better visibility */
-input[type="file"].form-control {
+input[type='file'].form-control {
     color: #495057 !important;
 }
 
-input[type="file"].form-control::file-selector-button {
+input[type='file'].form-control::file-selector-button {
     color: #495057 !important;
     background-color: #e9ecef !important;
     border: 1px solid #ced4da !important;
 }
 
-input[type="file"].form-control:hover::file-selector-button {
+input[type='file'].form-control:hover::file-selector-button {
     background-color: #dde0e3 !important;
 }
 

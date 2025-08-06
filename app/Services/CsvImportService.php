@@ -89,7 +89,7 @@ class CsvImportService
             'betting_date' => ['betting_date', 'betting date', 'bet_date', 'placed_date', 'placed_at'],
             'game' => ['game', 'games', 'match', 'matchup', 'fixture', 'contest', 'game/player'],
             'wager_type' => ['bet type', 'wager_type', 'bettype', 'type', 'market', 'markets', 'bet_market', 'bet_type', 'wager type', 'wagertype', 'wagering_type', 'bet style'],
-            'wager_name' => ['wager name', 'wager_name', 'wagername', 'selection', 'pick', 'bet', 'tip', 'tips', 'bet description'],
+            'wager_name' => ['wager name/wager description', 'wager name', 'wager_name', 'wagername', 'wager description', 'selection', 'pick', 'bet', 'tip', 'tips', 'bet description'],
             'odds' => ['odds', 'american odds', 'price', 'wager_odds', 'line', 'betting_odds'],
             'level' => ['level', 'tier', 'membership', 'subscription_level', 'confidence level', 'plan'],
             'code' => ['code', 'tracking code', 'source code', 'capper', 'referrer', 'referrer_code', 'affiliate_code'],
@@ -98,6 +98,7 @@ class CsvImportService
             'wager' => ['wager', 'stake', 'wager_amount', 'wager amount', 'amount staked', 'bet_amount'],
             'profits' => ['profits', 'profit', 'net gain', 'pnl', 'p&l', 'net gain/loss'],
             'winning_amount' => ['winning amount', 'winning_amount', 'winningamount', 'total returned', 'payout'],
+            'golf_place_fraction' => ['golf only: place fraction', 'golf place fraction', 'place fraction', 'golf_place_fraction', 'place_fraction'],
         ];
 
         // First pass: exact matches only (to avoid incorrect fuzzy matches)
@@ -140,6 +141,7 @@ class CsvImportService
             'Wager name' => 'wager_name', // exact match from CSV
             'Wager Type' => 'wager_type',
             'Wager Name' => 'wager_name',
+            'Wager Name/Wager Description' => 'wager_name',
             'Odds' => 'odds',
             'Wager Odds' => 'odds',
             'Level' => 'level',
@@ -154,6 +156,7 @@ class CsvImportService
             'Profits' => 'profits',
             'Profit Amount' => 'profits',
             'Winning Amount' => 'winning_amount',
+            'Golf Only: Place Fraction' => 'golf_place_fraction',
         ];
 
         // Also add lowercase versions (excluding date to avoid conflict)
@@ -185,6 +188,7 @@ class CsvImportService
             'profits' => 'profits',
             'profit amount' => 'profits',
             'winning amount' => 'winning_amount',
+            'golf only: place fraction' => 'golf_place_fraction',
         ];
 
         foreach ($headers as $header) {
@@ -816,7 +820,7 @@ class CsvImportService
             'betting_date.required' => 'Betting Date is required',
             'game_date.required' => 'Game Date is required',
             'game.required' => 'Game is required',
-            'wager_type.required' => 'Bet Type is required',
+            'wager_type.required' => 'Wager Type is required',
             'wager_name.required' => 'Wager Name is required',
             'odds.required' => 'odds are required',
             'odds.numeric' => 'odds must be a number',
@@ -941,7 +945,7 @@ class CsvImportService
             'roi' => 'nullable|numeric',
             'wager' => 'required|numeric|min:0.01|max:100000',
             'profits' => 'nullable|numeric',
-            'winning_amount' => 'nullable|numeric|min:0',
+            'winning_amount' => 'nullable|numeric',
             // Home/Away teams are parsed from game column
             'home_team' => 'required|string|max:255',
             'away_team' => 'nullable|string|max:255',
@@ -990,6 +994,7 @@ class CsvImportService
             ],
             'optional' => [
                 'wager_type' => 'Specific betting style (Straight, Outright, Each Way, Parlay)',
+                'golf_place_fraction' => 'Golf Only: Place Fraction (e.g., 0.2 or 1/5) - Used for Each Way bets in Golf',
             ],
         ];
     }

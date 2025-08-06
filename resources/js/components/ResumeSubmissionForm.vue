@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
-import { useForm, usePage } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
+import { useForm, usePage } from '@inertiajs/vue3';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 
 interface JobPosition {
     id: number;
@@ -31,16 +31,9 @@ const form = useForm({
 // Use dynamic positions if provided, otherwise fall back to hardcoded list
 const positionOptions = computed(() => {
     if (props.positions && props.positions.length > 0) {
-        return props.positions.map(p => p.title);
+        return props.positions.map((p) => p.title);
     }
-    return [
-        'Sales Representative',
-        'Regional Manager',
-        'Business Development',
-        'Marketing',
-        'Customer Service',
-        'Other'
-    ];
+    return ['Sales Representative', 'Regional Manager', 'Business Development', 'Marketing', 'Customer Service', 'Other'];
 });
 
 const showSuccessMessage = ref(false);
@@ -67,12 +60,12 @@ const submitForm = () => {
         onSuccess: () => {
             showSuccessMessage.value = true;
             form.reset();
-            
+
             // Reset Turnstile if enabled
             if (turnstileEnabled.value && window.turnstile && turnstileWidget.value) {
                 window.turnstile.reset(turnstileWidget.value);
             }
-            
+
             // Hide success message after 5 seconds
             setTimeout(() => {
                 showSuccessMessage.value = false;
@@ -83,14 +76,14 @@ const submitForm = () => {
             if (form.errors && turnstileEnabled.value && window.turnstile && turnstileWidget.value) {
                 window.turnstile.reset(turnstileWidget.value);
             }
-        }
+        },
     });
 };
 </script>
 
 <template>
-    <div class="card shadow-lg" style="background-color: #1a2332; border: 2px solid #ffc107;">
-        <div class="card-header py-4" style="background-color: #0d1829; border-bottom: 2px solid #ffc107;">
+    <div class="card shadow-lg" style="background-color: #1a2332; border: 2px solid #ffc107">
+        <div class="card-header py-4" style="background-color: #0d1829; border-bottom: 2px solid #ffc107">
             <h3 class="h4 fw-bold text-white mb-0 text-center">
                 <i class="bi bi-file-earmark-person me-2 text-warning"></i>
                 Submit Your Resume
@@ -111,14 +104,14 @@ const submitForm = () => {
                             <i class="bi bi-person me-1 text-warning"></i>
                             First Name <span class="text-danger">*</span>
                         </label>
-                        <input 
-                            v-model="form.first_name" 
-                            type="text" 
+                        <input
+                            v-model="form.first_name"
+                            type="text"
                             class="form-control form-control-lg"
                             :class="{ 'is-invalid': form.errors.first_name }"
-                            style="background-color: #0d1829; border: 1px solid #2e4057; color: white;"
+                            style="background-color: #0d1829; border: 1px solid #2e4057; color: white"
                             placeholder="John"
-                            required 
+                            required
                         />
                         <InputError :message="form.errors.first_name" class="mt-2" />
                     </div>
@@ -127,14 +120,14 @@ const submitForm = () => {
                             <i class="bi bi-person me-1 text-warning"></i>
                             Last Name <span class="text-danger">*</span>
                         </label>
-                        <input 
-                            v-model="form.last_name" 
-                            type="text" 
+                        <input
+                            v-model="form.last_name"
+                            type="text"
                             class="form-control form-control-lg"
                             :class="{ 'is-invalid': form.errors.last_name }"
-                            style="background-color: #0d1829; border: 1px solid #2e4057; color: white;"
+                            style="background-color: #0d1829; border: 1px solid #2e4057; color: white"
                             placeholder="Doe"
-                            required 
+                            required
                         />
                         <InputError :message="form.errors.last_name" class="mt-2" />
                     </div>
@@ -143,14 +136,14 @@ const submitForm = () => {
                             <i class="bi bi-telephone me-1 text-warning"></i>
                             Phone <span class="text-danger">*</span>
                         </label>
-                        <input 
-                            v-model="form.phone" 
-                            type="tel" 
+                        <input
+                            v-model="form.phone"
+                            type="tel"
                             class="form-control form-control-lg"
                             :class="{ 'is-invalid': form.errors.phone }"
-                            style="background-color: #0d1829; border: 1px solid #2e4057; color: white;"
+                            style="background-color: #0d1829; border: 1px solid #2e4057; color: white"
                             placeholder="(555) 123-4567"
-                            required 
+                            required
                         />
                         <InputError :message="form.errors.phone" class="mt-2" />
                     </div>
@@ -159,14 +152,14 @@ const submitForm = () => {
                             <i class="bi bi-envelope me-1 text-warning"></i>
                             Email <span class="text-danger">*</span>
                         </label>
-                        <input 
-                            v-model="form.email" 
-                            type="email" 
+                        <input
+                            v-model="form.email"
+                            type="email"
                             class="form-control form-control-lg"
                             :class="{ 'is-invalid': form.errors.email }"
-                            style="background-color: #0d1829; border: 1px solid #2e4057; color: white;"
+                            style="background-color: #0d1829; border: 1px solid #2e4057; color: white"
                             placeholder="john.doe@example.com"
-                            required 
+                            required
                         />
                         <InputError :message="form.errors.email" class="mt-2" />
                     </div>
@@ -175,11 +168,11 @@ const submitForm = () => {
                             <i class="bi bi-briefcase me-1 text-warning"></i>
                             Position Applied For <span class="text-danger">*</span>
                         </label>
-                        <select 
-                            v-model="form.position" 
+                        <select
+                            v-model="form.position"
                             class="form-select form-select-lg"
                             :class="{ 'is-invalid': form.errors.position }"
-                            style="background-color: #0d1829; border: 1px solid #2e4057; color: white;"
+                            style="background-color: #0d1829; border: 1px solid #2e4057; color: white"
                             required
                         >
                             <option value="">Select a position</option>
@@ -194,19 +187,17 @@ const submitForm = () => {
                             <i class="bi bi-file-text me-1 text-warning"></i>
                             Tell Us About Yourself <span class="text-danger">*</span>
                         </label>
-                        <textarea 
-                            v-model="form.about" 
+                        <textarea
+                            v-model="form.about"
                             class="form-control"
                             :class="{ 'is-invalid': form.errors.about }"
-                            style="background-color: #0d1829; border: 1px solid #2e4057; color: white;"
+                            style="background-color: #0d1829; border: 1px solid #2e4057; color: white"
                             rows="5"
                             placeholder="Please include your relevant experience, which state/city you're interested in, and why you'd be a great fit for WeWinGames..."
                             required
                         ></textarea>
                         <InputError :message="form.errors.about" class="mt-2" />
-                        <small class="form-text text-gray-light">
-                            Include your experience, preferred location, and availability.
-                        </small>
+                        <small class="form-text text-gray-light"> Include your experience, preferred location, and availability. </small>
                     </div>
 
                     <!-- Turnstile -->
@@ -217,11 +208,7 @@ const submitForm = () => {
                 </div>
 
                 <div class="d-flex justify-content-center mt-5">
-                    <button 
-                        type="submit" 
-                        class="btn btn-warning btn-lg px-5 py-3 fw-bold"
-                        :disabled="form.processing"
-                    >
+                    <button type="submit" class="btn btn-warning btn-lg px-5 py-3 fw-bold" :disabled="form.processing">
                         <span v-if="!form.processing">
                             <i class="bi bi-send me-2"></i>
                             Submit Application

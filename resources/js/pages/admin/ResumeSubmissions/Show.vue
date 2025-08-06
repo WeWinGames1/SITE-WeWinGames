@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 interface ResumeSubmission {
@@ -56,12 +56,18 @@ function deleteSubmission() {
 // Status badge colors
 function getStatusBadgeClass(status: string) {
     switch (status) {
-        case 'new': return 'bg-primary';
-        case 'reviewed': return 'bg-info';
-        case 'contacted': return 'bg-warning';
-        case 'hired': return 'bg-success';
-        case 'rejected': return 'bg-danger';
-        default: return 'bg-secondary';
+        case 'new':
+            return 'bg-primary';
+        case 'reviewed':
+            return 'bg-info';
+        case 'contacted':
+            return 'bg-warning';
+        case 'hired':
+            return 'bg-success';
+        case 'rejected':
+            return 'bg-danger';
+        default:
+            return 'bg-secondary';
     }
 }
 </script>
@@ -69,7 +75,7 @@ function getStatusBadgeClass(status: string) {
 <template>
     <AdminLayout>
         <Head :title="`Resume - ${submission.full_name}`" />
-        
+
         <div class="container-fluid p-4">
             <!-- Page Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -112,12 +118,12 @@ function getStatusBadgeClass(status: string) {
                                     <dl>
                                         <dt class="text-muted">Name</dt>
                                         <dd class="mb-3">{{ submission.first_name }} {{ submission.last_name }}</dd>
-                                        
+
                                         <dt class="text-muted">Email</dt>
                                         <dd class="mb-3">
                                             <a :href="`mailto:${submission.email}`">{{ submission.email }}</a>
                                         </dd>
-                                        
+
                                         <dt class="text-muted">Phone</dt>
                                         <dd class="mb-3">
                                             <a :href="`tel:${submission.phone}`">{{ submission.phone }}</a>
@@ -128,10 +134,10 @@ function getStatusBadgeClass(status: string) {
                                     <dl>
                                         <dt class="text-muted">Position Applied For</dt>
                                         <dd class="mb-3">{{ submission.position }}</dd>
-                                        
+
                                         <dt class="text-muted">Submitted On</dt>
                                         <dd class="mb-3">{{ new Date(submission.created_at).toLocaleString() }}</dd>
-                                        
+
                                         <dt class="text-muted">Last Updated</dt>
                                         <dd class="mb-3">{{ new Date(submission.updated_at).toLocaleString() }}</dd>
                                     </dl>
@@ -159,7 +165,7 @@ function getStatusBadgeClass(status: string) {
                             <dl class="row mb-0">
                                 <dt class="col-sm-3 text-muted">IP Address</dt>
                                 <dd class="col-sm-9">{{ submission.ip_address || 'Not recorded' }}</dd>
-                                
+
                                 <dt class="col-sm-3 text-muted">User Agent</dt>
                                 <dd class="col-sm-9 text-break">
                                     <small>{{ submission.user_agent || 'Not recorded' }}</small>
@@ -182,37 +188,25 @@ function getStatusBadgeClass(status: string) {
                                 </span>
                             </div>
                             <div class="d-grid gap-2">
-                                <button 
-                                    v-if="submission.status !== 'new'"
-                                    @click="updateStatus('new')" 
-                                    class="btn btn-sm btn-outline-primary"
-                                >
+                                <button v-if="submission.status !== 'new'" @click="updateStatus('new')" class="btn btn-sm btn-outline-primary">
                                     Mark as New
                                 </button>
-                                <button 
-                                    v-if="submission.status !== 'reviewed'"
-                                    @click="updateStatus('reviewed')" 
-                                    class="btn btn-sm btn-outline-info"
-                                >
+                                <button v-if="submission.status !== 'reviewed'" @click="updateStatus('reviewed')" class="btn btn-sm btn-outline-info">
                                     Mark as Reviewed
                                 </button>
-                                <button 
+                                <button
                                     v-if="submission.status !== 'contacted'"
-                                    @click="updateStatus('contacted')" 
+                                    @click="updateStatus('contacted')"
                                     class="btn btn-sm btn-outline-warning"
                                 >
                                     Mark as Contacted
                                 </button>
-                                <button 
-                                    v-if="submission.status !== 'hired'"
-                                    @click="updateStatus('hired')" 
-                                    class="btn btn-sm btn-outline-success"
-                                >
+                                <button v-if="submission.status !== 'hired'" @click="updateStatus('hired')" class="btn btn-sm btn-outline-success">
                                     Mark as Hired
                                 </button>
-                                <button 
+                                <button
                                     v-if="submission.status !== 'rejected'"
-                                    @click="updateStatus('rejected')" 
+                                    @click="updateStatus('rejected')"
                                     class="btn btn-sm btn-outline-danger"
                                 >
                                     Mark as Rejected
@@ -239,7 +233,7 @@ function getStatusBadgeClass(status: string) {
         </div>
 
         <!-- Notes Modal -->
-        <div v-if="showNotesModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div v-if="showNotesModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5)">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -260,7 +254,7 @@ function getStatusBadgeClass(status: string) {
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Notes</label>
-                                <textarea 
+                                <textarea
                                     v-model="notesForm.notes"
                                     class="form-control"
                                     rows="5"
@@ -269,9 +263,7 @@ function getStatusBadgeClass(status: string) {
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button @click="showNotesModal = false" type="button" class="btn btn-secondary">
-                                Cancel
-                            </button>
+                            <button @click="showNotesModal = false" type="button" class="btn btn-secondary">Cancel</button>
                             <button type="submit" class="btn btn-primary" :disabled="notesForm.processing">
                                 <span v-if="notesForm.processing" class="spinner-border spinner-border-sm me-2"></span>
                                 Save Changes

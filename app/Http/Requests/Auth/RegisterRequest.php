@@ -52,6 +52,12 @@ class RegisterRequest extends FormRequest
                     }
                 },
             ],
+            'phone' => [
+                'required',
+                'string',
+                'regex:/^[+]?[(]?[0-9]{1,3}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,4}[-\s\.]?[0-9]{1,9}$/',
+                'unique:users,phone',
+            ],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'discord_username' => [
                 'nullable',

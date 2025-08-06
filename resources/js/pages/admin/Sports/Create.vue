@@ -14,10 +14,10 @@ const errorMessage = ref<string | null>(null);
 function validateForm(): boolean {
     // Clear previous errors
     form.clearErrors();
-    
+
     let isValid = true;
     const errors: Record<string, string> = {};
-    
+
     // Required field validation
     if (!form.name || !form.name.trim()) {
         errors.name = 'The name field is required.';
@@ -26,31 +26,31 @@ function validateForm(): boolean {
         errors.name = 'The name may not be greater than 255 characters.';
         isValid = false;
     }
-    
+
     // Note: We can't check uniqueness on client side, server will handle it
-    
+
     // Set errors if any
     if (!isValid) {
         form.setError(errors);
     }
-    
+
     return isValid;
 }
 
 function submit() {
     console.log('Submitting sport create:', {
         data: form.data(),
-        route: route('admin.sports.store')
+        route: route('admin.sports.store'),
     });
-    
+
     // Clear previous messages
     errorMessage.value = null;
-    
+
     if (!validateForm()) {
         errorMessage.value = 'Please fix the validation errors before submitting.';
         return;
     }
-    
+
     form.post(route('admin.sports.store'), {
         onError: (errors) => {
             console.error('Sport create errors:', errors);
@@ -64,7 +64,7 @@ function submit() {
         },
         onSuccess: () => {
             console.log('Sport created successfully');
-        }
+        },
     });
 }
 </script>
@@ -72,7 +72,7 @@ function submit() {
 <template>
     <AdminLayout>
         <Head title="Create Sport" />
-        
+
         <div class="container-fluid p-4">
             <!-- Header -->
             <div class="mb-4">
@@ -135,35 +135,15 @@ function submit() {
 
                                 <div class="mb-4">
                                     <div class="form-check">
-                                        <input
-                                            v-model="form.is_active"
-                                            type="checkbox"
-                                            class="form-check-input"
-                                            id="is_active"
-                                        />
-                                        <label class="form-check-label" for="is_active">
-                                            Active
-                                        </label>
+                                        <input v-model="form.is_active" type="checkbox" class="form-check-input" id="is_active" />
+                                        <label class="form-check-label" for="is_active"> Active </label>
                                     </div>
-                                    <div class="form-text">
-                                        Inactive sports won't be available for new teams or leagues.
-                                    </div>
+                                    <div class="form-text">Inactive sports won't be available for new teams or leagues.</div>
                                 </div>
 
                                 <div class="d-flex gap-2">
-                                    <button
-                                        type="submit"
-                                        class="btn btn-primary"
-                                        :disabled="form.processing"
-                                    >
-                                        Create Sport
-                                    </button>
-                                    <Link
-                                        :href="route('admin.sports.index')"
-                                        class="btn btn-outline-secondary"
-                                    >
-                                        Cancel
-                                    </Link>
+                                    <button type="submit" class="btn btn-primary" :disabled="form.processing">Create Sport</button>
+                                    <Link :href="route('admin.sports.index')" class="btn btn-outline-secondary"> Cancel </Link>
                                 </div>
                             </form>
                         </div>

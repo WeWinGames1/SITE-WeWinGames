@@ -79,17 +79,25 @@ function search() {
 }
 
 function filterByCategory(category: string) {
-    router.get(route(currentRoute.value), { category }, {
-        preserveState: true,
-        preserveScroll: true,
-    });
+    router.get(
+        route(currentRoute.value),
+        { category },
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
 }
 
 function filterByTag(tag: string) {
-    router.get(route(currentRoute.value), { tag }, {
-        preserveState: true,
-        preserveScroll: true,
-    });
+    router.get(
+        route(currentRoute.value),
+        { tag },
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
 }
 
 function clearFilters() {
@@ -100,7 +108,7 @@ function formatDate(date: string): string {
     return new Date(date).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
-        day: 'numeric'
+        day: 'numeric',
     });
 }
 </script>
@@ -108,9 +116,9 @@ function formatDate(date: string): string {
 <template>
     <WelcomeLayout>
         <Head :title="props.customHeader ? props.customHeader.title : 'Blog - Sports Betting Insights & Tips'" />
-        
+
         <!-- Hero Section -->
-        <section class="position-relative text-white py-5" style="background: linear-gradient(180deg, #1e3a5f 0%, #0a1628 100%);">
+        <section class="position-relative text-white py-5" style="background: linear-gradient(180deg, #1e3a5f 0%, #0a1628 100%)">
             <div class="container-fluid px-4 px-lg-5">
                 <div class="text-center">
                     <h1 class="display-3 fw-bold mb-4">
@@ -119,36 +127,38 @@ function formatDate(date: string): string {
                     <p v-if="props.customHeader?.subtitle" class="fs-4 mb-4 text-primary">
                         {{ props.customHeader.subtitle }}
                     </p>
-                    <p class="fs-5 mb-5 mx-auto" style="max-width: 800px; color: #a8b9d5;">
-                        <span v-if="props.customHeader" v-html="props.customHeader.description.replace('We Win Games', '<span class=\'fw-bold text-primary\'>We Win Games</span>')"></span>
-                        <span v-else>Expert insights, betting strategies, and the latest sports betting news to help you make informed decisions</span>
+                    <p class="fs-5 mb-5 mx-auto" style="max-width: 800px; color: #a8b9d5">
+                        <span
+                            v-if="props.customHeader"
+                            v-html="
+                                props.customHeader.description.replace('We Win Games', '<span class=\'fw-bold text-primary\'>We Win Games</span>')
+                            "
+                        ></span>
+                        <span v-else
+                            >Expert insights, betting strategies, and the latest sports betting news to help you make informed decisions</span
+                        >
                     </p>
-                    
+
                     <!-- Search Bar -->
-                    <form @submit.prevent="search" class="mx-auto" style="max-width: 600px;">
+                    <form @submit.prevent="search" class="mx-auto" style="max-width: 600px">
                         <div class="input-group">
                             <span class="input-group-text bg-white border-end-0">
                                 <i class="bi bi-search text-muted"></i>
                             </span>
-                            <input 
+                            <input
                                 type="text"
-                                v-model="searchForm.search" 
-                                class="form-control form-control-lg border-start-0 ps-0" 
+                                v-model="searchForm.search"
+                                class="form-control form-control-lg border-start-0 ps-0"
                                 placeholder="Search articles..."
-                                style="box-shadow: none;"
+                                style="box-shadow: none"
                             />
-                            <button 
-                                type="submit"
-                                class="btn btn-primary btn-lg px-4"
-                            >
-                                Search
-                            </button>
+                            <button type="submit" class="btn btn-primary btn-lg px-4">Search</button>
                         </div>
                     </form>
                 </div>
             </div>
         </section>
-        
+
         <div class="container-fluid px-4 px-lg-5 py-5">
             <div class="row g-4">
                 <!-- Main Content -->
@@ -172,19 +182,23 @@ function formatDate(date: string): string {
                         </div>
                         <button @click="clearFilters" class="btn btn-link btn-sm text-decoration-none">Clear all</button>
                     </div>
-                    
+
                     <!-- Blog Posts Grid -->
                     <div v-if="posts.data.length > 0" class="row g-4">
                         <div v-for="post in posts.data" :key="post.id" class="col-12 col-md-6">
-                            <article class="card h-100" style="background-color: #1a2332; border: 1px solid #2e4057; transition: all 0.3s ease;">
+                            <article class="card h-100" style="background-color: #1a2332; border: 1px solid #2e4057; transition: all 0.3s ease">
                                 <Link :href="route('blog.show', post.slug)" class="text-decoration-none">
-                                    <div v-if="post.featured_image_url" style="height: 200px; overflow: hidden;">
-                                        <img :src="post.featured_image_url" :alt="post.title" class="w-100 h-100" style="object-fit: cover;" />
+                                    <div v-if="post.featured_image_url" style="height: 200px; overflow: hidden">
+                                        <img :src="post.featured_image_url" :alt="post.title" class="w-100 h-100" style="object-fit: cover" />
                                     </div>
-                                    <div v-else class="w-100 d-flex align-items-center justify-content-center" style="height: 200px; background: linear-gradient(135deg, #1e3a5f 0%, #0a1628 100%);">
+                                    <div
+                                        v-else
+                                        class="w-100 d-flex align-items-center justify-content-center"
+                                        style="height: 200px; background: linear-gradient(135deg, #1e3a5f 0%, #0a1628 100%)"
+                                    >
                                         <i class="bi bi-image fs-1 text-white opacity-50"></i>
                                     </div>
-                                    
+
                                     <div class="card-body">
                                         <div class="d-flex align-items-center small text-muted mb-2">
                                             <span class="badge bg-primary">
@@ -196,22 +210,22 @@ function formatDate(date: string): string {
                                                 {{ post.reading_time }} min read
                                             </span>
                                         </div>
-                                        
+
                                         <h2 class="h5 fw-bold text-white mb-2">
                                             {{ post.title }}
                                         </h2>
-                                        
+
                                         <p class="text-gray-light small mb-3 line-clamp-3">
                                             {{ post.excerpt }}
                                         </p>
-                                        
+
                                         <div class="d-flex justify-content-end align-items-center small text-muted">
                                             <span class="d-flex align-items-center">
                                                 <i class="bi bi-eye me-1"></i>
                                                 {{ post.views_count }} views
                                             </span>
                                         </div>
-                                        
+
                                         <div v-if="post.tags.length > 0" class="mt-3 d-flex flex-wrap gap-1">
                                             <span v-for="tag in post.tags.slice(0, 3)" :key="tag" class="badge bg-secondary small">
                                                 {{ tag }}
@@ -222,45 +236,46 @@ function formatDate(date: string): string {
                             </article>
                         </div>
                     </div>
-                    
+
                     <!-- Empty State -->
                     <div v-else class="text-center py-5">
-                        <i class="bi bi-newspaper text-muted" style="font-size: 4rem;"></i>
+                        <i class="bi bi-newspaper text-muted" style="font-size: 4rem"></i>
                         <p class="text-muted fs-5 mt-3">No blog posts found.</p>
                     </div>
-                    
+
                     <!-- Pagination -->
                     <div v-if="posts.links.length > 3" class="mt-4 d-flex justify-content-center">
                         <nav>
                             <ul class="pagination">
-                                <li v-for="link in posts.links" :key="link.label" 
-                                    class="page-item" 
-                                    :class="{ active: link.active, disabled: !link.url }">
-                                    <button
-                                        v-if="link.url"
-                                        @click="router.get(link.url)"
-                                        class="page-link"
-                                        v-html="link.label"
-                                    />
+                                <li
+                                    v-for="link in posts.links"
+                                    :key="link.label"
+                                    class="page-item"
+                                    :class="{ active: link.active, disabled: !link.url }"
+                                >
+                                    <button v-if="link.url" @click="router.get(link.url)" class="page-link" v-html="link.label" />
                                     <span v-else class="page-link" v-html="link.label" />
                                 </li>
                             </ul>
                         </nav>
                     </div>
                 </div>
-                
+
                 <!-- Sidebar -->
                 <aside class="col-lg-3">
                     <!-- Categories -->
-                    <div class="card mb-4" style="background-color: #1a2332; border: 1px solid #2e4057;">
+                    <div class="card mb-4" style="background-color: #1a2332; border: 1px solid #2e4057">
                         <div class="card-body">
                             <h3 class="h5 fw-bold text-white mb-3">Categories</h3>
                             <ul class="list-unstyled mb-0">
                                 <li v-for="(label, value) in categories" :key="value" class="mb-2">
-                                    <button 
+                                    <button
                                         @click="filterByCategory(value)"
                                         class="btn btn-link text-decoration-none p-0 text-start"
-                                        :class="{ 'text-primary fw-semibold': filters.category === value, 'text-gray-light': filters.category !== value }"
+                                        :class="{
+                                            'text-primary fw-semibold': filters.category === value,
+                                            'text-gray-light': filters.category !== value,
+                                        }"
                                     >
                                         <i class="bi bi-chevron-right me-1 small"></i>
                                         {{ label }}
@@ -269,14 +284,14 @@ function formatDate(date: string): string {
                             </ul>
                         </div>
                     </div>
-                    
+
                     <!-- Popular Tags -->
-                    <div class="card mb-4" style="background-color: #1a2332; border: 1px solid #2e4057;">
+                    <div class="card mb-4" style="background-color: #1a2332; border: 1px solid #2e4057">
                         <div class="card-body">
                             <h3 class="h5 fw-bold text-white mb-3">Popular Tags</h3>
                             <div class="d-flex flex-wrap gap-2">
-                                <button 
-                                    v-for="tag in popularTags" 
+                                <button
+                                    v-for="tag in popularTags"
                                     :key="tag"
                                     @click="filterByTag(tag)"
                                     class="btn btn-sm"
@@ -287,14 +302,18 @@ function formatDate(date: string): string {
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Newsletter CTA -->
-                    <div v-if="shouldShowStayUpdated" class="card text-white" style="background: linear-gradient(135deg, #6366F1 0%, #7C3AED 100%); border: none;">
+                    <div
+                        v-if="shouldShowStayUpdated"
+                        class="card text-white"
+                        style="background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%); border: none"
+                    >
                         <div class="card-body">
                             <h3 class="h5 fw-bold mb-2">Stay Updated</h3>
                             <p class="mb-3 opacity-90">Get the latest betting tips and insights delivered to your inbox.</p>
-                            <Link 
-                                :href="isAuthenticated ? route('profile.edit') : route('register')" 
+                            <Link
+                                :href="isAuthenticated ? route('profile.edit') : route('register')"
                                 class="btn btn-white text-primary fw-semibold w-100"
                             >
                                 {{ isAuthenticated ? 'Manage Notifications' : 'Subscribe Now' }}
@@ -327,8 +346,8 @@ function formatDate(date: string): string {
 }
 
 .btn-outline-secondary:hover {
-    background-color: #6366F1;
-    border-color: #6366F1;
+    background-color: #6366f1;
+    border-color: #6366f1;
     color: white;
 }
 
