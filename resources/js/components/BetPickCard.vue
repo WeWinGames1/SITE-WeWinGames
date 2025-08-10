@@ -69,6 +69,17 @@
                 </div>
             </div>
 
+            <!-- Premium Notes Section -->
+            <div v-if="bet.premium_notes_enabled && bet.premium_notes" class="premium-notes-container mt-4">
+                <div class="premium-notes-header d-flex align-items-center mb-2">
+                    <i class="bi bi-star-fill text-warning me-2"></i>
+                    <span class="fw-bold text-white">{{ bet.premium_notes_heading || 'Premium Analysis' }}</span>
+                </div>
+                <div class="premium-notes-content">
+                    <p class="text-white-50 small mb-0">{{ bet.premium_notes }}</p>
+                </div>
+            </div>
+
             <!-- Additional Info (hidden by default, shown on hover) -->
             <div
                 class="position-absolute bottom-0 start-0 end-0 p-3 bg-dark"
@@ -277,5 +288,34 @@ const deleteBet = async () => {
 
 .border-warning {
     border: 2px solid var(--bs-warning) !important;
+}
+
+.premium-notes-container {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%);
+    border: 1px solid rgba(255, 193, 7, 0.2);
+    border-radius: 10px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+.premium-notes-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #ffc107, transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.premium-notes-content {
+    line-height: 1.6;
 }
 </style>

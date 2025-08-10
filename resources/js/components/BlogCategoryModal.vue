@@ -189,7 +189,7 @@ function close() {
                                         class="form-control"
                                         :class="{ 'is-invalid': form.errors.slug }"
                                         placeholder="e.g., sports-analysis"
-                                        pattern="[a-z0-9-]+"
+                                        pattern="^[a-z0-9]+(-[a-z0-9]+)*$"
                                         required
                                     />
                                     <div class="form-text">Only lowercase letters, numbers, and hyphens allowed</div>

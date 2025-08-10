@@ -50,6 +50,9 @@ interface Bet {
     teamTwo?: Team;
     parlayTeams?: BetTeam[];
     tips?: string;
+    premium_notes?: string;
+    premium_notes_enabled?: boolean;
+    premium_notes_heading?: string;
     betting_date: string;
     game_date: string;
     wager_odds: number | string;
@@ -86,6 +89,7 @@ interface Props {
     sports: Sport[];
     leagues: League[];
     betTypes: Record<string, string>;
+    teams: Array<{ id: number; text: string; }>;
 }
 
 const props = defineProps<Props>();
@@ -122,9 +126,9 @@ const form = useForm({
     month: props.bet.month || '',
     matches: props.bet.matches || '',
     markets: props.bet.markets || '',
-    team_one: props.bet.team_one || '',
+    team_one: typeof props.bet.team_one === 'string' ? props.bet.team_one : '',
     team_one_id: props.bet.team_one_id || null,
-    team_two: props.bet.team_two || '',
+    team_two: typeof props.bet.team_two === 'string' ? props.bet.team_two : '',
     team_two_id: props.bet.team_two_id || null,
     parlay_teams:
         props.bet.parlayTeams?.map((pt) => ({
@@ -135,6 +139,9 @@ const form = useForm({
             logo_url: pt.team.logo_url,
         })) || [],
     tips: props.bet.tips || '',
+    premium_notes: props.bet.premium_notes || '',
+    premium_notes_enabled: props.bet.premium_notes_enabled ?? false,
+    premium_notes_heading: props.bet.premium_notes_heading || '',
     betting_date: props.bet.betting_date ? new Date(props.bet.betting_date).toISOString().slice(0, 16) : '',
     game_date: props.bet.game_date ? new Date(props.bet.game_date).toISOString().slice(0, 16) : '',
     wager_odds: props.bet.wager_odds || '',
@@ -177,15 +184,14 @@ onMounted(() => {
 
     // Initialize Select2 after component is mounted
     nextTick(() => {
+        console.log('Bet data:', {
+            team_one: form.team_one,
+            team_one_id: form.team_one_id,
+            team_two: form.team_two,
+            team_two_id: form.team_two_id,
+            teams: props.teams
+        });
         initializeSelect2();
-        
-        // Try to find teams by searching for the base name
-        if (form.team_one && !form.team_one_id) {
-            searchAndSetTeam('one', extractBaseTeamName(form.team_one));
-        }
-        if (form.team_two && !form.team_two_id) {
-            searchAndSetTeam('two', extractBaseTeamName(form.team_two));
-        }
     });
 });
 
@@ -196,6 +202,12 @@ const filteredLeagues = computed(() => {
 });
 
 const isParlay = computed(() => form.wager_type === 'parlay');
+
+const isIndividualSport = computed(() => {
+    if (!form.sports) return false;
+    const individualSports = ['golf', 'tennis', 'boxing', 'mma', 'ufc', 'racing', 'nascar'];
+    return individualSports.includes(form.sports.toLowerCase());
+});
 
 const teamOneLogo = computed(() => {
     if (props.bet.teamOne?.logo_url) {
@@ -230,6 +242,21 @@ watch(
             }
         }
     },
+);
+
+// Watch for teams data changes to re-initialize Select2
+watch(
+    () => props.teams,
+    (newTeams) => {
+        if (newTeams && newTeams.length > 0) {
+            console.log('Teams loaded:', newTeams.length);
+            // Re-initialize Select2 with new teams
+            nextTick(() => {
+                initializeSelect2();
+            });
+        }
+    },
+    { immediate: true }
 );
 
 // Watch for league changes to update the league name
@@ -338,8 +365,18 @@ function calculateProfit() {
 function initializeSelect2() {
     // Initialize Select2 for team dropdowns
     if (!isParlay.value) {
-        initTeamSelect('team_one_select', 'one');
-        initTeamSelect('team_two_select', 'two');
+        // Initialize Select2 and set initial values after Vue has rendered
+        nextTick(() => {
+            setTimeout(() => {
+                console.log('Initializing Select2 with:', {
+                    team_one_id: form.team_one_id,
+                    team_two_id: form.team_two_id,
+                    teams_count: props.teams.length
+                });
+                initTeamSelect('team_one_select', 'one');
+                initTeamSelect('team_two_select', 'two');
+            }, 100);
+        });
     }
 }
 
@@ -354,29 +391,21 @@ function initTeamSelect(elementId: string, teamType: 'one' | 'two') {
         $element.select2('destroy');
     }
 
+    // Clear and populate with teams
+    $element.empty();
+    $element.append('<option value="">Select a team...</option>');
+    
+    // Add all teams as options
+    props.teams.forEach(team => {
+        const isSelected = (teamType === 'one' && form.team_one_id === team.id) || 
+                          (teamType === 'two' && form.team_two_id === team.id);
+        const option = new Option(team.text, team.id.toString(), isSelected, isSelected);
+        $element.append(option);
+    });
+    
+    // Initialize Select2 with simple configuration
     $element.select2({
-        ajax: {
-            url: route('admin.api.teams.search'),
-            dataType: 'json',
-            delay: 250,
-            data: function (params: any) {
-                return {
-                    q: params.term,
-                    sport_id: form.sport_id,
-                    league_id: form.league_id,
-                };
-            },
-            processResults: function (data: any) {
-                return {
-                    results: data.results,
-                };
-            },
-            cache: true,
-        },
-        placeholder: `Search for ${teamType === 'one' ? 'team one' : 'team two'}...`,
-        minimumInputLength: 0,
-        templateResult: formatTeam,
-        templateSelection: formatTeamSelection,
+        placeholder: `Select ${teamType === 'one' ? 'team one' : 'team two'}...`,
         allowClear: true,
         tags: true,
         createTag: function (params: any) {
@@ -392,16 +421,35 @@ function initTeamSelect(elementId: string, teamType: 'one' | 'two') {
         },
         dropdownParent: window.$('.modal').length ? window.$('.modal') : window.$('body'),
     });
+    
+    // Force set the value after Select2 initialization
+    const valueToSet = teamType === 'one' ? form.team_one_id : form.team_two_id;
+    if (valueToSet) {
+        console.log(`Setting ${teamType} team value to:`, valueToSet);
+        $element.val(valueToSet.toString()).trigger('change.select2');
+        
+        // Double-check the value was set
+        setTimeout(() => {
+            const currentVal = $element.val();
+            console.log(`${teamType} team value after set:`, currentVal);
+            if (currentVal !== valueToSet.toString()) {
+                console.warn(`Failed to set ${teamType} team value, trying again...`);
+                $element.val(valueToSet.toString()).trigger('change.select2');
+            }
+        }, 100);
+    }
 
     // Handle selection
     $element.on('select2:select', function (e: any) {
         const data = e.params.data;
         if (teamType === 'one') {
-            form.team_one_id = data.id;
-            form.team_one = data.name;
+            // For new tags (text-only teams), ID will be the same as text
+            form.team_one_id = data.newTag ? null : parseInt(data.id);
+            form.team_one = data.text || data.name;
         } else {
-            form.team_two_id = data.id;
-            form.team_two = data.name;
+            // For new tags (text-only teams), ID will be the same as text
+            form.team_two_id = data.newTag ? null : parseInt(data.id);
+            form.team_two = data.text || data.name;
         }
     });
 
@@ -415,60 +463,8 @@ function initTeamSelect(elementId: string, teamType: 'one' | 'two') {
             form.team_two = '';
         }
     });
-
-    // Set initial value if team is already selected
-    if (teamType === 'one' && (form.team_one_id || form.team_one)) {
-        // Get team name from various sources
-        let teamName = '';
-        const teamId = form.team_one_id;
-
-        // First try the team relationship
-        if (props.bet.teamOne && typeof props.bet.teamOne === 'object' && props.bet.teamOne.name) {
-            teamName = String(props.bet.teamOne.name);
-        }
-        // Fall back to the text field
-        else if (form.team_one) {
-            teamName = String(form.team_one);
-        }
-
-        if (teamName) {
-            // If we have a team ID, use it; otherwise use the team name as value
-            const value = teamId ? teamId.toString() : teamName;
-            // Use jQuery to create the option properly
-            const $option = window.$('<option></option>').attr('value', value).text(teamName).prop('selected', true);
-
-            $element.append($option);
-
-            // Trigger change event to update Select2
-            $element.trigger('change');
-        }
-    } else if (teamType === 'two' && (form.team_two_id || form.team_two)) {
-        // Get team name from various sources
-        let teamName = '';
-        const teamId = form.team_two_id;
-
-        // First try the team relationship
-        if (props.bet.teamTwo && typeof props.bet.teamTwo === 'object' && props.bet.teamTwo.name) {
-            teamName = String(props.bet.teamTwo.name);
-        }
-        // Fall back to the text field
-        else if (form.team_two) {
-            teamName = String(form.team_two);
-        }
-
-        if (teamName) {
-            // If we have a team ID, use it; otherwise use the team name as value
-            const value = teamId ? teamId.toString() : teamName;
-            // Use jQuery to create the option properly
-            const $option = window.$('<option></option>').attr('value', value).text(teamName).prop('selected', true);
-
-            $element.append($option);
-
-            // Trigger change event to update Select2
-            $element.trigger('change');
-        }
-    }
 }
+
 
 // Search for a team by name and set it if found
 async function searchAndSetTeam(teamType: 'one' | 'two', searchTerm: string) {
@@ -549,6 +545,16 @@ function formatTeam(team: any) {
 }
 
 function formatTeamSelection(team: any) {
+    // Handle the case where team might be the element itself during initialization
+    if (!team || !team.id) {
+        return '';
+    }
+    
+    // Get the text from the element if it's a DOM element
+    if (team.element) {
+        return team.text || '';
+    }
+    
     // Ensure we always return a string
     if (team.name) {
         return team.name;
@@ -560,7 +566,7 @@ function formatTeamSelection(team: any) {
     if (typeof team === 'string') {
         return team;
     }
-    return '';
+    return team.toString();
 }
 
 function openLogoModal(teamType: 'one' | 'two') {
@@ -1098,7 +1104,7 @@ declare global {
                             <template v-if="!isParlay">
                                 <!-- Team One -->
                                 <div class="col-md-6">
-                                    <label for="team_one_select" class="form-label">Team One / Player</label>
+                                    <label for="team_one_select" class="form-label">Team One / Player <span class="text-danger">*</span></label>
                                     <div class="d-flex gap-2">
                                         <select id="team_one_select" class="form-control flex-grow-1"></select>
                                         <button
@@ -1125,7 +1131,7 @@ declare global {
 
                                 <!-- Team Two -->
                                 <div class="col-md-6">
-                                    <label for="team_two_select" class="form-label">Team Two</label>
+                                    <label for="team_two_select" class="form-label">Team Two <span v-if="!isIndividualSport" class="text-danger">*</span></label>
                                     <div class="d-flex gap-2">
                                         <select id="team_two_select" class="form-control flex-grow-1"></select>
                                         <button
@@ -1225,7 +1231,7 @@ declare global {
                         <div class="row g-3">
                             <!-- Markets -->
                             <div class="col-md-6">
-                                <label for="markets" class="form-label">Markets</label>
+                                <label for="markets" class="form-label">Markets *</label>
                                 <input
                                     id="markets"
                                     v-model="form.markets"
@@ -1254,6 +1260,7 @@ declare global {
                                     {{ form.errors.tips }}
                                 </div>
                             </div>
+
 
                             <!-- Odds -->
                             <div class="col-md-4">
@@ -1506,6 +1513,7 @@ declare global {
                                     :class="{ 'is-invalid': form.errors.level }"
                                     placeholder="e.g., 1, 2, 3"
                                 />
+                                <small class="text-muted">Bet confidence/priority level (separate from membership tier)</small>
                                 <div v-if="form.errors.level" class="invalid-feedback">
                                     {{ form.errors.level }}
                                 </div>
@@ -1546,8 +1554,71 @@ declare global {
                     </div>
                 </div>
 
+                <!-- Premium Notes Section -->
+                <div class="card mt-4">
+                    <div class="card-header bg-warning bg-opacity-10">
+                        <h5 class="mb-0">
+                            <i class="bi bi-star-fill text-warning me-2"></i>
+                            Premium Notes
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Enable/Disable Toggle -->
+                            <div class="col-md-12 mb-3">
+                                <div class="form-check form-switch">
+                                    <input
+                                        id="premium_notes_enabled"
+                                        v-model="form.premium_notes_enabled"
+                                        type="checkbox"
+                                        class="form-check-input"
+                                        role="switch"
+                                    />
+                                    <label class="form-check-label" for="premium_notes_enabled">
+                                        Enable Premium Notes
+                                    </label>
+                                </div>
+                                <div class="form-text">When enabled, premium notes will be displayed to customers at this membership level or higher</div>
+                            </div>
+
+                            <!-- Notes Heading -->
+                            <div v-if="form.premium_notes_enabled" class="col-md-12 mb-3">
+                                <label for="premium_notes_heading" class="form-label">Notes Heading</label>
+                                <input
+                                    id="premium_notes_heading"
+                                    v-model="form.premium_notes_heading"
+                                    type="text"
+                                    class="form-control"
+                                    :class="{ 'is-invalid': form.errors.premium_notes_heading }"
+                                    placeholder="e.g., Premium Analysis, Expert Insights, VIP Notes"
+                                />
+                                <div class="form-text">Leave empty to use default heading "Premium Analysis"</div>
+                                <div v-if="form.errors.premium_notes_heading" class="invalid-feedback">
+                                    {{ form.errors.premium_notes_heading }}
+                                </div>
+                            </div>
+
+                            <!-- Notes Content -->
+                            <div v-if="form.premium_notes_enabled" class="col-md-12">
+                                <label for="premium_notes" class="form-label">Notes Content</label>
+                                <textarea
+                                    id="premium_notes"
+                                    v-model="form.premium_notes"
+                                    class="form-control"
+                                    :class="{ 'is-invalid': form.errors.premium_notes }"
+                                    rows="5"
+                                    placeholder="Enter detailed analysis, insider information, statistical breakdowns, or any premium content that provides extra value to your subscribers..."
+                                />
+                                <div v-if="form.errors.premium_notes" class="invalid-feedback">
+                                    {{ form.errors.premium_notes }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Submit Buttons -->
-                <div class="d-flex justify-content-end gap-2">
+                <div class="d-flex justify-content-end gap-2 mt-4">
                     <Link :href="route('admin.bets.index')" class="btn btn-secondary"> Cancel </Link>
                     <button type="submit" class="btn btn-primary" :disabled="form.processing">
                         <span v-if="form.processing" class="spinner-border spinner-border-sm me-2"></span>

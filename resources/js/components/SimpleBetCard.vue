@@ -45,6 +45,15 @@
         <button class="btn w-100 fw-bold" :style="{ backgroundColor: '#ffc107', color: '#000' }">
             {{ formatBetTip(bet) }}
         </button>
+
+        <!-- Premium Notes Section -->
+        <div v-if="bet.premium_notes_enabled && bet.premium_notes" class="premium-notes-section mt-3 p-3">
+            <div class="d-flex align-items-center mb-2">
+                <i class="bi bi-star-fill text-warning me-2"></i>
+                <span class="fw-semibold text-white">{{ bet.premium_notes_heading || 'Premium Analysis' }}</span>
+            </div>
+            <p class="text-white small mb-0">{{ bet.premium_notes }}</p>
+        </div>
     </div>
 </template>
 
@@ -186,5 +195,12 @@ const levelTextColor = computed(() => {
 
 .teams-section {
     padding: 10px 0;
+}
+
+.premium-notes-section {
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
 }
 </style>

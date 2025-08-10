@@ -26,6 +26,9 @@ class Bet extends Model
         'team_two_id',
         'team_two_logo',
         'tips',
+        'premium_notes',
+        'premium_notes_enabled',
+        'premium_notes_heading',
         'betting_date',
         'game_date',  // New column
         'odds',       // New column name
@@ -64,6 +67,7 @@ class Bet extends Model
         'is_parlay' => 'boolean',
         'parlay_legs' => 'integer',
         'is_each_way' => 'boolean',
+        'premium_notes_enabled' => 'boolean',
         'each_way_stake' => 'decimal:2',
         'place_payout' => 'decimal:2',
         'place_fraction' => 'decimal:2',

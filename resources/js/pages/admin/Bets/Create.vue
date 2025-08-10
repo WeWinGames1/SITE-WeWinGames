@@ -64,6 +64,9 @@ const form = useForm({
     team_two_is_new: false,
     parlay_teams: [],
     tips: '',
+    premium_notes: '',
+    premium_notes_enabled: false,
+    premium_notes_heading: '',
     betting_date: new Date().toISOString().slice(0, 16),
     game_date: new Date().toISOString().slice(0, 16),
     wager_odds: '',
@@ -97,6 +100,12 @@ const isParlay = computed(() => form.wager_type === 'parlay');
 
 const canSelectTeams = computed(() => {
     return form.sport_id !== null && form.league_id !== null;
+});
+
+const isIndividualSport = computed(() => {
+    if (!form.sports) return false;
+    const individualSports = ['golf', 'tennis', 'boxing', 'mma', 'ufc', 'racing', 'nascar'];
+    return individualSports.includes(form.sports.toLowerCase());
 });
 
 const teamOneLogo = computed(() => {
@@ -784,7 +793,7 @@ declare global {
 
                                 <!-- Team One -->
                                 <div v-if="canSelectTeams" class="col-md-6">
-                                    <label for="team_one_select" class="form-label">Team One / Player</label>
+                                    <label for="team_one_select" class="form-label">Team One / Player <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <select id="team_one_select" class="form-control" style="width: calc(100% - 50px)"></select>
                                         <button
@@ -812,7 +821,7 @@ declare global {
 
                                 <!-- Team Two -->
                                 <div v-if="canSelectTeams" class="col-md-6">
-                                    <label for="team_two_select" class="form-label">Team Two</label>
+                                    <label for="team_two_select" class="form-label">Team Two <span v-if="!isIndividualSport" class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <select id="team_two_select" class="form-control" style="width: calc(100% - 50px)"></select>
                                         <button
@@ -901,7 +910,7 @@ declare global {
                         <div class="row g-3">
                             <!-- Markets -->
                             <div class="col-md-6">
-                                <label for="markets" class="form-label">Markets</label>
+                                <label for="markets" class="form-label">Markets *</label>
                                 <input
                                     id="markets"
                                     v-model="form.markets"
@@ -930,6 +939,7 @@ declare global {
                                     {{ form.errors.tips }}
                                 </div>
                             </div>
+
 
                             <!-- Odds -->
                             <div class="col-md-4">
@@ -1164,6 +1174,7 @@ declare global {
                                     :class="{ 'is-invalid': form.errors.level }"
                                     placeholder="e.g., 1, 2, 3"
                                 />
+                                <div class="form-text">Optional: Additional categorization (separate from membership tier)</div>
                                 <div v-if="form.errors.level" class="invalid-feedback">
                                     {{ form.errors.level }}
                                 </div>
@@ -1204,8 +1215,71 @@ declare global {
                     </div>
                 </div>
 
+                <!-- Premium Notes Section -->
+                <div class="card mt-4">
+                    <div class="card-header bg-warning bg-opacity-10">
+                        <h5 class="mb-0">
+                            <i class="bi bi-star-fill text-warning me-2"></i>
+                            Premium Notes
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Enable/Disable Toggle -->
+                            <div class="col-md-12 mb-3">
+                                <div class="form-check form-switch">
+                                    <input
+                                        id="premium_notes_enabled"
+                                        v-model="form.premium_notes_enabled"
+                                        type="checkbox"
+                                        class="form-check-input"
+                                        role="switch"
+                                    />
+                                    <label class="form-check-label" for="premium_notes_enabled">
+                                        Enable Premium Notes
+                                    </label>
+                                </div>
+                                <div class="form-text">When enabled, premium notes will be displayed to customers at this membership level or higher</div>
+                            </div>
+
+                            <!-- Notes Heading -->
+                            <div v-if="form.premium_notes_enabled" class="col-md-12 mb-3">
+                                <label for="premium_notes_heading" class="form-label">Notes Heading</label>
+                                <input
+                                    id="premium_notes_heading"
+                                    v-model="form.premium_notes_heading"
+                                    type="text"
+                                    class="form-control"
+                                    :class="{ 'is-invalid': form.errors.premium_notes_heading }"
+                                    placeholder="e.g., Premium Analysis, Expert Insights, VIP Notes"
+                                />
+                                <div class="form-text">Leave empty to use default heading "Premium Analysis"</div>
+                                <div v-if="form.errors.premium_notes_heading" class="invalid-feedback">
+                                    {{ form.errors.premium_notes_heading }}
+                                </div>
+                            </div>
+
+                            <!-- Notes Content -->
+                            <div v-if="form.premium_notes_enabled" class="col-md-12">
+                                <label for="premium_notes" class="form-label">Notes Content</label>
+                                <textarea
+                                    id="premium_notes"
+                                    v-model="form.premium_notes"
+                                    class="form-control"
+                                    :class="{ 'is-invalid': form.errors.premium_notes }"
+                                    rows="5"
+                                    placeholder="Enter detailed analysis, insider information, statistical breakdowns, or any premium content that provides extra value to your subscribers..."
+                                />
+                                <div v-if="form.errors.premium_notes" class="invalid-feedback">
+                                    {{ form.errors.premium_notes }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Submit Buttons -->
-                <div class="d-flex justify-content-end gap-2">
+                <div class="d-flex justify-content-end gap-2 mt-4">
                     <Link :href="route('admin.bets.index')" class="btn btn-secondary"> Cancel </Link>
                     <button type="submit" class="btn btn-primary" :disabled="form.processing">
                         <span v-if="form.processing" class="spinner-border spinner-border-sm me-2"></span>

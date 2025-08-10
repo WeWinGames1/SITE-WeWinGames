@@ -256,23 +256,30 @@ class BetManagementController extends Controller
      */
     public function store(Request $request)
     {
+        // Define individual sports that don't require team_two
+        $individualSports = ['golf', 'tennis', 'boxing', 'mma', 'ufc', 'racing', 'nascar'];
+        $isIndividualSport = in_array(strtolower($request->input('sports', '')), $individualSports);
+        
         $validated = $request->validate([
             'sports' => 'required|string|max:255',
             'sport_id' => 'nullable|exists:sports,id',
             'league' => 'nullable|string|max:255',
             'league_id' => 'nullable|exists:leagues,id',
             'month' => 'nullable|string|max:50',
-            'team_one' => 'nullable|string|max:255',
+            'team_one' => 'required|string|max:255',
             'team_one_id' => 'nullable|exists:teams,id',
             'team_one_is_new' => 'nullable|boolean',
-            'team_two' => 'nullable|string|max:255',
+            'team_two' => $isIndividualSport ? 'nullable|string|max:255' : 'required|string|max:255',
             'team_two_id' => 'nullable|exists:teams,id',
             'team_two_is_new' => 'nullable|boolean',
             'parlay_teams' => 'nullable|array',
             'parlay_teams.*.id' => 'nullable|exists:teams,id',
             'parlay_teams.*.name' => 'nullable|string|max:255',
             'tips' => 'nullable|string|max:500',
-            'markets' => 'nullable|string|max:255',
+            'premium_notes' => 'nullable|string',
+            'premium_notes_enabled' => 'nullable|boolean',
+            'premium_notes_heading' => 'nullable|string|max:255',
+            'markets' => 'required|string|max:255',
             'wager_type' => 'required|string|in:single_wager,moneyline,spread,total,prop,parlay,futures,each_way',
             'betting_date' => 'required|date',
             'game_date' => 'required|date',
@@ -301,6 +308,11 @@ class BetManagementController extends Controller
         // Normalize sports name to lowercase
         if (isset($validated['sports'])) {
             $validated['sports'] = strtolower($validated['sports']);
+        }
+        
+        // For individual sports, set team_two to empty string if not provided
+        if ($isIndividualSport && empty($validated['team_two'])) {
+            $validated['team_two'] = '';
         }
         
         // Handle new team creation
@@ -502,6 +514,28 @@ class BetManagementController extends Controller
             ];
         }
         
+        // Get all teams for the sport to populate Select2
+        $sportId = null;
+        if ($bet->sports) {
+            $sport = Sport::whereRaw('LOWER(name) = ?', [strtolower($bet->sports)])->first();
+            if ($sport) {
+                $sportId = $sport->id;
+            }
+        }
+        
+        $teams = [];
+        if ($sportId) {
+            $teams = Team::where('sport_id', $sportId)
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->map(function($team) {
+                    return [
+                        'id' => $team->id,
+                        'text' => $team->name,
+                    ];
+                });
+        }
+        
         return Inertia::render('admin/Bets/Edit', [
             'bet' => $betArray,
             'sports' => $sports,
@@ -509,6 +543,7 @@ class BetManagementController extends Controller
             'operators' => $operators,
             'users' => $users,
             'betTypes' => $betTypes,
+            'teams' => $teams,
         ]);
     }
 
@@ -517,6 +552,10 @@ class BetManagementController extends Controller
      */
     public function update(Request $request, Bet $bet)
     {
+        // Define individual sports that don't require team_two
+        $individualSports = ['golf', 'tennis', 'boxing', 'mma', 'ufc', 'racing', 'nascar'];
+        $isIndividualSport = in_array(strtolower($request->input('sports', '')), $individualSports);
+        
         $validated = $request->validate([
             'user_id' => 'nullable|exists:users,id',
             'sports' => 'required|string|max:255',
@@ -525,11 +564,11 @@ class BetManagementController extends Controller
             'league_id' => 'nullable|exists:leagues,id',
             'month' => 'nullable|string|max:50',
             'matches' => 'nullable|string|max:500',
-            'markets' => 'nullable|string|max:255',
-            'team_one' => 'nullable|string|max:255',
+            'markets' => 'required|string|max:255',
+            'team_one' => 'required|string|max:255',
             'team_one_id' => 'nullable|exists:teams,id',
             'team_one_is_new' => 'nullable|boolean',
-            'team_two' => 'nullable|string|max:255',
+            'team_two' => $isIndividualSport ? 'nullable|string|max:255' : 'required|string|max:255',
             'team_two_id' => 'nullable|exists:teams,id',
             'team_two_is_new' => 'nullable|boolean',
             'tips' => 'nullable|string|max:500',
@@ -565,6 +604,11 @@ class BetManagementController extends Controller
         // Normalize sports name to lowercase
         if (isset($validated['sports'])) {
             $validated['sports'] = strtolower($validated['sports']);
+        }
+        
+        // For individual sports, set team_two to empty string if not provided
+        if ($isIndividualSport && empty($validated['team_two'])) {
+            $validated['team_two'] = '';
         }
         
         // Handle new team creation

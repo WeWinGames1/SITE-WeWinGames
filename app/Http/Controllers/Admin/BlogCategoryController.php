@@ -26,7 +26,7 @@ class BlogCategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:blog_categories,slug',
+            'slug' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(-[a-z0-9]+)*$/', 'unique:blog_categories,slug'],
             'description' => 'nullable|string|max:500',
         ]);
         
@@ -45,7 +45,7 @@ class BlogCategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:blog_categories,slug,' . $blogCategory->id,
+            'slug' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(-[a-z0-9]+)*$/', 'unique:blog_categories,slug,' . $blogCategory->id],
             'description' => 'nullable|string|max:500',
         ]);
         

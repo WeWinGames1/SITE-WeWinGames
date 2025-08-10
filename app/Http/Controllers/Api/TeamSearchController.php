@@ -41,9 +41,9 @@ class TeamSearchController extends Controller
         // Only active teams
         $query->where('is_active', true);
         
-        // Limit results for performance
+        // Limit results for performance (increased to show more teams)
         $teams = $query->orderBy('name')
-            ->limit(30)
+            ->limit(100)
             ->get();
         
         // Format for Select2
