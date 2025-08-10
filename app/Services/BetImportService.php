@@ -42,6 +42,33 @@ class BetImportService
     }
 
     /**
+     * Normalize membership values to lowercase standard names
+     */
+    private function normalizeMembership(?string $membership): string
+    {
+        if (!$membership) {
+            return 'bronze';
+        }
+        
+        $membership = strtolower(trim($membership));
+        
+        // Map variations to standard names
+        $membershipMap = [
+            'bronze' => 'bronze',
+            'silver' => 'silver',
+            'gold' => 'gold',
+            'platinum' => 'platinum',
+            'plat' => 'platinum',
+            'free' => 'bronze',
+            'basic' => 'bronze',
+            'premium' => 'gold',
+            'pro' => 'platinum',
+        ];
+        
+        return $membershipMap[$membership] ?? 'bronze';
+    }
+
+    /**
      * Set static values for import
      */
     public function setStaticValues(array $staticValues): void
@@ -271,16 +298,8 @@ class BetImportService
         // Transform data before validation
         $record = $this->transformRecordData($record);
         
-        // Skip Each Way bets - they must be added manually
-        if (isset($record['wager_type']) && 
-            (strcasecmp($record['wager_type'], 'each_way') === 0 || 
-             strcasecmp($record['wager_type'], 'each way') === 0)) {
-            $this->skippedEachWayBets[] = [
-                'line' => $lineNumber,
-                'data' => $record
-            ];
-            return;
-        }
+        // Don't skip Each Way bets anymore - we can import them now
+        // The system supports Each Way bet calculations
         
         // Skip Parlay bets - they must be added manually
         if (isset($record['wager_type']) && strcasecmp($record['wager_type'], 'parlay') === 0) {
@@ -292,7 +311,7 @@ class BetImportService
         }
 
         // Check if this is a partially empty row (has some data but missing critical fields)
-        $criticalFields = ['sport', 'game', 'wager_name', 'odds', 'game_date'];
+        $criticalFields = ['sport', 'game', 'wager_name', 'odds'];
         $missingCriticalFields = [];
         $hasAnyCriticalData = false;
         $nonEmptyFieldCount = 0;
@@ -507,8 +526,9 @@ class BetImportService
                 'wager_odds' => (float) $record['odds'], // Keep old column for compatibility
                 'wager_amount' => (float) ($record['wager_amount'] ?? $record['stake'] ?? 0),
                 'status' => $record['status'] ?? 'pending',
-                'membership' => $record['level'] ?? $record['membership'] ?? 'Bronze',
-                'level' => $record['level'] ?? null,
+                'membership' => $this->normalizeMembership($record['level'] ?? $record['membership'] ?? 'Bronze'),
+                // Skip the level field - we're using it for membership instead
+                'level' => null,
                 'code' => $record['code'] ?? null,
                 'referrer' => $record['referrer'] ?? $record['code'] ?? null,
                 'user_id' => $record['user_id'] ?? null,

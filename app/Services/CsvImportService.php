@@ -82,21 +82,22 @@ class CsvImportService
         $mappings = [];
         // Priority order matters - exact matches for CSV format should come first
         $commonMappings = [
-            'sport' => ['sport', 'sports', 'sport_name', 'category', 'sport_type'],
+            'sport' => ['sports', 'sport', 'sport_name', 'category', 'sport_type'],
             'league' => ['league', 'competition', 'tournament', 'division', 'conference', 'comp', 'championship', 'event'],
             'month' => ['month', 'month_name'],
-            'game_date' => ['date', 'game_date', 'match_date', 'event_date', 'gamedate', 'game date', 'game date ', 'game date :', 'kickoff'],
-            'betting_date' => ['betting_date', 'betting date', 'bet_date', 'placed_date', 'placed_at'],
+            'game_date' => ['game date', 'date', 'game_date', 'match_date', 'event_date', 'gamedate', 'game date ', 'game date :', 'kickoff'],
+            'betting_date' => ['betting date', 'betting_date', 'bet_date', 'placed_date', 'placed_at'],
             'game' => ['game', 'games', 'match', 'matchup', 'fixture', 'contest', 'game/player'],
-            'wager_type' => ['bet type', 'wager_type', 'bettype', 'type', 'market', 'markets', 'bet_market', 'bet_type', 'wager type', 'wagertype', 'wagering_type', 'bet style'],
+            'wager_type' => ['wager type', 'bet type', 'wager_type', 'bettype', 'type', 'wagertype', 'wagering_type', 'bet style'],
+            'betting_market' => ['betting market', 'betting_market', 'market', 'markets', 'bet_market', 'bet market'],
             'wager_name' => ['wager name/wager description', 'wager name', 'wager_name', 'wagername', 'wager description', 'selection', 'pick', 'bet', 'tip', 'tips', 'bet description'],
-            'odds' => ['odds', 'american odds', 'price', 'wager_odds', 'line', 'betting_odds'],
-            'level' => ['level', 'tier', 'membership', 'subscription_level', 'confidence level', 'plan'],
-            'code' => ['code', 'tracking code', 'source code', 'capper', 'referrer', 'referrer_code', 'affiliate_code'],
+            'odds' => ['wager odds', 'odds', 'american odds', 'price', 'wager_odds', 'line', 'betting_odds'],
+            'membership' => ['membership', 'tier', 'subscription_level', 'confidence level', 'plan'],
+            'code' => ['referrer', 'code', 'tracking code', 'source code', 'capper', 'referrer_code', 'affiliate_code'],
             'status' => ['status', 'result', 'outcome', 'bet_status', 'bet outcome'],
-            'roi' => ['roi(net)', 'roi', 'roi %', 'roi_net', 'return on investment', 'net_roi'],
-            'wager' => ['wager', 'stake', 'wager_amount', 'wager amount', 'amount staked', 'bet_amount'],
-            'profits' => ['profits', 'profit', 'net gain', 'pnl', 'p&l', 'net gain/loss'],
+            'roi' => ['roi %', 'roi(net)', 'roi', 'roi_net', 'return on investment', 'net_roi'],
+            'wager' => ['wager amount', 'wager', 'stake', 'wager_amount', 'amount staked', 'bet_amount'],
+            'profits' => ['profit amount', 'profits', 'profit', 'net gain', 'pnl', 'p&l', 'net gain/loss'],
             'winning_amount' => ['winning amount', 'winning_amount', 'winningamount', 'total returned', 'payout'],
             'golf_place_fraction' => ['golf only: place fraction', 'golf place fraction', 'place fraction', 'golf_place_fraction', 'place_fraction'],
         ];
@@ -140,12 +141,13 @@ class CsvImportService
             'Bet Type' => 'wager_type',
             'Wager name' => 'wager_name', // exact match from CSV
             'Wager Type' => 'wager_type',
+            'Betting Market' => 'betting_market',
             'Wager Name' => 'wager_name',
             'Wager Name/Wager Description' => 'wager_name',
             'Odds' => 'odds',
             'Wager Odds' => 'odds',
-            'Level' => 'level',
-            'Membership' => 'level',
+            'Level' => 'membership',
+            'Membership' => 'membership',
             'Code' => 'code',
             'Referrer' => 'code',
             'Status' => 'status',
@@ -173,6 +175,7 @@ class CsvImportService
             'game' => 'game',
             'bet type' => 'wager_type',
             'wager type' => 'wager_type',
+            'betting market' => 'betting_market',
             'wager name' => 'wager_name',
             'odds' => 'odds',
             'level' => 'level',
@@ -824,7 +827,7 @@ class CsvImportService
             'wager_name.required' => 'Wager Name is required',
             'odds.required' => 'odds are required',
             'odds.numeric' => 'odds must be a number',
-            'level.required' => 'level is required',
+            'membership.required' => 'membership is required',
             'code.required' => 'code is required',
             'status.required' => 'Status is required',
             'roi.required' => 'ROI(net) is required',
@@ -868,6 +871,14 @@ class CsvImportService
 
         // Additional business logic validation
         $warnings = [];
+        
+        // Custom validation: ensure at least one date is provided
+        if (empty($data['game_date']) && empty($data['betting_date'])) {
+            return [
+                'valid' => false,
+                'errors' => ['game_date' => 'Either Game Date or Betting Date is required'],
+            ];
+        }
 
         // Check for duplicate bets
         if ($this->isDuplicateBet($data)) {
@@ -933,13 +944,12 @@ class CsvImportService
             'sport' => 'required|string|max:255',
             'league' => 'required|string|max:255',
             'month' => 'required|string|max:50',
-            'game_date' => 'required|string', // Changed from 'date' to 'string' for more flexible parsing
+            'game_date' => 'nullable|string', // Made optional - can use betting_date as fallback
             'game' => 'required|string|max:250',
             'wager_type' => 'required|string|max:50',
-            'wager_type' => 'nullable|string|max:250',
             'wager_name' => 'required|string|max:250',
             'odds' => ['required', 'numeric', 'between:-100000,100000'], // Allow negative odds
-            'level' => 'required|string|max:50',
+            'membership' => 'required|string|max:50',
             'code' => 'required|string|max:255',
             'status' => 'required|string|max:50',
             'roi' => 'nullable|numeric',
@@ -948,13 +958,14 @@ class CsvImportService
             'winning_amount' => 'nullable|numeric',
             // Home/Away teams are parsed from game column
             'home_team' => 'required|string|max:255',
-            'away_team' => 'nullable|string|max:255',
+            'away_team' => 'nullable|string|max:255', // Optional for individual sports
             // Optional fields
             'betting_date' => 'nullable|string', // Optional as CSV might only have game_date
             'stake' => 'nullable|numeric|min:0|max:100000',
             'operator' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:500',
             'placed_at' => 'nullable|string',
+            'golf_place_fraction' => 'nullable|string|max:50',
         ];
     }
 
@@ -975,26 +986,26 @@ class CsvImportService
     {
         return [
             'required' => [
-                'sport' => 'The sport being bet on (e.g., Baseball, Combat Sports, Golf)',
-                'league' => 'The league or event name (e.g., MLB, UFC, PGA)',
-                'month' => 'Calendar month the bet is placed or settles',
-                'betting_date' => 'Date when the bet was placed (MM/DD/YYYY)',
-                'game_date' => 'Date of the actual game/event (MM/DD/YYYY)',
-                'game' => 'The specific matchup or contest (e.g., Yankees @ Red Sox, Dustin Poirier vs. Islam Makhachev)',
-                'wager_type' => 'General type of bet (Moneyline, Spread, Player Prop, etc)',
-                'wager_name' => 'Detailed description of the bet (e.g., "Chicago Cubs (S Imanaga) ML," "Ilia Topuria to win by KO")',
-                'odds' => 'American odds (e.g., -120, +150)',
-                'level' => 'Subscription or confidence level (Bronze, Silver, Gold, Platinum)',
-                'code' => 'Unique/internal code for tracking bet source, system, or capper (e.g., BB, TPP, Golf Brad)',
-                'status' => 'Outcome of the bet ("Won", "Lost", "Placed", "Pending")',
-                'roi' => 'Net Return on Investment as % of the stake',
-                'wager' => 'Dollar amount staked on the bet',
-                'profits' => 'Net gain or loss (USD) for the bet (can be negative)',
-                'winning_amount' => 'Total returned if the bet wins (Wager + Profits; $0 if lost)',
+                'sport' => 'The sport being bet on (e.g., Soccer, Basketball, Golf)',
+                'league' => 'The league or competition name (e.g., Champions League, NBA, PGA)',
+                'month' => 'Calendar month (e.g., Feb, March, June)',
+                'game' => 'The matchup or player (e.g., "Team A @ Team B" or player name for individual sports)',
+                'wager_type' => 'Type of bet (e.g., Single Wager, Parlay, Each Way)',
+                'betting_market' => 'Market type (e.g., Moneyline, Spread, Total, Prop)',
+                'wager_name' => 'Specific bet description (e.g., "Atalanta to win", "Over 2.5 goals")',
+                'odds' => 'American odds (e.g., -120, +150, 111)',
+                'membership' => 'Membership tier (Bronze, Silver, Gold, Platinum)',
+                'code' => 'Referrer code or source (e.g., Footy, BB, Golf Brad)',
+                'status' => 'Bet outcome (win, loss, push, pending)',
+                'wager' => 'Amount wagered (e.g., $30, $50)',
             ],
             'optional' => [
-                'wager_type' => 'Specific betting style (Straight, Outright, Each Way, Parlay)',
-                'golf_place_fraction' => 'Golf Only: Place Fraction (e.g., 0.2 or 1/5) - Used for Each Way bets in Golf',
+                'betting_date' => 'Date bet was placed (MM/DD/YYYY format)',
+                'game_date' => 'Date of the game/event (MM/DD/YYYY format)',
+                'roi' => 'Return on Investment percentage',
+                'profits' => 'Profit or loss amount',
+                'winning_amount' => 'Total payout if won',
+                'golf_place_fraction' => 'Golf Only: Place fraction for Each Way bets (e.g., 1/5, 1/4)',
             ],
         ];
     }
@@ -1007,12 +1018,13 @@ class CsvImportService
         $headers = [
             'Sports',
             'League',
-            'Game Date',
+            'Month',
             'Betting Date',
-            'Matches',
-            'Time',
-            'Markets',
-            'Tips',
+            'Game Date',
+            'Game',
+            'Wager Type',
+            'Betting Market',
+            'Wager Name/Wager Description',
             'Wager Odds',
             'Membership',
             'Referrer',
@@ -1021,62 +1033,69 @@ class CsvImportService
             'Wager Amount',
             'Winning Amount',
             'Profit Amount',
+            'Golf Only: Place Fraction',
         ];
 
         $sampleData = [
             [
-                'NFL',
-                'National Football League',
-                '2024-01-15 13:00',
-                '2024-01-14',
-                'Kansas City Chiefs @ Buffalo Bills',
-                '13:00',
-                'Spread',
-                'Chiefs -3.5',
-                '1.91',
-                'Premium',
-                'ESPN',
-                'Won',
-                '91%',
-                '$100',
-                '$191',
-                '$91',
+                'soccer',  // Sports
+                'Champions League',  // League
+                'Feb',  // Month
+                '02-12-2025',  // Betting Date
+                '02-09-2025',  // Game Date
+                'Club Brugge @ Atalanta Bergamasca Calcio',  // Game
+                'Single Wager',  // Wager Type
+                'Moneyline',  // Betting Market
+                'Atalanta to win',  // Wager Name/Description
+                '111',  // Wager Odds
+                'gold',  // Membership
+                'Footy',  // Referrer
+                'loss',  // Status
+                '-100%',  // ROI %
+                '$30',  // Wager Amount
+                '$0',  // Winning Amount
+                '-$30',  // Profit Amount
+                '',  // Golf Only: Place Fraction
             ],
             [
-                'NBA',
-                'National Basketball Association',
-                '2024-01-16 19:30',
-                '2024-01-16',
-                'Boston Celtics @ Los Angeles Lakers',
-                '19:30',
-                'Moneyline',
-                'Lakers ML',
-                '2.25',
-                'Gold',
-                'Twitter',
-                'Won',
-                '125%',
-                '$50',
-                '$112.50',
-                '$62.50',
+                'basketball',  // Sports
+                'NBA',  // League
+                'Jan',  // Month
+                '01-15-2025',  // Betting Date
+                '01-16-2025',  // Game Date
+                'Boston Celtics @ Los Angeles Lakers',  // Game
+                'Single Wager',  // Wager Type
+                'Spread',  // Betting Market
+                'Lakers +3.5',  // Wager Name/Description
+                '-110',  // Wager Odds
+                'platinum',  // Membership
+                'BB',  // Referrer
+                'win',  // Status
+                '90.91%',  // ROI %
+                '$50',  // Wager Amount
+                '$95.45',  // Winning Amount
+                '$45.45',  // Profit Amount
+                '',  // Golf Only: Place Fraction
             ],
             [
-                'MLB',
-                'Major League Baseball',
-                '2024-05-01 19:00',
-                '2024-05-01',
-                'Boston Red Sox @ New York Yankees',
-                '19:00',
-                'Over/Under',
-                'Over 8.5',
-                '1.85',
-                'Silver',
-                'BetMGM',
-                'Lost',
-                '-100%',
-                '$75',
-                '$0',
-                '-$75',
+                'golf',  // Sports
+                'PGA Tour',  // League
+                'May',  // Month
+                '05-01-2025',  // Betting Date
+                '05-02-2025',  // Game Date
+                'Scottie Scheffler',  // Game (player name for individual sport)
+                'Each Way',  // Wager Type
+                'Tournament Winner',  // Betting Market
+                'Scottie Scheffler to Win',  // Wager Name/Description
+                '800',  // Wager Odds
+                'silver',  // Membership
+                'Golf Brad',  // Referrer
+                'placed',  // Status
+                '40%',  // ROI %
+                '$20',  // Wager Amount
+                '$28',  // Winning Amount
+                '$8',  // Profit Amount
+                '1/5',  // Golf Only: Place Fraction
             ],
         ];
 

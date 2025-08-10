@@ -13,6 +13,18 @@
             </ul>
         </div>
 
+        <!-- Important Notes -->
+        <div class="alert alert-warning mb-4">
+            <h5 class="alert-heading"><i class="bi bi-exclamation-triangle me-2"></i>Important Notes</h5>
+            <ul class="mb-0">
+                <li><strong>Membership Column:</strong> Use the "Membership" column in your CSV for tier values (Bronze, Silver, Gold, Platinum)</li>
+                <li><strong>Each Way Bets:</strong> Now supported! Include "Each Way" as the Wager Type</li>
+                <li><strong>Dates:</strong> Use MM/DD/YYYY format (e.g., 02-12-2025)</li>
+                <li><strong>Sports & Leagues:</strong> Will be created automatically if they don't exist</li>
+                <li><strong>Status Values:</strong> Use lowercase (win, loss, push, pending)</li>
+            </ul>
+        </div>
+
         <!-- Required Columns -->
         <div class="row mb-4">
             <div class="col-md-6 mb-3 mb-md-0">

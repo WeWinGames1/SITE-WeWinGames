@@ -22,7 +22,7 @@
                     <strong>Wager Name:</strong> Detailed description of the bet (e.g., "Chicago Cubs (S Imanaga) ML," "Ilia Topuria to win by KO")
                 </li>
                 <li><strong>odds:</strong> American odds (e.g., -120, +150)</li>
-                <li><strong>level:</strong> Subscription or confidence level (Bronze, Silver, Gold, Platinum)</li>
+                <li><strong>membership:</strong> Membership tier (Bronze, Silver, Gold, Platinum)</li>
                 <li><strong>code:</strong> Unique/internal code for tracking bet source, system, or capper (e.g., BB, TPP, Golf Brad)</li>
                 <li><strong>Status:</strong> Outcome of the bet ("Won", "Lost", "Placed", "Pending")</li>
                 <li><strong>ROI(net):</strong> Net Return on Investment as % of the stake</li>
@@ -211,8 +211,15 @@ const gameColumnName = computed(() => {
 });
 
 onMounted(() => {
-    // Initialize with detected mappings
-    mappings.value = { ...props.detectedMappings };
+    // Initialize with detected mappings, but filter out 'level' field
+    const filteredMappings = { ...props.detectedMappings };
+    
+    // Remove 'level' field if it exists - we only use 'membership' now
+    if ('level' in filteredMappings) {
+        delete filteredMappings.level;
+    }
+    
+    mappings.value = filteredMappings;
 
     // Ensure all required fields are initialized
     Object.keys(props.columnRequirements.required).forEach((field) => {
@@ -252,13 +259,44 @@ const toggleStaticMode = (field: string) => {
     }
 };
 
+// Format field names for display
+const formatFieldName = (field: string): string => {
+    const nameMap: Record<string, string> = {
+        sport: 'Sport',
+        league: 'League',
+        month: 'Month',
+        betting_date: 'Betting Date',
+        game_date: 'Game Date',
+        game: 'Game',
+        home_team: 'Home Team',
+        away_team: 'Away Team',
+        wager_type: 'Wager Type',
+        wager_name: 'Wager Name',
+        odds: 'odds',
+        membership: 'Membership',
+        code: 'code',
+        status: 'Status',
+        roi: 'ROI(net)',
+        wager: 'Wager',
+        profits: 'Profits',
+        winning_amount: 'Winning Amount',
+        selection: 'Selection/Pick',
+        stake: 'Stake/Wager Amount',
+        operator: 'Sportsbook/Operator',
+        description: 'Notes/Description',
+        placed_at: 'Date Placed',
+        referrer: 'Referrer/Source',
+    };
+    return nameMap[field] || field.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+};
+
 const validationErrors = computed(() => {
     const errors: string[] = [];
 
     // Check required fields - must have either mapping or static value
     Object.keys(props.columnRequirements.required).forEach((field) => {
         if (!mappings.value[field] && (!staticValueModes.value[field] || !staticValues.value[field])) {
-            errors.push(`${field} is required (must map to a column or provide a static value)`);
+            errors.push(`${formatFieldName(field)} is required (must map to a column or provide a static value)`);
         }
     });
 
@@ -286,37 +324,6 @@ const validationErrors = computed(() => {
 });
 
 const isValid = computed(() => validationErrors.value.length === 0);
-
-// Format field names for display
-const formatFieldName = (field: string): string => {
-    const nameMap: Record<string, string> = {
-        sport: 'Sport',
-        league: 'League',
-        month: 'Month',
-        betting_date: 'Betting Date',
-        game_date: 'Game Date',
-        game: 'Game',
-        home_team: 'Home Team',
-        away_team: 'Away Team',
-        wager_type: 'Wager Type',
-        wager_name: 'Wager Name',
-        odds: 'odds',
-        level: 'level',
-        code: 'code',
-        status: 'Status',
-        roi: 'ROI(net)',
-        wager: 'Wager',
-        profits: 'Profits',
-        winning_amount: 'Winning Amount',
-        selection: 'Selection/Pick',
-        stake: 'Stake/Wager Amount',
-        operator: 'Sportsbook/Operator',
-        description: 'Notes/Description',
-        placed_at: 'Date Placed',
-        referrer: 'Referrer/Source',
-    };
-    return nameMap[field] || field.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
-};
 
 const confirmMappings = () => {
     if (isValid.value) {
