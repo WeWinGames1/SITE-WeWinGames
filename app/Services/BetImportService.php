@@ -526,9 +526,8 @@ class BetImportService
                 'wager_odds' => (float) $record['odds'], // Keep old column for compatibility
                 'wager_amount' => (float) ($record['wager_amount'] ?? $record['stake'] ?? 0),
                 'status' => $record['status'] ?? 'pending',
-                'membership' => $this->normalizeMembership($record['level'] ?? $record['membership'] ?? 'Bronze'),
-                // Skip the level field - we're using it for membership instead
-                'level' => null,
+                'membership' => $this->normalizeMembership($record['membership'] ?? 'Bronze'),
+                'level' => $record['level'] ?? null, // Optional field
                 'code' => $record['code'] ?? null,
                 'referrer' => $record['referrer'] ?? $record['code'] ?? null,
                 'user_id' => $record['user_id'] ?? null,

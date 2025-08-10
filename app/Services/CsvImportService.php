@@ -966,6 +966,7 @@ class CsvImportService
             'description' => 'nullable|string|max:500',
             'placed_at' => 'nullable|string',
             'golf_place_fraction' => 'nullable|string|max:50',
+            'level' => 'nullable|string|max:50', // Optional field
         ];
     }
 
@@ -1006,6 +1007,7 @@ class CsvImportService
                 'profits' => 'Profit or loss amount',
                 'winning_amount' => 'Total payout if won',
                 'golf_place_fraction' => 'Golf Only: Place fraction for Each Way bets (e.g., 1/5, 1/4)',
+                'level' => 'Optional confidence level or tier',
             ],
         ];
     }
