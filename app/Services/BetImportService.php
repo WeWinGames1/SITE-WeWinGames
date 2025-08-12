@@ -1032,13 +1032,14 @@ class BetImportService
             'l' => 'loss',
             'push' => 'push',
             'p' => 'push',
-            'void' => 'void',
-            'v' => 'void',
-            'cashout' => 'cashout',
-            'cash out' => 'cashout',
+            'void' => 'pending',  // Changed from 'void' to 'pending'
+            'v' => 'pending',     // Changed from 'void' to 'pending'
+            'cashout' => 'pending',  // Changed from 'cashout' to 'pending'
+            'cash out' => 'pending', // Changed from 'cashout' to 'pending'
             'pending' => 'pending',
             'open' => 'pending',
             'active' => 'pending',
+            'placed' => 'placed',  // For E/W bets that placed but didn't win
         ];
 
         return $statusMap[$status] ?? 'pending';

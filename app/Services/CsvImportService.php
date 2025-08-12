@@ -765,14 +765,14 @@ class CsvImportService
             'l' => 'loss',
             'push' => 'push',
             'p' => 'push',
-            'void' => 'void',
-            'v' => 'void',
+            'void' => 'pending',  // Changed from 'void' to 'pending'
+            'v' => 'pending',     // Changed from 'void' to 'pending'
             'pending' => 'pending',
             'open' => 'pending',
             'active' => 'pending',
             'placed' => 'placed',  // For E/W bets that placed but didn't win
-            'cashout' => 'cashout',
-            'cash out' => 'cashout',
+            'cashout' => 'pending',  // Changed from 'cashout' to 'pending'
+            'cash out' => 'pending', // Changed from 'cashout' to 'pending'
         ];
 
         return $statusMap[$status] ?? 'pending';
