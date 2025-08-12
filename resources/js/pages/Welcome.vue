@@ -626,7 +626,7 @@ const allGroupedBets = computed(() => {
                                         <div class="d-flex align-items-center justify-content-between flex-wrap">
                                             <div class="d-flex align-items-center gap-3">
                                                 <img
-                                                    src="/images/draftkings_logo_1.png"
+                                                    src="/images/DraftKings_FC_on_dark.svg"
                                                     alt="DraftKings Sportsbook"
                                                     style="height: 40px; width: auto"
                                                 />
