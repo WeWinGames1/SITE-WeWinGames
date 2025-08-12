@@ -671,6 +671,9 @@ class CsvImportService
         }
 
         try {
+            // Replace non-breaking hyphens (U+2011) with regular hyphens
+            $value = str_replace('‑', '-', $value);
+            
             // Handle various date formats
             $date = null;
             
@@ -699,9 +702,17 @@ class CsvImportService
             foreach ($formats as $format) {
                 $parsed = \DateTime::createFromFormat($format, $value);
                 if ($parsed !== false) {
-                    // If year is 2-digit and less than 100, assume 2000s
-                    if ($parsed->format('Y') < 100) {
-                        $parsed->modify('+2000 years');
+                    // Get the year as an integer
+                    $year = (int) $parsed->format('Y');
+                    
+                    // If year is less than 100, it's a 2-digit year
+                    if ($year < 100) {
+                        // If less than 50, assume 2000s; otherwise 1900s
+                        if ($year < 50) {
+                            $parsed->setDate($year + 2000, (int) $parsed->format('m'), (int) $parsed->format('d'));
+                        } else {
+                            $parsed->setDate($year + 1900, (int) $parsed->format('m'), (int) $parsed->format('d'));
+                        }
                     }
                     $date = $parsed;
                     break;
@@ -712,8 +723,14 @@ class CsvImportService
             if (!$date) {
                 $date = \Carbon\Carbon::parse($value);
                 // Check for 2-digit year issue
-                if ($date->year < 100) {
-                    $date->addYears(2000);
+                $year = $date->year;
+                if ($year < 100) {
+                    // If less than 50, assume 2000s; otherwise 1900s
+                    if ($year < 50) {
+                        $date->year = $year + 2000;
+                    } else {
+                        $date->year = $year + 1900;
+                    }
                 }
             }
             

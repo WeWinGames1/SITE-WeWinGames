@@ -94,6 +94,9 @@ class BetImportService
         }
 
         try {
+            // Replace non-breaking hyphens (U+2011) with regular hyphens
+            $dateValue = str_replace('‑', '-', $dateValue);
+            
             // If already in Y-m-d H:i:s format, return as is
             if (preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $dateValue)) {
                 return $dateValue;
@@ -107,12 +110,32 @@ class BetImportService
             // IMPORTANT: Always parse dates as MM/DD/YYYY format first
             // This ensures consistency for dates like 07/12/2025
             
+            // Try manual parsing for MM/DD/YY format with slashes (2-digit year)
+            if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{2})$/', $dateValue, $matches)) {
+                $month = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+                $day = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+                $year = (int) $matches[3];
+                // If year < 50, assume 2000s; otherwise 1900s
+                $fullYear = $year < 50 ? 2000 + $year : 1900 + $year;
+                return "$fullYear-$month-$day 00:00:00";
+            }
+            
             // Try manual parsing for MM/DD/YYYY format with slashes
             if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/', $dateValue, $matches)) {
                 $month = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
                 $day = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
                 $year = $matches[3];
                 return "$year-$month-$day 00:00:00";
+            }
+            
+            // Try manual parsing for MM-DD-YY format with dashes (2-digit year)
+            if (preg_match('/^(\d{1,2})-(\d{1,2})-(\d{2})$/', $dateValue, $matches)) {
+                $month = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+                $day = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+                $year = (int) $matches[3];
+                // If year < 50, assume 2000s; otherwise 1900s
+                $fullYear = $year < 50 ? 2000 + $year : 1900 + $year;
+                return "$fullYear-$month-$day 00:00:00";
             }
             
             // Try manual parsing for MM-DD-YYYY format with dashes
@@ -278,6 +301,14 @@ class BetImportService
                 }
             }
             
+            // Debug log for date mapping
+            if ($lineNumber <= 5) {
+                \Log::info("BetImportService Line {$lineNumber}: Date mapping", [
+                    'game_date_raw' => $mappedRecord['game_date'] ?? 'not set',
+                    'betting_date_raw' => $mappedRecord['betting_date'] ?? 'not set',
+                ]);
+            }
+            
             // Debug log for missing sport mapping
             if (empty($mappedRecord['sport']) && $lineNumber >= 1741 && $lineNumber <= 1743) {
                 \Log::warning("Line {$lineNumber}: Sport field not mapped properly", [
@@ -297,6 +328,14 @@ class BetImportService
 
         // Transform data before validation
         $record = $this->transformRecordData($record);
+        
+        // Debug log for date after transformation
+        if ($lineNumber <= 5) {
+            \Log::info("BetImportService Line {$lineNumber}: After transformation", [
+                'game_date_transformed' => $record['game_date'] ?? 'not set',
+                'betting_date_transformed' => $record['betting_date'] ?? 'not set',
+            ]);
+        }
         
         // Don't skip Each Way bets anymore - we can import them now
         // The system supports Each Way bet calculations
@@ -754,8 +793,12 @@ class BetImportService
                 $formats = [
                     'Y-m-d H:i:s',
                     'Y-m-d',
+                    'm/d/y',      // MM/DD/YY format (2-digit year)
+                    'n/j/y',      // M/D/YY format (2-digit year)
                     'm/d/Y',      // MM/DD/YYYY format (prioritized)
+                    'n/j/Y',      // M/D/YYYY format
                     'm-d-Y',      // MM-DD-YYYY format
+                    'm-d-y',      // MM-DD-YY format (2-digit year)
                     'm/d/Y H:i:s',
                     'm/d/Y H:i',
                     'Y/m/d',
@@ -766,6 +809,17 @@ class BetImportService
                 foreach ($formats as $format) {
                     try {
                         $date = \Carbon\Carbon::createFromFormat($format, trim($record[$dateField]));
+                        
+                        // Handle 2-digit year conversion
+                        if (in_array($format, ['m/d/y', 'n/j/y', 'm-d-y']) && $date->year < 100) {
+                            $year = $date->year;
+                            if ($year < 50) {
+                                $date->year = 2000 + $year;
+                            } else {
+                                $date->year = 1900 + $year;
+                            }
+                        }
+                        
                         $record['game_date'] = $date->format('Y-m-d H:i:s');
                         $parsed = true;
                         break;
@@ -791,8 +845,12 @@ class BetImportService
                 $formats = [
                     'Y-m-d H:i:s',
                     'Y-m-d',
+                    'm/d/y',      // MM/DD/YY format (2-digit year)
+                    'n/j/y',      // M/D/YY format (2-digit year)
                     'm/d/Y',      // MM/DD/YYYY format (prioritized)
+                    'n/j/Y',      // M/D/YYYY format
                     'm-d-Y',      // MM-DD-YYYY format
+                    'm-d-y',      // MM-DD-YY format (2-digit year)
                     'm/d/Y H:i:s',
                     'm/d/Y H:i',
                     'Y/m/d',
@@ -803,6 +861,17 @@ class BetImportService
                 foreach ($formats as $format) {
                     try {
                         $date = \Carbon\Carbon::createFromFormat($format, trim($record['betting_date']));
+                        
+                        // Handle 2-digit year conversion
+                        if (in_array($format, ['m/d/y', 'n/j/y', 'm-d-y']) && $date->year < 100) {
+                            $year = $date->year;
+                            if ($year < 50) {
+                                $date->year = 2000 + $year;
+                            } else {
+                                $date->year = 1900 + $year;
+                            }
+                        }
+                        
                         $record['betting_date'] = $date->format('Y-m-d H:i:s');
                         $parsed = true;
                         break;

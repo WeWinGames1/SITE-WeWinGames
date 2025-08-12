@@ -115,12 +115,16 @@ const selectedPeriod = ref<'monthly' | 'weekly' | 'daily'>('monthly');
                             <div class="text-center text-muted small">
                                 <span v-if="selectedPeriod === 'monthly'" class="text-warning fw-bold">
                                     <i class="bi bi-star-fill"></i>
-                                    <template v-if="plan.name === 'Platinum'">Special: $40 first month, then $80/month</template>
-                                    <template v-else-if="plan.name === 'Gold'">Special: $32.50 first month, then $65/month</template>
-                                    <template v-else-if="plan.name === 'Silver'">Special: $22.50 first month, then $45/month</template>
+                                    <template v-if="plan.name === 'Platinum'">Special: ${{ parseFloat(plan.monthlyPrice.replace('$', '')) / 2 }} first month, then {{ plan.monthlyPrice }}/month</template>
+                                    <template v-else-if="plan.name === 'Gold'">Special: ${{ parseFloat(plan.monthlyPrice.replace('$', '')) / 2 }} first month, then {{ plan.monthlyPrice }}/month</template>
+                                    <template v-else-if="plan.name === 'Silver'">Special: ${{ parseFloat(plan.monthlyPrice.replace('$', '')) / 2 }} first month, then {{ plan.monthlyPrice }}/month</template>
                                 </span>
-                                <span v-else-if="selectedPeriod === 'weekly'"> ${{ plan.monthlyPrice }}/month • ${{ plan.dailyPrice }}/day </span>
-                                <span v-else> ${{ plan.monthlyPrice }}/month • ${{ plan.weeklyPrice }}/week </span>
+                                <span v-else-if="selectedPeriod === 'weekly'"> 
+                                    ${{ (parseFloat(plan.weeklyPrice) * 4.33).toFixed(0) }}/month • ${{ (parseFloat(plan.weeklyPrice) / 7).toFixed(2) }}/day 
+                                </span>
+                                <span v-else> 
+                                    ${{ (parseFloat(plan.dailyPrice) * 30).toFixed(0) }}/month • ${{ (parseFloat(plan.dailyPrice) * 7).toFixed(0) }}/week 
+                                </span>
                             </div>
                         </div>
 
