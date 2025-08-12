@@ -558,8 +558,10 @@ class BetImportService
                 'markets' => $record['wager_type'], // Keep old column for compatibility
                 'wager_name' => $record['wager_name'] ?? $record['selection'] ?? '', // New column
                 'team_one' => $homeTeamName ?? '',
+                'team_one_id' => $homeTeam ? $homeTeam->id : null,
                 'team_one_logo' => $homeTeam ? $homeTeam->logo : null,
                 'team_two' => $awayTeamName ?? '',
+                'team_two_id' => $awayTeam ? $awayTeam->id : null,
                 'team_two_logo' => $awayTeam ? $awayTeam->logo : null,
                 'tips' => $record['wager_name'] ?? $record['selection'] ?? '',
                 'betting_date' => $this->ensureRequiredDate($record['betting_date'] ?? null, $record['game_date'] ?? null),
