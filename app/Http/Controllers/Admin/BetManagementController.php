@@ -489,7 +489,7 @@ class BetManagementController extends Controller
         $users = User::orderBy('name')->get(['id', 'name', 'email']);
 
         // Load the bet with relationships
-        $bet->load(['user', 'teamOne', 'teamTwo', 'parlayTeams.team']);
+        $bet->load(['user', 'teamOne', 'teamTwo', 'parlayTeams']);
 
         // Define bet types
         $betTypes = [
@@ -505,6 +505,10 @@ class BetManagementController extends Controller
 
         // Convert bet to array and ensure team relationships are properly formatted
         $betArray = $bet->toArray();
+        
+        // Ensure wager_type and league are included
+        $betArray['wager_type'] = $bet->wager_type;
+        $betArray['league'] = $bet->league;
         
         // Ensure team relationships are properly formatted
         if ($bet->teamOne) {

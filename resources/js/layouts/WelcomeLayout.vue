@@ -251,49 +251,7 @@ const openKnowledgebase = () => {
                             <h2 class="text-warning fw-bold d-inline">QUESTIONS</h2>
                         </div>
                         <p class="text-center text-secondary mb-5">Hopefully, Any Queries Are Covered Below, If Not, Please Get In Touch.</p>
-
-                        <!-- Dynamic FAQ Accordion -->
-                        <div v-if="footerFaqs.length > 0" class="row justify-content-end">
-                            <div class="col-lg-10">
-                                <div class="accordion accordion-flush" id="faqAccordion" style="background-color: transparent">
-                                    <div v-for="(faq, index) in footerFaqs" :key="faq.id" class="accordion-item bg-transparent border-0 mb-3">
-                                        <h2 class="accordion-header">
-                                            <button
-                                                class="accordion-button bg-transparent text-white p-3"
-                                                :class="{ collapsed: index !== 0 }"
-                                                type="button"
-                                                data-bs-toggle="collapse"
-                                                :data-bs-target="`#faq${faq.id}`"
-                                                :style="
-                                                    index === 0
-                                                        ? 'background-color: rgba(255, 193, 7, 0.1); border: 1px solid #333;'
-                                                        : 'background-color: transparent; border: 1px solid #333;'
-                                                "
-                                            >
-                                                {{ faq.question }}
-                                            </button>
-                                        </h2>
-                                        <div
-                                            :id="`faq${faq.id}`"
-                                            class="accordion-collapse collapse"
-                                            :class="{ show: index === 0 }"
-                                            data-bs-parent="#faqAccordion"
-                                        >
-                                            <div
-                                                class="accordion-body text-white p-3"
-                                                style="
-                                                    background-color: rgba(0, 0, 0, 0.5);
-                                                    border: 1px solid rgba(255, 193, 7, 0.3);
-                                                    border-top: none;
-                                                "
-                                                v-html="faq.answer"
-                                            ></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
+                        
                         <!-- CTA to FAQ Page -->
                         <div class="text-center mt-4">
                             <a href="/faq" class="btn btn-warning btn-lg">
