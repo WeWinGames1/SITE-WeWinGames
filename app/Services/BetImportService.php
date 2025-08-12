@@ -301,7 +301,9 @@ class BetImportService
         // Don't skip Each Way bets anymore - we can import them now
         // The system supports Each Way bet calculations
         
-        // Skip Parlay bets - they must be added manually
+        // Allow Parlay bets - will try to parse first two teams from the game field
+        // Previously these were skipped, but now we'll import them with partial team data
+        /*
         if (isset($record['wager_type']) && strcasecmp($record['wager_type'], 'parlay') === 0) {
             $this->skippedParlayBets[] = [
                 'line' => $lineNumber,
@@ -309,6 +311,7 @@ class BetImportService
             ];
             return;
         }
+        */
 
         // Check if this is a partially empty row (has some data but missing critical fields)
         $criticalFields = ['sport', 'game', 'wager_name', 'odds'];
@@ -701,6 +704,13 @@ class BetImportService
 
     private function transformRecordData(array $record): array
     {
+        // Log parlay detection for debugging
+        if (isset($record['wager_type']) && strcasecmp($record['wager_type'], 'parlay') === 0) {
+            \Log::info('Processing parlay bet', [
+                'game' => $record['game'] ?? 'N/A',
+                'wager_type' => $record['wager_type']
+            ]);
+        }
 
         // Always parse teams from game column when present
         if (isset($record['game']) && ! empty($record['game'])) {
@@ -708,6 +718,16 @@ class BetImportService
             if ($teams) {
                 $record['home_team'] = $teams['home'];
                 $record['away_team'] = $teams['away'];
+                
+                // Log if this was a parlay
+                if (isset($teams['parlay_note'])) {
+                    \Log::info('Parlay teams parsed', [
+                        'original_game' => $record['game'],
+                        'home_team' => $teams['home'],
+                        'away_team' => $teams['away'],
+                        'note' => $teams['parlay_note']
+                    ]);
+                }
             } else {
                 // For individual sports like Golf, the entire game field is the player name
                 $record['home_team'] = $record['game'];
@@ -954,6 +974,43 @@ class BetImportService
     }
 
     private function parseGameColumn(string $game): ?array
+    {
+        // Check if this might be a parlay by looking for multiple separators or commas
+        $parlayIndicators = [', ', ' + ', ' & ', ' and ', ' / '];
+        $isPossibleParlay = false;
+        
+        foreach ($parlayIndicators as $indicator) {
+            if (str_contains($game, $indicator)) {
+                $isPossibleParlay = true;
+                break;
+            }
+        }
+        
+        // If it's a parlay, try to extract the first two teams
+        if ($isPossibleParlay) {
+            // First, try to find games separated by commas or other parlay indicators
+            foreach ($parlayIndicators as $indicator) {
+                if (str_contains($game, $indicator)) {
+                    $games = explode($indicator, $game);
+                    if (count($games) >= 1) {
+                        // Try to parse the first game/matchup
+                        $firstGame = trim($games[0]);
+                        $teams = $this->parseIndividualGame($firstGame);
+                        if ($teams) {
+                            // Add a note that this is from a parlay
+                            $teams['parlay_note'] = 'Partial data from parlay';
+                            return $teams;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Not a parlay, parse as single game
+        return $this->parseIndividualGame($game);
+    }
+    
+    private function parseIndividualGame(string $game): ?array
     {
         // Handle @ separator (most common in sports betting)
         if (str_contains($game, '@')) {

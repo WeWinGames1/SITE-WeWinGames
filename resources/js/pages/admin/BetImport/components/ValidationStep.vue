@@ -93,7 +93,6 @@
                             <th>League</th>
                             <th>Teams</th>
                             <th>Date</th>
-                            <th>Bet Type</th>
                             <th>Wager Type</th>
                             <th>Wager Name</th>
                             <th>Odds</th>
@@ -115,7 +114,6 @@
                                 <div class="small">{{ row.original?.Game || row.data.game || '-' }}</div>
                             </td>
                             <td>{{ row.original?.['Game Date'] || formatDate(row.data.game_date) || '-' }}</td>
-                            <td>{{ row.original?.['Bet Type'] || row.data.bet_type || '-' }}</td>
                             <td>{{ row.original?.['Wager Type'] || row.data.wager_type || '-' }}</td>
                             <td>{{ row.original?.['Wager Name'] || row.data.wager_name || '-' }}</td>
                             <td>{{ row.original?.Odds || row.data.odds || '-' }}</td>

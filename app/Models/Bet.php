@@ -67,6 +67,8 @@ class Bet extends Model
         'is_parlay' => 'boolean',
         'parlay_legs' => 'integer',
         'is_each_way' => 'boolean',
+        'betting_date' => 'datetime',
+        'game_date' => 'datetime',
         'premium_notes_enabled' => 'boolean',
         'each_way_stake' => 'decimal:2',
         'place_payout' => 'decimal:2',

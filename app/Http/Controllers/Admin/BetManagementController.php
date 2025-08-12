@@ -69,23 +69,24 @@ class BetManagementController extends Controller
         return Inertia::render('admin/Bets/Index', [
             'bets' => $bets,
             'filters' => $request->only([
-                'status', 'sport_id', 'operator_id', 'user_id',
+                'status', 'sport_id', 'referrer', 'user_id',
                 'date_from', 'date_to', 'search', 'wager_type',
                 'is_featured', 'profit_status',
                 'sort_by', 'sort_direction', 'per_page',
             ]),
             'stats' => $stats,
             'sports' => $filterOptions['sports'],
-            'operators' => $filterOptions['operators'],
+            'referrers' => $filterOptions['referrers'],
             'statuses' => ['pending', 'won', 'loss', 'placed', 'push'],
             'betTypes' => [
+                'Single Wager' => 'Single Wager',
+                'Parlay' => 'Parlay',
+                'Each Way' => 'Each Way',
                 'moneyline' => 'Moneyline',
                 'spread' => 'Point Spread',
                 'total' => 'Over/Under (Total)',
                 'prop' => 'Prop Bet',
-                'parlay' => 'Parlay',
                 'futures' => 'Futures',
-                'each_way' => 'Each Way',
             ],
         ]);
     }
@@ -116,6 +117,11 @@ class BetManagementController extends Controller
         // User filter
         if ($request->filled('user_id')) {
             $query->where('user_id', $request->user_id);
+        }
+        
+        // Referrer filter (code field)
+        if ($request->filled('referrer')) {
+            $query->where('code', $request->referrer);
         }
 
         if ($request->filled('wager_type')) {
@@ -210,13 +216,20 @@ class BetManagementController extends Controller
             fn () => Sport::orderBy('name')->get(['id', 'name'])->toArray()
         );
 
-        $operators = SimpleCacheService::rememberQuery(
-            SimpleCacheService::KEY_OPERATORS_LIST,
-            SimpleCacheService::TTL_LONG,
-            fn () => Operator::orderBy('name')->get(['id', 'name'])->toArray()
+        // Get unique referrers (codes) from bets
+        $referrers = SimpleCacheService::rememberQuery(
+            'bets:referrers:list',
+            SimpleCacheService::TTL_SHORT,
+            fn () => Bet::whereNotNull('code')
+                ->where('code', '!=', '')
+                ->distinct()
+                ->pluck('code')
+                ->sort()
+                ->values()
+                ->toArray()
         );
 
-        return compact('sports', 'operators');
+        return compact('sports', 'referrers');
     }
 
     /**

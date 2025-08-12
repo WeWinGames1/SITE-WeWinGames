@@ -65,7 +65,7 @@ return [
     |
     */
 
-    'timezone' => 'America/Kentucky/Louisville',
+    'timezone' => 'America/New_York',
 
     /*
     |--------------------------------------------------------------------------

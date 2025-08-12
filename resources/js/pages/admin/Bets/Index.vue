@@ -65,11 +65,6 @@ interface Sport {
     name: string;
 }
 
-interface Operator {
-    id: number;
-    name: string;
-}
-
 interface Stats {
     total_bets: number;
     pending_bets: number;
@@ -92,7 +87,7 @@ interface Props {
     filters: {
         status?: string;
         sport_id?: number;
-        operator_id?: number;
+        referrer?: string;
         user_id?: number;
         date_from?: string;
         date_to?: string;
@@ -106,7 +101,7 @@ interface Props {
         per_page?: number;
     };
     sports?: Sport[] | null;
-    operators?: Operator[] | null;
+    referrers?: string[] | null;
     statuses: string[];
     betTypes: Record<string, string>;
     stats: Stats;
@@ -118,7 +113,7 @@ const props = defineProps<Props>();
 const filterForm = useForm({
     status: props.filters.status || '',
     sport_id: props.filters.sport_id || '',
-    operator_id: props.filters.operator_id || '',
+    referrer: props.filters.referrer || '',
     user_id: props.filters.user_id || '',
     date_from: props.filters.date_from || '',
     date_to: props.filters.date_to || '',
@@ -199,7 +194,7 @@ watch(
     () => ({
         status: filterForm.status,
         sport_id: filterForm.sport_id,
-        operator_id: filterForm.operator_id,
+        referrer: filterForm.referrer,
         date_from: filterForm.date_from,
         date_to: filterForm.date_to,
         wager_type: filterForm.wager_type,
@@ -533,7 +528,7 @@ function formatCurrency(amount: number | null | undefined): string {
                                             :value="filterForm.search"
                                             @input="debouncedSearch($event.target.value)"
                                             type="search"
-                                            placeholder="Search bets, users, sports, operators..."
+                                            placeholder="Search bets, users, sports, referrers..."
                                             class="form-control"
                                         />
                                     </div>
@@ -571,11 +566,11 @@ function formatCurrency(amount: number | null | undefined): string {
                                     </div>
 
                                     <div class="col-lg-3 col-md-4 col-sm-6">
-                                        <label class="form-label">Operator</label>
-                                        <select v-model="filterForm.operator_id" class="form-select">
-                                            <option value="">All Operators</option>
-                                            <option v-for="operator in operators || []" :key="operator?.id || Math.random()" :value="operator?.id">
-                                                {{ operator?.name || 'Loading...' }}
+                                        <label class="form-label">Referrer</label>
+                                        <select v-model="filterForm.referrer" class="form-select">
+                                            <option value="">All Referrers</option>
+                                            <option v-for="referrer in referrers || []" :key="referrer" :value="referrer">
+                                                {{ referrer }}
                                             </option>
                                         </select>
                                     </div>
@@ -722,9 +717,9 @@ function formatCurrency(amount: number | null | undefined): string {
                                             </button>
                                         </th>
                                         <th>
-                                            <button @click="sortBy('betting_date')" class="btn btn-link p-0 text-muted text-decoration-none">
+                                            <button @click="sortBy('game_date')" class="btn btn-link p-0 text-muted text-decoration-none">
                                                 Game Date
-                                                <component :is="getSortIcon('betting_date')" style="width: 0.75rem; height: 0.75rem" class="ms-1" />
+                                                <component :is="getSortIcon('game_date')" style="width: 0.75rem; height: 0.75rem" class="ms-1" />
                                             </button>
                                         </th>
                                         <th class="text-center" style="width: 100px">Actions</th>
@@ -792,7 +787,7 @@ function formatCurrency(amount: number | null | undefined): string {
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <CalendarIcon style="width: 1rem; height: 1rem" class="text-muted me-1" />
-                                                <span class="small">{{ formatDate(bet.betting_date) }}</span>
+                                                <span class="small">{{ formatDate(bet.game_date || bet.betting_date) }}</span>
                                             </div>
                                         </td>
                                         <td class="text-center">
