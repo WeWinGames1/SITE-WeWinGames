@@ -554,8 +554,7 @@ class BetService
     /**
      * Get today's bets filtered by user's subscription tier
      * Shows bets where:
-     * - betting_date = today OR
-     * - game_date >= today
+     * - game_date >= today (games that haven't happened yet)
      * Filters based on user's subscription level
      */
     public function getTodaysBets(): \Illuminate\Database\Eloquent\Collection
@@ -563,10 +562,8 @@ class BetService
         $today = today()->toDateString();
         $user = auth()->user();
         
-        $query = Bet::where(function ($query) use ($today) {
-                $query->whereDate('betting_date', $today)
-                      ->orWhereDate('game_date', '>=', $today);
-            });
+        // Show only bets for games that haven't happened yet (game_date >= today)
+        $query = Bet::whereDate('game_date', '>=', $today);
         
         // Apply tier-based filtering if user is authenticated
         if ($user) {
@@ -576,23 +573,24 @@ class BetService
             $visibleLevels = [];
             switch (strtolower($userTier)) {
                 case 'platinum':
-                    $visibleLevels = ['Bronze', 'Silver', 'Gold', 'Platinum'];
+                    $visibleLevels = ['bronze', 'silver', 'gold', 'platinum'];
                     break;
                 case 'gold':
-                    $visibleLevels = ['Bronze', 'Silver', 'Gold'];
+                    $visibleLevels = ['bronze', 'silver', 'gold'];
                     break;
                 case 'silver':
-                    $visibleLevels = ['Bronze', 'Silver'];
+                    $visibleLevels = ['bronze', 'silver'];
                     break;
                 default: // Bronze or no subscription
-                    $visibleLevels = ['Bronze'];
+                    $visibleLevels = ['bronze'];
                     break;
             }
             
-            $query->whereIn('level', $visibleLevels);
+            // Use membership column (with case-insensitive comparison)
+            $query->whereIn(DB::raw('LOWER(membership)'), $visibleLevels);
         } else {
             // Non-authenticated users only see Bronze picks
-            $query->where('level', 'Bronze');
+            $query->whereRaw('LOWER(membership) = ?', ['bronze']);
         }
         
         return $query->orderBy('game_date', 'asc')
