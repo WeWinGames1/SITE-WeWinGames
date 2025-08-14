@@ -319,6 +319,15 @@ class BetImportService
             }
             
             $record = $mappedRecord;
+        } else {
+            // If no column mappings provided, try to normalize column names
+            $normalizedRecord = [];
+            foreach ($record as $key => $value) {
+                // Convert "Profit Amount" to "profit_amount", etc.
+                $normalizedKey = strtolower(str_replace(' ', '_', $key));
+                $normalizedRecord[$normalizedKey] = $value;
+            }
+            $record = $normalizedRecord;
         }
 
         // Apply static values (these override any mapped values)
@@ -614,114 +623,46 @@ class BetImportService
                 }
             }
             
-            if (in_array($betData['status'], ['won', 'lost', 'placed'])) {
-
-                if ($betData['status'] === 'won') {
-                    // Check if we have pre-calculated values from CSV
-                    if (! empty($record['winning_amount'])) {
-                        $betData['winning_amount'] = (float) $record['winning_amount'];
-                        $betData['profit_amount'] = ! empty($record['profit']) ? (float) $record['profit'] :
-                            ($betData['winning_amount'] - $betData['wager_amount']);
-                    } else {
-                        // Calculate based on American odds
-                        $odds = $betData['wager_odds'];
-                        $stake = $betData['wager_amount'];
-
-                        if ($isEachWay) {
-                            // Each-Way bet: Split stake in half
-                            $winStake = $stake / 2;
-                            $placeStake = $stake / 2;
-
-                            // Calculate win part
-                            if ($odds > 0) {
-                                $winProfit = $winStake * ($odds / 100);
-                            } else {
-                                $winProfit = $winStake * (100 / abs($odds));
-                            }
-
-                            // Calculate place part (typically 1/4 or 1/5 of odds)
-                            // Using place_fraction if available, default to 1/5
-                            $placeFraction = ! empty($record['place_fraction']) ?
-                                (float) $record['place_fraction'] : 0.2;
-
-                            $placeOdds = $odds > 0 ?
-                                ($odds * $placeFraction) :
-                                -abs(100 / (abs($odds) * $placeFraction));
-
-                            if ($placeOdds > 0) {
-                                $placeProfit = $placeStake * ($placeOdds / 100);
-                            } else {
-                                $placeProfit = $placeStake * (100 / abs($placeOdds));
-                            }
-
-                            $betData['profit_amount'] = $winProfit + $placeProfit;
-                            $betData['winning_amount'] = $stake + $betData['profit_amount'];
-                            $betData['place_payout'] = $placeStake + $placeProfit;
-                        } else {
-                            // Regular bet
-                            if ($odds > 0) {
-                                // Positive American odds (+150)
-                                $profit = $stake * ($odds / 100);
-                            } else {
-                                // Negative American odds (-120)
-                                $profit = $stake * (100 / abs($odds));
-                            }
-
-                            $betData['profit_amount'] = $profit;
-                            $betData['winning_amount'] = $stake + $profit;
-                        }
-                    }
-                } elseif ($betData['status'] === 'placed' && $isEachWay) {
-                    // Each-Way bet that placed but didn't win
-                    // Only the place part pays out
-                    $stake = $betData['wager_amount'];
-                    $placeStake = $stake / 2;
-                    $winStake = $stake / 2;
-
-                    // Calculate place part payout
-                    $placeFraction = ! empty($record['place_fraction']) ?
-                        (float) $record['place_fraction'] : 0.2;
-
-                    $odds = $betData['wager_odds'];
-                    $placeOdds = $odds > 0 ?
-                        ($odds * $placeFraction) :
-                        -abs(100 / (abs($odds) * $placeFraction));
-
-                    if ($placeOdds > 0) {
-                        $placeProfit = $placeStake * ($placeOdds / 100);
-                    } else {
-                        $placeProfit = $placeStake * (100 / abs($placeOdds));
-                    }
-
-                    // Lost the win part, won the place part
-                    $betData['profit_amount'] = $placeProfit - $winStake;
-                    $betData['winning_amount'] = $placeStake + $placeProfit;
-                    $betData['place_payout'] = $placeStake + $placeProfit;
-                } else {
-                    // Lost bet
-                    $betData['winning_amount'] = 0;
-                    $betData['profit_amount'] = -$betData['wager_amount'];
-                }
+            // Import values directly from CSV without calculations
+            $betData['winning_amount'] = ! empty($record['winning_amount']) ? (float) $record['winning_amount'] : 0;
+            
+            // Handle profit_amount - check both profit_amount and profits fields
+            if (isset($record['profit_amount']) && $record['profit_amount'] !== '') {
+                $betData['profit_amount'] = (float) $record['profit_amount'];
+            } elseif (isset($record['profits']) && $record['profits'] !== '') {
+                $betData['profit_amount'] = (float) $record['profits'];
             } else {
-                $betData['winning_amount'] = ! empty($record['winning_amount']) ? (float) $record['winning_amount'] : 0;
-                $betData['profit_amount'] = ! empty($record['profit']) ? (float) $record['profit'] : 0;
-            }
-
-            // Calculate ROI
-            if ($betData['wager_amount'] > 0) {
-                $betData['roi'] = ($betData['profit_amount'] / $betData['wager_amount']) * 100;
-            } else {
-                $betData['roi'] = 0;
-            }
-
-            // Set roi_net from CSV or calculate it
-            if (! empty($record['roi'])) {
-                $betData['roi_net'] = (float) str_replace('%', '', $record['roi']);
-            } else {
-                $betData['roi_net'] = $betData['roi'];
+                // If neither field is set, default to 0
+                $betData['profit_amount'] = 0;
             }
             
-            // Also set profits for compatibility
+            // Debug logging - ALWAYS log first 10 rows for debugging
+            if ($lineNumber <= 10) {
+                Log::info('Import Debug Row ' . $lineNumber, [
+                    'raw_profit_amount' => $record['profit_amount'] ?? 'NOT SET',
+                    'raw_profits' => $record['profits'] ?? 'NOT SET', 
+                    'raw_profit' => $record['profit'] ?? 'NOT SET',
+                    'parsed_profit_amount' => $betData['profit_amount'],
+                    'isset_profit_amount' => isset($record['profit_amount']) ? 'YES' : 'NO',
+                    'profit_amount_value' => $record['profit_amount'] ?? 'NULL',
+                    'profit_amount_empty' => empty($record['profit_amount']) ? 'EMPTY' : 'NOT EMPTY',
+                    'wager_amount' => $betData['wager_amount'],
+                    'winning_amount' => $betData['winning_amount'],
+                    'status' => $betData['status'],
+                    'all_record_keys' => array_keys($record)
+                ]);
+            }
+
+            // Import ROI directly from CSV
+            if (! empty($record['roi'])) {
+                $betData['roi'] = (float) str_replace('%', '', $record['roi']);
+                $betData['roi_net'] = $betData['roi'];
+            } else {
+                $betData['roi'] = 0;
+                $betData['roi_net'] = 0;
+            }
+            
+            // Also set profits for compatibility (in case the model uses this field)
             $betData['profits'] = $betData['profit_amount'];
 
             // Create the bet directly using the model
@@ -932,9 +873,15 @@ class BetImportService
             $record['roi'] = $this->parsePercentage($record['roi']);
         }
         
-        // Parse profits
+        // Parse profits (handle various field names)
         if (isset($record['profits'])) {
             $record['profits'] = $this->parseMonetary($record['profits']);
+        }
+        if (isset($record['profit'])) {
+            $record['profit'] = $this->parseMonetary($record['profit']);
+        }
+        if (isset($record['profit_amount'])) {
+            $record['profit_amount'] = $this->parseMonetary($record['profit_amount']);
         }
         
         // Parse winning amount  
@@ -977,10 +924,27 @@ class BetImportService
             return null;
         }
 
-        // Remove currency symbols and thousands separators
+        // Convert from string to handle various formats
+        $value = (string) $value;
+        
+        // Check for accounting format with parentheses (e.g., ($30) means -30)
+        $isNegative = false;
+        if (preg_match('/\(.*\)/', $value)) {
+            $isNegative = true;
+        }
+
+        // Remove currency symbols, parentheses, and thousands separators
         $cleaned = preg_replace('/[^0-9.-]/', '', $value);
 
-        return is_numeric($cleaned) ? (float) $cleaned : null;
+        // Parse the numeric value
+        $numericValue = is_numeric($cleaned) ? (float) $cleaned : null;
+        
+        // Apply negative sign if it was in accounting format
+        if ($numericValue !== null && $isNegative) {
+            $numericValue = -abs($numericValue);
+        }
+
+        return $numericValue;
     }
     
     private function parsePercentage($value): ?float
