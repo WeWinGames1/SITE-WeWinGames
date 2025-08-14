@@ -1018,8 +1018,9 @@ class CsvImportService
                 'wager' => 'Amount wagered (e.g., $30, $50)',
             ],
             'optional' => [
-                'betting_date' => 'Date bet was placed (MM/DD/YYYY format)',
-                'game_date' => 'Date of the game/event (MM/DD/YYYY format)',
+                'betting_date' => 'Date bet was placed (MM/DD/YYYY format) - will use game_date if not provided',
+                'game_date' => 'Date of the game/event (MM/DD/YYYY format) - can use a single "Date" column for both',
+                'date' => 'Single date field that can be used for both betting_date and game_date',
                 'roi' => 'Return on Investment percentage',
                 'profits' => 'Profit or loss amount',
                 'winning_amount' => 'Total payout if won',

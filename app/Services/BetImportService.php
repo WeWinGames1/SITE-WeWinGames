@@ -343,6 +343,8 @@ class BetImportService
             \Log::info("BetImportService Line {$lineNumber}: After transformation", [
                 'game_date_transformed' => $record['game_date'] ?? 'not set',
                 'betting_date_transformed' => $record['betting_date'] ?? 'not set',
+                'using_same_date' => (isset($record['game_date']) && isset($record['betting_date']) && 
+                                    $record['game_date'] === $record['betting_date']) ? 'YES' : 'NO',
             ]);
         }
         
@@ -725,8 +727,15 @@ class BetImportService
             }
         }
 
-        // Handle both 'date' and 'game_date' fields from CSV
-        $dateField = isset($record['date']) ? 'date' : (isset($record['game_date']) ? 'game_date' : null);
+        // Handle 'date', 'game_date', or 'Date' fields from CSV
+        $dateField = null;
+        if (isset($record['date']) && !empty($record['date'])) {
+            $dateField = 'date';
+        } elseif (isset($record['Date']) && !empty($record['Date'])) {
+            $dateField = 'Date';
+        } elseif (isset($record['game_date']) && !empty($record['game_date'])) {
+            $dateField = 'game_date';
+        }
 
         // Parse game_date
         if ($dateField && isset($record[$dateField]) && ! empty($record[$dateField])) {
@@ -832,9 +841,17 @@ class BetImportService
             }
         }
 
-        // If betting_date is not provided, use game_date as fallback
-        if (empty($record['betting_date']) && !empty($record['game_date'])) {
-            $record['betting_date'] = $record['game_date'];
+        // If betting_date is not provided, try these fallbacks in order:
+        // 1. Use the same 'date' or 'Date' field that was used for game_date
+        // 2. Use game_date as fallback
+        if (empty($record['betting_date'])) {
+            if ($dateField && isset($record[$dateField]) && !empty($record[$dateField])) {
+                // Use the same date field that was used for game_date
+                $record['betting_date'] = $record['game_date'];
+            } elseif (!empty($record['game_date'])) {
+                // Use game_date as fallback
+                $record['betting_date'] = $record['game_date'];
+            }
         }
 
         // Parse placed_at date
@@ -1004,6 +1021,7 @@ class BetImportService
             'open' => 'pending',
             'active' => 'pending',
             'placed' => 'placed',  // For E/W bets that placed but didn't win
+            'place' => 'placed',   // Alternative spelling for placed
         ];
 
         return $statusMap[$status] ?? 'pending';

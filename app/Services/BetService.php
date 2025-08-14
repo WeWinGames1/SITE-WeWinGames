@@ -282,8 +282,9 @@ class BetService
 
                 return [
                     'total_bets' => $bets->count(),
-                    'winning_bets' => $bets->where('status', 'won')->count(),
+                    'winning_bets' => $bets->whereIn('status', ['won', 'placed'])->count(),
                     'losing_bets' => $bets->where('status', 'loss')->count(),
+                    'push_bets' => $bets->where('status', 'push')->count(),
                     'pending_bets' => $bets->where('status', 'pending')->count(),
                     'total_profit' => $this->betRepository->calculateProfitByUser($userId),
                     'total_stake' => $bets->sum('stake'),
@@ -320,13 +321,13 @@ class BetService
      */
     private function calculateWinRate($bets): float
     {
-        $settledBets = $bets->whereIn('status', ['won', 'loss']);
+        $settledBets = $bets->whereIn('status', ['won', 'loss', 'placed', 'push']);
 
         if ($settledBets->isEmpty()) {
             return 0.0;
         }
 
-        $winningBets = $settledBets->where('status', 'won')->count();
+        $winningBets = $settledBets->whereIn('status', ['won', 'placed'])->count();
 
         return round(($winningBets / $settledBets->count()) * 100, 2);
     }
@@ -336,7 +337,7 @@ class BetService
      */
     private function calculateROI($bets): float
     {
-        $totalStake = $bets->whereIn('status', ['won', 'loss'])->sum('stake');
+        $totalStake = $bets->whereIn('status', ['won', 'loss', 'placed', 'push'])->sum('stake');
 
         if ($totalStake <= 0) {
             return 0.0;
@@ -353,13 +354,13 @@ class BetService
     public function getProfitByYear(): array
     {
         // Get all bets and group by year in PHP for database compatibility
-        $bets = Bet::whereIn('status', ['won', 'loss'])
-            ->select('betting_date', 'profit_amount')
+        $bets = Bet::whereIn('status', ['won', 'loss', 'placed', 'push'])
+            ->select('game_date', 'profit_amount')
             ->get();
 
         // Group by year using Carbon
         $yearlyProfits = $bets->groupBy(function ($bet) {
-            return Carbon::parse($bet->betting_date)->year;
+            return Carbon::parse($bet->game_date)->year;
         })->map(function ($yearBets) {
             return round($yearBets->sum('profit_amount'), 2);
         })->sortKeysDesc();
@@ -373,13 +374,13 @@ class BetService
     public function getROIByYear(): array
     {
         // Get all bets and group by year in PHP for database compatibility
-        $bets = Bet::whereIn('status', ['won', 'loss'])
-            ->select('betting_date', 'wager_amount', 'profit_amount')
+        $bets = Bet::whereIn('status', ['won', 'loss', 'placed', 'push'])
+            ->select('game_date', 'wager_amount', 'profit_amount')
             ->get();
 
         // Group by year
         $yearlyGroups = $bets->groupBy(function ($bet) {
-            return Carbon::parse($bet->betting_date)->year;
+            return Carbon::parse($bet->game_date)->year;
         });
 
         $result = [];
@@ -405,10 +406,10 @@ class BetService
      */
     public function getTotalROIBySubscriptionLevel(?int $year = null): array
     {
-        $query = DB::table('bets')->whereIn('status', ['won', 'loss']);
+        $query = DB::table('bets')->whereIn('status', ['won', 'loss', 'placed', 'push']);
 
         if ($year) {
-            $query->whereYear('betting_date', $year);
+            $query->whereYear('game_date', $year);
         }
 
         // Use UPPER() to normalize case-sensitive membership values
@@ -438,14 +439,14 @@ class BetService
      */
     public function getProfitAndROIByLevel(?int $year = null): array
     {
-        $query = DB::table('bets')->whereIn('status', ['won', 'loss']);
+        $query = DB::table('bets')->whereIn('status', ['won', 'loss', 'placed', 'push']);
 
         if ($year) {
-            $query->whereYear('betting_date', $year);
+            $query->whereYear('game_date', $year);
         }
 
         // Use UPPER() to normalize case-sensitive membership values
-        $stats = $query->selectRaw("UPPER(membership) as membership, COUNT(*) as total_bets, SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) as wins, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit")
+        $stats = $query->selectRaw("UPPER(membership) as membership, COUNT(*) as total_bets, SUM(CASE WHEN status IN ('won', 'placed') THEN 1 ELSE 0 END) as wins, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit")
             ->groupBy(DB::raw('UPPER(membership)'))
             ->get();
 
@@ -489,13 +490,13 @@ class BetService
      */
     public function getProfitAndROIBySport(?int $year = null): array
     {
-        $query = DB::table('bets')->whereIn('status', ['won', 'loss']);
+        $query = DB::table('bets')->whereIn('status', ['won', 'loss', 'placed', 'push']);
 
         if ($year) {
-            $query->whereYear('betting_date', $year);
+            $query->whereYear('game_date', $year);
         }
 
-        $stats = $query->selectRaw("sports, COUNT(*) as total_bets, SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) as wins, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit")
+        $stats = $query->selectRaw("sports, COUNT(*) as total_bets, SUM(CASE WHEN status IN ('won', 'placed') THEN 1 ELSE 0 END) as wins, SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit")
             ->groupBy('sports')
             ->get();
 
@@ -529,8 +530,8 @@ class BetService
     public function getAverageMonthlyProfit(): float
     {
         // Get all bets and group by month in PHP to avoid SQL complexity
-        $bets = Bet::whereIn('status', ['won', 'loss'])
-            ->select('betting_date', 'profit_amount')
+        $bets = Bet::whereIn('status', ['won', 'loss', 'placed', 'push'])
+            ->select('game_date', 'profit_amount')
             ->get();
 
         if ($bets->isEmpty()) {
@@ -539,7 +540,7 @@ class BetService
 
         // Group by month using Carbon
         $monthlyProfits = $bets->groupBy(function ($bet) {
-            return Carbon::parse($bet->betting_date)->format('Y-m');
+            return Carbon::parse($bet->game_date)->format('Y-m');
         })->map(function ($monthBets) {
             return $monthBets->sum('profit_amount');
         });
@@ -603,7 +604,7 @@ class BetService
      */
     public function getRecentWinningBets(int $limit = 5): \Illuminate\Database\Eloquent\Collection
     {
-        return Bet::where('status', 'Won')
+        return Bet::whereIn('status', ['won', 'placed'])
             ->orderBy('betting_date', 'desc')
             ->limit($limit)
             ->get();
@@ -615,18 +616,20 @@ class BetService
     public function getWinLossRatio(): array
     {
         $stats = DB::table('bets')
-            ->whereIn('status', ['won', 'loss'])
+            ->whereIn('status', ['won', 'loss', 'placed', 'push'])
             ->selectRaw('status, COUNT(*) as count')
             ->groupBy('status')
             ->pluck('count', 'status');
 
-        $wins = $stats->get('won', 0);
+        $wins = $stats->get('won', 0) + $stats->get('placed', 0);
         $losses = $stats->get('loss', 0);
-        $total = $wins + $losses;
+        $pushes = $stats->get('push', 0);
+        $total = $wins + $losses + $pushes;
 
         return [
             'wins' => $wins,
             'losses' => $losses,
+            'pushes' => $pushes,
             'win_rate' => $total > 0 ? round(($wins / $total) * 100, 2) : 0.0,
         ];
     }
@@ -637,19 +640,21 @@ class BetService
     public function getWinLossRatioByYear(int $year): array
     {
         $stats = DB::table('bets')
-            ->whereIn('status', ['won', 'loss'])
-            ->whereYear('betting_date', $year)
+            ->whereIn('status', ['won', 'loss', 'placed', 'push'])
+            ->whereYear('game_date', $year)
             ->selectRaw('status, COUNT(*) as count')
             ->groupBy('status')
             ->pluck('count', 'status');
 
-        $wins = $stats->get('won', 0);
+        $wins = $stats->get('won', 0) + $stats->get('placed', 0);
         $losses = $stats->get('loss', 0);
-        $total = $wins + $losses;
+        $pushes = $stats->get('push', 0);
+        $total = $wins + $losses + $pushes;
 
         return [
             'wins' => $wins,
             'losses' => $losses,
+            'pushes' => $pushes,
             'win_rate' => $total > 0 ? round(($wins / $total) * 100, 2) : 0.0,
         ];
     }
@@ -660,9 +665,9 @@ class BetService
     public function getProfitByMonth(int $year, int $month): float
     {
         $profit = DB::table('bets')
-            ->whereIn('status', ['won', 'loss'])
-            ->whereYear('betting_date', $year)
-            ->whereMonth('betting_date', $month)
+            ->whereIn('status', ['won', 'loss', 'placed', 'push'])
+            ->whereYear('game_date', $year)
+            ->whereMonth('game_date', $month)
             ->sum('profit_amount');
 
         return round($profit, 2);
@@ -674,9 +679,9 @@ class BetService
     public function getROIByMonth(int $year, int $month): float
     {
         $stats = DB::table('bets')
-            ->whereIn('status', ['won', 'loss'])
-            ->whereYear('betting_date', $year)
-            ->whereMonth('betting_date', $month)
+            ->whereIn('status', ['won', 'loss', 'placed', 'push'])
+            ->whereYear('game_date', $year)
+            ->whereMonth('game_date', $month)
             ->selectRaw('SUM(wager_amount) as total_stake, SUM(profit_amount) as total_profit')
             ->first();
 
@@ -693,20 +698,22 @@ class BetService
     public function getWinLossRatioByMonth(int $year, int $month): array
     {
         $stats = DB::table('bets')
-            ->whereIn('status', ['won', 'loss'])
-            ->whereYear('betting_date', $year)
-            ->whereMonth('betting_date', $month)
+            ->whereIn('status', ['won', 'loss', 'placed', 'push'])
+            ->whereYear('game_date', $year)
+            ->whereMonth('game_date', $month)
             ->selectRaw('status, COUNT(*) as count')
             ->groupBy('status')
             ->pluck('count', 'status');
 
-        $wins = $stats->get('won', 0);
+        $wins = $stats->get('won', 0) + $stats->get('placed', 0);
         $losses = $stats->get('loss', 0);
-        $total = $wins + $losses;
+        $pushes = $stats->get('push', 0);
+        $total = $wins + $losses + $pushes;
 
         return [
             'wins' => $wins,
             'losses' => $losses,
+            'pushes' => $pushes,
             'win_rate' => $total > 0 ? round(($wins / $total) * 100, 2) : 0.0,
         ];
     }
@@ -717,19 +724,19 @@ class BetService
     public function getProfitAndROIByYear(): array
     {
         // Get all bets and process in PHP for database compatibility
-        $bets = Bet::whereIn('status', ['won', 'loss'])
-            ->select('betting_date', 'status', 'wager_amount', 'profit_amount')
+        $bets = Bet::whereIn('status', ['won', 'loss', 'placed', 'push'])
+            ->select('game_date', 'status', 'wager_amount', 'profit_amount')
             ->get();
 
         // Group by year
         $yearlyGroups = $bets->groupBy(function ($bet) {
-            return Carbon::parse($bet->betting_date)->year;
+            return Carbon::parse($bet->game_date)->year;
         });
 
         $result = [];
         foreach ($yearlyGroups as $year => $yearBets) {
             $totalBets = $yearBets->count();
-            $wins = $yearBets->where('status', 'won')->count();
+            $wins = $yearBets->whereIn('status', ['won', 'placed'])->count();
             $totalStake = $yearBets->sum('wager_amount');
             $totalProfit = $yearBets->sum('profit_amount');
 
@@ -768,21 +775,21 @@ class BetService
         // Get bets from the last 24 months
         $cutoffDate = Carbon::now()->subMonths(24)->startOfMonth();
 
-        $bets = Bet::whereIn('status', ['won', 'loss'])
-            ->where('betting_date', '>=', $cutoffDate)
-            ->select('betting_date', 'status', 'wager_amount', 'profit_amount')
-            ->orderBy('betting_date', 'desc')
+        $bets = Bet::whereIn('status', ['won', 'loss', 'placed', 'push'])
+            ->where('game_date', '>=', $cutoffDate)
+            ->select('game_date', 'status', 'wager_amount', 'profit_amount')
+            ->orderBy('game_date', 'desc')
             ->get();
 
         // Group by month in PHP
         $monthlyGroups = $bets->groupBy(function ($bet) {
-            return Carbon::parse($bet->betting_date)->format('Y-m');
+            return Carbon::parse($bet->game_date)->format('Y-m');
         });
 
         $result = [];
         foreach ($monthlyGroups as $monthKey => $monthBets) {
             $date = Carbon::createFromFormat('Y-m', $monthKey);
-            $wins = $monthBets->where('status', 'won')->count();
+            $wins = $monthBets->whereIn('status', ['won', 'placed'])->count();
             $totalBets = $monthBets->count();
             $totalStake = $monthBets->sum('wager_amount');
             $totalProfit = $monthBets->sum('profit_amount');
@@ -820,7 +827,7 @@ class BetService
      */
     public function getAllBetsForExport()
     {
-        return Bet::orderBy('betting_date', 'desc')
+        return Bet::orderBy('game_date', 'desc')
             ->cursor();
     }
 
@@ -829,7 +836,7 @@ class BetService
      */
     public function getAllBets()
     {
-        return Bet::orderBy('betting_date', 'desc')
+        return Bet::orderBy('game_date', 'desc')
             ->get()
             ->toArray();
     }
@@ -855,7 +862,7 @@ class BetService
             // PUBLIC USER: Only show older/expired picks
             $bets = Bet::query()
                 ->select('id', 'sport', 'game', 'wager_name', 'odds', 'level', 'game_date', 'betting_date')
-                ->whereIn('status', ['won', 'loss']) // Only settled bets
+                ->whereIn('status', ['won', 'loss', 'placed', 'push']) // Only settled bets
                 ->where('game_date', '<', $now) // Only past games
                 ->when(!empty($preferredSports), function ($query) use ($preferredSports) {
                     // Sort by preferred sports using a CASE statement with safe bindings
@@ -924,7 +931,7 @@ class BetService
                 
                 $olderBets = Bet::query()
                     ->select('id', 'sport', 'game', 'wager_name', 'odds', 'level', 'game_date', 'betting_date')
-                    ->whereIn('status', ['won', 'loss']) // Settled bets
+                    ->whereIn('status', ['won', 'loss', 'placed', 'push']) // Settled bets
                     ->where(function($query) use ($visibleLevels) {
                     $query->whereIn('level', $visibleLevels)
                           ->orWhereIn('level', array_map('strtolower', $visibleLevels));
