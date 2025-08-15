@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import CoveredBetPickCard from './CoveredBetPickCard.vue';
 import SimpleBetCard from './SimpleBetCard.vue';
+import TeaserBetCard from './TeaserBetCard.vue';
 
 defineProps<{
     groupedBets: Record<string, Array<any>>;
@@ -43,8 +44,9 @@ const getSportIcon = (sport: string) => {
 
             <!-- Bet Cards Grid -->
             <div class="row g-3">
-                <div v-for="bet in bets" :key="bet.id" class="col-12 col-md-6 col-lg-3">
-                    <SimpleBetCard v-if="!bet.isCovered" :bet="bet" />
+                <div v-for="(bet, index) in bets" :key="bet.id || `bet-${sport}-${index}`" class="col-12 col-md-6 col-lg-3">
+                    <TeaserBetCard v-if="bet.isTeaser" :bet="bet" />
+                    <SimpleBetCard v-else-if="!bet.isCovered" :bet="bet" />
                     <CoveredBetPickCard v-else :bet="bet" />
                 </div>
             </div>

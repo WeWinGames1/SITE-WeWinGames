@@ -484,11 +484,18 @@ class CustomerController extends Controller
                         return back()->withErrors(['subscription_price' => 'Plan is required for creating subscription']);
                     }
 
-                    // Cancel any existing subscription
-                    $current = $user->subscriptions()->active()->first();
-                    if ($current) {
-                        $current->cancelNow();
+                    // Cancel any existing subscription (including manual ones)
+                    $existingSubscriptions = $user->subscriptions()->whereNull('ends_at')->get();
+                    foreach ($existingSubscriptions as $subscription) {
+                        $subscription->cancelNow();
                     }
+                    
+                    // Clear any admin override fields
+                    $user->update([
+                        'admin_override' => false,
+                        'override_tier' => null,
+                        'override_expiry' => null,
+                    ]);
 
                     // Create new subscription
                     $builder = $user->newSubscription('default', $data['subscription_price']);
@@ -514,18 +521,52 @@ class CustomerController extends Controller
                         return back()->withErrors(['subscription_price' => 'Plan is required for updating subscription']);
                     }
 
-                    $subscription = $user->subscriptions()->active()->first();
+                    // Get subscription that's not cancelled
+                    $subscription = $user->subscriptions()
+                        ->whereNull('ends_at')
+                        ->whereIn('stripe_status', ['active', 'trialing'])
+                        ->first();
+                    
                     if (! $subscription) {
                         return back()->withErrors(['subscription' => 'No active subscription found to update']);
                     }
 
-                    // Swap to new plan
-                    $subscription->swap($data['subscription_price']);
-
-                    return back()->with('success', 'Subscription plan updated! Changes will take effect at the next billing cycle.');
+                    // Check if it's a manual subscription
+                    if (str_starts_with($subscription->stripe_id, 'manual_')) {
+                        // For manual subscriptions, we need to cancel and create a new one
+                        $subscription->cancelNow();
+                        
+                        // Create new subscription
+                        $builder = $user->newSubscription('default', $data['subscription_price']);
+                        
+                        // Add trial if specified
+                        if (! empty($data['trial_days'])) {
+                            $builder->trialDays($data['trial_days']);
+                        }
+                        
+                        // Create subscription
+                        if ($user->hasPaymentMethod()) {
+                            $builder->create();
+                        } else {
+                            $builder->createWithoutPaymentMethod();
+                        }
+                        
+                        return back()->with('success', 'Subscription updated successfully!'.
+                            (! $user->hasPaymentMethod() ? ' Customer will need to add a payment method to activate billing.' : ''));
+                    } else {
+                        // For regular Stripe subscriptions, use swap
+                        $subscription->swap($data['subscription_price']);
+                        
+                        return back()->with('success', 'Subscription plan updated! Changes will take effect at the next billing cycle.');
+                    }
 
                 case 'cancel':
-                    $subscription = $user->subscriptions()->active()->first();
+                    // Get subscription that's not already cancelled
+                    $subscription = $user->subscriptions()
+                        ->whereNull('ends_at')
+                        ->whereIn('stripe_status', ['active', 'trialing'])
+                        ->first();
+                    
                     if (! $subscription) {
                         return back()->withErrors(['subscription' => 'No active subscription found to cancel']);
                     }
@@ -543,10 +584,10 @@ class CustomerController extends Controller
 
                     // Wrap in database transaction for data integrity
                     \DB::transaction(function () use ($user, $data) {
-                        // Cancel any existing Stripe subscription
-                        $current = $user->subscriptions()->active()->first();
-                        if ($current) {
-                            $current->cancelNow();
+                        // Cancel any existing subscriptions (including manual ones)
+                        $existingSubscriptions = $user->subscriptions()->whereNull('ends_at')->get();
+                        foreach ($existingSubscriptions as $subscription) {
+                            $subscription->cancelNow();
                         }
 
                         // Parse price to get tier information
@@ -801,7 +842,12 @@ class CustomerController extends Controller
     {
         $immediately = $request->boolean('immediately', false);
 
-        $subscription = $user->subscription('default');
+        // Get subscription that's not already cancelled
+        $subscription = $user->subscriptions()
+            ->where('type', 'default')
+            ->whereNull('ends_at')
+            ->whereIn('stripe_status', ['active', 'trialing'])
+            ->first();
 
         if (! $subscription) {
             return back()->with('error', 'No active subscription found.');
@@ -810,6 +856,14 @@ class CustomerController extends Controller
         try {
             if ($immediately) {
                 $subscription->cancelNow();
+                
+                // Clear any admin override fields when cancelling immediately
+                $user->update([
+                    'admin_override' => false,
+                    'override_tier' => null,
+                    'override_expiry' => null,
+                ]);
+                
                 $message = 'Subscription cancelled immediately.';
             } else {
                 $subscription->cancel();

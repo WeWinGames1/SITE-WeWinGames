@@ -96,21 +96,28 @@ const getSportPriority = (sport) => {
 
 // Split bets into viewable and covered
 let viewableBets = bets.filter((bet) => canViewBet(bet)).map((bet) => ({ ...bet, isCovered: false }));
+let teaserCount = 0;
 
-// For guests/free users, limit to 2 bronze picks from preferred sports
+// For guests/free users, limit bronze picks and calculate teaser count
 if (userSubscriptionType === 'free' || isGuest) {
     const bronzeBets = viewableBets.filter((bet) => (bet.membership?.toLowerCase() || 'bronze') === 'bronze');
-
+    
     // Sort bronze bets by sport preferences
     const sortedBronzeBets = bronzeBets.sort((a, b) => {
         const priorityA = getSportPriority(a.sports);
         const priorityB = getSportPriority(b.sports);
         return priorityA - priorityB;
     });
-
-    // Take only the first 2 bronze picks
-    const limitedBronzeBets = sortedBronzeBets.slice(0, 2);
-
+    
+    // Determine the limit based on user status
+    const bronzeLimit = isGuest ? 2 : 4;
+    
+    // Take only the limited bronze picks
+    const limitedBronzeBets = sortedBronzeBets.slice(0, bronzeLimit);
+    
+    // Calculate how many bronze picks are being hidden
+    teaserCount = Math.max(0, sortedBronzeBets.length - bronzeLimit);
+    
     // Keep non-bronze bets (if any) and add limited bronze bets
     viewableBets = [...viewableBets.filter((bet) => (bet.membership?.toLowerCase() || 'bronze') !== 'bronze'), ...limitedBronzeBets];
 }
@@ -156,9 +163,28 @@ const categorizeBet = (bet) => {
     }
 };
 
+// Create teaser cards for each sport
+const createTeaserCards = (allSportBets, visibleSportBets, sport) => {
+    if (!isGuest && userSubscriptionType !== 'free') return [];
+    
+    // Count total bets for this sport
+    const totalBetsForSport = allSportBets.length;
+    const visibleBetsForSport = visibleSportBets.length;
+    const remainingCount = totalBetsForSport - visibleBetsForSport;
+    
+    // Always create a teaser card for guests and free users
+    return [{
+        id: `teaser-${sport}`,
+        isTeaser: true,
+        sport: sport,
+        sports: sport,
+        remainingCount: remainingCount, // Will be 0 if no more picks
+        isGuest: isGuest
+    }];
+};
+
 // Combine all bets for grouping
 const allGroupedBets = computed(() => {
-    // Merge all bets
     let all = [...viewableBets, ...coveredBets].filter((bet, idx, arr) => arr.findIndex((b) => b.id === bet.id) === idx);
 
     // Apply guest restriction - only show today's game_date for guests
@@ -200,12 +226,41 @@ const allGroupedBets = computed(() => {
         return memA - memB;
     });
 
-    // Group by sport
-    return sorted.reduce((acc, bet) => {
+    // Group by sport and add teaser cards
+    const grouped = sorted.reduce((acc, bet) => {
         if (!acc[bet.sports]) acc[bet.sports] = [];
         acc[bet.sports].push(bet);
         return acc;
     }, {});
+    
+    // For each sport, add teaser card after the viewable limit
+    Object.keys(grouped).forEach(sport => {
+        const sportBets = grouped[sport];
+        
+        if (isGuest || userSubscriptionType === 'free') {
+            // Get all bets for this sport (including ones we can't view)
+            const allBetsForSport = all.filter(bet => bet.sports === sport);
+            const visibleBetsForSport = sportBets.filter(bet => !bet.isCovered);
+            
+            const teaserCards = createTeaserCards(allBetsForSport, visibleBetsForSport, sport);
+            
+            // Always show teaser cards for guests and free users
+            // For bronze bets, insert teaser after the limit
+            const bronzeBets = visibleBetsForSport.filter(bet => (bet.membership?.toLowerCase() || 'bronze') === 'bronze');
+            const bronzeLimit = isGuest ? 2 : 4;
+            const insertPosition = Math.min(bronzeLimit, visibleBetsForSport.length);
+            
+            // Insert teaser card at the appropriate position
+            grouped[sport] = [
+                ...visibleBetsForSport.slice(0, insertPosition),
+                ...teaserCards,
+                ...visibleBetsForSport.slice(insertPosition),
+                ...sportBets.filter(bet => bet.isCovered) // Add covered bets at the end
+            ];
+        }
+    });
+
+    return grouped;
 });
 
 // Get all bets for display (not grouped)
@@ -218,6 +273,8 @@ const displayBets = computed(() => {
 // console.log('All Grouped Bets:', allGroupedBets.value);
 // console.log('Viewable Bets:', viewableBets);
 // console.log('Covered Bets:', coveredBets);
+// console.log('Is Guest:', isGuest);
+// console.log('User Subscription Type:', userSubscriptionType);
 
 // Helper functions
 const formatBetDate = (date: string) => {
