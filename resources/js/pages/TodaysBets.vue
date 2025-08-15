@@ -402,7 +402,7 @@ const getMembershipBadgeStyle = (membership: string) => {
                                 <div class="d-flex justify-content-center gap-3 flex-wrap">
                                     <Link v-if="isGuest" href="/register" class="btn btn-warning btn-lg px-4">
                                         <i class="bi bi-person-plus me-2"></i>
-                                        Register Free
+                                        Register for Free
                                     </Link>
                                     <Link v-else href="/buy-our-picks" class="btn btn-warning btn-lg px-4">
                                         <i class="bi bi-arrow-up-circle me-2"></i>

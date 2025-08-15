@@ -68,7 +68,7 @@ const props = defineProps<{
                             class="btn btn-warning btn-sm"
                         >
                             <i class="bi bi-person-plus me-2"></i>
-                            Register Free
+                            Register for Free
                         </Link>
                         <Link 
                             v-else 
