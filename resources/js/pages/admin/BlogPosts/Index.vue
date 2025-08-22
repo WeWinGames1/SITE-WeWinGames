@@ -2,6 +2,7 @@
 import BlogCategoryModal from '@/components/BlogCategoryModal.vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { route } from 'ziggy-js';
 import { debounce } from 'lodash';
 import { ref } from 'vue';
 
@@ -42,6 +43,20 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+// Debug logging
+console.log('BlogPosts Index component mounted');
+console.log('Props received:', props);
+console.log('Route function available:', typeof route);
+
+// Add error boundary
+try {
+    if (!props.posts || !props.posts.data) {
+        console.error('Posts data is missing or invalid');
+    }
+} catch (error) {
+    console.error('Error in BlogPosts component:', error);
+}
 
 // State
 const showStats = ref(false);
@@ -291,7 +306,7 @@ function formatDate(date: string | null): string {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="post in posts.data" :key="post.id">
+                            <tr v-for="post in (posts?.data || [])" :key="post.id">
                                 <td>
                                     <div>
                                         <div class="fw-medium">{{ post.title }}</div>
@@ -347,7 +362,7 @@ function formatDate(date: string | null): string {
                 </div>
 
                 <!-- Empty state -->
-                <div v-if="posts.data.length === 0" class="text-center py-5">
+                <div v-if="!posts?.data || posts.data.length === 0" class="text-center py-5">
                     <i class="bi bi-file-text display-1 text-muted"></i>
                     <p class="mt-3 text-muted">No blog posts found</p>
                     <Link :href="route('admin.blog-posts.create')" class="btn btn-primary">
@@ -357,9 +372,9 @@ function formatDate(date: string | null): string {
                 </div>
 
                 <!-- Pagination -->
-                <div v-if="posts.links.length > 3" class="card-footer">
+                <div v-if="posts?.links && posts.links.length > 3" class="card-footer">
                     <div class="d-flex justify-content-between align-items-center">
-                        <div class="text-muted">Showing {{ posts.meta.from }} to {{ posts.meta.to }} of {{ posts.meta.total }} results</div>
+                        <div class="text-muted">Showing {{ posts.from || 0 }} to {{ posts.to || 0 }} of {{ posts.total || 0 }} results</div>
                         <nav>
                             <ul class="pagination pagination-sm mb-0">
                                 <li

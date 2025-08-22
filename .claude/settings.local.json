@@ -49,7 +49,14 @@
       "Bash(openssl ecparam:*)",
       "Bash(npx vue-tsc:*)",
       "Bash(jq:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_console_messages",
+      "mcp__playwright__browser_evaluate",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_network_requests",
+      "mcp__playwright__browser_take_screenshot"
     ],
     "deny": []
   }
