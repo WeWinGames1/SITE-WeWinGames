@@ -10,6 +10,7 @@ use App\Models\Sport;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\SimpleCacheService;
+use App\Traits\CreatesTeamsWithUniqueSlug;
 use App\Traits\HasFilters;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,7 +20,7 @@ use Inertia\Inertia;
 
 class BetManagementController extends Controller
 {
-    use HasFilters;
+    use HasFilters, CreatesTeamsWithUniqueSlug;
 
     /**
      * Display a listing of bets with optimized queries and caching.
@@ -332,34 +333,38 @@ class BetManagementController extends Controller
         DB::transaction(function () use (&$validated, $request) {
             // Create team one if it's new
             if ($request->boolean('team_one_is_new') && !empty($validated['team_one']) && empty($validated['team_one_id'])) {
-                $teamOne = \App\Models\Team::create([
-                    'name' => $validated['team_one'],
-                    'sport_id' => $validated['sport_id'],
-                    'league_id' => $validated['league_id'],
-                    'is_active' => true,
-                ]);
+                $teamOne = $this->findOrCreateTeam(
+                    $validated['team_one'],
+                    $validated['sport_id'] ?? null,
+                    $validated['league_id'] ?? null,
+                    true
+                );
                 $validated['team_one_id'] = $teamOne->id;
                 
-                activity()
-                    ->causedBy(Auth::user())
-                    ->performedOn($teamOne)
-                    ->log('Created new team/player via bet creation');
+                if ($teamOne->wasRecentlyCreated) {
+                    activity()
+                        ->causedBy(Auth::user())
+                        ->performedOn($teamOne)
+                        ->log('Created new team/player via bet creation');
+                }
             }
             
             // Create team two if it's new
             if ($request->boolean('team_two_is_new') && !empty($validated['team_two']) && empty($validated['team_two_id'])) {
-                $teamTwo = \App\Models\Team::create([
-                    'name' => $validated['team_two'],
-                    'sport_id' => $validated['sport_id'],
-                    'league_id' => $validated['league_id'],
-                    'is_active' => true,
-                ]);
+                $teamTwo = $this->findOrCreateTeam(
+                    $validated['team_two'],
+                    $validated['sport_id'] ?? null,
+                    $validated['league_id'] ?? null,
+                    true
+                );
                 $validated['team_two_id'] = $teamTwo->id;
                 
-                activity()
-                    ->causedBy(Auth::user())
-                    ->performedOn($teamTwo)
-                    ->log('Created new team/player via bet creation');
+                if ($teamTwo->wasRecentlyCreated) {
+                    activity()
+                        ->causedBy(Auth::user())
+                        ->performedOn($teamTwo)
+                        ->log('Created new team/player via bet creation');
+                }
             }
         });
         
@@ -632,34 +637,38 @@ class BetManagementController extends Controller
         DB::transaction(function () use (&$validated, $request) {
             // Create team one if it's new
             if ($request->boolean('team_one_is_new') && !empty($validated['team_one']) && empty($validated['team_one_id'])) {
-                $teamOne = \App\Models\Team::create([
-                    'name' => $validated['team_one'],
-                    'sport_id' => $validated['sport_id'] ?? null,
-                    'league_id' => $validated['league_id'] ?? null,
-                    'is_active' => true,
-                ]);
+                $teamOne = $this->findOrCreateTeam(
+                    $validated['team_one'],
+                    $validated['sport_id'] ?? null,
+                    $validated['league_id'] ?? null,
+                    true
+                );
                 $validated['team_one_id'] = $teamOne->id;
                 
-                activity()
-                    ->causedBy(Auth::user())
-                    ->performedOn($teamOne)
-                    ->log('Created new team/player via bet update');
+                if ($teamOne->wasRecentlyCreated) {
+                    activity()
+                        ->causedBy(Auth::user())
+                        ->performedOn($teamOne)
+                        ->log('Created new team/player via bet update');
+                }
             }
             
             // Create team two if it's new
             if ($request->boolean('team_two_is_new') && !empty($validated['team_two']) && empty($validated['team_two_id'])) {
-                $teamTwo = \App\Models\Team::create([
-                    'name' => $validated['team_two'],
-                    'sport_id' => $validated['sport_id'] ?? null,
-                    'league_id' => $validated['league_id'] ?? null,
-                    'is_active' => true,
-                ]);
+                $teamTwo = $this->findOrCreateTeam(
+                    $validated['team_two'],
+                    $validated['sport_id'] ?? null,
+                    $validated['league_id'] ?? null,
+                    true
+                );
                 $validated['team_two_id'] = $teamTwo->id;
                 
-                activity()
-                    ->causedBy(Auth::user())
-                    ->performedOn($teamTwo)
-                    ->log('Created new team/player via bet update');
+                if ($teamTwo->wasRecentlyCreated) {
+                    activity()
+                        ->causedBy(Auth::user())
+                        ->performedOn($teamTwo)
+                        ->log('Created new team/player via bet update');
+                }
             }
         });
         

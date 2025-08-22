@@ -96,13 +96,34 @@ class Team extends Model
 
         static::creating(function ($team) {
             if (empty($team->slug)) {
-                $team->slug = Str::slug($team->name);
+                // Generate a unique slug
+                $baseSlug = Str::slug($team->name);
+                $slug = $baseSlug;
+                $counter = 1;
+                
+                while (static::where('slug', $slug)->exists()) {
+                    $slug = $baseSlug . '-' . $counter;
+                    $counter++;
+                }
+                
+                $team->slug = $slug;
             }
         });
 
         static::updating(function ($team) {
             if ($team->isDirty('name') && empty($team->slug)) {
-                $team->slug = Str::slug($team->name);
+                // Generate a unique slug
+                $baseSlug = Str::slug($team->name);
+                $slug = $baseSlug;
+                $counter = 1;
+                
+                // Exclude current team from check
+                while (static::where('slug', $slug)->where('id', '!=', $team->id)->exists()) {
+                    $slug = $baseSlug . '-' . $counter;
+                    $counter++;
+                }
+                
+                $team->slug = $slug;
             }
         });
         

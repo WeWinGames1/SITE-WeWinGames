@@ -8,6 +8,7 @@ use App\Models\Operator;
 use App\Models\Sport;
 use App\Models\Team;
 use App\Repositories\Contracts\BetRepositoryInterface;
+use App\Traits\CreatesTeamsWithUniqueSlug;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -15,6 +16,8 @@ use League\Csv\Reader;
 
 class BetImportService
 {
+    use CreatesTeamsWithUniqueSlug;
+    
     private array $errors = [];
 
     private array $successCount = ['bets' => 0, 'games' => 0, 'teams' => 0];
@@ -471,73 +474,27 @@ class BetImportService
             $game = null;
 
             if ($homeTeamName) {
-                // Check if team already exists for this sport
-                $homeTeam = Team::where('name', $homeTeamName)
+                // Track if this is a new team
+                $homeTeamExists = Team::where('name', $homeTeamName)
                     ->where('sport_id', $sport->id)
-                    ->first();
-                    
-                if (!$homeTeam) {
-                    try {
-                        // Generate unique slug if needed
-                        $baseSlug = \Str::slug($homeTeamName);
-                        $slug = $baseSlug;
-                        $counter = 1;
-                        
-                        while (Team::where('slug', $slug)->exists()) {
-                            $slug = $baseSlug . '-' . $counter;
-                            $counter++;
-                        }
-                        
-                        $homeTeam = Team::create([
-                            'name' => $homeTeamName,
-                            'sport_id' => $sport->id,
-                            'slug' => $slug
-                        ]);
-                    } catch (\Illuminate\Database\QueryException $e) {
-                        // Handle race condition - team was created by another process
-                        if (str_contains($e->getMessage(), 'UNIQUE constraint failed')) {
-                            $homeTeam = Team::where('name', $homeTeamName)
-                                ->where('sport_id', $sport->id)
-                                ->first();
-                        } else {
-                            throw $e;
-                        }
-                    }
+                    ->exists();
+                
+                $homeTeam = $this->findOrCreateTeam($homeTeamName, $sport->id);
+                
+                if (!$homeTeamExists) {
+                    $this->successCount['teams']++;
                 }
 
                 // Only create away team if provided (not required for individual sports)
                 if ($awayTeamName) {
-                    $awayTeam = Team::where('name', $awayTeamName)
+                    $awayTeamExists = Team::where('name', $awayTeamName)
                         ->where('sport_id', $sport->id)
-                        ->first();
-                        
-                    if (!$awayTeam) {
-                        try {
-                            // Generate unique slug if needed
-                            $baseSlug = \Str::slug($awayTeamName);
-                            $slug = $baseSlug;
-                            $counter = 1;
-                            
-                            while (Team::where('slug', $slug)->exists()) {
-                                $slug = $baseSlug . '-' . $counter;
-                                $counter++;
-                            }
-                            
-                            $awayTeam = Team::create([
-                                'name' => $awayTeamName,
-                                'sport_id' => $sport->id,
-                                'slug' => $slug
-                            ]);
-                        } catch (\Illuminate\Database\QueryException $e) {
-                            // Handle race condition - team was created by another process
-                            if (str_contains($e->getMessage(), 'UNIQUE constraint failed')) {
-                                $awayTeam = Team::where('name', $awayTeamName)
-                                    ->where('sport_id', $sport->id)
-                                    ->first();
-                            } else {
-                                throw $e;
-                            }
-                        }
+                        ->exists();
+                    
+                    $awayTeam = $this->findOrCreateTeam($awayTeamName, $sport->id);
+                    
+                    if (!$awayTeamExists) {
+                        $this->successCount['teams']++;
                     }
 
                     // Skip game creation for now due to required fields
@@ -1192,4 +1149,5 @@ class BetImportService
             throw new \Exception($lastError['errors']['processing'] ?? 'Import failed');
         }
     }
+
 }
