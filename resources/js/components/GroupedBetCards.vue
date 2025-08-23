@@ -38,7 +38,7 @@ const getSportIcon = (sport: string) => {
                 </div>
                 <span class="badge bg-success">
                     <i class="bi bi-circle-fill me-1" style="font-size: 8px"></i>
-                    {{ bets.length }} {{ bets.length === 1 ? 'Pick' : 'Picks' }}
+                    {{ bets.filter(bet => !bet.isCovered && !bet.isTeaser).length }} {{ bets.filter(bet => !bet.isCovered && !bet.isTeaser).length === 1 ? 'Pick' : 'Picks' }}
                 </span>
             </div>
 

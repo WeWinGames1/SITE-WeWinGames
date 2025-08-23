@@ -56,7 +56,7 @@ const props = defineProps<{
                         More Picks Available
                     </h5>
                     <h5 v-else class="text-white mb-3">
-                        Unlock Premium {{ bet.sport }} Picks
+                        Unlock Premium Picks
                     </h5>
                     <p class="text-white-50 mb-4 small">
                         {{ bet.isGuest ? 'Create a free account' : 'Upgrade your membership' }} to access exclusive betting insights and premium picks

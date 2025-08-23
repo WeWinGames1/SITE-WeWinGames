@@ -152,9 +152,43 @@ class BetController extends Controller
      */
     public function todaysBets()
     {
+        // Get all today's bets
+        $allBets = $this->betService->getTodaysBets();
+        
+        // For unauthenticated users, apply same filtering as home page
+        $user = auth()->user();
+        if (!$user) {
+            // Get sport preferences
+            $sportPreferences = \App\Models\SportPreference::active()
+                ->orderBy('priority', 'asc')
+                ->pluck('sport_name')
+                ->toArray();
+            
+            // Filter and limit bronze bets
+            $bronzeBets = $allBets->filter(function ($bet) {
+                return strtolower($bet->membership ?? $bet->level ?? '') === 'bronze';
+            });
+            
+            // Sort by sport preference and limit to 2
+            $limitedBets = $bronzeBets->sortBy(function ($bet) use ($sportPreferences) {
+                $sport = $bet->sports ?? $bet->sport ?? '';
+                $index = array_search($sport, $sportPreferences);
+                return $index === false ? 999 : $index;
+            })->take(2);
+            
+            // Include non-bronze bets for display (they'll be covered)
+            $nonBronzeBets = $allBets->filter(function ($bet) {
+                return strtolower($bet->membership ?? $bet->level ?? '') !== 'bronze';
+            });
+            
+            $freeBets = $limitedBets->merge($nonBronzeBets);
+        } else {
+            $freeBets = $allBets;
+        }
+
         return Inertia::render('TodaysBets', [
             'roiData' => $this->betService->getTotalROIBySubscriptionLevel(),
-            'freeBets' => $this->betService->getTodaysBets(),
+            'freeBets' => $freeBets,
             'sportPreferences' => \App\Models\SportPreference::active()->get(),
         ]);
     }

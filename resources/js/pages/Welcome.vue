@@ -297,12 +297,42 @@ const allGroupedBets = computed(() => {
     });
 
     // Group by sport
-    return sorted.reduce((acc, bet) => {
+    const grouped = sorted.reduce((acc, bet) => {
         const sport = bet.sports || bet.sport || 'Football';
         if (!acc[sport]) acc[sport] = [];
         acc[sport].push(bet);
         return acc;
     }, {});
+
+    // Add teaser cards for guest/free users
+    if (!auth?.user || isDefault) {
+        // Count all bets by sport (before filtering)
+        const allBetsBySport = bets.reduce((acc, bet) => {
+            const sport = bet.sports || bet.sport || 'Football';
+            if (!acc[sport]) acc[sport] = 0;
+            acc[sport]++;
+            return acc;
+        }, {});
+
+        // Add teaser card to each sport group if there are more picks
+        Object.keys(grouped).forEach(sport => {
+            const visibleCount = grouped[sport].filter(bet => !bet.isCovered).length;
+            const totalCount = allBetsBySport[sport] || 0;
+            const remainingCount = totalCount - visibleCount;
+            
+            // Always add a teaser for guests/free users
+            grouped[sport].push({
+                id: `teaser-${sport}`,
+                isTeaser: true,
+                sport: sport,
+                sports: sport,
+                remainingCount: remainingCount,
+                isGuest: !auth?.user
+            });
+        });
+    }
+
+    return grouped;
 });
 </script>
 
