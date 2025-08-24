@@ -11,6 +11,7 @@ function formatMoney(val: number | undefined) {
 const page = usePage();
 const auth = page.props.auth || null; // Get the logged-in user
 const bets = page.props.freeBets || []; // Get the daily bet picks
+const totalBetsPerSport = page.props.totalBetsPerSport || {}; // Get total counts per sport
 const props = defineProps<{
     roiData: Record<string, number>;
     levelProfitRoiData: Array<{ level: string; profit: number; roi: number }>;
@@ -306,21 +307,13 @@ const allGroupedBets = computed(() => {
 
     // Add teaser cards for guest/free users
     if (!auth?.user || isDefault) {
-        // Count all bets by sport (before filtering)
-        const allBetsBySport = bets.reduce((acc, bet) => {
-            const sport = bet.sports || bet.sport || 'Football';
-            if (!acc[sport]) acc[sport] = 0;
-            acc[sport]++;
-            return acc;
-        }, {});
-
-        // Add teaser card to each sport group if there are more picks
+        // Add teaser card to each sport group
         Object.keys(grouped).forEach(sport => {
             const visibleCount = grouped[sport].filter(bet => !bet.isCovered).length;
-            const totalCount = allBetsBySport[sport] || 0;
+            const totalCount = totalBetsPerSport[sport] || 0;
             const remainingCount = totalCount - visibleCount;
             
-            // Always add a teaser for guests/free users
+            // Always add exactly one teaser card per sport for guests/free users
             grouped[sport].push({
                 id: `teaser-${sport}`,
                 isTeaser: true,
@@ -329,6 +322,21 @@ const allGroupedBets = computed(() => {
                 remainingCount: remainingCount,
                 isGuest: !auth?.user
             });
+        });
+        
+        // Also check if any sports have bets but aren't shown due to filtering
+        Object.keys(totalBetsPerSport).forEach(sport => {
+            if (!grouped[sport] && totalBetsPerSport[sport] > 0) {
+                // This sport has bets but none are visible, create a group with just a teaser
+                grouped[sport] = [{
+                    id: `teaser-${sport}`,
+                    isTeaser: true,
+                    sport: sport,
+                    sports: sport,
+                    remainingCount: totalBetsPerSport[sport],
+                    isGuest: !auth?.user
+                }];
+            }
         });
     }
 
@@ -625,7 +633,7 @@ const allGroupedBets = computed(() => {
                     </div>
 
                     <div class="mt-4">
-                        <GroupedBetCards :grouped-bets="allGroupedBets" />
+                        <GroupedBetCards :grouped-bets="allGroupedBets" :total-bets-per-sport="totalBetsPerSport" />
                     </div>
                     <div class="text-center mt-5">
                         <Link href="/todays-bets" class="btn btn-primary btn-lg px-5 py-3">

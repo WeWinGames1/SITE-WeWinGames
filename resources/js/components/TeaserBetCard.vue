@@ -49,14 +49,8 @@ const props = defineProps<{
             <div class="overlay-content position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center p-4">
                 <div class="text-center">
                     <i class="bi bi-lock-fill text-warning display-4 mb-3"></i>
-                    <h5 v-if="bet.remainingCount >= 2" class="text-white mb-3">
-                        {{ bet.remainingCount }} More Picks Available
-                    </h5>
-                    <h5 v-else-if="bet.remainingCount === 1" class="text-white mb-3">
-                        More Picks Available
-                    </h5>
-                    <h5 v-else class="text-white mb-3">
-                        Unlock Premium Picks
+                    <h5 class="text-white mb-3">
+                        Unlock {{ bet.remainingCount }} Premium Picks
                     </h5>
                     <p class="text-white-50 mb-4 small">
                         {{ bet.isGuest ? 'Create a free account' : 'Upgrade your membership' }} to access exclusive betting insights and premium picks

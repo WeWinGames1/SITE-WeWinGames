@@ -7,6 +7,7 @@ import { computed, ref, watch } from 'vue';
 const page = usePage();
 const auth = page.props.auth || null;
 const bets = page.props.freeBets || [];
+const totalBetsPerSport = page.props.totalBetsPerSport || {}; // Get total counts per sport
 const isGuest = !auth?.user; // Check if user is not logged in
 
 // Sports filter
@@ -194,21 +195,20 @@ const categorizeBet = (bet) => {
 };
 
 // Create teaser cards for each sport
-const createTeaserCards = (allSportBets, visibleSportBets, sport) => {
+const createTeaserCards = (sport, visibleBetsCount) => {
     if (!isGuest && userSubscriptionType !== 'free') return [];
     
-    // Count total bets for this sport
-    const totalBetsForSport = allSportBets.length;
-    const visibleBetsForSport = visibleSportBets.length;
-    const remainingCount = totalBetsForSport - visibleBetsForSport;
+    // Use the actual total count from backend
+    const totalBetsForSport = totalBetsPerSport[sport] || 0;
+    const remainingCount = totalBetsForSport - visibleBetsCount;
     
-    // Always create a teaser card for guests and free users
+    // Always create exactly one teaser card per sport for guests and free users
     return [{
         id: `teaser-${sport}`,
         isTeaser: true,
         sport: sport,
         sports: sport,
-        remainingCount: remainingCount, // Will be 0 if no more picks
+        remainingCount: remainingCount,
         isGuest: isGuest
     }];
 };
@@ -263,59 +263,35 @@ const allGroupedBets = computed(() => {
         return acc;
     }, {});
     
-    // If filtering by a specific sport and user is guest/free, ensure we show teaser for that sport
-    if (selectedSport.value !== 'all' && (isGuest || userSubscriptionType === 'free')) {
-        // Check if we need to create an entry for the selected sport
-        if (!grouped[selectedSport.value]) {
-            grouped[selectedSport.value] = [];
-        }
-        
-        // Get all bets for this sport (before filtering)
-        const allBetsForSelectedSport = [...viewableBets, ...coveredBets]
-            .filter(bet => bet.sports === selectedSport.value);
-        
-        if (allBetsForSelectedSport.length > 0 || !grouped[selectedSport.value].length) {
-            // There are bets for this sport (even if not visible), or no bets shown
-            const sportBets = grouped[selectedSport.value];
+    // Add teaser cards for guest/free users
+    if (isGuest || userSubscriptionType === 'free') {
+        // For each sport group, add a teaser card
+        Object.keys(grouped).forEach(sport => {
+            const sportBets = grouped[sport];
             const visibleBetsForSport = sportBets.filter(bet => !bet.isCovered);
             
-            const teaserCards = createTeaserCards(allBetsForSelectedSport, visibleBetsForSport, selectedSport.value);
+            const teaserCards = createTeaserCards(sport, visibleBetsForSport.length);
             
+            // Insert teaser card at the appropriate position
             const bronzeLimit = isGuest ? 2 : 4;
             const insertPosition = Math.min(bronzeLimit, visibleBetsForSport.length);
             
-            grouped[selectedSport.value] = [
+            grouped[sport] = [
                 ...visibleBetsForSport.slice(0, insertPosition),
                 ...teaserCards,
                 ...visibleBetsForSport.slice(insertPosition),
                 ...sportBets.filter(bet => bet.isCovered)
             ];
-        }
-    } else {
-        // For "all sports" view or paid users, handle each sport
-        Object.keys(grouped).forEach(sport => {
-            const sportBets = grouped[sport];
-            
-            if (isGuest || userSubscriptionType === 'free') {
-                // Get all bets for this sport (including ones we can't view)
-                const allBetsForSport = all.filter(bet => bet.sports === sport);
-                const visibleBetsForSport = sportBets.filter(bet => !bet.isCovered);
-                
-                const teaserCards = createTeaserCards(allBetsForSport, visibleBetsForSport, sport);
-                
-                // Always show teaser cards for guests and free users
-                // For bronze bets, insert teaser after the limit
-                const bronzeBets = visibleBetsForSport.filter(bet => (bet.membership?.toLowerCase() || 'bronze') === 'bronze');
-                const bronzeLimit = isGuest ? 2 : 4;
-                const insertPosition = Math.min(bronzeLimit, visibleBetsForSport.length);
-                
-                // Insert teaser card at the appropriate position
-                grouped[sport] = [
-                    ...visibleBetsForSport.slice(0, insertPosition),
-                    ...teaserCards,
-                    ...visibleBetsForSport.slice(insertPosition),
-                    ...sportBets.filter(bet => bet.isCovered) // Add covered bets at the end
-                ];
+        });
+        
+        // Also check if any sports have bets but aren't shown due to filtering
+        Object.keys(totalBetsPerSport).forEach(sport => {
+            if (!grouped[sport] && totalBetsPerSport[sport] > 0) {
+                // This sport has bets but none are visible due to filtering
+                // Only show if it matches the selected sport filter or if showing all sports
+                if (selectedSport.value === 'all' || selectedSport.value === sport) {
+                    grouped[sport] = createTeaserCards(sport, 0);
+                }
             }
         });
     }
@@ -478,7 +454,7 @@ const getMembershipBadgeStyle = (membership: string) => {
                     </div>
 
                     <!-- Use the same GroupedBetCards component as home page -->
-                    <GroupedBetCards :grouped-bets="allGroupedBets" />
+                    <GroupedBetCards :grouped-bets="allGroupedBets" :total-bets-per-sport="totalBetsPerSport" />
                 </div>
             </section>
         </div>

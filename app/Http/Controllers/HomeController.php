@@ -27,6 +27,11 @@ class HomeController extends Controller
         // Get today's bets
         $allBets = $this->betService->getTodaysBets();
         
+        // Calculate total bets per sport before filtering
+        $totalBetsPerSport = $allBets->groupBy(function ($bet) {
+            return $bet->sports ?? $bet->sport ?? 'Football';
+        })->map->count();
+        
         // For unauthenticated users, limit bronze bets to 2 from preferred sports
         $user = auth()->user();
         if (!$user) {
@@ -70,6 +75,7 @@ class HomeController extends Controller
             'lastYearROI' => $roiByYear[$lastYear] ?? 0,
             'monthlyProfit' => $this->betService->getAverageMonthlyProfit(),
             'freeBets' => $freeBets,
+            'totalBetsPerSport' => $totalBetsPerSport,
             'winRatio' => $this->betService->getWinLossRatio()['win_rate'] ?? 0,
             'thisYearWinLoss' => $this->betService->getWinLossRatioByYear($thisYear)['win_rate'] ?? 0,
             'lastYearWinLoss' => $this->betService->getWinLossRatioByYear($lastYear)['win_rate'] ?? 0,

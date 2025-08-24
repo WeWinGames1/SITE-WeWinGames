@@ -5,6 +5,7 @@ import TeaserBetCard from './TeaserBetCard.vue';
 
 defineProps<{
     groupedBets: Record<string, Array<any>>;
+    totalBetsPerSport?: Record<string, number>;
 }>();
 
 // Sport icons mapping
@@ -38,7 +39,7 @@ const getSportIcon = (sport: string) => {
                 </div>
                 <span class="badge bg-success">
                     <i class="bi bi-circle-fill me-1" style="font-size: 8px"></i>
-                    {{ bets.filter(bet => !bet.isCovered && !bet.isTeaser).length }} {{ bets.filter(bet => !bet.isCovered && !bet.isTeaser).length === 1 ? 'Pick' : 'Picks' }}
+                    {{ totalBetsPerSport?.[sport] || bets.filter(bet => !bet.isCovered && !bet.isTeaser).length }} {{ (totalBetsPerSport?.[sport] || bets.filter(bet => !bet.isCovered && !bet.isTeaser).length) === 1 ? 'Pick' : 'Picks' }}
                 </span>
             </div>
 

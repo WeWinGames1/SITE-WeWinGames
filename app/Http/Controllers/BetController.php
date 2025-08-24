@@ -155,6 +155,11 @@ class BetController extends Controller
         // Get all today's bets
         $allBets = $this->betService->getTodaysBets();
         
+        // Calculate total bets per sport before filtering
+        $totalBetsPerSport = $allBets->groupBy(function ($bet) {
+            return $bet->sports ?? $bet->sport ?? 'Football';
+        })->map->count();
+        
         // For unauthenticated users, apply same filtering as home page
         $user = auth()->user();
         if (!$user) {
@@ -189,6 +194,7 @@ class BetController extends Controller
         return Inertia::render('TodaysBets', [
             'roiData' => $this->betService->getTotalROIBySubscriptionLevel(),
             'freeBets' => $freeBets,
+            'totalBetsPerSport' => $totalBetsPerSport,
             'sportPreferences' => \App\Models\SportPreference::active()->get(),
         ]);
     }
