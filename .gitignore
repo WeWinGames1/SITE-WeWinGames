@@ -26,3 +26,7 @@ yarn-error.log
 **/.DS_Store
 /.scribe
 /_OLD
+/_DEV/posts_table.sql
+/_DEV/posts_data.sql
+/_DEV/LIVE_08_21_2025.sql
+/.playwright-mcp
