@@ -98,6 +98,11 @@
                 OneSignalDeferred.push(async function(OneSignal) {
                     await OneSignal.init({
                         appId: "5d21734b-7157-455e-8c5e-7e287790fa5c",
+                        serviceWorkerParam: {
+                            scope: "/",
+                            path: "/sw.js"
+                        },
+                        allowLocalhostAsSecureOrigin: true
                     });
                 });
             </script>
@@ -147,8 +152,11 @@
         <script>
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                    navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(function(registration) {
                         console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                        
+                        // Update service worker if needed
+                        registration.update();
                     }, function(err) {
                         console.log('ServiceWorker registration failed: ', err);
                     });
