@@ -219,17 +219,18 @@ class BetController extends Controller
         $profitByYearData = $this->betService->getProfitAndROIByYear();
         
         // Add static values for 2022 and 2023
-        $staticProfits = [
-            2022 => 15769,
-            2023 => 21678
+        $staticData = [
+            2022 => ['profit' => 15769, 'roi' => 19],
+            2023 => ['profit' => 21678, 'roi' => 16]
         ];
         
         // Merge static values with calculated data
-        foreach ($staticProfits as $year => $profit) {
+        foreach ($staticData as $year => $data) {
             $found = false;
             foreach ($profitByYearData as &$yearData) {
                 if ($yearData['year'] == $year) {
-                    $yearData['profit'] = $profit;
+                    $yearData['profit'] = $data['profit'];
+                    $yearData['roi'] = $data['roi'];
                     $found = true;
                     break;
                 }
@@ -237,8 +238,8 @@ class BetController extends Controller
             if (!$found) {
                 $profitByYearData[] = [
                     'year' => $year,
-                    'profit' => $profit,
-                    'roi' => 0,
+                    'profit' => $data['profit'],
+                    'roi' => $data['roi'],
                     'total_bets' => 0,
                     'wins' => 0,
                     'win_rate' => 0
