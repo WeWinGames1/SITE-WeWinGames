@@ -16,7 +16,7 @@ class TemplatedEmail extends Mailable
 
     protected EmailTemplate $template;
     protected array $data;
-    protected array $metadata;
+    protected array $emailMetadata;
 
     /**
      * Create a new message instance.
@@ -25,7 +25,7 @@ class TemplatedEmail extends Mailable
     {
         $this->template = $template;
         $this->data = $data;
-        $this->metadata = $metadata;
+        $this->emailMetadata = $metadata;
     }
 
     /**
@@ -69,7 +69,7 @@ class TemplatedEmail extends Mailable
         return new Headers(
             text: [
                 'X-Template-Key' => $this->template->key,
-                'X-Email-Metadata' => json_encode($this->metadata),
+                'X-Email-Metadata' => json_encode($this->emailMetadata),
             ],
         );
     }

@@ -90,6 +90,19 @@
             @endif
         @endproduction
         
+        {{-- OneSignal Push Notifications (non-admin pages only) --}}
+        @if(!request()->is('admin*'))
+            <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+            <script>
+                window.OneSignalDeferred = window.OneSignalDeferred || [];
+                OneSignalDeferred.push(async function(OneSignal) {
+                    await OneSignal.init({
+                        appId: "5d21734b-7157-455e-8c5e-7e287790fa5c",
+                    });
+                });
+            </script>
+        @endif
+        
         {{-- jQuery and Select2 --}}
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />

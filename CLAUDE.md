@@ -1,1119 +1,539 @@
 # WeWinGames - Sports Betting Platform
 
 ## Overview
-WeWinGames is a full-stack sports betting information and picks service built with Laravel 12 and Vue.js 3. The platform provides betting recommendations, game analysis, and subscription-based access to premium picks.
+WeWinGames is a comprehensive sports betting information and picks service built with Laravel 12 and Vue.js 3. The platform provides betting recommendations, game analysis, subscription-based access to premium picks, and a full suite of content management and user engagement features.
 
 ## Technology Stack
 
 ### Backend
 - **Framework**: Laravel 12 (PHP 8.2+)
-- **Database**: MySQL 8.0 / SQLite (for local development)
-- **Cache**: File/Redis
+- **Database**: MySQL 8.0 / SQLite (local development)
+- **Cache**: File/Redis with Cloudflare integration
 - **Queue**: Laravel Queue with database driver
 - **Authentication**: Laravel Breeze with Inertia.js
 - **Billing**: Laravel Cashier (Stripe integration)
-- **SSR**: Inertia.js
+- **SSR**: Inertia.js v2
 
 ### Frontend
 - **Framework**: Vue.js 3 with TypeScript
-- **Build Tool**: Vite
-- **CSS**: Bootstrap 5 (converted from Tailwind CSS in December 2024)
+- **Build Tool**: Vite 6
+- **CSS**: Bootstrap 5 (migrated from Tailwind CSS)
 - **UI Components**: Bootstrap 5 components with custom admin theme
 - **Rich Text**: TinyMCE and Tiptap editors
-- **Charts**: Chart.js
+- **Charts**: Chart.js with vue-chartjs
 - **3D Graphics**: Three.js
+- **Icons**: Bootstrap Icons, Lucide Vue, Heroicons
+
+### Third-Party Services
+- **Payment**: Stripe (with dynamic product management)
+- **Push Notifications**: OneSignal & Web Push API
+- **Analytics**: Google Analytics & Tag Manager
+- **Security**: Cloudflare Turnstile
+- **Email**: SendGrid (via LoggedMailChannel)
+- **Monitoring**: Laravel Telescope
+- **Media**: Spatie Media Library
+- **Permissions**: Spatie Laravel Permission
+- **Activity Logging**: Spatie Activity Log
 
 ## Project Structure
 
 ```
 .
-├── app/                    # Laravel application logic
+├── app/
 │   ├── Console/           # Artisan commands
 │   ├── Events/            # Event classes
-│   ├── Http/              # Controllers, middleware, requests
-│   ├── Models/            # Eloquent models
+│   ├── Http/
+│   │   ├── Controllers/   # All controllers including Admin/
+│   │   ├── Middleware/    # Custom middleware
+│   │   └── Requests/      # Form requests
+│   ├── Models/            # Eloquent models (30+ models)
 │   ├── Services/          # Business logic services
-│   └── Policies/          # Authorization policies
-├── resources/             # Frontend resources
-│   ├── js/               # Vue application
-│   │   ├── components/   # Reusable Vue components
-│   │   ├── pages/        # Page components
-│   │   ├── layouts/      # Layout components
-│   │   └── composables/  # Vue composition utilities
-│   └── css/              # Stylesheets
-├── routes/               # Application routes
-├── database/             # Migrations and seeds
-├── tests/                # PHPUnit tests
-└── docker/               # Docker configuration
+│   ├── Policies/          # Authorization policies
+│   └── Mail/              # Mailable classes
+├── resources/
+│   ├── js/
+│   │   ├── components/    # Reusable Vue components
+│   │   ├── pages/         # Page components
+│   │   ├── layouts/       # Layout components
+│   │   └── composables/   # Vue composition utilities
+│   └── css/               # Bootstrap-based styles
+├── routes/                # Application routes
+├── database/              # Migrations, seeders, factories
+├── tests/                 # PHPUnit & Feature tests
+└── docker/                # Docker configuration
 ```
 
 ## Key Features
 
 ### 1. Betting System
-- **Models**: Bet, Game, Operator, Sport, Team
-- **Features**:
-  - Create and manage betting picks
-  - Track bet performance and profit
-  - Batch upload betting data
-  - Real-time odds tracking
+- **Bet Management**: Create, edit, track betting picks with performance metrics
+- **Parlay Support**: Multi-bet parlays with combined odds
+- **Golf Betting**: Each-way bets with place fractions and dead heat rules
+- **CSV Import/Export**: Wizard-based bulk data management
+- **Mass Edit**: Batch updates for golf positions
+- **Premium Notes**: Subscriber-only betting insights
+- **Profit Tracking**: Detailed P&L calculations
 
-### 2. User Management
-- **Authentication**: Email/password with social login support
-- **Roles**: Admin, Subscriber, Free User
-- **Permissions**: Granular permission system using Spatie Laravel Permission
-- **Profile Management**: User settings and preferences
+### 2. User & Subscription System
+- **User Types**: Regular, Ambassador, Gifted, Admin
+- **Subscription Tiers**: Bronze, Silver, Gold, Platinum
+- **Billing Periods**: Daily, Weekly, Monthly, Yearly
+- **Dynamic Stripe Products**: Database-driven product management
+- **Discount Codes**: Percentage/fixed with usage limits
+- **Affiliate System**: Track and manage affiliates
+- **Impersonation**: Admin user switching
 
-### 3. Subscription System
-- **Billing**: Stripe integration via Laravel Cashier
-- **Plans**: Multiple subscription tiers (Bronze, Silver, Gold, Platinum)
-- **Features**: 
-  - Subscription management
-  - Payment method updates
-  - Invoice history
-  - Coupon/discount code support
-  - Dynamic Stripe product management
-  - Ambassador/gifted user privileges
+### 3. Content Management
+- **Blog System**: Full-featured with SEO, categories, view tracking
+- **CMS Pages**: Dynamic page creation and management
+- **Landing Pages**: Marketing-focused pages
+- **FAQ System**: Categorized Q&A management
+- **Knowledgebase**: Article-based help system
+- **Media Library**: Centralized file management
+- **Testimonials**: Customer reviews with Google integration
 
-### 4. Content Management
-- **Pages**: Dynamic page creation and management
-- **Landing Pages**: Marketing pages with customizable content
-- **Blog**: Full blog system with categories and tags
-- **Rich Text Editing**: TinyMCE and Tiptap support
+### 4. Communication Features
+- **Email System**: 
+  - Template management
+  - Full logging with SendGrid
+  - Customizable transactional emails
+- **Push Notifications**:
+  - OneSignal integration (NEW)
+  - Web Push API fallback
+  - Tier-based targeting
+  - Notification history
+- **Support Tickets**: Guest-accessible support system
 
-### 5. Admin Dashboard
+### 5. Career/Jobs System
+- **Job Positions**: Manage job listings
+- **Resume Submissions**: Application tracking system
+- **Admin Review**: Application management interface
+
+### 6. Admin Dashboard
 Located at `/admin`, provides:
-- User management with ambassador/gifted privileges
-- Bet and game management with CSV import/export
-- Content editing (pages, blog posts, landing pages)
-- Analytics and reporting
-- System settings
-- Stripe product management
-- Tier-based notification system
-- Push notification management
-- Testimonials management
+- **Statistics Dashboard**: MRR, user growth, betting activity
+- **User Management**: Complete user administration
+- **Bet Management**: Full CRUD with import/export
+- **Content Editing**: Pages, posts, FAQs, testimonials
+- **Subscription Dashboard**: Customer & revenue tracking
+- **System Settings**: Configuration management
+- **Activity Logs**: User action tracking
+- **Cache Management**: Clear Laravel & Cloudflare cache
+
+### 7. Security & Performance
+- **Middleware**: 
+  - Admin security headers
+  - Rate limiting
+  - IP blacklisting
+  - Spam prevention
+- **Under Construction Mode**: Site-wide maintenance
+- **Cloudflare Integration**: CDN & cache management
+- **Session Security**: CSRF protection
 
 ## Development Commands
 
-### Getting Started
+### Quick Start
 ```bash
-# Install PHP dependencies
-composer install
+# Install dependencies
+composer install && npm install
 
-# Install Node dependencies
-npm install
-
-# Copy environment file
+# Setup environment
 cp .env.example .env
-
-# Generate application key
 php artisan key:generate
 
-# Run migrations
-php artisan migrate
+# Database setup
+php artisan migrate --seed
 
-# Seed database
-php artisan db:seed
-
-# Start development server
+# Start development
 composer dev
 ```
 
 ### Available Scripts
-- `composer dev` - Run all development services
-- `composer dev:ssr` - Run with SSR enabled
-- `npm run dev` - Start Vite dev server
-- `npm run build` - Production build
-- `npm run typecheck` - Run TypeScript checks
-- `composer format` - Format PHP code with Pint
-- `npm run format` - Format JS/TS code with Prettier
-
-### Testing
 ```bash
-# Run PHP tests
-php artisan test
+# Development
+composer dev              # All services (recommended)
+composer dev:ssr          # With SSR
+npm run dev              # Vite only
+npm run build            # Production build
 
-# Run specific test suite
-php artisan test --testsuite=Feature
+# Code Quality
+composer format          # Format PHP (Pint)
+npm run format          # Format JS/TS (Prettier)
+npm run lint            # ESLint
+npm run typecheck       # TypeScript check
 
-# Run with coverage
+# Testing
+php artisan test         # Run all tests
+php artisan test --filter TestName
 php artisan test --coverage
+
+# Database
+php artisan migrate:fresh --seed  # Reset database
+php artisan db:seed --class=ProductionSeeder  # Production data only
 ```
 
 ## Database Schema
 
 ### Core Tables
-- `users` - User accounts (with ambassador/gifted/override fields)
+- `users` - User accounts with ambassador/gifted fields
 - `bets` - Betting picks and predictions
 - `games` - Sporting events
-- `teams` - Sports teams
+- `teams` - Sports teams with aliases
 - `sports` - Sport categories
 - `operators` - Betting operators/bookmakers
-- `subscriptions` - User subscriptions (Laravel Cashier)
-- `stripe_products` - Stripe product configurations
-- `coupon_usage` - Tracks coupon/discount usage
-- `team_logos` - Team logo management
+- `leagues` - Team leagues
+- `subscriptions` - Laravel Cashier subscriptions
+- `stripe_products` - Dynamic Stripe configuration
+- `discount_codes` - Coupon management
+- `discount_redemptions` - Usage tracking
+
+### Content Tables
 - `pages` - CMS pages
+- `landing_pages` - Marketing pages
 - `posts` - Blog posts
-- `notifications` - Enhanced with tier targeting
-- `push_subscriptions` - Web Push API subscriptions
-- `push_notification_logs` - Push notification history
-- `testimonials` - Customer testimonials and reviews
+- `blog_categories` - Blog categorization
+- `faqs` - FAQ entries
+- `faq_categories` - FAQ organization
+- `testimonials` - Customer reviews
+- `knowledgebase_articles` - Help articles
+- `knowledgebase_categories` - KB organization
+
+### Communication Tables
+- `support_tickets` - Support system
+- `support_ticket_replies` - Ticket responses
+- `notifications` - System notifications
+- `push_subscriptions` - Web Push subscriptions
+- `push_notification_logs` - Push history
+- `email_logs` - Email tracking
+- `email_templates` - Email customization
+
+### Career Tables
+- `job_positions` - Job listings
+- `resume_submissions` - Applications
+
+### System Tables
+- `activity_log` - User activity tracking
+- `media` - Spatie media library
+- `affiliates` - Affiliate management
+- `sport_user` - User sport preferences
+- `team_logos` - Team branding
 
 ## API Routes
 
-### Authentication
-- `POST /login` - User login
-- `POST /register` - User registration
-- `POST /logout` - User logout
-- `POST /forgot-password` - Password reset
+### Public API
+```
+POST   /login                    - User authentication
+POST   /register                 - User registration  
+POST   /logout                   - User logout
+POST   /forgot-password          - Password reset
 
-### Betting API
-- `GET /api/bets` - List bets
-- `POST /api/bets` - Create bet
-- `GET /api/games` - List games
-- `GET /api/sports` - List sports
+GET    /api/bets                 - List bets
+POST   /api/bets                 - Create bet
+GET    /api/games                - List games
+GET    /api/sports               - List sports
+GET    /api/user                 - Current user
+PUT    /api/user/profile         - Update profile
+POST   /api/user/subscription    - Manage subscription
 
-### User API
-- `GET /api/user` - Current user
-- `PUT /api/user/profile` - Update profile
-- `POST /api/user/subscription` - Manage subscription
+POST   /api/push/subscribe       - Subscribe to push
+DELETE /api/push/unsubscribe     - Unsubscribe from push
+```
 
-### Push Notifications API
-- `POST /api/push/subscribe` - Subscribe to push notifications
-- `DELETE /api/push/unsubscribe` - Unsubscribe from push notifications
-- `POST /admin/notifications/push/send` - Send push notification (admin)
-- `POST /admin/notifications/push/test` - Send test notification (admin)
+### Admin API
+```
+POST   /admin/cache/clear        - Clear all caches
+GET    /admin/api/customers/search - Search customers
+POST   /admin/notifications/push/send - Send push notification
+POST   /admin/notifications/push/test - Test notification
+```
 
 ## Environment Variables
 
-Key environment variables:
-```
+### Required
+```env
 APP_NAME=WeWinGames
 APP_ENV=local
 APP_URL=http://wewingames.test
-
-DB_CONNECTION=mysql
-DB_HOST=mysql
-DB_PORT=3306
-DB_DATABASE=wewingames
-DB_USERNAME=sail
-DB_PASSWORD=password
-
-REDIS_HOST=redis
-REDIS_PORT=6379
-
-MAIL_MAILER=smtp
-MAIL_HOST=mailpit
-MAIL_PORT=1025
-
-STRIPE_KEY=your_stripe_key
-STRIPE_SECRET=your_stripe_secret
-STRIPE_WEBHOOK_SECRET=your_webhook_secret
-
-# Push Notifications
-VAPID_PUBLIC_KEY=your_vapid_public_key
-VAPID_PRIVATE_KEY=your_vapid_private_key
-VAPID_SUBJECT=mailto:admin@wewingames.com
-
-# Cloudflare API (for cache purging)
-CLOUDFLARE_ENABLED=false
-CLOUDFLARE_EMAIL=your_cloudflare_email
-CLOUDFLARE_API_KEY=your_cloudflare_api_key
-CLOUDFLARE_ZONE_ID=your_cloudflare_zone_id
-```
-
-## Deployment
-
-### Production Build
-```bash
-# Fix npm PATH if needed (common on production servers)
-export PATH="/opt/nvm/versions/node/v22.17.0/bin:$PATH"
-
-# Main production build commands
-php artisan optimize:clear && npm run build
-
-# Install dependencies with reduced concurrency (RECOMMENDED for production)
-npm install --maxsockets 1
-
-# Update packages with reduced concurrency
-npm update --maxsockets 1
-
-# If you get "EMFILE: too many open files" error:
-# Option 1: Use reduced concurrency (RECOMMENDED)
-npm update --maxsockets 1
-
-# Option 2: Clear cache and retry with reduced concurrency
-npm cache clean --force
-npm install --maxsockets 1
-
-# Option 3: If ulimit is restricted, use temporary cache
-npm install --prefer-offline false --cache /tmp/npm-cache --maxsockets 1
-
-# Option 4: Increase file limit and reduce concurrency (if allowed)
-ulimit -n 4096
-npm install --maxsockets 3
-
-# Build frontend assets
-npm run build
-
-# Optimize Laravel
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-
-# Run migrations
-php artisan migrate --force
-
-# If you get MySQL key length error (1071), the fix is already in AppServiceProvider.php
-# It sets Schema::defaultStringLength(191) to handle older MySQL versions
-
-# If migrations fail due to table order issues, you may need to:
-# Option 1: Run fresh migrations (WARNING: deletes all data)
-php artisan migrate:fresh --force
-
-# Option 2: Check migration status and run missing ones
-php artisan migrate:status
-php artisan migrate --force
-
-# Note: Some migrations have been fixed for MySQL compatibility:
-# - Shortened constraint names to fit within 64 character limit
-# - Fixed in: discount_redemptions and stripe_price_migrations tables
-# - Reordered migrations to ensure foreign keys exist before indexes
-# - Performance indexes migration moved to run after foreign keys migration
-
-# Seed the database with essential data
-# For production (includes admin user and essential data only):
-php artisan db:seed --class=ProductionSeeder
-
-# Set admin password in .env before seeding:
-# ADMIN_PASSWORD="YourSecurePassword123!"
-
-# Or for development (includes sample data):
-php artisan db:seed
-
-# Seed testimonials
-php artisan db:seed --class=TestimonialSeeder
-
-# Email configuration
-# To disable email sending (logs emails instead), set:
-MAIL_MAILER=log
-# Emails will be written to: storage/logs/laravel.log
-
-# To enable email sending, set:
-MAIL_MAILER=smtp
-# And configure your SMTP credentials
-
-# Available mail drivers:
-# - log: Write emails to log file (for development/testing)
-# - smtp: Send via SMTP server
-# - sendmail: Use server's sendmail
-# - array: Store in memory (for testing)
-```
-
-### Server Requirements
-- PHP 8.2+
-- MySQL 8.0+
-- Redis
-- Node.js 18+
-- Composer 2+
-
-## Coding Standards
-
-### PHP
-- Follow PSR-12 coding standards
-- Use Laravel Pint for formatting
-- Type declarations required
-- Service pattern for business logic
-
-### JavaScript/TypeScript
-- Use TypeScript for all new code
-- Follow Vue 3 Composition API
-- ESLint and Prettier for formatting
-- Component-based architecture
-
-### Git Workflow
-- Feature branches from `main`
-- Descriptive commit messages
-- PR reviews required
-- Run tests before merging
-
-## Security Considerations
-
-- All user input sanitized
-- CSRF protection enabled
-- XSS prevention via Vue
-- SQL injection prevention via Eloquent
-- API rate limiting configured
-- Secure session management
-
-## Performance Optimization
-
-- Redis caching for frequently accessed data
-- Database indexing on foreign keys
-- Lazy loading for Vue components
-- Image optimization with Vite
-- Query optimization with eager loading
-- SSR for improved SEO
-
-## Monitoring and Debugging
-
-- Laravel Telescope for local debugging
-- Error logging to `storage/logs`
-- Database query logging available
-- Performance monitoring hooks ready
-
-## Common Tasks
-
-### Adding a New Page
-1. Create route in `routes/web.php`
-2. Create controller in `app/Http/Controllers`
-3. Create Vue page in `resources/js/pages`
-4. Add navigation link if needed
-
-### Creating a New Model
-1. Run `php artisan make:model ModelName -mfc`
-2. Define database schema in migration
-3. Set up relationships in model
-4. Create policy for authorization
-5. Add routes and controller logic
-
-## Migration Best Practices & Common Issues
-
-### ❌ BAD Migration Patterns (Avoid These)
-
-1. **Long Auto-Generated Index Names**
-   ```php
-   // BAD - generates name longer than MySQL's 64 character limit
-   $table->unique(['discount_code_id', 'user_id', 'subscription_id']);
-   // Generated name: discount_redemptions_discount_code_id_user_id_subscription_id_unique (68 chars)
-   
-   // GOOD - use custom short name
-   $table->unique(['discount_code_id', 'user_id', 'subscription_id'], 'disc_redemptions_unique');
-   ```
-
-2. **Composite Indexes on String Columns**
-   ```php
-   // BAD - exceeds MySQL key length limit (1000 bytes)
-   $table->index(['old_stripe_price_id', 'new_stripe_price_id']);
-   
-   // GOOD - create separate indexes
-   $table->index('old_stripe_price_id', 'old_price_idx');
-   $table->index('new_stripe_price_id', 'new_price_idx');
-   ```
-
-3. **Incorrect Migration Order**
-   ```php
-   // BAD - adding indexes before columns exist
-   // 2025_06_30_add_indexes.php tries to index 'user_id' 
-   // but 2025_07_02_add_foreign_keys.php creates the column
-   
-   // GOOD - ensure migrations run in correct order
-   // Use proper date prefixes: YYYY_MM_DD_HHMMSS
-   ```
-
-4. **Missing Column Existence Checks**
-   ```php
-   // BAD - will fail if column already exists
-   $table->string('status');
-   
-   // GOOD - check before adding
-   if (!Schema::hasColumn('bets', 'status')) {
-       $table->string('status')->default('Pending');
-   }
-   ```
-
-5. **Empty Down Methods**
-   ```php
-   // BAD - can't rollback
-   public function down(): void
-   {
-       // Empty!
-   }
-   
-   // GOOD - proper rollback logic
-   public function down(): void
-   {
-       Schema::table('bets', function (Blueprint $table) {
-           $table->dropColumn(['status', 'amount', 'odds']);
-       });
-   }
-   ```
-
-6. **Raw SQL for Enum Changes**
-   ```php
-   // BAD - not portable across databases
-   DB::statement("ALTER TABLE stripe_products MODIFY COLUMN billing_period ENUM('daily','weekly','monthly','yearly')");
-   
-   // GOOD - use Laravel's change() method
-   $table->enum('billing_period', ['daily', 'weekly', 'monthly', 'yearly'])->change();
-   ```
-
-### ✅ GOOD Migration Patterns
-
-1. **Always Name Your Indexes**
-   ```php
-   // Composite indexes
-   $table->index(['tier', 'billing_period', 'is_current'], 'tier_period_idx');
-   
-   // Unique constraints
-   $table->unique(['email', 'provider'], 'email_provider_unique');
-   ```
-
-2. **Check Column/Table Existence**
-   ```php
-   // Before adding columns
-   if (!Schema::hasColumn('users', 'avatar')) {
-       $table->string('avatar')->nullable();
-   }
-   
-   // Before creating tables
-   if (!Schema::hasTable('settings')) {
-       Schema::create('settings', function (Blueprint $table) {
-           // ...
-       });
-   }
-   ```
-
-3. **Proper Foreign Key Handling**
-   ```php
-   // In up()
-   $table->foreignId('user_id')->constrained()->onDelete('cascade');
-   
-   // In down()
-   $table->dropForeign(['user_id']);
-   $table->dropColumn('user_id');
-   ```
-
-4. **MySQL Compatibility Settings**
-   ```php
-   // In AppServiceProvider::boot()
-   Schema::defaultStringLength(191); // For older MySQL versions
-   ```
-
-5. **Migration Naming Convention**
-   ```
-   YYYY_MM_DD_HHMMSS_descriptive_name.php
-   2025_01_05_143022_create_products_table.php
-   2025_01_05_143523_add_status_to_products_table.php
-   ```
-
-### Migration Checklist
-
-Before creating a new migration:
-- [ ] Use descriptive names that explain what the migration does
-- [ ] Check if similar columns/indexes already exist
-- [ ] Name all indexes and keep names under 64 characters
-- [ ] Add column existence checks for safety
-- [ ] Write proper down() method for rollbacks
-- [ ] Test on both MySQL and SQLite (if supporting both)
-- [ ] Consider the order - will required tables/columns exist?
-- [ ] For string indexes, consider separate indexes vs composite
-- [ ] Use Laravel methods instead of raw SQL when possible
-
-### Common MySQL Limits
-- Index name: 64 characters max
-- Key length: 1000 bytes max (affects composite indexes on strings)
-- Table name: 64 characters max
-- Column name: 64 characters max
-
-### Adding a New Admin Feature
-1. Create controller in `app/Http/Controllers/Admin`
-2. Add routes to `routes/admin.php`
-3. Create Vue components in `resources/js/pages/Admin`
-4. Add menu item in admin layout
-
-## Troubleshooting
-
-### Common Issues
-1. **Vite not connecting**: Check that Vite server is running on correct port
-2. **Database errors**: Ensure migrations are run and seeded
-3. **Permission denied**: Check file permissions and ownership
-4. **Redis connection**: Verify Redis is running in Docker
-5. **419 CSRF Token Error**: 
-   - Clear all caches: `php artisan optimize:clear`
-   - Clear browser cookies for the domain
-   - Ensure session configuration is correct in `.env`
-   - Check that `SESSION_DOMAIN` matches your domain
-
-### Debug Mode
-Enable debug mode in `.env`:
-```
-APP_DEBUG=true
-APP_ENV=local
-```
-
-## Recent Updates and Best Practices
-
-### Code Organization (December 2024)
-1. **Route Organization**: 
-   - All routes now use controller methods instead of closures
-   - Route files are properly registered in `bootstrap/app.php` using Laravel 12's routing configuration
-   - Admin routes are consistently grouped with proper middleware
-
-2. **Database-Driven Content**:
-   - Betting education content migrated from Vue components to database pages
-   - All blog posts are now stored in the database
-   - Dynamic content management through admin panel
-
-3. **Environment Configuration**:
-   - All third-party service keys properly configured in `.env.example`
-   - Stripe, Slack, Postmark, and Resend integrations documented
-   - Local development optimized for SQLite
-
-### Critical Updates (December 2024)
-1. **Security**: Debug mode disabled for production (`APP_DEBUG=false`)
-2. **Ambassador/Gifted Users**: Fixed daily privilege resets with database fields
-3. **Stripe Integration**: 
-   - Dynamic product management system
-   - Correct product/price mapping
-   - Coupon support at checkout
-4. **Notifications**: Tier-based targeting for Silver/Gold/Platinum users
-5. **CSV Import/Export**: Consistent 16-column format
-6. **Security Headers**: Comprehensive middleware implemented
-
-### Laravel Best Practices Implemented
-1. **Controllers**: All route logic moved to dedicated controllers
-2. **Service Layer**: Business logic separated into service classes
-3. **Consistent Middleware**: Admin routes use consistent middleware stack
-4. **Clean Imports**: Removed unused imports and dependencies
-5. **Proper Configuration**: All config values use env() with defaults
-
-### Testing
-```bash
-# Run all tests
-php artisan test
-
-# Run with coverage
-php artisan test --coverage
-
-# Run specific test suite
-php artisan test --testsuite=Feature
-```
-
-### Database Seeders
-```bash
-# Seed test users (admin and subscriber)
-php artisan db:seed --class=UserSeeder
-
-# Seed betting education pages
-php artisan db:seed --class=BettingEducationSeeder
-
-# Seed all blog posts
-php artisan db:seed --class=BlogPostsSeeder
-
-# Seed sample blog posts with rich content
-php artisan db:seed --class=SampleBlogPostsSeeder
-
-# Seed Stripe products (all tiers and billing periods)
-php artisan db:seed --class=StripeProductSeeder
-
-# Seed testimonials with Google reviews
-php artisan db:seed --class=TestimonialSeeder
-```
-
-### Push Notifications Setup
-
-#### Generate VAPID Keys
-```bash
-# Install web-push library
-npm install -g web-push
-
-# Generate VAPID keys
-web-push generate-vapid-keys
-
-# Or if installed locally
-npx web-push generate-vapid-keys
-```
-
-Add the generated keys to your `.env` file:
-```env
-VAPID_PUBLIC_KEY=your_generated_public_key
-VAPID_PRIVATE_KEY=your_generated_private_key
-VAPID_SUBJECT=mailto:admin@yourdomain.com
-```
-
-#### Push Notification Features
-1. **User Preferences**: Users can enable push notifications in their profile settings
-2. **Admin Dashboard**: Send notifications from `/admin/notifications/push`
-3. **Targeting Options**: 
-   - All users with push enabled
-   - Push notification subscribers only
-   - Specific subscription tiers (Silver, Gold, Platinum)
-4. **Debug Tools**: Available at `/admin/notifications/push/debug`
-5. **Service Worker**: Enhanced with notification click handling and navigation
-
-### Stripe Product Management
-
-The platform now includes a comprehensive Stripe product management system:
-
-1. **Access**: Navigate to `/admin/stripe-products`
-2. **Features**:
-   - Create local product configurations
-   - Connect to existing Stripe products
-   - Create new products in Stripe
-   - Manage prices and features
-   - Enable/disable products
-
-3. **Workflow**:
-   - Products are stored locally for fast access
-   - Can be connected to Stripe products/prices
-   - Automatically used for subscription checkout
-   - Supports all tiers: Silver, Gold, Platinum
-   - Supports all billing periods: Daily, Weekly, Monthly
-
-### Blog System
-
-A full-featured blog system with rich text editing and SEO optimization:
-
-1. **Admin Features** (`/admin/blog-posts`):
-   - Rich text editor (TinyMCE) with image upload
-   - SEO fields (meta title, description, keywords)
-   - Categories and tags
-   - Draft/Published/Scheduled posts
-   - Featured images
-   - View statistics
-   - Duplicate posts feature
-
-2. **Public Blog** (`/blog`):
-   - Responsive design
-   - Category and tag filtering
-   - Search functionality
-   - Related posts
-   - Social sharing
-   - View count tracking
-   - Reading time estimation
-
-3. **Key Features**:
-   - Automatic slug generation
-   - SEO-friendly URLs
-   - Rich content support
-   - Media management
-   - Performance optimized
-
-### Subscription Dashboard
-
-Comprehensive subscription management system:
-
-1. **Access**: `/admin/subscriptions`
-2. **Features**:
-   - View all active subscriptions
-   - Filter by status, tier, renewal period
-   - Export customer data
-   - Grant manual subscriptions
-   - Cancel subscriptions
-   - MRR calculations
-   - Renewal forecasting
-
-### Discount Code System
-
-Full discount code management:
-
-1. **Access**: `/admin/discounts`
-2. **Features**:
-   - Create discount codes (percentage or fixed amount)
-   - Set usage limits (total and per customer)
-   - Validity periods
-   - Apply to first payment, forever, or specific months
-   - Product-specific discounts
-   - Stripe coupon integration
-   - Redemption tracking
-
-### Enhanced Admin Portal (December 2024)
-
-The admin portal has been completely redesigned with improved UX and comprehensive features:
-
-1. **Custom Admin Login** (`/admin/login`):
-   - Professional admin-specific login page
-   - Animated background with floating icons
-   - Security-focused design
-   - Quick stats preview
-
-2. **Admin Dashboard** (`/admin`):
-   - Comprehensive statistics overview
-   - Real-time activity monitoring
-   - System health indicators
-   - Interactive charts (user growth, revenue, betting activity)
-   - Subscription tier breakdown
-   - Recent activity feed
-
-3. **Dedicated Admin Layout**:
-   - Dark sidebar navigation
-   - Hierarchical menu structure
-   - Quick search functionality
-   - User profile dropdown
-   - Responsive design
-
-4. **Betting Management System**:
-   - Full CRUD operations for bets
-   - Advanced filtering (status, sport, date range)
-   - Bulk status updates
-   - Statistics and analytics
-   - Import/Export functionality
-
-5. **Admin Features Organization**:
-   - **Betting**: Bets, Games, Teams, Sports, Operators
-   - **Users**: Customers, Subscriptions, Admin Users
-   - **Content**: Blog Posts, Pages, Landing Pages
-   - **E-commerce**: Stripe Products, Discount Codes
-   - **Communications**: Notifications, Email Templates
-   - **Settings**: System configuration
-
-6. **System Monitoring**:
-   - Database size tracking
-   - Storage usage monitoring
-   - Queue status
-   - Error log tracking
-   - Performance metrics
-
-## UI/UX Updates (December 2024)
-
-### Bootstrap 5 Migration
-
-The platform has been completely migrated from Tailwind CSS to Bootstrap 5 for improved consistency and maintainability:
-
-1. **Admin Portal Redesign**:
-   - Complete conversion of AdminLayout to Bootstrap 5
-   - Dark sidebar with light main content area
-   - Consistent navigation with parent/child expansion states
-   - Improved hover effects and active states
-   - Responsive design optimized for mobile and desktop
-
-2. **Import System Overhaul**:
-   - CSV import wizard completely redesigned with Bootstrap components
-   - Multi-step process with progress indicators
-   - Form validation with Bootstrap styling
-   - Improved data tables and preview functionality
-   - Better error handling and user feedback
-
-3. **Navigation Improvements**:
-   - Smart navigation expansion for current page parents
-   - Enhanced hover states and visual feedback
-   - Clean navigation structure with proper grouping
-   - Removed duplicate elements and optimized layout
-
-4. **Form and Table Consistency**:
-   - All admin forms converted to Bootstrap form controls
-   - Consistent table styling across all admin pages
-   - Proper validation states and error messaging
-   - Improved accessibility with ARIA labels
-
-5. **Component Library**:
-   - Standardized Bootstrap button variants
-   - Consistent card layouts and spacing
-   - Unified modal designs
-   - Progress bars and status indicators
-
-### Key Technical Improvements
-
-1. **CSS Architecture**:
-   - Removed Tailwind dependencies
-   - Custom Bootstrap theme for admin area
-   - Consistent color scheme and typography
-   - Optimized bundle size
-
-2. **Component Structure**:
-   - Vue 3 components optimized for Bootstrap
-   - TypeScript interfaces for props validation
-   - Consistent naming conventions
-   - Improved reusability
-
-3. **Performance Optimizations**:
-   - Reduced CSS bundle size
-   - Improved loading times
-   - Better caching strategies
-   - Optimized build process
-
-### Development Commands Updated
-
-```bash
-# Build with Bootstrap optimizations
-npm run build
-
-# Development with hot reload
-npm run dev
-
-# Type checking with Bootstrap types
-npm run typecheck
-
-# Format code (includes Vue templates)
-npm run format
-```
-
-### Testing and Quality Assurance
-
-1. **Cross-browser Testing**:
-   - Chrome, Firefox, Safari compatibility
-   - Mobile responsive design verification
-   - Touch interface optimization
-
-2. **Accessibility Improvements**:
-   - WCAG 2.1 compliance
-   - Keyboard navigation support
-   - Screen reader compatibility
-   - High contrast mode support
-
-3. **Performance Metrics**:
-   - Lighthouse score improvements
-   - Core Web Vitals optimization
-   - Bundle size reduction
-   - Loading time improvements
-
-## Recent Updates (January 2025)
-
-### Push Notifications Implementation
-1. **Web Push API Integration**:
-   - Complete push notification system with service worker
-   - User subscription management in profile settings
-   - Admin interface for sending notifications
-   - Support for targeted notifications by tier
-   - Debug tools for troubleshooting
-
-2. **Features Added**:
-   - Push subscription storage and management
-   - Notification history tracking
-   - Icon selection for notifications
-   - Click-through URL support
-   - Test notification functionality
-
-3. **Admin Dashboard** (`/admin/notifications/push`):
-   - View notification history
-   - Send new notifications
-   - Target specific user groups
-   - Debug page for testing
-
-### Content Management Updates
-1. **Testimonials System**:
-   - Dynamic testimonials management
-   - Google reviews integration
-   - Database-driven content
-   - Admin CRUD interface
-
-2. **Blog Enhancements**:
-   - Merged betting education with blog template
-   - Custom headers support
-   - Conditional "Stay Updated" box
-   - Author/date removal option
-
-### Email System Fixes
-1. **SendGrid Integration**:
-   - Fixed LoggedMailChannel for email verification
-   - Proper handling of Symfony Address objects
-   - Comprehensive email logging
-
-2. **CSP Headers**:
-   - Added rsms.me for Inter font support
-   - Fixed font loading issues
-
-### Bug Fixes
-1. **419 CSRF Error**: Fixed on team image uploads with proper error handling
-2. **Email Verification**: Fixed 500 error on resend functionality
-3. **Form Validation**: Improved error messages and handling
-4. **TypeScript Errors**: Fixed null checks in notification components
-5. **Cache Clear 403 Error**: Fixed admin cache clearing route and added Cloudflare integration
-
-### Cache Management
-1. **Admin Cache Clear**: Fixed 403 error by correcting route path
-2. **Cloudflare Integration**: Added automatic Cloudflare cache purging when clearing Laravel cache
-3. **Configuration**: New Cloudflare API settings in config/cloudflare.php
-
-## Recent Updates (January 2025)
-
-### Analytics Integration
-
-1. **Google Analytics**:
-   - Tag ID: `G-ZTJTTQP72Q` (configurable via `GOOGLE_ANALYTICS_TAG_ID`)
-   - Automatic page view tracking on route changes
-   - Custom event tracking via `useGoogleAnalytics` composable
-   - E-commerce tracking for subscriptions
-   - Implementation in `app.blade.php` and `app.ts`
-
-2. **Google Tag Manager**:
-   - Container ID: `GTM-PQDDCG6L` (configurable via `GOOGLE_TAG_MANAGER_ID`)
-   - Full dataLayer support
-   - Custom event pushing via `useGoogleTagManager` composable
-   - Enhanced e-commerce tracking
-   - Proper placement in head and body tags
-
-3. **Analytics Composables**:
-   ```typescript
-   // resources/js/composables/useGoogleAnalytics.ts
-   - trackEvent(eventName, parameters)
-   - trackPageView(path)
-   - trackEcommerce(event, parameters)
-   
-   // resources/js/composables/useGoogleTagManager.ts
-   - pushToDataLayer(data)
-   - trackEvent(eventName, parameters)
-   - trackEcommerce(eventType, data)
-   - trackUserData(userData)
-   ```
-
-### Security Enhancements
-
-1. **Cloudflare Turnstile**:
-   - Site Key: `0x4AAAAAABjA9oaFF9BSsznw`
-   - Secret Key: `0x4AAAAAABjA9iC5axcso_Tat1vZ1G-JsZc`
-   - Enabled on registration forms
-   - Backend validation in `RegisterRequest.php`
-   - Configuration via `TURNSTILE_ENABLED`, `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`
-
-2. **Environment Configuration**:
-   - All third-party services now configurable via `.env`
-   - Proper validation and fallbacks
-   - Secure key storage
-
-### UI/UX Improvements
-
-1. **DraftKings Integration**:
-   - Affiliate link added to home page
-   - Responsive card design
-   - Proper tracking parameters
-   - Located in subscription plans section
-
-2. **Support System Enhancements**:
-   - Fixed route conflicts (`/support` vs `/support/tickets`)
-   - Guest support without authentication
-   - Improved text visibility (fixed grey-on-grey issue)
-   - Better contrast ratios throughout
-
-3. **Home Page Updates**:
-   - Slimmer DraftKings promotional section
-   - Horizontal layout for better space utilization
-   - Improved responsive design
-
-4. **Under Construction Mode**:
-   - When enabled, only `/login` is accessible to non-admin users
-   - Registration (`/register`) is blocked during maintenance
-   - Password reset routes remain accessible
-   - Admin users can access all pages normally
-   - Rich text editor for maintenance message
-
-### Technical Improvements
-
-1. **Route Organization**:
-   - Fixed duplicate route names
-   - Proper route grouping and prefixes
-   - Consistent naming conventions
-   - Support routes properly separated
-
-2. **Configuration Updates**:
-   - New `config/google.php` for Google services
-   - Updated `HandleInertiaRequests.php` to share analytics config
-   - Environment variables properly documented
-
-3. **Bug Fixes**:
-   - Fixed PHP syntax error in `SubscriptionDashboardController.php`
-   - Fixed missing closing braces in cache callback
-   - Corrected undefined variable references
-   - Fixed MRR calculation variable names
-
-4. **CDN Migration**:
-   - Migrated from JSDelivr to cdnjs.cloudflare.com for better Cloudflare integration
-   - Updated all CDN references in templates and security headers
-   - Maintained unpkg.com for specific packages where appropriate
-
-### Development Workflow
-
-1. **New Commands**:
-   ```bash
-   # Clear and rebuild route cache
-   php artisan route:clear && php artisan route:cache
-   
-   # Test configuration
-   php artisan tinker --execute="echo config('google.analytics.tag_id');"
-   ```
-
-2. **Testing**:
-   - Added `SupportAccessTest.php` for support system validation
-   - All tests passing for guest and authenticated support access
-
-3. **Documentation**:
-   - Updated README.md with all new features
-   - Added analytics usage examples
-   - Documented all environment variables
-   - Created composables documentation
-
-## Contact and Support
-
-For questions or issues:
-- Use the in-app support system at `/support`
-- Check Laravel documentation: https://laravel.com/docs
-- Vue.js documentation: https://vuejs.org/
-- Inertia.js documentation: https://inertiajs.com/
-
-# Important Instruction Reminders
-
-## Code Development Guidelines
-
-1. **File Creation**: 
-   - NEVER create files unless they're absolutely necessary
-   - ALWAYS prefer editing existing files over creating new ones
-   - NEVER proactively create documentation files (*.md) or README files unless explicitly requested
-
-2. **Code Style**:
-   - DO NOT add comments unless specifically asked
-   - Follow existing code patterns and conventions
-   - Use existing libraries and utilities rather than introducing new ones
-
-3. **Security**:
-   - Never expose or log secrets and keys
-   - Never commit sensitive information
-   - Always follow security best practices
-
-4. **Task Management**:
-   - Complete exactly what was asked - nothing more, nothing less
-   - Mark todos as completed immediately after finishing tasks
-   - Use the TodoWrite tool for complex multi-step tasks
-
-5. **Testing and Validation**:
-   - Run lint and typecheck commands after completing tasks
-   - Verify solutions with appropriate tests
-   - Check for and fix any syntax errors before marking tasks complete
-
-6. **Communication**:
-   - Keep responses concise (under 4 lines unless detail requested)
-   - Answer user questions directly without elaboration
-   - Avoid unnecessary preambles or summaries
-
-## Environment Variables Summary
-
-All sensitive configuration should be stored in `.env`:
-
-```env
-# Application
-APP_DEBUG=false  # CRITICAL: Must be false in production
-APP_ENV=production
+APP_DEBUG=false  # MUST be false in production
 
 # Database
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=wewingames
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
+DB_USERNAME=sail
+DB_PASSWORD=password
+
+# Redis
+REDIS_HOST=redis
+REDIS_PORT=6379
+
+# Mail
+MAIL_MAILER=smtp  # or 'log' for development
+MAIL_HOST=smtp.sendgrid.net
+MAIL_PORT=587
+MAIL_USERNAME=apikey
+MAIL_PASSWORD=your_sendgrid_api_key
+MAIL_FROM_ADDRESS=noreply@wewingames.com
 
 # Stripe
-STRIPE_KEY=your_publishable_key
-STRIPE_SECRET=your_secret_key
-STRIPE_WEBHOOK_SECRET=your_webhook_secret
+STRIPE_KEY=pk_live_xxx
+STRIPE_SECRET=sk_live_xxx
+STRIPE_WEBHOOK_SECRET=whsec_xxx
 
-# Google Services
+# Admin
+ADMIN_PASSWORD=YourSecurePassword123!  # For production seeder
+```
+
+### Optional Services
+```env
+# Push Notifications
+VAPID_PUBLIC_KEY=your_public_key
+VAPID_PRIVATE_KEY=your_private_key
+VAPID_SUBJECT=mailto:admin@wewingames.com
+
+# Analytics
 GOOGLE_ANALYTICS_TAG_ID=G-ZTJTTQP72Q
 GOOGLE_TAG_MANAGER_ID=GTM-PQDDCG6L
 
-# Cloudflare Turnstile
+# Security
 TURNSTILE_ENABLED=true
 TURNSTILE_SITE_KEY=0x4AAAAAABjA9oaFF9BSsznw
 TURNSTILE_SECRET_KEY=0x4AAAAAABjA9iC5axcso_Tat1vZ1G-JsZc
 
-# Push Notifications
-VAPID_PUBLIC_KEY=your_vapid_public_key
-VAPID_PRIVATE_KEY=your_vapid_private_key
-VAPID_SUBJECT=mailto:admin@yourdomain.com
+# Cloudflare
+CLOUDFLARE_ENABLED=true
+CLOUDFLARE_EMAIL=your_email
+CLOUDFLARE_API_KEY=your_api_key
+CLOUDFLARE_ZONE_ID=your_zone_id
 
 # Notifications (Optional)
-SLACK_BOT_USER_OAUTH_TOKEN=your_token
-SLACK_BOT_USER_DEFAULT_CHANNEL=your_channel
-POSTMARK_TOKEN=your_token
-RESEND_KEY=your_key
+SLACK_BOT_USER_OAUTH_TOKEN=xoxb-xxx
+SLACK_BOT_USER_DEFAULT_CHANNEL=#alerts
+POSTMARK_TOKEN=xxx
+RESEND_KEY=xxx
 ```
+
+## Deployment
+
+### Production Build & Deploy
+```bash
+# Fix npm PATH if needed
+export PATH="/opt/nvm/versions/node/v22.17.0/bin:$PATH"
+
+# Install with reduced concurrency (prevents EMFILE errors)
+npm install --maxsockets 1
+
+# Build assets
+npm run build
+
+# Optimize Laravel
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan icons:cache
+
+# Run migrations
+php artisan migrate --force
+
+# Seed production data
+php artisan db:seed --class=ProductionSeeder
+```
+
+### Server Requirements
+- PHP 8.2+ with extensions: BCMath, Ctype, JSON, Mbstring, OpenSSL, PDO, Tokenizer, XML
+- MySQL 8.0+ or MariaDB 10.3+
+- Redis 6.0+
+- Node.js 18+ & npm 8+
+- Composer 2+
+- Minimum 2GB RAM
+- SSL certificate for HTTPS
+
+## Coding Standards
+
+### PHP
+- PSR-12 coding standards
+- Laravel Pint for formatting
+- Type declarations required
+- Service pattern for business logic
+- Repository pattern for data access
+
+### JavaScript/TypeScript
+- TypeScript for all new code
+- Vue 3 Composition API
+- ESLint & Prettier formatting
+- Component-based architecture
+- Proper type interfaces
+
+### Git Workflow
+- Feature branches from `main`
+- Descriptive commit messages
+- PR reviews required
+- Run tests before merging
+- Squash merge for features
+
+## Security Best Practices
+
+- Input validation on all forms
+- CSRF protection enabled
+- XSS prevention via Vue
+- SQL injection prevention via Eloquent
+- API rate limiting configured
+- Secure session management
+- Environment variables for secrets
+- Regular dependency updates
+
+## Performance Optimization
+
+- Redis caching for frequent queries
+- Database indexing on foreign keys
+- Lazy loading for Vue components
+- Image optimization with Vite
+- Query optimization with eager loading
+- CDN for static assets
+- Gzip compression enabled
+- Browser caching headers
+
+## Common Tasks
+
+### Adding a New Feature
+1. Create migration: `php artisan make:model ModelName -mfsc`
+2. Define relationships and fillable
+3. Create policy: `php artisan make:policy ModelPolicy`
+4. Add routes in appropriate file
+5. Create controller with CRUD actions
+6. Build Vue components
+7. Add to admin navigation if needed
+8. Write tests
+
+### Managing Subscriptions
+1. Create/update Stripe products in `/admin/stripe-products`
+2. Set pricing and features
+3. Enable/disable products
+4. Monitor in subscription dashboard
+
+### Sending Push Notifications
+1. Access `/admin/notifications/push`
+2. Compose notification
+3. Select target audience
+4. Send or schedule
+5. Monitor delivery
+
+## Migration Best Practices
+
+### Naming Conventions
+- Use descriptive names: `2025_01_15_create_testimonials_table.php`
+- Name indexes under 64 chars: `disc_redemptions_unique`
+- Check column existence before adding
+- Write proper rollback methods
+
+### Common Pitfalls to Avoid
+- Long auto-generated index names
+- Composite indexes on string columns exceeding key length
+- Missing down() methods
+- Raw SQL for enum changes
+- Incorrect migration ordering
+
+## Testing
+
+### Run Tests
+```bash
+# All tests
+php artisan test
+
+# Specific suite
+php artisan test --testsuite=Feature
+
+# With coverage
+php artisan test --coverage
+
+# Specific test
+php artisan test --filter=SubscriptionTest
+```
+
+### Test Database
+```bash
+# Use separate test database
+DB_CONNECTION=mysql_test
+DB_DATABASE=wewingames_test
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **419 CSRF Error**
+   ```bash
+   php artisan optimize:clear
+   # Clear browser cookies
+   # Check SESSION_DOMAIN
+   ```
+
+2. **Vite Connection Error**
+   ```bash
+   npm run build
+   # Or restart: npm run dev
+   ```
+
+3. **Migration Errors**
+   ```bash
+   # Check migration status
+   php artisan migrate:status
+   
+   # Fix key length for old MySQL
+   # Already handled in AppServiceProvider
+   ```
+
+4. **Email Not Sending**
+   ```bash
+   # Check MAIL_MAILER in .env
+   # Use 'log' for testing
+   # Check storage/logs/laravel.log
+   ```
+
+5. **Stripe Webhook Errors**
+   ```bash
+   # Verify webhook secret
+   # Check Stripe logs
+   # Test with Stripe CLI
+   ```
+
+## Recent Updates (January 2025)
+
+### New Features
+1. **OneSignal Integration**: Push notifications for non-admin pages
+2. **Enhanced Media Library**: Centralized file management
+3. **Knowledgebase System**: Help articles and categories
+4. **Job Board**: Career opportunities management
+5. **Affiliate System**: Commission tracking
+6. **Activity Logging**: Comprehensive user tracking
+
+### Improvements
+1. **Performance**: Reduced query counts with eager loading
+2. **Security**: Enhanced middleware and validation
+3. **UX**: Bootstrap 5 migration for consistency
+4. **Admin**: Redesigned dashboard with better analytics
+5. **SEO**: Improved meta tags and structured data
+
+### Bug Fixes
+1. Fixed 419 CSRF errors on file uploads
+2. Resolved email verification 500 errors
+3. Corrected TypeScript null checks
+4. Fixed admin cache clearing 403 error
+5. Improved form validation messages
+
+## Support & Documentation
+
+- Laravel Docs: https://laravel.com/docs/12.x
+- Vue.js Docs: https://vuejs.org/
+- Inertia Docs: https://inertiajs.com/
+- Bootstrap Docs: https://getbootstrap.com/docs/5.3/
+- Stripe Docs: https://stripe.com/docs
+
+## Contact
+
+For questions or issues:
+- Use in-app support system at `/support`
+- Check activity logs in admin dashboard
+- Review Laravel Telescope for debugging
