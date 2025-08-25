@@ -215,6 +215,37 @@ class BetController extends Controller
         $thisMonthROI = $this->betService->getROIByMonth($thisYear, $thisMonth);
         $lastMonthROI = $this->betService->getROIByMonth($lastMonthYear, $lastMonthNum);
 
+        // Get profit by year data from service
+        $profitByYearData = $this->betService->getProfitAndROIByYear();
+        
+        // Add static values for 2022 and 2023
+        $staticProfits = [
+            2022 => 15769,
+            2023 => 21678
+        ];
+        
+        // Merge static values with calculated data
+        foreach ($staticProfits as $year => $profit) {
+            $found = false;
+            foreach ($profitByYearData as &$yearData) {
+                if ($yearData['year'] == $year) {
+                    $yearData['profit'] = $profit;
+                    $found = true;
+                    break;
+                }
+            }
+            if (!$found) {
+                $profitByYearData[] = [
+                    'year' => $year,
+                    'profit' => $profit,
+                    'roi' => 0,
+                    'total_bets' => 0,
+                    'wins' => 0,
+                    'win_rate' => 0
+                ];
+            }
+        }
+
         return Inertia::render('BettingResults', [
             'roiData' => $this->betService->getTotalROIBySubscriptionLevel(),
             'sportProfitRoiData' => $this->betService->getProfitAndROIBySport(),
@@ -234,7 +265,7 @@ class BetController extends Controller
             'lastMonthROI' => $lastMonthROI,
             'lastMonthWinLoss' => $this->betService->getWinLossRatioByMonth($lastMonthYear, $lastMonthNum)['win_rate'] ?? 0,
             'monthlyProfit' => $this->betService->getAverageMonthlyProfit(),
-            'profitByYearData' => $this->betService->getProfitAndROIByYear(),
+            'profitByYearData' => $profitByYearData,
             'profitByMonthData' => $this->betService->getProfitAndROIByMonth(),
             'levelProfitRoiDataLastYear' => $this->betService->getProfitAndROIByLevel($lastYear),
             'roiDataLastYear' => $this->betService->getTotalROIBySubscriptionLevel($lastYear),

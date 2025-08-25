@@ -90,7 +90,7 @@ const props = defineProps<{
 <style scoped>
 .teaser-card {
     height: 100%;
-    min-height: 280px;
+    min-height: 390px;
 }
 
 .blurred-content {

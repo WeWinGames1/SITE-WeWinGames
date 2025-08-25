@@ -98,12 +98,67 @@
                 OneSignalDeferred.push(async function(OneSignal) {
                     await OneSignal.init({
                         appId: "5d21734b-7157-455e-8c5e-7e287790fa5c",
-                        serviceWorkerParam: {
-                            scope: "/",
-                            path: "/sw.js"
+                        notifyButton: {
+                            enable: true,
+                            position: 'bottom-right',
+                            size: 'medium',
+                            showCredit: false,
+                            text: {
+                                'tip.state.unsubscribed': 'Subscribe to notifications',
+                                'tip.state.subscribed': "You're subscribed to notifications",
+                                'tip.state.blocked': "You've blocked notifications",
+                                'message.prenotify': 'Click to subscribe to notifications',
+                                'message.action.subscribed': "Thanks for subscribing!",
+                                'message.action.resubscribed': "You're subscribed to notifications",
+                                'message.action.unsubscribed': "You won't receive notifications anymore",
+                                'dialog.main.title': 'Manage Site Notifications',
+                                'dialog.main.button.subscribe': 'SUBSCRIBE',
+                                'dialog.main.button.unsubscribe': 'UNSUBSCRIBE',
+                                'dialog.blocked.title': 'Unblock Notifications',
+                                'dialog.blocked.message': 'Follow these instructions to allow notifications:'
+                            }
                         },
-                        allowLocalhostAsSecureOrigin: true
+                        allowLocalhostAsSecureOrigin: true,
+                        promptOptions: {
+                            slidedown: {
+                                prompts: [
+                                    {
+                                        type: "push",
+                                        autoPrompt: false,
+                                        text: {
+                                            actionMessage: "We'd like to send you notifications for the latest betting picks and updates.",
+                                            acceptButton: "Allow",
+                                            cancelButton: "No Thanks"
+                                        },
+                                        delay: {
+                                            pageViews: 1,
+                                            timeDelay: 10
+                                        }
+                                    }
+                                ]
+                            }
+                        }
                     });
+                    
+                    // Handle permission states gracefully
+                    OneSignal.on('permissionPromptDisplay', function() {
+                        console.log("OneSignal: Notification permission prompt displayed");
+                    });
+                    
+                    OneSignal.on('notificationPermissionChange', function(permissionChange) {
+                        var currentPermission = permissionChange.to;
+                        console.log('OneSignal: Notification permission changed to:', currentPermission);
+                        
+                        if (currentPermission === 'denied') {
+                            console.log('OneSignal: Notifications have been blocked. User needs to unblock in browser settings.');
+                        }
+                    });
+                    
+                    // Check current permission status
+                    const permission = await OneSignal.Notifications.permissionNative;
+                    if (permission === 'denied') {
+                        console.log('OneSignal: Notifications are currently blocked. The notification bell will show instructions to unblock.');
+                    }
                 });
             </script>
         @endif
