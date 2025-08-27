@@ -30,8 +30,78 @@ if (typeof window !== 'undefined') {
     // Add global error interceptor for debugging
     axios.interceptors.response.use(
         (response) => response,
-        (error) => {
-            if (error.response?.status === 422) {
+        async (error) => {
+            if (error.response?.status === 419) {
+                // CSRF token mismatch - refresh the token and retry
+                
+                // Check if we've already tried to refresh for this request
+                const retryCount = error.config._retryCount || 0;
+                
+                // Don't retry for certain URLs that should just reload
+                const noRetryUrls = ['/logout', '/admin/logout'];
+                const shouldReload = noRetryUrls.some(url => error.config?.url?.includes(url));
+                
+                if (shouldReload || retryCount >= 2) {
+                    console.error(`CSRF token refresh failed${retryCount > 0 ? ' after ' + retryCount + ' attempts' : ''}`);
+                    // For logout or after 2 attempts, just reload
+                    if (!shouldReload) {
+                        alert('Your session has expired. The page will refresh.');
+                    }
+                    window.location.reload();
+                    return Promise.reject(error);
+                }
+                
+                console.warn(`CSRF token expired, refreshing... (attempt ${retryCount + 1} of 2)`);
+                
+                // Mark that we're retrying
+                error.config._retryCount = retryCount + 1;
+                
+                // Try to get a fresh CSRF token
+                try {
+                    // For login requests, don't try to refresh via sanctum
+                    if (!error.config?.url?.includes('/login')) {
+                        await axios.get('/sanctum/csrf-cookie');
+                    }
+                    
+                    // Wait a moment for the cookie to be set
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    // Get fresh token from meta tag or generate new request
+                    const freshToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                    if (freshToken) {
+                        axios.defaults.headers.common['X-CSRF-TOKEN'] = freshToken;
+                        // Update the failed request with new token
+                        error.config.headers['X-CSRF-TOKEN'] = freshToken;
+                    }
+                    
+                    // For login, we might need to get a fresh page token
+                    if (error.config?.url?.includes('/login') && retryCount === 0) {
+                        // Fetch the login page to get a fresh token
+                        const loginResponse = await fetch('/login', { 
+                            credentials: 'include',
+                            headers: {
+                                'Accept': 'text/html',
+                            }
+                        });
+                        const html = await loginResponse.text();
+                        const tokenMatch = html.match(/<meta name="csrf-token" content="([^"]+)"/);
+                        if (tokenMatch?.[1]) {
+                            const newToken = tokenMatch[1];
+                            axios.defaults.headers.common['X-CSRF-TOKEN'] = newToken;
+                            error.config.headers['X-CSRF-TOKEN'] = newToken;
+                        }
+                    }
+                    
+                    // Retry the request
+                    return axios.request(error.config);
+                } catch (e) {
+                    console.error('Failed to refresh CSRF token:', e);
+                    // If refresh fails, reload the page
+                    alert('Session refresh failed. The page will reload.');
+                    window.location.reload();
+                    return Promise.reject(error);
+                }
+            } else if (error.response?.status === 422) {
                 console.error('Validation Error Details:', {
                     url: error.config?.url,
                     method: error.config?.method,

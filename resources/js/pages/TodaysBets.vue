@@ -195,12 +195,20 @@ const categorizeBet = (bet) => {
 };
 
 // Create teaser cards for each sport
-const createTeaserCards = (sport, visibleBetsCount) => {
+const createTeaserCards = (sport, visibleBetsCount, coveredBetsCount = null) => {
     if (!isGuest && userSubscriptionType !== 'free') return [];
     
-    // Use the actual total count from backend
-    const totalBetsForSport = totalBetsPerSport[sport] || 0;
-    const remainingCount = totalBetsForSport - visibleBetsCount;
+    // Calculate the actual number of covered/premium bets
+    let remainingCount = 0;
+    
+    if (coveredBetsCount !== null) {
+        // Use the provided covered bets count
+        remainingCount = coveredBetsCount;
+    } else {
+        // Use the total count from backend minus visible bets
+        const totalBetsForSport = totalBetsPerSport[sport] || 0;
+        remainingCount = totalBetsForSport - visibleBetsCount;
+    }
     
     // Always create exactly one teaser card per sport for guests and free users
     return [{
@@ -269,8 +277,15 @@ const allGroupedBets = computed(() => {
         Object.keys(grouped).forEach(sport => {
             const sportBets = grouped[sport];
             const visibleBetsForSport = sportBets.filter(bet => !bet.isCovered);
+            const coveredBetsForSport = sportBets.filter(bet => bet.isCovered);
             
-            const teaserCards = createTeaserCards(sport, visibleBetsForSport.length);
+            // Calculate the total bets for this sport from the backend data
+            const totalForSport = totalBetsPerSport[sport] || 0;
+            const visibleCount = visibleBetsForSport.length;
+            // For the teaser card, show the TOTAL number of picks, not remaining
+            const remainingCount = totalForSport;
+            
+            const teaserCards = createTeaserCards(sport, visibleCount, remainingCount);
             
             // Insert teaser card at the appropriate position
             const bronzeLimit = isGuest ? 2 : 4;
@@ -280,7 +295,7 @@ const allGroupedBets = computed(() => {
                 ...visibleBetsForSport.slice(0, insertPosition),
                 ...teaserCards,
                 ...visibleBetsForSport.slice(insertPosition),
-                ...sportBets.filter(bet => bet.isCovered)
+                ...coveredBetsForSport
             ];
         });
         
@@ -290,7 +305,8 @@ const allGroupedBets = computed(() => {
                 // This sport has bets but none are visible due to filtering
                 // Only show if it matches the selected sport filter or if showing all sports
                 if (selectedSport.value === 'all' || selectedSport.value === sport) {
-                    grouped[sport] = createTeaserCards(sport, 0);
+                    // All bets for this sport are premium/covered
+                    grouped[sport] = createTeaserCards(sport, 0, totalBetsPerSport[sport]);
                 }
             }
         });
@@ -387,8 +403,8 @@ const getMembershipBadgeStyle = (membership: string) => {
                 </div>
             </section>
 
-            <!-- Date Filter Bar (only show if not guest or if dates exist) -->
-            <section v-if="!isGuest && gameDates.length > 1" class="py-2" style="background-color: #1a2332">
+            <!-- Date Filter Bar (show if dates exist) -->
+            <section v-if="gameDates.length > 0" class="py-2" style="background-color: #1a2332">
                 <div class="container">
                     <div class="d-flex align-items-center gap-3 overflow-auto pb-2" style="scrollbar-width: thin">
                         <span class="text-white small fw-bold">Game Date:</span>

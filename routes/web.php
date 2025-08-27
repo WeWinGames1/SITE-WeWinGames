@@ -96,7 +96,7 @@ Route::middleware(['auth', 'verified'])->prefix('support')->name('support.')->gr
 Route::prefix('admin')->group(function () {
     Route::get('/login', [AdminAuthController::class, 'create'])->name('admin.login');
     Route::post('/login', [AdminAuthController::class, 'store'])->middleware('admin.rate_limit:login');
-    Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('admin.logout');
+    Route::post('/logout', [AdminAuthController::class, 'destroy'])->middleware('auth')->name('admin.logout');
 });
 
 // Admin Dashboard

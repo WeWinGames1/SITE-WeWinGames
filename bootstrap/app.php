@@ -3,6 +3,7 @@
 use App\Http\Middleware\AdminRateLimit;
 use App\Http\Middleware\AdminSecurityHeaders;
 use App\Http\Middleware\CacheHeaders;
+use App\Http\Middleware\EnsureSessionDomain;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\LogApiRequests;
@@ -42,6 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->statefulApi();
         $middleware->web(append: [
+            EnsureSessionDomain::class,
             HandleAppearance::class,
             UnderConstructionMiddleware::class,
             TrackAffiliate::class,

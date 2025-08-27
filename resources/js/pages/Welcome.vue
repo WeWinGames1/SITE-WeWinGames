@@ -311,7 +311,8 @@ const allGroupedBets = computed(() => {
         Object.keys(grouped).forEach(sport => {
             const visibleCount = grouped[sport].filter(bet => !bet.isCovered).length;
             const totalCount = totalBetsPerSport[sport] || 0;
-            const remainingCount = totalCount - visibleCount;
+            // For the teaser card, show the TOTAL number of picks, not remaining
+            const remainingCount = totalCount;
             
             // Always add exactly one teaser card per sport for guests/free users
             grouped[sport].push({

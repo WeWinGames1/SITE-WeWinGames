@@ -27,8 +27,11 @@ class HomeController extends Controller
         // Get today's bets
         $allBets = $this->betService->getTodaysBets();
         
-        // Calculate total bets per sport before filtering
-        $totalBetsPerSport = $allBets->groupBy(function ($bet) {
+        // Get actual today's bets (not future) for accurate counting
+        $todayOnly = \App\Models\Bet::whereDate('game_date', today())->get();
+        
+        // Calculate total bets per sport for TODAY ONLY
+        $totalBetsPerSport = $todayOnly->groupBy(function ($bet) {
             return $bet->sports ?? $bet->sport ?? 'Football';
         })->map->count();
         

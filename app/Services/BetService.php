@@ -563,8 +563,8 @@ class BetService
         $today = today()->toDateString();
         $user = auth()->user();
         
-        // Show only bets for games that haven't happened yet (game_date >= today)
-        $query = Bet::whereDate('game_date', '>=', $today);
+        // Show only bets for today's date
+        $query = Bet::whereDate('game_date', $today);
         
         // Apply tier-based filtering if user is authenticated
         if ($user) {

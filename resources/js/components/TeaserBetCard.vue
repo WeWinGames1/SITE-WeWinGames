@@ -50,7 +50,15 @@ const props = defineProps<{
                 <div class="text-center">
                     <i class="bi bi-lock-fill text-warning display-4 mb-3"></i>
                     <h5 class="text-white mb-3">
-                        Unlock {{ bet.remainingCount }} Premium Picks
+                        <template v-if="bet.remainingCount === 1">
+                            Unlock Premium Pick
+                        </template>
+                        <template v-else-if="bet.remainingCount > 0">
+                            Unlock {{ bet.remainingCount }} Premium Picks
+                        </template>
+                        <template v-else>
+                            Unlock Premium Picks
+                        </template>
                     </h5>
                     <p class="text-white-50 mb-4 small">
                         {{ bet.isGuest ? 'Create a free account' : 'Upgrade your membership' }} to access exclusive betting insights and premium picks

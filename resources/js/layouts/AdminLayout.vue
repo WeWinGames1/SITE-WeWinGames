@@ -192,13 +192,20 @@ async function clearCache() {
         } else {
             alert(response.data.message || 'Failed to clear cache');
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error('Cache clear error:', error);
-        if (error.response && error.response.status === 403) {
-            alert('Unauthorized. Please login as admin.');
-            window.location.href = '/admin/login';
+        if (error.response) {
+            if (error.response.status === 403) {
+                alert('Unauthorized. Please login as admin.');
+                window.location.href = '/admin/login';
+            } else if (error.response.status === 419) {
+                alert('Session expired. Please refresh the page and try again.');
+                window.location.reload();
+            } else {
+                alert(error.response.data?.message || 'Failed to clear cache. Please try again.');
+            }
         } else {
-            alert('Failed to clear cache. Please try again.');
+            alert('Network error. Please check your connection and try again.');
         }
     } finally {
         isClearingCache.value = false;

@@ -140,16 +140,15 @@
                         }
                     });
                     
-                    // Handle permission states gracefully
-                    OneSignal.on('permissionPromptDisplay', function() {
+                    // Handle permission states gracefully - using new SDK methods
+                    OneSignal.Notifications.addEventListener('permissionPromptDisplay', function() {
                         console.log("OneSignal: Notification permission prompt displayed");
                     });
                     
-                    OneSignal.on('notificationPermissionChange', function(permissionChange) {
-                        var currentPermission = permissionChange.to;
-                        console.log('OneSignal: Notification permission changed to:', currentPermission);
+                    OneSignal.Notifications.addEventListener('permissionChange', function(isGranted) {
+                        console.log('OneSignal: Notification permission changed to:', isGranted ? 'granted' : 'denied');
                         
-                        if (currentPermission === 'denied') {
+                        if (!isGranted) {
                             console.log('OneSignal: Notifications have been blocked. User needs to unblock in browser settings.');
                         }
                     });
