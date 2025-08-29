@@ -24,14 +24,11 @@ class HomeController extends Controller
         $profitByYear = $this->betService->getProfitByYear();
         $roiByYear = $this->betService->getROIByYear();
 
-        // Get today's bets
+        // Get active bets (betting_date <= now, game_date >= now)
         $allBets = $this->betService->getTodaysBets();
         
-        // Get actual today's bets (not future) for accurate counting
-        $todayOnly = \App\Models\Bet::whereDate('game_date', today())->get();
-        
-        // Calculate total bets per sport for TODAY ONLY
-        $totalBetsPerSport = $todayOnly->groupBy(function ($bet) {
+        // Calculate total bets per sport from active bets
+        $totalBetsPerSport = $allBets->groupBy(function ($bet) {
             return $bet->sports ?? $bet->sport ?? 'Football';
         })->map->count();
         
@@ -95,6 +92,7 @@ class HomeController extends Controller
                 fn () => Testimonial::forDisplay()->limit(3)->get()
             ),
             'sportPreferences' => \App\Models\SportPreference::active()->get(),
+            'availableGameDates' => $this->betService->getAvailableGameDates(),
         ]);
     }
 }

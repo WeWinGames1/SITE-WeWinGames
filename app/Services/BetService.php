@@ -555,16 +555,20 @@ class BetService
     /**
      * Get today's bets filtered by user's subscription tier
      * Shows bets where:
+     * - betting_date <= today (picks posted today or earlier)
      * - game_date >= today (games that haven't happened yet)
      * Filters based on user's subscription level
      */
     public function getTodaysBets(): \Illuminate\Database\Eloquent\Collection
     {
-        $today = today()->toDateString();
+        $now = now();
         $user = auth()->user();
         
-        // Show only bets for today's date
-        $query = Bet::whereDate('game_date', $today);
+        // Show bets where:
+        // 1. betting_date <= now (picks have been posted)
+        // 2. game_date >= now (games haven't happened yet)
+        $query = Bet::where('betting_date', '<=', $now)
+            ->where('game_date', '>=', $now);
         
         // Apply tier-based filtering if user is authenticated
         if ($user) {
@@ -597,6 +601,125 @@ class BetService
         return $query->orderBy('game_date', 'asc')
             ->orderBy('betting_date', 'asc')
             ->get();
+    }
+
+    /**
+     * Get bets filtered by date or date range
+     */
+    public function getBetsByDate($dateOrMonth): \Illuminate\Database\Eloquent\Collection
+    {
+        $now = now();
+        $user = auth()->user();
+        
+        // Base query
+        $query = Bet::where('betting_date', '<=', $now);
+        
+        // Check if it's a specific date or month range
+        if (preg_match('/^\d{4}-\d{2}$/', $dateOrMonth)) {
+            // It's a month (YYYY-MM format)
+            $startOfMonth = Carbon::parse($dateOrMonth . '-01')->startOfMonth();
+            $endOfMonth = $startOfMonth->copy()->endOfMonth();
+            $query->whereBetween('game_date', [$startOfMonth, $endOfMonth]);
+        } else {
+            // It's a specific date
+            $query->whereDate('game_date', $dateOrMonth);
+        }
+        
+        // Apply tier-based filtering
+        if ($user) {
+            $userTier = $user->getCurrentTier() ?? 'Bronze';
+            
+            $visibleLevels = [];
+            switch (strtolower($userTier)) {
+                case 'platinum':
+                    $visibleLevels = ['bronze', 'silver', 'gold', 'platinum'];
+                    break;
+                case 'gold':
+                    $visibleLevels = ['bronze', 'silver', 'gold'];
+                    break;
+                case 'silver':
+                    $visibleLevels = ['bronze', 'silver'];
+                    break;
+                default:
+                    $visibleLevels = ['bronze'];
+                    break;
+            }
+            
+            $query->whereIn(DB::raw('LOWER(membership)'), $visibleLevels);
+        } else {
+            $query->whereRaw('LOWER(membership) = ?', ['bronze']);
+        }
+        
+        return $query->orderBy('game_date', 'asc')
+            ->orderBy('betting_date', 'asc')
+            ->get();
+    }
+
+    /**
+     * Get available game dates for date selector
+     * Groups dates > 1 week forward by month
+     */
+    public function getAvailableGameDates(): array
+    {
+        $now = now();
+        $user = auth()->user();
+        $oneWeekFromNow = now()->addWeek();
+        
+        // Base query for active picks
+        $query = Bet::where('betting_date', '<=', $now)
+            ->where('game_date', '>=', $now);
+        
+        // Apply tier filtering
+        if ($user) {
+            $userTier = $user->getCurrentTier() ?? 'Bronze';
+            
+            $visibleLevels = [];
+            switch (strtolower($userTier)) {
+                case 'platinum':
+                    $visibleLevels = ['bronze', 'silver', 'gold', 'platinum'];
+                    break;
+                case 'gold':
+                    $visibleLevels = ['bronze', 'silver', 'gold'];
+                    break;
+                case 'silver':
+                    $visibleLevels = ['bronze', 'silver'];
+                    break;
+                default:
+                    $visibleLevels = ['bronze'];
+                    break;
+            }
+            
+            $query->whereIn(DB::raw('LOWER(membership)'), $visibleLevels);
+        } else {
+            $query->whereRaw('LOWER(membership) = ?', ['bronze']);
+        }
+        
+        // Get all game dates
+        $gameDates = $query->distinct()
+            ->pluck('game_date')
+            ->map(function($date) {
+                return Carbon::parse($date);
+            })
+            ->sort();
+        
+        // Group dates
+        $groupedDates = [];
+        
+        foreach ($gameDates as $date) {
+            if ($date->lte($oneWeekFromNow)) {
+                // Within a week - use individual dates
+                $groupedDates[$date->toDateString()] = $date->format('M j, Y');
+            } else {
+                // Beyond a week - group by month
+                $monthKey = $date->format('Y-m');
+                $monthLabel = $date->format('F Y');
+                if (!isset($groupedDates[$monthKey])) {
+                    $groupedDates[$monthKey] = $monthLabel;
+                }
+            }
+        }
+        
+        return $groupedDates;
     }
 
     /**
