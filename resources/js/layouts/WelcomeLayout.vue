@@ -325,6 +325,8 @@ const openKnowledgebase = () => {
                             <span class="text-secondary">|</span>
                             <a href="/privacy-policy" class="text-secondary text-decoration-none small">Privacy</a>
                             <span class="text-secondary">|</span>
+                            <a href="/pages/sweepstakes-rules" class="text-secondary text-decoration-none small">Sweepstakes Rules</a>
+                            <span class="text-secondary">|</span>
                             <a href="/faq" class="text-secondary text-decoration-none small">FAQ</a>
                             <span class="text-secondary">|</span>
                             <a href="/support" class="btn btn-sm btn-outline-secondary"> <i class="bi bi-headset"></i> Support </a>
