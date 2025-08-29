@@ -30,7 +30,19 @@ const sports = computed(() => {
         filteredBets = filteredBets.filter((bet) => {
             const gameDate = bet.game_date || bet.betting_date;
             if (!gameDate) return false;
-            return new Date(gameDate).toDateString() === selectedDate.value;
+            const betDate = new Date(gameDate);
+            const betDateString = betDate.toDateString();
+            
+            if (selectedDate.value === 'today') {
+                return betDateString === today;
+            } else if (selectedDate.value === 'future') {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(0, 0, 0, 0);
+                return betDate >= tomorrow;
+            } else {
+                return betDateString === selectedDate.value;
+            }
         });
     }
     
@@ -239,7 +251,19 @@ const allGroupedBets = computed(() => {
         all = all.filter((bet) => {
             const gameDate = bet.game_date || bet.betting_date;
             if (!gameDate) return false;
-            return new Date(gameDate).toDateString() === selectedDate.value;
+            const betDate = new Date(gameDate);
+            const betDateString = betDate.toDateString();
+            
+            if (selectedDate.value === 'today') {
+                return betDateString === today;
+            } else if (selectedDate.value === 'future') {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(0, 0, 0, 0);
+                return betDate >= tomorrow;
+            } else {
+                return betDateString === selectedDate.value;
+            }
         });
     }
 
@@ -413,17 +437,23 @@ const getMembershipBadgeStyle = (membership: string) => {
                             class="btn btn-sm px-3 py-1 text-nowrap"
                             :class="selectedDate === 'all' ? 'btn-info text-dark' : 'btn-outline-info'"
                         >
-                            All Dates
+                            All Picks
                         </button>
                         <button
-                            v-for="date in gameDates"
-                            :key="date"
-                            @click="selectedDate = date"
+                            @click="selectedDate = 'today'"
                             class="btn btn-sm px-3 py-1 text-nowrap"
-                            :class="selectedDate === date ? 'btn-info text-dark' : 'btn-outline-info'"
+                            :class="selectedDate === 'today' ? 'btn-info text-dark' : 'btn-outline-info'"
                         >
-                            <i class="bi bi-calendar-event me-1"></i>
-                            {{ formatFilterDate(date) }}
+                            <i class="bi bi-calendar-check me-1"></i>
+                            Today's Picks
+                        </button>
+                        <button
+                            @click="selectedDate = 'future'"
+                            class="btn btn-sm px-3 py-1 text-nowrap"
+                            :class="selectedDate === 'future' ? 'btn-info text-dark' : 'btn-outline-info'"
+                        >
+                            <i class="bi bi-calendar-week me-1"></i>
+                            Future Picks
                         </button>
                     </div>
                 </div>

@@ -83,11 +83,14 @@ const props = defineProps({
 
 const formatDate = (date: string) => {
     if (!date) return 'N/A';
-    return new Date(date).toLocaleDateString('en-US', {
-        weekday: 'short',
+    const d = new Date(date);
+    const formatted = d.toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
     });
+    // Add year abbreviation
+    const year = d.getFullYear().toString().slice(-2);
+    return `${formatted} '${year}`;
 };
 
 const getMembershipBadgeClass = () => {

@@ -70,10 +70,13 @@ const props = defineProps({
 const formatDate = (date: string) => {
     if (!date) return '21 May';
     const d = new Date(date);
-    return d.toLocaleDateString('en-US', {
+    const formatted = d.toLocaleDateString('en-US', {
         day: 'numeric',
         month: 'short',
     });
+    // Add year abbreviation
+    const year = d.getFullYear().toString().slice(-2);
+    return `${formatted} '${year}`;
 };
 
 const formatBetTip = (bet: any) => {
