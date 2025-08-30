@@ -1,11 +1,9 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
-use App\Models\Team;
 use App\Models\Bet;
+use App\Models\Team;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -21,25 +19,25 @@ return new class extends Migration
 
         foreach ($bets as $bet) {
             $updated = false;
-            
+
             // Update team_one_id if it's null but team_one has a value
-            if (!$bet->team_one_id && $bet->team_one) {
+            if (! $bet->team_one_id && $bet->team_one) {
                 $team = Team::where('name', $bet->team_one)->first();
                 if ($team) {
                     $bet->team_one_id = $team->id;
                     $updated = true;
                 }
             }
-            
+
             // Update team_two_id if it's null but team_two has a value
-            if (!$bet->team_two_id && $bet->team_two) {
+            if (! $bet->team_two_id && $bet->team_two) {
                 $team = Team::where('name', $bet->team_two)->first();
                 if ($team) {
                     $bet->team_two_id = $team->id;
                     $updated = true;
                 }
             }
-            
+
             if ($updated) {
                 $bet->save();
             }

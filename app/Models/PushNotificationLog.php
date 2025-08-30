@@ -42,10 +42,10 @@ class PushNotificationLog extends Model
      */
     public function getRecipientsLabelAttribute(): string
     {
-        return match($this->recipients_type) {
+        return match ($this->recipients_type) {
             'all' => 'All Push Subscribers',
             'push_enabled' => 'Push Enabled Users',
-            'tier' => ucfirst($this->tier) . ' Tier',
+            'tier' => ucfirst($this->tier).' Tier',
             default => 'Unknown',
         };
     }
@@ -56,6 +56,7 @@ class PushNotificationLog extends Model
     public function getSuccessRateAttribute(): float
     {
         $total = $this->sent_count + $this->failed_count;
+
         return $total > 0 ? round(($this->sent_count / $total) * 100, 1) : 0;
     }
 }

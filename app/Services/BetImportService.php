@@ -17,7 +17,7 @@ use League\Csv\Reader;
 class BetImportService
 {
     use CreatesTeamsWithUniqueSlug;
-    
+
     private array $errors = [];
 
     private array $successCount = ['bets' => 0, 'games' => 0, 'teams' => 0];
@@ -25,11 +25,11 @@ class BetImportService
     private array $columnMappings = [];
 
     private array $staticValues = [];
-    
+
     private bool $skipErrors = false;
-    
+
     private array $skippedEachWayBets = [];
-    
+
     private array $skippedParlayBets = [];
 
     public function __construct(
@@ -49,12 +49,12 @@ class BetImportService
      */
     private function normalizeMembership(?string $membership): string
     {
-        if (!$membership) {
+        if (! $membership) {
             return 'bronze';
         }
-        
+
         $membership = strtolower(trim($membership));
-        
+
         // Map variations to standard names
         $membershipMap = [
             'bronze' => 'bronze',
@@ -67,7 +67,7 @@ class BetImportService
             'premium' => 'gold',
             'pro' => 'platinum',
         ];
-        
+
         return $membershipMap[$membership] ?? 'bronze';
     }
 
@@ -99,20 +99,20 @@ class BetImportService
         try {
             // Replace non-breaking hyphens (U+2011) with regular hyphens
             $dateValue = str_replace('‑', '-', $dateValue);
-            
+
             // If already in Y-m-d H:i:s format, return as is
             if (preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $dateValue)) {
                 return $dateValue;
             }
-            
+
             // If already in Y-m-d format, append time
             if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateValue)) {
-                return $dateValue . ' 00:00:00';
+                return $dateValue.' 00:00:00';
             }
 
             // IMPORTANT: Always parse dates as MM/DD/YYYY format first
             // This ensures consistency for dates like 07/12/2025
-            
+
             // Try manual parsing for MM/DD/YY format with slashes (2-digit year)
             if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{2})$/', $dateValue, $matches)) {
                 $month = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
@@ -120,17 +120,19 @@ class BetImportService
                 $year = (int) $matches[3];
                 // If year < 50, assume 2000s; otherwise 1900s
                 $fullYear = $year < 50 ? 2000 + $year : 1900 + $year;
+
                 return "$fullYear-$month-$day 00:00:00";
             }
-            
+
             // Try manual parsing for MM/DD/YYYY format with slashes
             if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/', $dateValue, $matches)) {
                 $month = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
                 $day = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
                 $year = $matches[3];
+
                 return "$year-$month-$day 00:00:00";
             }
-            
+
             // Try manual parsing for MM-DD-YY format with dashes (2-digit year)
             if (preg_match('/^(\d{1,2})-(\d{1,2})-(\d{2})$/', $dateValue, $matches)) {
                 $month = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
@@ -138,14 +140,16 @@ class BetImportService
                 $year = (int) $matches[3];
                 // If year < 50, assume 2000s; otherwise 1900s
                 $fullYear = $year < 50 ? 2000 + $year : 1900 + $year;
+
                 return "$fullYear-$month-$day 00:00:00";
             }
-            
+
             // Try manual parsing for MM-DD-YYYY format with dashes
             if (preg_match('/^(\d{1,2})-(\d{1,2})-(\d{4})$/', $dateValue, $matches)) {
                 $month = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
                 $day = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
                 $year = $matches[3];
+
                 return "$year-$month-$day 00:00:00";
             }
 
@@ -156,7 +160,7 @@ class BetImportService
             // Log the error for debugging
             \Log::warning('Failed to parse date in BetImportService', [
                 'value' => $dateValue,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             // Return null if we can't parse it
@@ -166,13 +170,13 @@ class BetImportService
 
     /**
      * Ensure a required date field has a valid value
-     * 
-     * @param mixed $primaryDate The primary date value to use
-     * @param mixed $fallbackDate An optional fallback date value
-     * @param string $defaultDate The default date to use if all else fails (defaults to current datetime)
+     *
+     * @param  mixed  $primaryDate  The primary date value to use
+     * @param  mixed  $fallbackDate  An optional fallback date value
+     * @param  string  $defaultDate  The default date to use if all else fails (defaults to current datetime)
      * @return string A valid MySQL datetime string
      */
-    private function ensureRequiredDate($primaryDate, $fallbackDate = null, string $defaultDate = null): string
+    private function ensureRequiredDate($primaryDate, $fallbackDate = null, ?string $defaultDate = null): string
     {
         // Try primary date first
         $formatted = $this->formatDateForMysql($primaryDate);
@@ -202,13 +206,13 @@ class BetImportService
             $totalRecords = 0;
 
             // Only use transaction if not skipping errors
-            if (!$this->skipErrors) {
+            if (! $this->skipErrors) {
                 DB::beginTransaction();
             }
 
             foreach ($records as $offset => $record) {
                 $totalRecords++;
-                
+
                 if ($this->skipErrors) {
                     // Process each record in its own transaction when skipping errors
                     DB::beginTransaction();
@@ -224,7 +228,7 @@ class BetImportService
                 }
             }
 
-            if (!$this->skipErrors) {
+            if (! $this->skipErrors) {
                 if (! empty($this->errors)) {
                     DB::rollBack();
 
@@ -257,7 +261,7 @@ class BetImportService
             ];
 
         } catch (\Exception $e) {
-            if (!$this->skipErrors) {
+            if (! $this->skipErrors) {
                 DB::rollBack();
             }
 
@@ -284,17 +288,18 @@ class BetImportService
         // Skip completely empty rows
         $hasNonEmptyValue = false;
         foreach ($record as $value) {
-            if (!empty(trim($value))) {
+            if (! empty(trim($value))) {
                 $hasNonEmptyValue = true;
                 break;
             }
         }
-        
-        if (!$hasNonEmptyValue) {
-            \Log::info('Skipping empty row at line ' . $lineNumber);
+
+        if (! $hasNonEmptyValue) {
+            \Log::info('Skipping empty row at line '.$lineNumber);
+
             return;
         }
-        
+
         // Map the record using column mappings if provided
         if (! empty($this->columnMappings)) {
             $mappedRecord = [];
@@ -303,7 +308,7 @@ class BetImportService
                     $mappedRecord[$field] = $record[$csvColumn];
                 }
             }
-            
+
             // Debug log for date mapping
             if ($lineNumber <= 5) {
                 \Log::info("BetImportService Line {$lineNumber}: Date mapping", [
@@ -311,7 +316,7 @@ class BetImportService
                     'betting_date_raw' => $mappedRecord['betting_date'] ?? 'not set',
                 ]);
             }
-            
+
             // Debug log for missing sport mapping
             if (empty($mappedRecord['sport']) && $lineNumber >= 1741 && $lineNumber <= 1743) {
                 \Log::warning("Line {$lineNumber}: Sport field not mapped properly", [
@@ -320,7 +325,7 @@ class BetImportService
                     'mapped_record' => $mappedRecord,
                 ]);
             }
-            
+
             $record = $mappedRecord;
         } else {
             // If no column mappings provided, try to normalize column names
@@ -340,20 +345,20 @@ class BetImportService
 
         // Transform data before validation
         $record = $this->transformRecordData($record);
-        
+
         // Debug log for date after transformation
         if ($lineNumber <= 5) {
             \Log::info("BetImportService Line {$lineNumber}: After transformation", [
                 'game_date_transformed' => $record['game_date'] ?? 'not set',
                 'betting_date_transformed' => $record['betting_date'] ?? 'not set',
-                'using_same_date' => (isset($record['game_date']) && isset($record['betting_date']) && 
+                'using_same_date' => (isset($record['game_date']) && isset($record['betting_date']) &&
                                     $record['game_date'] === $record['betting_date']) ? 'YES' : 'NO',
             ]);
         }
-        
+
         // Don't skip Each Way bets anymore - we can import them now
         // The system supports Each Way bet calculations
-        
+
         // Allow Parlay bets - will try to parse first two teams from the game field
         // Previously these were skipped, but now we'll import them with partial team data
         /*
@@ -371,43 +376,45 @@ class BetImportService
         $missingCriticalFields = [];
         $hasAnyCriticalData = false;
         $nonEmptyFieldCount = 0;
-        
+
         // Count all non-empty fields
         foreach ($record as $field => $value) {
-            if (!empty(trim($value))) {
+            if (! empty(trim($value))) {
                 $nonEmptyFieldCount++;
             }
         }
-        
+
         foreach ($criticalFields as $field) {
-            if (!empty($record[$field])) {
+            if (! empty($record[$field])) {
                 $hasAnyCriticalData = true;
             } else {
                 $missingCriticalFields[] = $field;
             }
         }
-        
+
         // If row has very few non-empty fields (likely an empty or header row), skip it
         if ($nonEmptyFieldCount < 3) {
-            \Log::info('Skipping row with insufficient data at line ' . $lineNumber . ' (only ' . $nonEmptyFieldCount . ' non-empty fields)');
+            \Log::info('Skipping row with insufficient data at line '.$lineNumber.' (only '.$nonEmptyFieldCount.' non-empty fields)');
+
             return;
         }
-        
+
         // If row has no critical data at all, skip it
-        if (!$hasAnyCriticalData) {
-            \Log::info('Skipping row with no critical data at line ' . $lineNumber);
+        if (! $hasAnyCriticalData) {
+            \Log::info('Skipping row with no critical data at line '.$lineNumber);
+
             return;
         }
-        
+
         // Validate record
         $validation = $this->validateRecord($record);
         if (! $validation['valid']) {
             // Add more context to the error message
             $errorMessage = "Row {$lineNumber}: ";
-            if (!empty($missingCriticalFields)) {
-                $errorMessage .= "Missing critical fields: " . implode(', ', $missingCriticalFields) . ". ";
+            if (! empty($missingCriticalFields)) {
+                $errorMessage .= 'Missing critical fields: '.implode(', ', $missingCriticalFields).'. ';
             }
-            
+
             $this->errors[] = [
                 'line' => $lineNumber,
                 'errors' => $validation['errors'],
@@ -416,29 +423,29 @@ class BetImportService
             ];
 
             // If skipErrors is false, throw exception to stop processing
-            if (!$this->skipErrors) {
-                throw new \Exception('Validation failed at line ' . $lineNumber);
+            if (! $this->skipErrors) {
+                throw new \Exception('Validation failed at line '.$lineNumber);
             }
-            
+
             return;
         }
-        
+
         // Additional validation for Each Way bets
         if (isset($record['wager_type']) && strtolower($record['wager_type']) === 'each_way') {
             $calculationService = app(BetCalculationService::class);
             $eachWayErrors = $calculationService->validateEachWayBetData($record);
-            
-            if (!empty($eachWayErrors)) {
+
+            if (! empty($eachWayErrors)) {
                 $this->errors[] = [
                     'line' => $lineNumber,
                     'errors' => ['each_way_validation' => $eachWayErrors],
                     'data' => $record,
                 ];
-                
-                if (!$this->skipErrors) {
-                    throw new \Exception('Each Way validation failed at line ' . $lineNumber . ': ' . implode(', ', $eachWayErrors));
+
+                if (! $this->skipErrors) {
+                    throw new \Exception('Each Way validation failed at line '.$lineNumber.': '.implode(', ', $eachWayErrors));
                 }
-                
+
                 return;
             }
         }
@@ -478,10 +485,10 @@ class BetImportService
                 $homeTeamExists = Team::where('name', $homeTeamName)
                     ->where('sport_id', $sport->id)
                     ->exists();
-                
+
                 $homeTeam = $this->findOrCreateTeam($homeTeamName, $sport->id);
-                
-                if (!$homeTeamExists) {
+
+                if (! $homeTeamExists) {
                     $this->successCount['teams']++;
                 }
 
@@ -490,10 +497,10 @@ class BetImportService
                     $awayTeamExists = Team::where('name', $awayTeamName)
                         ->where('sport_id', $sport->id)
                         ->exists();
-                    
+
                     $awayTeam = $this->findOrCreateTeam($awayTeamName, $sport->id);
-                    
-                    if (!$awayTeamExists) {
+
+                    if (! $awayTeamExists) {
                         $this->successCount['teams']++;
                     }
 
@@ -550,41 +557,41 @@ class BetImportService
             // Check if this is an Each-Way bet
             $isEachWay = isset($betData['wager_type']) &&
                 strtolower($betData['wager_type']) === 'each_way';
-            
+
             // Set Each Way fields
             if ($isEachWay) {
                 $betData['is_each_way'] = true;
                 $betData['each_way_stake'] = $betData['wager_amount'] / 2;
-                $betData['place_fraction'] = ! empty($record['place_fraction']) ? 
+                $betData['place_fraction'] = ! empty($record['place_fraction']) ?
                     (float) $record['place_fraction'] : 0.2; // Default 1/5
-                $betData['place_terms_denominator'] = ! empty($record['place_terms_denominator']) ? 
+                $betData['place_terms_denominator'] = ! empty($record['place_terms_denominator']) ?
                     (int) $record['place_terms_denominator'] : 5; // Default 1/5
             }
-            
+
             // Handle golf_place field if available
             if (isset($record['golf_place'])) {
                 $betData['golf_place'] = filter_var($record['golf_place'], FILTER_VALIDATE_BOOLEAN);
             }
-            
+
             // Handle golf_place_fraction field if available
-            if (isset($record['golf_place_fraction']) && !empty($record['golf_place_fraction'])) {
+            if (isset($record['golf_place_fraction']) && ! empty($record['golf_place_fraction'])) {
                 // Convert fraction string to decimal if needed
                 $value = $record['golf_place_fraction'];
                 if (strpos($value, '/') !== false) {
                     // It's a fraction like "1/5"
                     $parts = explode('/', $value);
                     if (count($parts) == 2 && is_numeric($parts[0]) && is_numeric($parts[1]) && $parts[1] != 0) {
-                        $betData['golf_place_fraction'] = (float)$parts[0] / (float)$parts[1];
+                        $betData['golf_place_fraction'] = (float) $parts[0] / (float) $parts[1];
                     }
                 } elseif (is_numeric($value)) {
                     // It's already a decimal
-                    $betData['golf_place_fraction'] = (float)$value;
+                    $betData['golf_place_fraction'] = (float) $value;
                 }
             }
-            
+
             // Import values directly from CSV without calculations
             $betData['winning_amount'] = ! empty($record['winning_amount']) ? (float) $record['winning_amount'] : 0;
-            
+
             // Handle profit_amount - check both profit_amount and profits fields
             if (isset($record['profit_amount']) && $record['profit_amount'] !== '') {
                 $betData['profit_amount'] = (float) $record['profit_amount'];
@@ -594,12 +601,12 @@ class BetImportService
                 // If neither field is set, default to 0
                 $betData['profit_amount'] = 0;
             }
-            
+
             // Debug logging - ALWAYS log first 10 rows for debugging
             if ($lineNumber <= 10) {
-                Log::info('Import Debug Row ' . $lineNumber, [
+                Log::info('Import Debug Row '.$lineNumber, [
                     'raw_profit_amount' => $record['profit_amount'] ?? 'NOT SET',
-                    'raw_profits' => $record['profits'] ?? 'NOT SET', 
+                    'raw_profits' => $record['profits'] ?? 'NOT SET',
                     'raw_profit' => $record['profit'] ?? 'NOT SET',
                     'parsed_profit_amount' => $betData['profit_amount'],
                     'isset_profit_amount' => isset($record['profit_amount']) ? 'YES' : 'NO',
@@ -608,7 +615,7 @@ class BetImportService
                     'wager_amount' => $betData['wager_amount'],
                     'winning_amount' => $betData['winning_amount'],
                     'status' => $betData['status'],
-                    'all_record_keys' => array_keys($record)
+                    'all_record_keys' => array_keys($record),
                 ]);
             }
 
@@ -620,7 +627,7 @@ class BetImportService
                 $betData['roi'] = 0;
                 $betData['roi_net'] = 0;
             }
-            
+
             // Also set profits for compatibility (in case the model uses this field)
             $betData['profits'] = $betData['profit_amount'];
 
@@ -649,7 +656,7 @@ class BetImportService
         if (isset($record['wager_type']) && strcasecmp($record['wager_type'], 'parlay') === 0) {
             \Log::info('Processing parlay bet', [
                 'game' => $record['game'] ?? 'N/A',
-                'wager_type' => $record['wager_type']
+                'wager_type' => $record['wager_type'],
             ]);
         }
 
@@ -659,14 +666,14 @@ class BetImportService
             if ($teams) {
                 $record['home_team'] = $teams['home'];
                 $record['away_team'] = $teams['away'];
-                
+
                 // Log if this was a parlay
                 if (isset($teams['parlay_note'])) {
                     \Log::info('Parlay teams parsed', [
                         'original_game' => $record['game'],
                         'home_team' => $teams['home'],
                         'away_team' => $teams['away'],
-                        'note' => $teams['parlay_note']
+                        'note' => $teams['parlay_note'],
                     ]);
                 }
             } else {
@@ -675,9 +682,9 @@ class BetImportService
                 $record['away_team'] = null;
             }
         }
-        
+
         // Parse place terms (e.g., "1/5" -> denominator = 5)
-        if (isset($record['place_terms']) && !empty($record['place_terms'])) {
+        if (isset($record['place_terms']) && ! empty($record['place_terms'])) {
             if (preg_match('/1\/(\d+)/', $record['place_terms'], $matches)) {
                 $record['place_terms_denominator'] = (int) $matches[1];
                 $record['place_fraction'] = 1 / (int) $matches[1];
@@ -686,11 +693,11 @@ class BetImportService
 
         // Handle 'date', 'game_date', or 'Date' fields from CSV
         $dateField = null;
-        if (isset($record['date']) && !empty($record['date'])) {
+        if (isset($record['date']) && ! empty($record['date'])) {
             $dateField = 'date';
-        } elseif (isset($record['Date']) && !empty($record['Date'])) {
+        } elseif (isset($record['Date']) && ! empty($record['Date'])) {
             $dateField = 'Date';
-        } elseif (isset($record['game_date']) && !empty($record['game_date'])) {
+        } elseif (isset($record['game_date']) && ! empty($record['game_date'])) {
             $dateField = 'game_date';
         }
 
@@ -718,7 +725,7 @@ class BetImportService
                 foreach ($formats as $format) {
                     try {
                         $date = \Carbon\Carbon::createFromFormat($format, trim($record[$dateField]));
-                        
+
                         // Handle 2-digit year conversion
                         if (in_array($format, ['m/d/y', 'n/j/y', 'm-d-y']) && $date->year < 100) {
                             $year = $date->year;
@@ -728,7 +735,7 @@ class BetImportService
                                 $date->year = 1900 + $year;
                             }
                         }
-                        
+
                         $record['game_date'] = $date->format('Y-m-d H:i:s');
                         $parsed = true;
                         break;
@@ -770,7 +777,7 @@ class BetImportService
                 foreach ($formats as $format) {
                     try {
                         $date = \Carbon\Carbon::createFromFormat($format, trim($record['betting_date']));
-                        
+
                         // Handle 2-digit year conversion
                         if (in_array($format, ['m/d/y', 'n/j/y', 'm-d-y']) && $date->year < 100) {
                             $year = $date->year;
@@ -780,7 +787,7 @@ class BetImportService
                                 $date->year = 1900 + $year;
                             }
                         }
-                        
+
                         $record['betting_date'] = $date->format('Y-m-d H:i:s');
                         $parsed = true;
                         break;
@@ -802,10 +809,10 @@ class BetImportService
         // 1. Use the same 'date' or 'Date' field that was used for game_date
         // 2. Use game_date as fallback
         if (empty($record['betting_date'])) {
-            if ($dateField && isset($record[$dateField]) && !empty($record[$dateField])) {
+            if ($dateField && isset($record[$dateField]) && ! empty($record[$dateField])) {
                 // Use the same date field that was used for game_date
                 $record['betting_date'] = $record['game_date'];
-            } elseif (!empty($record['game_date'])) {
+            } elseif (! empty($record['game_date'])) {
                 // Use game_date as fallback
                 $record['betting_date'] = $record['game_date'];
             }
@@ -841,12 +848,12 @@ class BetImportService
         } elseif (isset($record['stake'])) {
             $record['wager_amount'] = $this->parseMonetary($record['stake']);
         }
-        
+
         // Parse ROI - handle percentage strings
         if (isset($record['roi'])) {
             $record['roi'] = $this->parsePercentage($record['roi']);
         }
-        
+
         // Parse profits (handle various field names)
         if (isset($record['profits'])) {
             $record['profits'] = $this->parseMonetary($record['profits']);
@@ -857,8 +864,8 @@ class BetImportService
         if (isset($record['profit_amount'])) {
             $record['profit_amount'] = $this->parseMonetary($record['profit_amount']);
         }
-        
-        // Parse winning amount  
+
+        // Parse winning amount
         if (isset($record['winning_amount'])) {
             $record['winning_amount'] = $this->parseMonetary($record['winning_amount']);
         }
@@ -900,7 +907,7 @@ class BetImportService
 
         // Convert from string to handle various formats
         $value = (string) $value;
-        
+
         // Check for accounting format with parentheses (e.g., ($30) means -30)
         $isNegative = false;
         if (preg_match('/\(.*\)/', $value)) {
@@ -912,7 +919,7 @@ class BetImportService
 
         // Parse the numeric value
         $numericValue = is_numeric($cleaned) ? (float) $cleaned : null;
-        
+
         // Apply negative sign if it was in accounting format
         if ($numericValue !== null && $isNegative) {
             $numericValue = -abs($numericValue);
@@ -920,24 +927,24 @@ class BetImportService
 
         return $numericValue;
     }
-    
+
     private function parsePercentage($value): ?float
     {
         if ($value === null || $value === '') {
             return null;
         }
-        
+
         // Handle string values
         $value = (string) $value;
-        
+
         // Remove percentage sign and whitespace
         $cleaned = trim(str_replace('%', '', $value));
-        
+
         // Handle special cases like "N/A"
         if (strcasecmp($cleaned, 'n/a') === 0 || strcasecmp($cleaned, 'na') === 0) {
             return null;
         }
-        
+
         return is_numeric($cleaned) ? (float) $cleaned : null;
     }
 
@@ -989,14 +996,14 @@ class BetImportService
         // Check if this might be a parlay by looking for multiple separators or commas
         $parlayIndicators = [', ', ' + ', ' & ', ' and ', ' / '];
         $isPossibleParlay = false;
-        
+
         foreach ($parlayIndicators as $indicator) {
             if (str_contains($game, $indicator)) {
                 $isPossibleParlay = true;
                 break;
             }
         }
-        
+
         // If it's a parlay, try to extract the first two teams
         if ($isPossibleParlay) {
             // First, try to find games separated by commas or other parlay indicators
@@ -1010,17 +1017,18 @@ class BetImportService
                         if ($teams) {
                             // Add a note that this is from a parlay
                             $teams['parlay_note'] = 'Partial data from parlay';
+
                             return $teams;
                         }
                     }
                 }
             }
         }
-        
+
         // Not a parlay, parse as single game
         return $this->parseIndividualGame($game);
     }
-    
+
     private function parseIndividualGame(string $game): ?array
     {
         // Handle @ separator (most common in sports betting)
@@ -1149,5 +1157,4 @@ class BetImportService
             throw new \Exception($lastError['errors']['processing'] ?? 'Import failed');
         }
     }
-
 }

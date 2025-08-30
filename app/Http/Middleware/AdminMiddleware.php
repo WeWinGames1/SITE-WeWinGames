@@ -20,7 +20,7 @@ class AdminMiddleware
                 return redirect()->route('admin.login')
                     ->with('error', 'You must be logged in as an administrator to access this area.');
             }
-            
+
             // For regular requests, abort with 403
             abort(403, 'Unauthorized');
         }

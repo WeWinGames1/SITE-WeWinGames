@@ -251,7 +251,7 @@ const openKnowledgebase = () => {
                             <h2 class="text-warning fw-bold d-inline">QUESTIONS</h2>
                         </div>
                         <p class="text-center text-secondary mb-5">Hopefully, Any Queries Are Covered Below, If Not, Please Get In Touch.</p>
-                        
+
                         <!-- CTA to FAQ Page -->
                         <div class="text-center mt-4">
                             <a href="/faq" class="btn btn-warning btn-lg">

@@ -21,7 +21,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            
+
             $table->index('code');
             $table->index('is_active');
         });

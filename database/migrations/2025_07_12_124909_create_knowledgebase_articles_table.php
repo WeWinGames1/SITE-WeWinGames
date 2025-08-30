@@ -22,7 +22,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->enum('type', ['frontend', 'admin'])->default('frontend');
             $table->timestamps();
-            
+
             $table->index(['page_identifier', 'is_active']);
         });
     }

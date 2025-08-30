@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('email_logs')) {
+        if (! Schema::hasTable('email_logs')) {
             Schema::create('email_logs', function (Blueprint $table) {
                 $table->id();
                 $table->string('to_email');
@@ -29,7 +29,7 @@ return new class extends Migration
                 $table->timestamp('clicked_at')->nullable();
                 $table->timestamp('bounced_at')->nullable();
                 $table->timestamps();
-                
+
                 $table->index(['created_at', 'status']);
                 $table->index('to_email');
             });

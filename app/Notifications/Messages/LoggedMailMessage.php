@@ -7,6 +7,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 class LoggedMailMessage extends MailMessage
 {
     protected ?string $templateKey = null;
+
     protected array $logMetadata = [];
 
     /**
@@ -15,6 +16,7 @@ class LoggedMailMessage extends MailMessage
     public function templateKey(string $key): self
     {
         $this->templateKey = $key;
+
         return $this;
     }
 
@@ -24,6 +26,7 @@ class LoggedMailMessage extends MailMessage
     public function withLogMetadata(array $metadata): self
     {
         $this->logMetadata = $metadata;
+
         return $this;
     }
 

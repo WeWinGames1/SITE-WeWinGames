@@ -62,7 +62,7 @@ class Bet extends Model
         'golf_place',
         'golf_place_fraction',
     ];
-    
+
     protected $casts = [
         'is_parlay' => 'boolean',
         'parlay_legs' => 'integer',
@@ -113,13 +113,13 @@ class Bet extends Model
     {
         return $this->belongsTo(Team::class, 'team_two_id');
     }
-    
+
     // Parlay relationships
     public function betTeams()
     {
         return $this->hasMany(BetTeam::class)->ordered();
     }
-    
+
     public function parlayTeams()
     {
         return $this->belongsToMany(Team::class, 'bet_teams')
@@ -137,12 +137,12 @@ class Bet extends Model
 
         return ucfirst(strtolower($value));
     }
-    
+
     // Helper methods for parlays
     public function addParlayTeam(Team $team, array $attributes = [])
     {
         $position = $this->betTeams()->max('position') ?? 0;
-        
+
         return $this->betTeams()->create(array_merge([
             'team_id' => $team->id,
             'team_name' => $team->name,
@@ -150,17 +150,17 @@ class Bet extends Model
             'role' => 'parlay',
         ], $attributes));
     }
-    
+
     public function updateParlayInfo()
     {
         $legCount = $this->betTeams()->count();
-        
+
         $this->update([
             'is_parlay' => $legCount > 2,
             'parlay_legs' => $legCount,
         ]);
     }
-    
+
     /**
      * Get all teams involved in the bet (including parlay teams)
      */
@@ -169,20 +169,20 @@ class Bet extends Model
         if ($this->is_parlay) {
             return $this->parlayTeams;
         }
-        
+
         $teams = collect();
-        
+
         if ($this->teamOne) {
             $teams->push($this->teamOne);
         }
-        
+
         if ($this->teamTwo) {
             $teams->push($this->teamTwo);
         }
-        
+
         return $teams;
     }
-    
+
     /**
      * Check if this bet involves a specific team
      */
@@ -191,7 +191,7 @@ class Bet extends Model
         if ($this->is_parlay) {
             return $this->parlayTeams()->where('teams.id', $teamId)->exists();
         }
-        
+
         return $this->team_one_id == $teamId || $this->team_two_id == $teamId;
     }
 }

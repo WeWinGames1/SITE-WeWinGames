@@ -24,7 +24,7 @@ return new class extends Migration
             $table->foreignId('sent_by')->constrained('users');
             $table->json('metadata')->nullable(); // For storing additional data
             $table->timestamps();
-            
+
             $table->index('created_at');
             $table->index('sent_by');
         });

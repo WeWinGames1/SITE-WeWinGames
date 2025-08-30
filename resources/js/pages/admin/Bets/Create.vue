@@ -821,7 +821,9 @@ declare global {
 
                                 <!-- Team Two -->
                                 <div v-if="canSelectTeams" class="col-md-6">
-                                    <label for="team_two_select" class="form-label">Team Two <span v-if="!isIndividualSport" class="text-danger">*</span></label>
+                                    <label for="team_two_select" class="form-label"
+                                        >Team Two <span v-if="!isIndividualSport" class="text-danger">*</span></label
+                                    >
                                     <div class="input-group">
                                         <select id="team_two_select" class="form-control" style="width: calc(100% - 50px)"></select>
                                         <button
@@ -939,7 +941,6 @@ declare global {
                                     {{ form.errors.tips }}
                                 </div>
                             </div>
-
 
                             <!-- Odds -->
                             <div class="col-md-4">
@@ -1235,11 +1236,11 @@ declare global {
                                         class="form-check-input"
                                         role="switch"
                                     />
-                                    <label class="form-check-label" for="premium_notes_enabled">
-                                        Enable Premium Notes
-                                    </label>
+                                    <label class="form-check-label" for="premium_notes_enabled"> Enable Premium Notes </label>
                                 </div>
-                                <div class="form-text">When enabled, premium notes will be displayed to customers at this membership level or higher</div>
+                                <div class="form-text">
+                                    When enabled, premium notes will be displayed to customers at this membership level or higher
+                                </div>
                             </div>
 
                             <!-- Notes Heading -->

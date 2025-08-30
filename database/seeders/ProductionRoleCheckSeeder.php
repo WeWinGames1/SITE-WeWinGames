@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 
@@ -15,12 +14,12 @@ class ProductionRoleCheckSeeder extends Seeder
     public function run(): void
     {
         $this->command->info('Checking for required roles...');
-        
+
         $requiredRoles = ['admin', 'user', 'subscriber'];
         $createdCount = 0;
-        
+
         foreach ($requiredRoles as $roleName) {
-            if (!Role::where('name', $roleName)->exists()) {
+            if (! Role::where('name', $roleName)->exists()) {
                 Role::create(['name' => $roleName, 'guard_name' => 'web']);
                 $this->command->info("Created missing role: {$roleName}");
                 $createdCount++;
@@ -28,13 +27,13 @@ class ProductionRoleCheckSeeder extends Seeder
                 $this->command->info("Role already exists: {$roleName}");
             }
         }
-        
+
         if ($createdCount > 0) {
             $this->command->info("Created {$createdCount} missing role(s).");
         } else {
             $this->command->info('All required roles already exist.');
         }
-        
+
         // Clear permission cache
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
     }

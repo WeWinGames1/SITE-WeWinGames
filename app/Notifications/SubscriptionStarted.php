@@ -53,14 +53,14 @@ class SubscriptionStarted extends Notification implements ShouldQueue
 
             // Send using the templated email system
             Mail::to($notifiable)->send(new TemplatedEmail($template, $data));
-            
+
             // Return a dummy MailMessage to satisfy the return type
             return (new MailMessage)->subject('Subscription Started');
         }
 
         // Fallback to default message if template not found
         return (new MailMessage)
-            ->subject('Welcome to ' . config('app.name', 'WeWinGames') . ' - Subscription Activated')
+            ->subject('Welcome to '.config('app.name', 'WeWinGames').' - Subscription Activated')
             ->line('You are now subscribed to We Win Games game picks.')
             ->line('You can now view the game picks in the dashboard.')
             ->action('View Now', url('/dashboard'))

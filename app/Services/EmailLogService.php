@@ -57,36 +57,36 @@ class EmailLogService
     public static function logFromMailEvent($event): ?EmailLog
     {
         $message = $event->message;
-        
+
         // Get recipient
         $to = $message->getTo();
         if (empty($to)) {
             return null;
         }
-        
+
         $recipient = array_key_first($to);
         $recipientData = $to[$recipient];
-        
+
         // Handle both string names and Symfony Address objects
         if (is_object($recipientData) && method_exists($recipientData, 'getName')) {
             $recipientName = $recipientData->getName() ?? '';
         } else {
             $recipientName = is_string($recipientData) ? $recipientData : '';
         }
-        
+
         // Extract template key from headers if available
         $templateKey = null;
         $headers = $message->getHeaders();
         if ($headers->has('X-Template-Key')) {
             $templateKey = $headers->get('X-Template-Key')->getValue();
         }
-        
+
         // Extract metadata from headers if available
         $metadata = [];
         if ($headers->has('X-Email-Metadata')) {
             $metadata = json_decode($headers->get('X-Email-Metadata')->getValue(), true) ?? [];
         }
-        
+
         return self::logEmail(
             $recipient,
             $recipientName,
@@ -101,20 +101,20 @@ class EmailLogService
      */
     public static function updateFromSentMessage(?EmailLog $log, SentMessage $message): void
     {
-        if (!$log) {
+        if (! $log) {
             return;
         }
-        
+
         $symfonyMessage = $message->getOriginalMessage();
         $messageId = null;
-        
+
         if ($symfonyMessage instanceof Email) {
             $headers = $symfonyMessage->getHeaders();
             if ($headers->has('Message-ID')) {
                 $messageId = $headers->get('Message-ID')->getValue();
             }
         }
-        
+
         self::markAsSent($log, $messageId);
     }
 }

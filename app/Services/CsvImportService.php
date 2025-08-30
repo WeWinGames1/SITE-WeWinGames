@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use League\Csv\Reader;
-use League\Csv\Writer;
 use League\Csv\Statement;
+use League\Csv\Writer;
 
 class CsvImportService
 {
@@ -35,13 +35,13 @@ class CsvImportService
             $csv->setHeaderOffset(0);
 
             $headers = $csv->getHeader();
-            
+
             // Log the raw headers for debugging
             \Log::info('CSV Headers (raw)', [
                 'headers' => $headers,
-                'headers_with_length' => array_map(function($h) { 
-                    return $h . ' (length: ' . strlen($h) . ')'; 
-                }, $headers)
+                'headers_with_length' => array_map(function ($h) {
+                    return $h.' (length: '.strlen($h).')';
+                }, $headers),
             ]);
             $stmt = Statement::create()->limit(5);
             $records = $stmt->process($csv);
@@ -206,7 +206,7 @@ class CsvImportService
             elseif (isset($exactMappingsLower[$lowerHeader]) && ! isset($mappings[$exactMappingsLower[$lowerHeader]])) {
                 $mappings[$exactMappingsLower[$lowerHeader]] = $header;
             }
-            
+
             // Special handling for headers with spaces before colons (e.g., "Game Date :")
             $headerWithoutColon = rtrim($trimmedHeader, ' :');
             $lowerWithoutColon = strtolower($headerWithoutColon);
@@ -263,22 +263,22 @@ class CsvImportService
         $this->staticValues = $staticValues;
         $this->errors = [];
         $this->warnings = [];
-        
+
         // Debug logging
         \Log::info('CsvImportService: Column mappings received', [
             'mappings' => $columnMappings,
-            'static_values' => $staticValues
+            'static_values' => $staticValues,
         ]);
 
         try {
             $csv = Reader::createFromPath($filePath, 'r');
             $csv->setHeaderOffset(0);
-            
+
             // Get headers for debugging
             $csvHeaders = $csv->getHeader();
             \Log::info('CsvImportService: validateImport - CSV Headers', [
                 'headers' => $csvHeaders,
-                'first_record_keys' => array_keys(iterator_to_array($csv->getRecords())[0] ?? [])
+                'first_record_keys' => array_keys(iterator_to_array($csv->getRecords())[0] ?? []),
             ]);
 
             $validRows = [];
@@ -293,7 +293,7 @@ class CsvImportService
                 $rowNumber++;
                 $totalRows++;
                 $mappedData = $this->mapRowData($record);
-                
+
                 // Debug row 5 specifically (the one with the error)
                 if ($rowNumber == 5) {
                     \Log::error('Debug Row 5 - CSV Import Issue', [
@@ -306,7 +306,7 @@ class CsvImportService
                         'game_date_value' => $mappedData['game_date'] ?? 'NOT SET',
                     ]);
                 }
-                
+
                 $validation = $this->validateRow($mappedData, $rowNumber);
 
                 if ($validation['valid']) {
@@ -328,10 +328,10 @@ class CsvImportService
                         'original' => $record,
                         'errors' => $validation['errors'],
                     ];
-                    
+
                     // Store ALL invalid rows
                     $allInvalidRows[] = $invalidRowData;
-                    
+
                     // Only store first 100 invalid rows for preview
                     if (count($invalidRows) < 100) {
                         $invalidRows[] = $invalidRowData;
@@ -377,7 +377,7 @@ class CsvImportService
             if (isset($record[$csvColumn])) {
                 $value = $this->cleanValue($record[$csvColumn]);
                 $mapped[$field] = $value;
-            } 
+            }
             // If not found, try with trimmed column name
             else {
                 $trimmedColumn = trim($csvColumn);
@@ -390,14 +390,14 @@ class CsvImportService
                 }
             }
         }
-        
+
         // Debug first row mapping
         static $debugged = false;
-        if (!$debugged) {
+        if (! $debugged) {
             \Log::info('CsvImportService: First row mapping debug', [
                 'raw_record' => $record,
                 'column_mappings' => $this->columnMappings,
-                'mapped_data' => $mapped
+                'mapped_data' => $mapped,
             ]);
             $debugged = true;
         }
@@ -409,16 +409,16 @@ class CsvImportService
 
         // Apply data transformations
         $transformed = $this->transformData($mapped);
-        
+
         // Debug first row after transformation
         static $debuggedTransform = false;
-        if (!$debuggedTransform) {
+        if (! $debuggedTransform) {
             \Log::info('CsvImportService: First row after transformation', [
-                'transformed_data' => $transformed
+                'transformed_data' => $transformed,
             ]);
             $debuggedTransform = true;
         }
-        
+
         return $transformed;
     }
 
@@ -432,7 +432,7 @@ class CsvImportService
         }
 
         $csv = Writer::createFromString();
-        
+
         // Add headers
         $headers = ['Row', 'Error'];
         $firstRow = reset($invalidRows);
@@ -440,28 +440,28 @@ class CsvImportService
             $headers = array_merge($headers, array_keys($firstRow['data']));
         }
         $csv->insertOne($headers);
-        
+
         // Add invalid rows
         foreach ($invalidRows as $row) {
             $errorMessages = [];
             foreach ($row['errors'] as $field => $errors) {
-                $errorMessages[] = $field . ': ' . implode(', ', $errors);
+                $errorMessages[] = $field.': '.implode(', ', $errors);
             }
-            
+
             $csvRow = [
                 $row['row'],
-                implode(' | ', $errorMessages)
+                implode(' | ', $errorMessages),
             ];
-            
+
             if (isset($row['data']) && is_array($row['data'])) {
                 foreach (array_keys($firstRow['data']) as $key) {
                     $csvRow[] = $row['data'][$key] ?? '';
                 }
             }
-            
+
             $csv->insertOne($csvRow);
         }
-        
+
         return $csv->toString();
     }
 
@@ -515,7 +515,7 @@ class CsvImportService
                 $data['betting_date'] = $parsedDate;
             }
         }
-        
+
         // Parse placed_at date
         if (isset($data['placed_at']) && ! empty($data['placed_at'])) {
             try {
@@ -581,7 +581,7 @@ class CsvImportService
         if (isset($data['game_date'])) {
             $data['game_date'] = $this->parseDate($data['game_date']);
         }
-        
+
         // Normalize status
         if (isset($data['status'])) {
             $data['status'] = $this->normalizeStatus($data['status']);
@@ -673,17 +673,17 @@ class CsvImportService
         try {
             // Replace non-breaking hyphens (U+2011) with regular hyphens
             $value = str_replace('‑', '-', $value);
-            
+
             // Handle various date formats
             $date = null;
-            
+
             // Log the input value for debugging
             static $loggedDates = 0;
             if ($loggedDates < 5) {
                 \Log::info('Parsing date value', ['input' => $value, 'type' => gettype($value)]);
                 $loggedDates++;
             }
-            
+
             // Try common date formats
             $formats = [
                 'm-d-Y',      // 07-16-2025 (with leading zeros)
@@ -698,13 +698,13 @@ class CsvImportService
                 'm-d-y',      // 07-16-25
                 'n-j-y',      // 7-16-25
             ];
-            
+
             foreach ($formats as $format) {
                 $parsed = \DateTime::createFromFormat($format, $value);
                 if ($parsed !== false) {
                     // Get the year as an integer
                     $year = (int) $parsed->format('Y');
-                    
+
                     // If year is less than 100, it's a 2-digit year
                     if ($year < 100) {
                         // If less than 50, assume 2000s; otherwise 1900s
@@ -718,9 +718,9 @@ class CsvImportService
                     break;
                 }
             }
-            
+
             // If no format matched, try Carbon's parse as fallback
-            if (!$date) {
+            if (! $date) {
                 $date = \Carbon\Carbon::parse($value);
                 // Check for 2-digit year issue
                 $year = $date->year;
@@ -733,10 +733,10 @@ class CsvImportService
                     }
                 }
             }
-            
+
             // Return in MySQL format
             return $date->format('Y-m-d H:i:s');
-            
+
         } catch (\Exception $e) {
             // If parsing fails, return the original value
             // This will let MySQL handle it (which might cause the 2-digit year issue)
@@ -861,14 +861,14 @@ class CsvImportService
 
         $rules = $this->getValidationRules();
         $validator = Validator::make($data, $rules, $messages);
-        
+
         // Debug validation for problematic rows
         static $debuggedValidation = 0;
         if ($validator->fails() && $debuggedValidation < 3) {
-            \Log::info('CsvImportService: Validation failed for row ' . $rowNumber, [
+            \Log::info('CsvImportService: Validation failed for row '.$rowNumber, [
                 'data' => $data,
                 'errors' => $validator->errors()->toArray(),
-                'rules' => $rules
+                'rules' => $rules,
             ]);
             $debuggedValidation++;
         }
@@ -888,7 +888,7 @@ class CsvImportService
 
         // Additional business logic validation
         $warnings = [];
-        
+
         // Custom validation: ensure at least one date is provided
         if (empty($data['game_date']) && empty($data['betting_date'])) {
             return [

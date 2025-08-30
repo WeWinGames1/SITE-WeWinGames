@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\BlogCategory;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class BlogCategoryController extends Controller
 {
@@ -15,10 +15,10 @@ class BlogCategoryController extends Controller
     public function index(): JsonResponse
     {
         $categories = BlogCategory::ordered()->get();
-            
+
         return response()->json($categories);
     }
-    
+
     /**
      * Store a newly created category.
      */
@@ -29,15 +29,15 @@ class BlogCategoryController extends Controller
             'slug' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(-[a-z0-9]+)*$/', 'unique:blog_categories,slug'],
             'description' => 'nullable|string|max:500',
         ]);
-        
+
         $category = BlogCategory::create($validated);
-        
+
         return response()->json([
             'message' => 'Category created successfully',
             'category' => $category->fresh(),
         ]);
     }
-    
+
     /**
      * Update the specified category.
      */
@@ -45,18 +45,18 @@ class BlogCategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(-[a-z0-9]+)*$/', 'unique:blog_categories,slug,' . $blogCategory->id],
+            'slug' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(-[a-z0-9]+)*$/', 'unique:blog_categories,slug,'.$blogCategory->id],
             'description' => 'nullable|string|max:500',
         ]);
-        
+
         $blogCategory->update($validated);
-        
+
         return response()->json([
             'message' => 'Category updated successfully',
             'category' => $blogCategory->fresh(),
         ]);
     }
-    
+
     /**
      * Remove the specified category.
      */
@@ -68,14 +68,14 @@ class BlogCategoryController extends Controller
                 'message' => 'Cannot delete category with existing posts. Please reassign posts first.',
             ], 422);
         }
-        
+
         $blogCategory->delete();
-        
+
         return response()->json([
             'message' => 'Category deleted successfully',
         ]);
     }
-    
+
     /**
      * Update category order.
      */
@@ -86,12 +86,12 @@ class BlogCategoryController extends Controller
             'categories.*.id' => 'required|exists:blog_categories,id',
             'categories.*.order_column' => 'required|integer|min:0',
         ]);
-        
+
         foreach ($validated['categories'] as $item) {
             BlogCategory::where('id', $item['id'])
                 ->update(['order_column' => $item['order_column']]);
         }
-        
+
         return response()->json([
             'message' => 'Category order updated successfully',
         ]);

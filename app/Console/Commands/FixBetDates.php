@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class FixBetDates extends Command
 {
@@ -28,7 +27,7 @@ class FixBetDates extends Command
     public function handle()
     {
         $dryRun = $this->option('dry-run');
-        
+
         if ($dryRun) {
             $this->warn('DRY RUN MODE - No changes will be made');
         }
@@ -45,6 +44,7 @@ class FixBetDates extends Command
 
         if ($problemYears->isEmpty()) {
             $this->info('No bets with incorrect year formats found!');
+
             return Command::SUCCESS;
         }
 
@@ -53,39 +53,39 @@ class FixBetDates extends Command
             $this->info("  Year {$row->year}: {$row->count} bets");
         }
 
-        if (!$dryRun) {
+        if (! $dryRun) {
             $this->info('Fixing dates...');
-            
+
             // Fix each problematic year
             foreach ($problemYears as $row) {
                 $oldYear = $row->year;
                 $newYear = 2000 + $oldYear; // Convert 24 to 2024, 25 to 2025, etc.
-                
+
                 $this->info("Converting year {$oldYear} to {$newYear}...");
-                
+
                 // Update betting_date
-                $affected = DB::update("
+                $affected = DB::update('
                     UPDATE bets 
                     SET betting_date = DATE_ADD(betting_date, INTERVAL ? YEAR)
                     WHERE YEAR(betting_date) = ?
-                ", [$newYear - $oldYear, $oldYear]);
-                
+                ', [$newYear - $oldYear, $oldYear]);
+
                 $this->info("  Updated {$affected} betting_date records");
-                
+
                 // Also update game_date if it exists and has the same issue
-                $affectedGame = DB::update("
+                $affectedGame = DB::update('
                     UPDATE bets 
                     SET game_date = DATE_ADD(game_date, INTERVAL ? YEAR)
                     WHERE game_date IS NOT NULL AND YEAR(game_date) = ?
-                ", [$newYear - $oldYear, $oldYear]);
-                
+                ', [$newYear - $oldYear, $oldYear]);
+
                 if ($affectedGame > 0) {
                     $this->info("  Updated {$affectedGame} game_date records");
                 }
             }
-            
+
             $this->info('Date fixes complete!');
-            
+
             // Show new year distribution
             $this->info('New year distribution:');
             $newDistribution = DB::table('bets')
@@ -93,7 +93,7 @@ class FixBetDates extends Command
                 ->groupBy('year')
                 ->orderBy('year', 'desc')
                 ->get();
-                
+
             foreach ($newDistribution as $row) {
                 $this->info("  Year {$row->year}: {$row->count} bets");
             }

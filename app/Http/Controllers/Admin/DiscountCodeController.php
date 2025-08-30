@@ -57,6 +57,14 @@ class DiscountCodeController extends Controller
 
         // Transform for frontend
         $discountCodes->through(function ($code) {
+            // Convert Stripe product IDs back to database IDs for the frontend
+            $applicableProductIds = [];
+            if (! empty($code->applicable_products) && is_array($code->applicable_products)) {
+                $applicableProductIds = StripeProduct::whereIn('stripe_product_id', $code->applicable_products)
+                    ->pluck('id')
+                    ->toArray();
+            }
+
             return [
                 'id' => $code->id,
                 'code' => $code->code,
@@ -71,6 +79,8 @@ class DiscountCodeController extends Controller
                 'times_used' => $code->times_used,
                 'valid_from' => $code->valid_from,
                 'valid_until' => $code->valid_until,
+                'applicable_products' => $applicableProductIds,
+                'minimum_amount' => $code->minimum_amount,
                 'is_active' => $code->is_active,
                 'is_valid' => $code->isValid(),
                 'redemptions_count' => $code->redemptions->count(),
@@ -119,12 +129,17 @@ class DiscountCodeController extends Controller
         }
 
         // Convert product IDs to Stripe product IDs
-        if (! empty($validated['applicable_products'])) {
-            $stripeProductIds = StripeProduct::whereIn('id', $validated['applicable_products'])
-                ->pluck('stripe_product_id')
-                ->filter()
-                ->toArray();
-            $validated['applicable_products'] = $stripeProductIds;
+        if (isset($validated['applicable_products'])) {
+            if (! empty($validated['applicable_products'])) {
+                $stripeProductIds = StripeProduct::whereIn('id', $validated['applicable_products'])
+                    ->pluck('stripe_product_id')
+                    ->filter()
+                    ->toArray();
+                $validated['applicable_products'] = $stripeProductIds;
+            } else {
+                // Empty array means no restrictions (applies to all products)
+                $validated['applicable_products'] = null;
+            }
         }
 
         // Add creator
@@ -184,7 +199,7 @@ class DiscountCodeController extends Controller
 
         // Convert product IDs to Stripe product IDs
         if (isset($validated['applicable_products'])) {
-            if (!empty($validated['applicable_products'])) {
+            if (! empty($validated['applicable_products'])) {
                 $stripeProductIds = StripeProduct::whereIn('id', $validated['applicable_products'])
                     ->pluck('stripe_product_id')
                     ->filter()
@@ -192,7 +207,7 @@ class DiscountCodeController extends Controller
                 $validated['applicable_products'] = $stripeProductIds;
             } else {
                 // Empty array means no restrictions (applies to all products)
-                $validated['applicable_products'] = [];
+                $validated['applicable_products'] = null;
             }
         }
 
@@ -235,6 +250,14 @@ class DiscountCodeController extends Controller
             ];
         });
 
+        // Convert Stripe product IDs back to database IDs for the frontend
+        $applicableProductIds = [];
+        if (! empty($discountCode->applicable_products) && is_array($discountCode->applicable_products)) {
+            $applicableProductIds = StripeProduct::whereIn('stripe_product_id', $discountCode->applicable_products)
+                ->pluck('id')
+                ->toArray();
+        }
+
         return response()->json([
             'discount_code' => [
                 'id' => $discountCode->id,
@@ -250,6 +273,8 @@ class DiscountCodeController extends Controller
                 'times_used' => $discountCode->times_used,
                 'valid_from' => $discountCode->valid_from,
                 'valid_until' => $discountCode->valid_until,
+                'applicable_products' => $applicableProductIds,
+                'minimum_amount' => $discountCode->minimum_amount,
                 'is_active' => $discountCode->is_active,
                 'is_valid' => $discountCode->isValid(),
                 'created_at' => $discountCode->created_at,

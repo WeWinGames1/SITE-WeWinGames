@@ -15,11 +15,11 @@ class LogSentEmail
     {
         // Get the log ID from the headers
         $headers = $event->sent->getOriginalMessage()->getHeaders();
-        
+
         if ($headers->has('X-Email-Log-Id')) {
             $logId = $headers->get('X-Email-Log-Id')->getValue();
             $log = EmailLog::find($logId);
-            
+
             if ($log) {
                 EmailLogService::updateFromSentMessage($log, $event->sent);
             }

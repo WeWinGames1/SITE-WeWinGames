@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class Team extends Model
 {
@@ -100,12 +100,12 @@ class Team extends Model
                 $baseSlug = Str::slug($team->name);
                 $slug = $baseSlug;
                 $counter = 1;
-                
+
                 while (static::where('slug', $slug)->exists()) {
-                    $slug = $baseSlug . '-' . $counter;
+                    $slug = $baseSlug.'-'.$counter;
                     $counter++;
                 }
-                
+
                 $team->slug = $slug;
             }
         });
@@ -116,23 +116,23 @@ class Team extends Model
                 $baseSlug = Str::slug($team->name);
                 $slug = $baseSlug;
                 $counter = 1;
-                
+
                 // Exclude current team from check
                 while (static::where('slug', $slug)->where('id', '!=', $team->id)->exists()) {
-                    $slug = $baseSlug . '-' . $counter;
+                    $slug = $baseSlug.'-'.$counter;
                     $counter++;
                 }
-                
+
                 $team->slug = $slug;
             }
         });
-        
+
         // Clear cache when teams are updated or deleted
         static::updated(function ($team) {
             // Clear all team lookup cache entries
             Cache::flush(); // Note: In production, use Redis with tags
         });
-        
+
         static::deleted(function ($team) {
             // Clear all team lookup cache entries
             Cache::flush(); // Note: In production, use Redis with tags
@@ -145,8 +145,8 @@ class Team extends Model
     public static function findByNameOrAlias($name, $sportId = null, $leagueId = null)
     {
         // Create a unique cache key
-        $cacheKey = 'team_lookup_' . md5(strtolower($name) . '_' . $sportId . '_' . $leagueId);
-        
+        $cacheKey = 'team_lookup_'.md5(strtolower($name).'_'.$sportId.'_'.$leagueId);
+
         // Cache for 1 hour
         return Cache::remember($cacheKey, 3600, function () use ($name, $sportId, $leagueId) {
             $query = static::query();
@@ -171,16 +171,16 @@ class Team extends Model
 
             if ($alias) {
                 $team = $alias->team;
-                
+
                 // Verify sport and league if specified
                 if ($sportId && $team->sport_id != $sportId) {
                     return null;
                 }
-                
+
                 if ($leagueId && $team->league_id != $leagueId) {
                     return null;
                 }
-                
+
                 return $team;
             }
 
@@ -194,11 +194,11 @@ class Team extends Model
     public function getAllNames()
     {
         $names = [$this->name];
-        
+
         foreach ($this->aliases as $alias) {
             $names[] = $alias->alias;
         }
-        
+
         return $names;
     }
 }

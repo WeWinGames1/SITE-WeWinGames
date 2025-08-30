@@ -30,22 +30,15 @@ class SubscriptionController extends Controller
             ->where('is_active', true)
             ->firstOrFail();
 
-        // Override price with correct pricing
-        $prices = [
-            'silver' => ['monthly' => 45, 'weekly' => 17, 'daily' => 5],
-            'gold' => ['monthly' => 65, 'weekly' => 29, 'daily' => 8],
-            'platinum' => ['monthly' => 80, 'weekly' => 49, 'daily' => 12],
-        ];
-
-        $tier = strtolower($product->tier);
-        $period = $product->billing_period;
-        $correctPrice = $prices[$tier][$period] ?? $product->price;
+        // Use the actual price from the database
+        $correctPrice = $product->price;
 
         $plan = [
             'name' => ucfirst($product->tier),
             'price' => '$'.number_format($correctPrice, 0),
             'period' => $product->billing_period,
             'priceId' => $product->stripe_price_id,
+            'productId' => $product->stripe_product_id,
         ];
 
         // Get user's payment methods
@@ -129,17 +122,17 @@ class SubscriptionController extends Controller
 
             // Create or get the subscription
             $subscription = $user->newSubscription('default', $priceId);
-            
+
             // Add affiliate code to metadata if available
             $affiliateCode = Cookie::get('affiliate_code');
-            if ($affiliateCode && !$user->affiliate_id) {
+            if ($affiliateCode && ! $user->affiliate_id) {
                 $affiliate = Affiliate::where('code', $affiliateCode)
                     ->where('is_active', true)
                     ->first();
-                
+
                 if ($affiliate) {
                     $subscription->withMetadata([
-                        'affiliate_code' => $affiliateCode
+                        'affiliate_code' => $affiliateCode,
                     ]);
                 }
             }
@@ -152,14 +145,36 @@ class SubscriptionController extends Controller
                     ->active()
                     ->first();
 
+                // Get product ID from price to check restrictions
+                $stripeProductId = null;
+                if ($priceId) {
+                    $stripeProduct = StripeProduct::where('stripe_price_id', $priceId)->first();
+                    if ($stripeProduct) {
+                        $stripeProductId = $stripeProduct->stripe_product_id;
+                    }
+                }
+
                 if ($discountCode && $discountCode->isValid() && $discountCode->canBeUsedBy($user)) {
+                    // Check product restrictions
+                    if ($stripeProductId && ! $discountCode->appliesToProduct($stripeProductId)) {
+                        return back()->withErrors(['coupon' => 'This discount code does not apply to the selected product.']);
+                    }
                     // If no Stripe coupon ID exists, create one
                     if (! $discountCode->stripe_coupon_id) {
                         $stripe = new \Stripe\StripeClient(config('cashier.secret'));
                         $couponData = [
-                            'duration' => 'once',
                             'currency' => 'usd',
                         ];
+
+                        // Set duration based on apply_to field
+                        if ($discountCode->apply_to === 'first_payment') {
+                            $couponData['duration'] = 'once';
+                        } elseif ($discountCode->apply_to === 'forever') {
+                            $couponData['duration'] = 'forever';
+                        } else {
+                            $couponData['duration'] = 'repeating';
+                            $couponData['duration_in_months'] = $discountCode->months_count;
+                        }
 
                         if ($discountCode->discount_type === 'percentage') {
                             $couponData['percent_off'] = $discountCode->discount_amount;
@@ -173,10 +188,22 @@ class SubscriptionController extends Controller
 
                     $subscription->withCoupon($discountCode->stripe_coupon_id);
 
+                    // Calculate the discount amount to store
+                    $discountAmount = 0;
+                    if ($stripeProduct) {
+                        $basePrice = $stripeProduct->price;
+                        if ($discountCode->discount_type === 'percentage') {
+                            $discountAmount = $basePrice * ($discountCode->discount_amount / 100);
+                        } else {
+                            $discountAmount = $discountCode->discount_amount;
+                        }
+                    }
+
                     // Track coupon usage
                     $discountCode->redemptions()->create([
                         'user_id' => $user->id,
                         'subscription_id' => null, // Will be updated after subscription is created
+                        'discount_applied' => $discountAmount,
                     ]);
 
                     // Increment usage count
@@ -207,6 +234,7 @@ class SubscriptionController extends Controller
     {
         $request->validate([
             'code' => 'required|string',
+            'product_id' => 'nullable|string', // Add product ID for validation
         ]);
 
         $user = $request->user();
@@ -228,6 +256,11 @@ class SubscriptionController extends Controller
         // Check if user can use this code
         if (! $discountCode->canBeUsedBy($user)) {
             return response()->json(['valid' => false, 'message' => 'You have already used this discount code']);
+        }
+
+        // Check product restrictions if product ID is provided
+        if ($request->filled('product_id') && ! $discountCode->appliesToProduct($request->product_id)) {
+            return response()->json(['valid' => false, 'message' => 'This discount code does not apply to the selected product']);
         }
 
         return response()->json([

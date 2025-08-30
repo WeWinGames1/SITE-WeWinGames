@@ -175,7 +175,7 @@ class BetImportWizardController extends Controller
             // Get row count from analysis
             $analysis = $this->csvImportService->analyzeCsv($fullPath);
             $rowCount = $analysis['total_rows'];
-            
+
             \Log::info('Import decision', [
                 'row_count' => $rowCount,
                 'will_queue' => $rowCount > 100,
@@ -231,10 +231,10 @@ class BetImportWizardController extends Controller
                 foreach (array_slice($result['errors'] ?? [], 0, 100) as $error) {
                     $errorLog[] = [
                         'row' => $error['line'] ?? 'Unknown',
-                        'message' => is_array($error['errors']) ? json_encode($error['errors']) : $error['errors']
+                        'message' => is_array($error['errors']) ? json_encode($error['errors']) : $error['errors'],
                     ];
                 }
-                
+
                 // Store results in cache for consistency
                 \Illuminate\Support\Facades\Cache::put("import_progress_{$importId}", [
                     'status' => 'completed',
@@ -392,8 +392,8 @@ class BetImportWizardController extends Controller
         ]);
 
         $filePath = Storage::disk('local')->path($request->file_path);
-        
-        if (!file_exists($filePath)) {
+
+        if (! file_exists($filePath)) {
             return response()->json(['error' => 'File not found'], 404);
         }
 
@@ -404,16 +404,16 @@ class BetImportWizardController extends Controller
             $request->static_values ?? []
         );
 
-        if (!$validation['success']) {
+        if (! $validation['success']) {
             return response()->json(['error' => $validation['message']], 400);
         }
 
         // Export invalid rows
         $csvContent = $this->csvImportService->exportInvalidRows($validation['all_invalid_rows']);
-        
+
         return response($csvContent, 200, [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="invalid_rows_' . date('Y-m-d_His') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="invalid_rows_'.date('Y-m-d_His').'.csv"',
         ]);
     }
 }

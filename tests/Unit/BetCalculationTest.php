@@ -2,30 +2,31 @@
 
 namespace Tests\Unit;
 
-use PHPUnit\Framework\TestCase;
-use App\Services\BetService;
-use App\Services\BetCalculationService;
 use App\Models\Bet;
+use App\Services\BetCalculationService;
+use App\Services\BetService;
 use Mockery;
+use PHPUnit\Framework\TestCase;
 
 class BetCalculationTest extends TestCase
 {
     protected BetService $betService;
+
     protected BetCalculationService $calculationService;
-    
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->betService = new BetService(Mockery::mock('App\Repositories\Contracts\BetRepositoryInterface'));
-        $this->calculationService = new BetCalculationService();
+        $this->calculationService = new BetCalculationService;
     }
-    
+
     protected function tearDown(): void
     {
         Mockery::close();
         parent::tearDown();
     }
-    
+
     /**
      * Test case from audit: Tom McKibbin, Qatar Masters
      * Each-Way bet finishing T2 should pay place only, not full win
@@ -41,14 +42,14 @@ class BetCalculationTest extends TestCase
             'each_way_stake' => 15,
             'place_fraction' => 0.2, // 1/5
         ]);
-        
+
         $calculation = $this->betService->calculateEachWayPayoutWithDeadHeat(
             $bet,
             'T2',
             8,
             null
         );
-        
+
         // Expected: Place only payout
         // Place odds: 2800 * 0.2 = 560
         // Place payout: 15 * (560/100 + 1) = 15 * 6.6 = 99
@@ -59,7 +60,7 @@ class BetCalculationTest extends TestCase
         $this->assertEqualsWithDelta(69, $calculation['profit_amount'], 3);
         $this->assertFalse($calculation['is_dead_heat']);
     }
-    
+
     /**
      * Test case from audit: Sam Bairstow, Singapore Classic
      * Dead heat T7 with 2 players for 1 spot
@@ -75,19 +76,19 @@ class BetCalculationTest extends TestCase
             'each_way_stake' => 5,
             'place_fraction' => 0.2, // 1/5
         ]);
-        
+
         $deadHeatInfo = [
             'players_tied' => 2,
             'spots_available' => 1,
         ];
-        
+
         $calculation = $this->betService->calculateEachWayPayoutWithDeadHeat(
             $bet,
             'T7',
             7,
             $deadHeatInfo
         );
-        
+
         // Expected: Place with dead heat reduction
         // Place odds: 12500 * 0.2 = 2500
         // Normal place payout: 5 * (2500/100 + 1) = 5 * 26 = 130
@@ -102,7 +103,7 @@ class BetCalculationTest extends TestCase
         $this->assertEquals(2, $calculation['dead_heat_players']);
         $this->assertEquals(1, $calculation['dead_heat_spots']);
     }
-    
+
     /**
      * Test case from audit: Victor Perez, Valspar Championship
      * Valid place finish marked as loss
@@ -118,14 +119,14 @@ class BetCalculationTest extends TestCase
             'each_way_stake' => 10,
             'place_fraction' => 0.2, // 1/5
         ]);
-        
+
         $calculation = $this->betService->calculateEachWayPayoutWithDeadHeat(
             $bet,
             'T3',
             8,
             null
         );
-        
+
         // Expected: Place payout
         // Place odds: 10000 * 0.2 = 2000
         // Place payout: 10 * (2000/100 + 1) = 10 * 21 = 210
@@ -135,7 +136,7 @@ class BetCalculationTest extends TestCase
         $this->assertEqualsWithDelta(210, $calculation['winning_amount'], 1);
         $this->assertEqualsWithDelta(190, $calculation['profit_amount'], 1);
     }
-    
+
     /**
      * Test case from audit: Mac Meissner Top 40
      * Non-Each-Way bet finishing in paying position
@@ -149,9 +150,9 @@ class BetCalculationTest extends TestCase
             'wager_odds' => 250,
             'is_each_way' => false,
         ]);
-        
+
         $calculation = $this->calculationService->calculateTopXBet($bet, 'T21', 40);
-        
+
         // Expected: Win
         // Payout: 30 * (250/100 + 1) = 30 * 3.5 = 105
         // Profit: 105 - 30 = 75
@@ -160,7 +161,7 @@ class BetCalculationTest extends TestCase
         $this->assertEqualsWithDelta(105, $calculation['winning_amount'], 1);
         $this->assertEqualsWithDelta(75, $calculation['profit_amount'], 1);
     }
-    
+
     /**
      * Test Each-Way outright win (1st place)
      */
@@ -174,14 +175,14 @@ class BetCalculationTest extends TestCase
             'each_way_stake' => 50,
             'place_fraction' => 0.25, // 1/4
         ]);
-        
+
         $calculation = $this->betService->calculateEachWayPayoutWithDeadHeat(
             $bet,
             '1',
             8,
             null
         );
-        
+
         // Expected: Both win and place pay
         // Win payout: 50 * (500/100 + 1) = 50 * 6 = 300
         // Place odds: 500 * 0.25 = 125
@@ -193,7 +194,7 @@ class BetCalculationTest extends TestCase
         $this->assertEqualsWithDelta(412.5, $calculation['winning_amount'], 1);
         $this->assertEqualsWithDelta(312.5, $calculation['profit_amount'], 1);
     }
-    
+
     /**
      * Test position parsing
      */
@@ -209,7 +210,7 @@ class BetCalculationTest extends TestCase
         $this->assertNull($this->betService->parsePosition('WD'));
         $this->assertNull($this->betService->parsePosition('DQ'));
     }
-    
+
     /**
      * Test dead heat reduction factor calculation
      */
@@ -218,16 +219,16 @@ class BetCalculationTest extends TestCase
         // 4 players tied for 2 spots
         $factor = $this->betService->calculateDeadHeatReduction(4, 2);
         $this->assertEquals(0.5, $factor);
-        
+
         // 3 players tied for 1 spot
         $factor = $this->betService->calculateDeadHeatReduction(3, 1);
         $this->assertEqualsWithDelta(0.333, $factor, 0.001);
-        
+
         // 2 players tied for 2 spots (no reduction)
         $factor = $this->betService->calculateDeadHeatReduction(2, 2);
         $this->assertEquals(1, $factor);
     }
-    
+
     /**
      * Test Each-Way status determination
      */
@@ -235,13 +236,13 @@ class BetCalculationTest extends TestCase
     {
         // 1st place = won
         $this->assertEquals('won', $this->betService->determineEachWayStatus('1', 8));
-        
+
         // T5 with 8 places = placed
         $this->assertEquals('placed', $this->betService->determineEachWayStatus('T5', 8));
-        
+
         // T9 with 8 places = lost
         $this->assertEquals('lost', $this->betService->determineEachWayStatus('T9', 8));
-        
+
         // MC = lost
         $this->assertEquals('lost', $this->betService->determineEachWayStatus('MC', 8));
     }

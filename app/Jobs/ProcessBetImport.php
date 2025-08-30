@@ -24,9 +24,9 @@ class ProcessBetImport implements ShouldQueue
     protected string $importId;
 
     protected int $userId;
-    
+
     protected bool $skipErrors;
-    
+
     protected array $staticValues;
 
     /**
@@ -82,15 +82,15 @@ class ProcessBetImport implements ShouldQueue
 
             // Get full file path
             $fullPath = Storage::disk('local')->path($this->filePath);
-            
+
             // Set up the bet import service with mappings and options
             $betService->setColumnMappings($this->mappings);
             $betService->setStaticValues($this->staticValues);
             $betService->setSkipErrors($this->skipErrors);
-            
+
             // Use the service's import method directly for better consistency
             $result = $betService->importFromCsv($fullPath);
-            
+
             // Update progress with results
             $this->updateProgress([
                 'status' => 'completed',
@@ -104,19 +104,18 @@ class ProcessBetImport implements ShouldQueue
                 'skippedParlayBets' => $result['skippedParlayBets'] ?? [],
                 'completed_at' => now()->toIso8601String(),
             ]);
-            
+
             // Store error report if there are errors
             if (count($result['errors'] ?? []) > 0) {
                 $this->storeErrorReportFromResults($result['errors']);
             }
-            
+
             Log::info('Bet import completed via job', [
                 'import_id' => $this->importId,
                 'total' => $result['processed'] ?? 0,
                 'success' => $result['successCount']['bets'] ?? 0,
                 'errors' => count($result['errors'] ?? []),
             ]);
-            
 
         } catch (\Exception $e) {
             Log::error('Bet import failed', [
@@ -142,7 +141,7 @@ class ProcessBetImport implements ShouldQueue
                 // Log but don't fail if cleanup fails
                 Log::warning('Failed to cleanup import file', [
                     'file' => $this->filePath,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
@@ -167,12 +166,12 @@ class ProcessBetImport implements ShouldQueue
     protected function storeErrorReportFromResults(array $errors): void
     {
         $reportPath = "imports/errors/{$this->importId}_errors.csv";
-        
+
         $csv = fopen('php://temp', 'w');
-        
+
         // Headers
         fputcsv($csv, ['Row', 'Error', 'Data']);
-        
+
         // Error rows
         foreach ($errors as $error) {
             $errorMessages = $error['errors'] ?? ['Unknown error'];
@@ -181,7 +180,7 @@ class ProcessBetImport implements ShouldQueue
                 $flatErrors = [];
                 foreach ($errorMessages as $field => $messages) {
                     if (is_array($messages)) {
-                        $flatErrors[] = $field . ': ' . implode(', ', $messages);
+                        $flatErrors[] = $field.': '.implode(', ', $messages);
                     } else {
                         $flatErrors[] = $messages;
                     }
@@ -190,24 +189,24 @@ class ProcessBetImport implements ShouldQueue
             } else {
                 $errorString = (string) $errorMessages;
             }
-            
+
             fputcsv($csv, [
                 $error['line'] ?? 'Unknown',
                 $errorString,
-                json_encode($error['data'] ?? [])
+                json_encode($error['data'] ?? []),
             ]);
         }
-        
+
         rewind($csv);
         $csvContent = stream_get_contents($csv);
         fclose($csv);
-        
+
         Storage::disk('local')->put($reportPath, $csvContent);
-        
+
         // Store path in cache for download
         Cache::put("import_error_report_{$this->importId}", $reportPath, now()->addDays(7));
     }
-    
+
     /**
      * Store error report for download
      */

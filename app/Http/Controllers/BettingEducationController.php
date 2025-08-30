@@ -15,7 +15,7 @@ class BettingEducationController extends Controller
             ->orderBy('published_at', 'desc');
 
         // Start with betting-education category by default
-        if (!$request->filled('category') && !$request->filled('tag') && !$request->filled('search')) {
+        if (! $request->filled('category') && ! $request->filled('tag') && ! $request->filled('search')) {
             $query->inCategory('betting-education');
         }
 
@@ -44,6 +44,7 @@ class BettingEducationController extends Controller
         $posts->through(function ($post) {
             $postArray = $post->toArray();
             $postArray['featured_image_url'] = $post->featured_image_url;
+
             return $postArray;
         });
 
@@ -55,7 +56,7 @@ class BettingEducationController extends Controller
             'customHeader' => [
                 'title' => 'Betting Education',
                 'subtitle' => 'Master the fundamentals of sports betting with our comprehensive educational resources',
-                'description' => 'When it comes to learning about sports betting it is hard to know who to trust. Often what may look like educational content is just a guise to funnel your attention to a sponsoring sportsbook. At We Win Games, we believe a more knowledgeable sports bettor is good for everyone. It provides a richer and more sustainable market for all to enjoy.'
+                'description' => 'When it comes to learning about sports betting it is hard to know who to trust. Often what may look like educational content is just a guise to funnel your attention to a sponsoring sportsbook. At We Win Games, we believe a more knowledgeable sports bettor is good for everyone. It provides a richer and more sustainable market for all to enjoy.',
             ],
         ]);
     }

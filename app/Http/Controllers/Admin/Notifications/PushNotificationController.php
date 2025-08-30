@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Admin\Notifications;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\PushNotificationLog;
+use App\Models\User;
+use App\Notifications\AdminPushNotification;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use NotificationChannels\WebPush\PushChannel;
-use App\Notifications\AdminPushNotification;
 
 class PushNotificationController extends Controller
 {
@@ -21,7 +20,7 @@ class PushNotificationController extends Controller
             ->when($request->search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('title', 'like', "%{$search}%")
-                      ->orWhere('body', 'like', "%{$search}%");
+                        ->orWhere('body', 'like', "%{$search}%");
                 });
             })
             ->orderBy('created_at', 'desc')
@@ -80,7 +79,7 @@ class PushNotificationController extends Controller
             case 'push_enabled':
                 $query->whereJsonContains('notification_preferences->push', true);
                 break;
-            
+
             case 'tier':
                 $query->whereJsonContains('notification_preferences->push', true)
                     ->where(function ($q) use ($validated) {
@@ -95,7 +94,7 @@ class PushNotificationController extends Controller
                                 $subQ->whereNull('override_expiry')
                                     ->orWhere('override_expiry', '>=', now());
                             });
-                        
+
                         // Or check Stripe subscription via the StripeProduct table
                         $q->orWhereHas('subscriptions', function ($subQ) use ($validated) {
                             $subQ->active()
@@ -108,7 +107,7 @@ class PushNotificationController extends Controller
                         });
                     });
                 break;
-            
+
             case 'all':
             default:
                 // All users with push enabled
@@ -155,7 +154,7 @@ class PushNotificationController extends Controller
         ]);
 
         return redirect()->route('admin.notifications.push.index')
-            ->with('success', "Push notification sent to {$sent} users" . ($failed > 0 ? " ({$failed} failed)" : ''));
+            ->with('success', "Push notification sent to {$sent} users".($failed > 0 ? " ({$failed} failed)" : ''));
     }
 
     /**
@@ -180,7 +179,7 @@ class PushNotificationController extends Controller
 
             return back()->with('success', 'Test notification sent to your device');
         } catch (\Exception $e) {
-            return back()->with('error', 'Failed to send test notification: ' . $e->getMessage());
+            return back()->with('error', 'Failed to send test notification: '.$e->getMessage());
         }
     }
 }

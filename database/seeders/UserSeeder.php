@@ -18,41 +18,49 @@ class UserSeeder extends Seeder
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
         $subscriberRole = Role::firstOrCreate(['name' => 'subscriber']);
 
-        // Create admin user
-        $admin = User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@wewingames.test',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-        ]);
+        // Create or update admin user
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@wewingames.test'],
+            [
+                'name' => 'Admin User',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ]
+        );
         $admin->assignRole($adminRole);
 
-        // Create subscriber user
-        $subscriber = User::create([
-            'name' => 'John Subscriber',
-            'email' => 'subscriber@wewingames.test',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-        ]);
+        // Create or reset subscriber user
+        $subscriber = User::where('email', 'subscriber@wewingames.test')->first();
+        
+        if ($subscriber) {
+            // Clear existing subscriptions and related data
+            $subscriber->subscriptions()->delete();
+            $subscriber->discountRedemptions()->delete();
+            
+            // Reset user data
+            $subscriber->update([
+                'name' => 'John Subscriber',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+                'stripe_id' => null,
+                'pm_type' => null,
+                'pm_last_four' => null,
+                'trial_ends_at' => null,
+            ]);
+        } else {
+            // Create new subscriber user
+            $subscriber = User::create([
+                'name' => 'John Subscriber',
+                'email' => 'subscriber@wewingames.test',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ]);
+        }
+        
         $subscriber->assignRole($subscriberRole);
 
-        // Create a subscription for the subscriber
-        // Note: This creates a fake subscription for testing
-        // In production, you'd use Stripe to create real subscriptions
-        $subscriber->subscriptions()->create([
-            'type' => 'default',
-            'stripe_id' => 'sub_'.uniqid(),
-            'stripe_status' => 'active',
-            'stripe_price' => 'price_gold_monthly', // Assuming gold plan
-            'quantity' => 1,
-            'trial_ends_at' => null,
-            'ends_at' => null,
-            'current_period_start' => now(),
-            'current_period_end' => now()->addMonth(),
-        ]);
-
-        $this->command->info('Users created successfully:');
+        $this->command->info('Users reset successfully:');
         $this->command->info('Admin: admin@wewingames.test / password');
-        $this->command->info('Subscriber: subscriber@wewingames.test / password');
+        $this->command->info('Subscriber: subscriber@wewingames.test / password (cleared for fresh testing)');
     }
 }

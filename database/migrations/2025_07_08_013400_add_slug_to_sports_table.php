@@ -12,12 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('sports', function (Blueprint $table) {
-            if (!Schema::hasColumn('sports', 'slug')) {
+            if (! Schema::hasColumn('sports', 'slug')) {
                 $table->string('slug')->after('name')->nullable();
                 $table->index('slug');
             }
         });
-        
+
         // Update existing records to have slugs
         $sports = DB::table('sports')->get();
         foreach ($sports as $sport) {
@@ -25,7 +25,7 @@ return new class extends Migration
                 ->where('id', $sport->id)
                 ->update(['slug' => Str::slug($sport->name)]);
         }
-        
+
         // Make slug not nullable after populating
         Schema::table('sports', function (Blueprint $table) {
             $table->string('slug')->nullable(false)->change();

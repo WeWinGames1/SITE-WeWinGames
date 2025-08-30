@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\BlogCategory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -205,7 +204,7 @@ class Post extends Model implements HasMedia
     /**
      * Register media conversions.
      */
-    public function registerMediaConversions(Media $media = null): void
+    public function registerMediaConversions(?Media $media = null): void
     {
         $this->addMediaConversion('thumb')
             ->width(400)
@@ -250,6 +249,7 @@ class Post extends Model implements HasMedia
         // Otherwise, assume it's a path and build the URL
         // Remove leading slash to prevent double slashes in URL
         $imagePath = ltrim($this->featured_image, '/');
+
         return asset('storage/'.$imagePath);
     }
 
@@ -272,14 +272,14 @@ class Post extends Model implements HasMedia
                 ->ordered()
                 ->pluck('name', 'slug')
                 ->toArray();
-                
-            if (!empty($categories)) {
+
+            if (! empty($categories)) {
                 return $categories;
             }
         } catch (\Exception $e) {
             // Fall back to hardcoded if database is not ready
         }
-        
+
         // Fallback categories
         return [
             'betting-education' => 'Betting Education',

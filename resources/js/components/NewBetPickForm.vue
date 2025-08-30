@@ -5,7 +5,9 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Sports -->
                 <div>
-                    <label for="sports" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Sports <span class="text-red-500">*</span></label>
+                    <label for="sports" class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                        >Sports <span class="text-red-500">*</span></label
+                    >
                     <select
                         id="sports"
                         v-model="form.sports"
@@ -45,7 +47,9 @@
                 </div>
                 <!-- Markets -->
                 <div>
-                    <label for="markets" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Markets <span class="text-red-500">*</span></label>
+                    <label for="markets" class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                        >Markets <span class="text-red-500">*</span></label
+                    >
                     <input
                         type="text"
                         id="markets"
@@ -130,7 +134,9 @@
                 </div>
                 <!-- Wager Odds -->
                 <div>
-                    <label for="wager_odds" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Wager Odds <span class="text-red-500">*</span></label>
+                    <label for="wager_odds" class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                        >Wager Odds <span class="text-red-500">*</span></label
+                    >
                     <input
                         type="text"
                         id="wager_odds"
@@ -155,7 +161,9 @@
                 </div>
                 <!-- Membership -->
                 <div>
-                    <label for="membership" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Membership <span class="text-red-500">*</span></label>
+                    <label for="membership" class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                        >Membership <span class="text-red-500">*</span></label
+                    >
                     <select
                         id="membership"
                         v-model="form.membership"
@@ -248,7 +256,7 @@ const submitForm = () => {
         alert('Please select a membership tier.');
         return;
     }
-    
+
     form.post('/api/bets', {
         onSuccess: () => {
             alert('Bet uploaded successfully!');

@@ -40,17 +40,17 @@ class ImpersonationController extends Controller
 
         // Store the admin's ID in the session BEFORE regenerating
         $adminId = Auth::id();
-        
+
         // Login as the user with remember me to ensure API requests work
         Auth::login($user, true);
-        
+
         // Now store the impersonation data in the new session
         Session::put('impersonator_id', $adminId);
         Session::put('impersonation_started_at', now());
-        
+
         // Regenerate session to prevent session fixation attacks
         Session::regenerate();
-        
+
         // Force save the session to ensure data persists
         Session::save();
 
@@ -101,10 +101,10 @@ class ImpersonationController extends Controller
         // Clear the impersonation session
         Session::forget('impersonator_id');
         Session::forget('impersonation_started_at');
-        
+
         // Regenerate session for security
         Session::regenerate();
-        
+
         // Force save the session
         Session::save();
 

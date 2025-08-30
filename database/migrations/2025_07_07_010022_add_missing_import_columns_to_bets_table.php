@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::table('bets', function (Blueprint $table) {
             // Add game_date as an alias for betting_date
-            if (!Schema::hasColumn('bets', 'game_date')) {
+            if (! Schema::hasColumn('bets', 'game_date')) {
                 $table->dateTime('game_date')->nullable()->after('betting_date');
             }
-            
+
             // Add profits as an alias for profit_amount
-            if (!Schema::hasColumn('bets', 'profits')) {
+            if (! Schema::hasColumn('bets', 'profits')) {
                 $table->decimal('profits', 10, 2)->nullable()->after('profit_amount');
             }
         });
@@ -33,7 +33,7 @@ return new class extends Migration
             if (Schema::hasColumn('bets', 'game_date')) {
                 $table->dropColumn('game_date');
             }
-            
+
             if (Schema::hasColumn('bets', 'profits')) {
                 $table->dropColumn('profits');
             }

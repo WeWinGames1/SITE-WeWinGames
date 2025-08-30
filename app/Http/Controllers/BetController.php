@@ -154,38 +154,39 @@ class BetController extends Controller
     {
         // Get all active bets (betting_date <= now, game_date >= now)
         $allBets = $this->betService->getTodaysBets();
-        
+
         // Calculate total bets per sport from active bets
         $totalBetsPerSport = $allBets->groupBy(function ($bet) {
             return $bet->sports ?? $bet->sport ?? 'Football';
         })->map->count();
-        
+
         // For unauthenticated users, apply same filtering as home page
         $user = auth()->user();
-        if (!$user) {
+        if (! $user) {
             // Get sport preferences
             $sportPreferences = \App\Models\SportPreference::active()
                 ->orderBy('priority', 'asc')
                 ->pluck('sport_name')
                 ->toArray();
-            
+
             // Filter and limit bronze bets
             $bronzeBets = $allBets->filter(function ($bet) {
                 return strtolower($bet->membership ?? $bet->level ?? '') === 'bronze';
             });
-            
+
             // Sort by sport preference and limit to 2
             $limitedBets = $bronzeBets->sortBy(function ($bet) use ($sportPreferences) {
                 $sport = $bet->sports ?? $bet->sport ?? '';
                 $index = array_search($sport, $sportPreferences);
+
                 return $index === false ? 999 : $index;
             })->take(2);
-            
+
             // Include non-bronze bets for display (they'll be covered)
             $nonBronzeBets = $allBets->filter(function ($bet) {
                 return strtolower($bet->membership ?? $bet->level ?? '') !== 'bronze';
             });
-            
+
             $freeBets = $limitedBets->merge($nonBronzeBets);
         } else {
             $freeBets = $allBets;
@@ -218,13 +219,13 @@ class BetController extends Controller
 
         // Get profit by year data from service
         $profitByYearData = $this->betService->getProfitAndROIByYear();
-        
+
         // Add static values for 2022 and 2023
         $staticData = [
             2022 => ['profit' => 15769, 'roi' => 19],
-            2023 => ['profit' => 21678, 'roi' => 16]
+            2023 => ['profit' => 21678, 'roi' => 16],
         ];
-        
+
         // Merge static values with calculated data
         foreach ($staticData as $year => $data) {
             $found = false;
@@ -236,14 +237,14 @@ class BetController extends Controller
                     break;
                 }
             }
-            if (!$found) {
+            if (! $found) {
                 $profitByYearData[] = [
                     'year' => $year,
                     'profit' => $data['profit'],
                     'roi' => $data['roi'],
                     'total_bets' => 0,
                     'wins' => 0,
-                    'win_rate' => 0
+                    'win_rate' => 0,
                 ];
             }
         }

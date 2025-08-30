@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\SportPreference;
 use App\Models\Sport;
+use App\Models\SportPreference;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -16,14 +16,14 @@ class SportPreferenceController extends Controller
     public function index()
     {
         $preferences = SportPreference::orderBy('priority', 'asc')->get();
-        
+
         // Get all unique sports from bets table
         $allSports = \App\Models\Bet::distinct()
             ->pluck('sport')
             ->filter()
             ->sort()
             ->values();
-        
+
         return Inertia::render('admin/SportPreferences', [
             'preferences' => $preferences,
             'availableSports' => $allSports,

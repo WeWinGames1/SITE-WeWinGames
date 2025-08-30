@@ -57,7 +57,7 @@ class AppServiceProvider extends ServiceProvider
         // Register email logging event listeners
         Event::listen(MessageSending::class, LogSendingEmail::class);
         Event::listen(MessageSent::class, LogSentEmail::class);
-        
+
         // Override the default mail channel with our logged version
         Notification::resolved(function (ChannelManager $service) {
             $service->extend('mail', function ($app) {

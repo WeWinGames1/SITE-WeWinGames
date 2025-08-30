@@ -47,12 +47,12 @@ class PageController extends Controller
             $media = \App\Models\Media::find($request->featured_image_media_id);
             if ($media) {
                 // Store the direct path reference
-                $data['featured_image'] = 'media/' . $media->id . '/' . $media->file_name;
+                $data['featured_image'] = 'media/'.$media->id.'/'.$media->file_name;
             }
         } elseif ($request->hasFile('featured_image')) {
             $data['featured_image'] = $request->file('featured_image')->store('pages', 'public');
         }
-        
+
         unset($data['featured_image_media_id']);
         $this->pages->create($data);
 
@@ -80,14 +80,14 @@ class PageController extends Controller
             $media = \App\Models\Media::find($request->featured_image_media_id);
             if ($media) {
                 // Store the direct path reference
-                $data['featured_image'] = 'media/' . $media->id . '/' . $media->file_name;
+                $data['featured_image'] = 'media/'.$media->id.'/'.$media->file_name;
             }
         } elseif ($request->hasFile('featured_image')) {
             $data['featured_image'] = $request->file('featured_image')->store('pages', 'public');
         } else {
             unset($data['featured_image']);
         }
-        
+
         unset($data['featured_image_media_id']);
         $this->pages->update($page, $data);
 

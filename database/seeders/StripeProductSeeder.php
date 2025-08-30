@@ -18,7 +18,7 @@ class StripeProductSeeder extends Seeder
                 'name' => 'Silver Monthly',
                 'tier' => 'Silver',
                 'billing_period' => 'monthly',
-                'price' => 60.00,
+                'price' => 90.00,
                 'features' => [
                     'Access to basic picks',
                     'Email notifications',
@@ -31,7 +31,7 @@ class StripeProductSeeder extends Seeder
                 'name' => 'Silver Weekly',
                 'tier' => 'Silver',
                 'billing_period' => 'weekly',
-                'price' => 20.00,
+                'price' => 40.00,
                 'features' => [
                     'Access to basic picks',
                     'Email notifications',
@@ -44,7 +44,7 @@ class StripeProductSeeder extends Seeder
                 'name' => 'Silver Daily',
                 'tier' => 'Silver',
                 'billing_period' => 'daily',
-                'price' => 5.00,
+                'price' => 10.00,
                 'features' => [
                     'Access to basic picks',
                     'Email notifications',
@@ -58,7 +58,7 @@ class StripeProductSeeder extends Seeder
                 'name' => 'Gold Monthly',
                 'tier' => 'Gold',
                 'billing_period' => 'monthly',
-                'price' => 110.00,
+                'price' => 130.00,
                 'features' => [
                     'Access to all picks',
                     'Priority email notifications',
@@ -73,7 +73,7 @@ class StripeProductSeeder extends Seeder
                 'name' => 'Gold Weekly',
                 'tier' => 'Gold',
                 'billing_period' => 'weekly',
-                'price' => 39.00,
+                'price' => 60.00,
                 'features' => [
                     'Access to all picks',
                     'Priority email notifications',
@@ -87,7 +87,7 @@ class StripeProductSeeder extends Seeder
                 'name' => 'Gold Daily',
                 'tier' => 'Gold',
                 'billing_period' => 'daily',
-                'price' => 10.00,
+                'price' => 12.00,
                 'features' => [
                     'Access to all picks',
                     'Priority email notifications',
@@ -101,7 +101,7 @@ class StripeProductSeeder extends Seeder
                 'name' => 'Platinum Monthly',
                 'tier' => 'Platinum',
                 'billing_period' => 'monthly',
-                'price' => 149.00,
+                'price' => 160.00,
                 'features' => [
                     'Access to all picks',
                     'Instant notifications',
@@ -117,7 +117,7 @@ class StripeProductSeeder extends Seeder
                 'name' => 'Platinum Weekly',
                 'tier' => 'Platinum',
                 'billing_period' => 'weekly',
-                'price' => 49.00,
+                'price' => 90.00,
                 'features' => [
                     'Access to all picks',
                     'Instant notifications',
@@ -131,7 +131,7 @@ class StripeProductSeeder extends Seeder
                 'name' => 'Platinum Daily',
                 'tier' => 'Platinum',
                 'billing_period' => 'daily',
-                'price' => 12.00,
+                'price' => 20.00,
                 'features' => [
                     'Access to all picks',
                     'Instant notifications',

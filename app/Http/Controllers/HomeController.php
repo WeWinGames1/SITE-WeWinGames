@@ -26,38 +26,39 @@ class HomeController extends Controller
 
         // Get active bets (betting_date <= now, game_date >= now)
         $allBets = $this->betService->getTodaysBets();
-        
+
         // Calculate total bets per sport from active bets
         $totalBetsPerSport = $allBets->groupBy(function ($bet) {
             return $bet->sports ?? $bet->sport ?? 'Football';
         })->map->count();
-        
+
         // For unauthenticated users, limit bronze bets to 2 from preferred sports
         $user = auth()->user();
-        if (!$user) {
+        if (! $user) {
             // Get sport preferences
             $sportPreferences = \App\Models\SportPreference::active()
                 ->orderBy('priority', 'asc')
                 ->pluck('sport_name')
                 ->toArray();
-            
+
             // Filter and limit bronze bets
             $bronzeBets = $allBets->filter(function ($bet) {
                 return strtolower($bet->membership ?? $bet->level ?? '') === 'bronze';
             });
-            
+
             // Sort by sport preference and limit to 2
             $limitedBets = $bronzeBets->sortBy(function ($bet) use ($sportPreferences) {
                 $sport = $bet->sports ?? $bet->sport ?? '';
                 $index = array_search($sport, $sportPreferences);
+
                 return $index === false ? 999 : $index;
             })->take(2);
-            
+
             // Include non-bronze bets for display (they'll be covered)
             $nonBronzeBets = $allBets->filter(function ($bet) {
                 return strtolower($bet->membership ?? $bet->level ?? '') !== 'bronze';
             });
-            
+
             $freeBets = $limitedBets->merge($nonBronzeBets);
         } else {
             $freeBets = $allBets;

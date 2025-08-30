@@ -19,27 +19,27 @@ return new class extends Migration
                 ->comment('Number of places that pay (6, 8, 10, etc.)');
             $table->integer('position_numeric')->nullable()->after('places_paid')
                 ->comment('Numeric position for calculations (5 for T5)');
-            
+
             // Dead heat fields
             $table->boolean('is_dead_heat')->default(false)->after('place_payout');
             $table->integer('dead_heat_players')->nullable()->after('is_dead_heat')
                 ->comment('Number of players tied');
             $table->decimal('dead_heat_spots', 10, 4)->nullable()->after('dead_heat_players')
                 ->comment('Available spots (can be fractional)');
-            
+
             // Enhanced result tracking
             $table->enum('bet_result_type', [
-                'won_outright', 
-                'placed', 
-                'placed_dead_heat', 
-                'lost', 
-                'void'
+                'won_outright',
+                'placed',
+                'placed_dead_heat',
+                'lost',
+                'void',
             ])->nullable()->after('status');
-            
+
             // Additional Each Way fields
             $table->integer('place_terms_denominator')->default(5)->after('place_fraction')
                 ->comment('For 1/5, store 5');
-            
+
             // Add indexes for better query performance
             $table->index('finishing_position', 'idx_finishing_position');
             $table->index('bet_result_type', 'idx_bet_result_type');
@@ -57,7 +57,7 @@ return new class extends Migration
             $table->dropIndex('idx_finishing_position');
             $table->dropIndex('idx_bet_result_type');
             $table->dropIndex('idx_each_way_result');
-            
+
             // Drop columns
             $table->dropColumn([
                 'finishing_position',
@@ -67,7 +67,7 @@ return new class extends Migration
                 'dead_heat_players',
                 'dead_heat_spots',
                 'bet_result_type',
-                'place_terms_denominator'
+                'place_terms_denominator',
             ]);
         });
     }

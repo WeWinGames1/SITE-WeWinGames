@@ -9,9 +9,13 @@ use Illuminate\Support\Facades\Log;
 class CloudflareService
 {
     protected $email;
+
     protected $apiKey;
+
     protected $zoneId;
+
     protected $apiUrl;
+
     protected $enabled;
 
     public function __construct()
@@ -30,18 +34,19 @@ class CloudflareService
      */
     public function purgeEverything()
     {
-        if (!$this->enabled) {
+        if (! $this->enabled) {
             return [
                 'success' => true,
-                'message' => 'Cloudflare integration is disabled'
+                'message' => 'Cloudflare integration is disabled',
             ];
         }
 
-        if (!$this->email || !$this->apiKey || !$this->zoneId) {
+        if (! $this->email || ! $this->apiKey || ! $this->zoneId) {
             Log::warning('Cloudflare credentials not configured');
+
             return [
                 'success' => false,
-                'message' => 'Cloudflare credentials not configured'
+                'message' => 'Cloudflare credentials not configured',
             ];
         }
 
@@ -51,7 +56,7 @@ class CloudflareService
                 'X-Auth-Key' => $this->apiKey,
                 'Content-Type' => 'application/json',
             ])->post("{$this->apiUrl}/zones/{$this->zoneId}/purge_cache", [
-                'purge_everything' => true
+                'purge_everything' => true,
             ]);
 
             $result = $response->json();
@@ -59,33 +64,33 @@ class CloudflareService
             if ($response->successful() && $result['success'] ?? false) {
                 Log::info('Cloudflare cache purged successfully', [
                     'zone_id' => $this->zoneId,
-                    'user' => auth()->id()
+                    'user' => auth()->id(),
                 ]);
 
                 return [
                     'success' => true,
-                    'message' => 'Cloudflare cache purged successfully'
+                    'message' => 'Cloudflare cache purged successfully',
                 ];
             }
 
             Log::error('Cloudflare cache purge failed', [
                 'response' => $result,
-                'status' => $response->status()
+                'status' => $response->status(),
             ]);
 
             return [
                 'success' => false,
-                'message' => 'Cloudflare cache purge failed: ' . ($result['errors'][0]['message'] ?? 'Unknown error')
+                'message' => 'Cloudflare cache purge failed: '.($result['errors'][0]['message'] ?? 'Unknown error'),
             ];
         } catch (\Exception $e) {
             Log::error('Cloudflare API error', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return [
                 'success' => false,
-                'message' => 'Cloudflare API error: ' . $e->getMessage()
+                'message' => 'Cloudflare API error: '.$e->getMessage(),
             ];
         }
     }
@@ -93,22 +98,21 @@ class CloudflareService
     /**
      * Purge specific URLs from Cloudflare cache
      *
-     * @param array $urls
      * @return array
      */
     public function purgeUrls(array $urls)
     {
-        if (!$this->enabled) {
+        if (! $this->enabled) {
             return [
                 'success' => true,
-                'message' => 'Cloudflare integration is disabled'
+                'message' => 'Cloudflare integration is disabled',
             ];
         }
 
-        if (!$this->email || !$this->apiKey || !$this->zoneId) {
+        if (! $this->email || ! $this->apiKey || ! $this->zoneId) {
             return [
                 'success' => false,
-                'message' => 'Cloudflare credentials not configured'
+                'message' => 'Cloudflare credentials not configured',
             ];
         }
 
@@ -118,7 +122,7 @@ class CloudflareService
                 'X-Auth-Key' => $this->apiKey,
                 'Content-Type' => 'application/json',
             ])->post("{$this->apiUrl}/zones/{$this->zoneId}/purge_cache", [
-                'files' => $urls
+                'files' => $urls,
             ]);
 
             $result = $response->json();
@@ -127,37 +131,34 @@ class CloudflareService
                 Log::info('Cloudflare URLs purged successfully', [
                     'urls' => $urls,
                     'zone_id' => $this->zoneId,
-                    'user' => auth()->id()
+                    'user' => auth()->id(),
                 ]);
 
                 return [
                     'success' => true,
-                    'message' => 'Cloudflare URLs purged successfully'
+                    'message' => 'Cloudflare URLs purged successfully',
                 ];
             }
 
             return [
                 'success' => false,
-                'message' => 'Cloudflare URL purge failed: ' . ($result['errors'][0]['message'] ?? 'Unknown error')
+                'message' => 'Cloudflare URL purge failed: '.($result['errors'][0]['message'] ?? 'Unknown error'),
             ];
         } catch (\Exception $e) {
             Log::error('Cloudflare API error', [
                 'error' => $e->getMessage(),
-                'urls' => $urls
+                'urls' => $urls,
             ]);
 
             return [
                 'success' => false,
-                'message' => 'Cloudflare API error: ' . $e->getMessage()
+                'message' => 'Cloudflare API error: '.$e->getMessage(),
             ];
         }
     }
 
     /**
      * Get the real IP address from Cloudflare headers
-     *
-     * @param Request $request
-     * @return string
      */
     public function getRealIp(Request $request): string
     {
@@ -169,6 +170,7 @@ class CloudflareService
         // Fallback to X-Forwarded-For
         if ($request->hasHeader('X-Forwarded-For')) {
             $ips = explode(',', $request->header('X-Forwarded-For'));
+
             return trim($ips[0]);
         }
 
@@ -178,15 +180,12 @@ class CloudflareService
 
     /**
      * Check if request is suspicious based on Cloudflare signals
-     *
-     * @param Request $request
-     * @return bool
      */
     public function isSuspiciousRequest(Request $request): bool
     {
         // Check Cloudflare threat score (if available)
         $threatScore = $request->header('CF-Threat-Score');
-        if ($threatScore && (int)$threatScore > 30) {
+        if ($threatScore && (int) $threatScore > 30) {
             return true;
         }
 
@@ -210,23 +209,17 @@ class CloudflareService
 
     /**
      * Check if the request is from a blocked country
-     *
-     * @param Request $request
-     * @return bool
      */
     public function isBlockedCountry(Request $request): bool
     {
         $country = $request->header('CF-IPCountry');
         $blockedCountries = config('cloudflare.blocked_countries', []);
-        
+
         return $country && in_array($country, $blockedCountries);
     }
 
     /**
      * Get security summary from Cloudflare headers
-     *
-     * @param Request $request
-     * @return array
      */
     public function getSecuritySummary(Request $request): array
     {
@@ -243,14 +236,10 @@ class CloudflareService
 
     /**
      * Verify Turnstile token
-     *
-     * @param string $token
-     * @param string $remoteIp
-     * @return array
      */
     public function verifyTurnstile(string $token, string $remoteIp): array
     {
-        if (!config('services.turnstile.enabled')) {
+        if (! config('services.turnstile.enabled')) {
             return ['success' => true];
         }
 
@@ -262,19 +251,20 @@ class CloudflareService
             ]);
 
             $result = $response->json();
-            
-            if (!$response->successful()) {
+
+            if (! $response->successful()) {
                 Log::error('Turnstile API request failed', [
                     'status' => $response->status(),
-                    'body' => $response->body()
+                    'body' => $response->body(),
                 ]);
+
                 return ['success' => false, 'error' => 'API request failed'];
             }
 
-            if (!($result['success'] ?? false)) {
+            if (! ($result['success'] ?? false)) {
                 Log::warning('Turnstile verification failed', [
                     'error_codes' => $result['error-codes'] ?? [],
-                    'ip' => $remoteIp
+                    'ip' => $remoteIp,
                 ]);
             }
 
@@ -282,9 +272,9 @@ class CloudflareService
         } catch (\Exception $e) {
             Log::error('Turnstile verification exception', [
                 'error' => $e->getMessage(),
-                'ip' => $remoteIp
+                'ip' => $remoteIp,
             ]);
-            
+
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }

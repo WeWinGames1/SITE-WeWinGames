@@ -82,7 +82,7 @@ class NewBetPick extends Notification implements ShouldQueue
 
             // Send using the templated email system
             Mail::to($notifiable)->send(new TemplatedEmail($template, $data));
-            
+
             // Return a dummy MailMessage to satisfy the return type
             return (new MailMessage)->subject('New Bet Pick');
         }

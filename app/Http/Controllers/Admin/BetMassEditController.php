@@ -48,7 +48,7 @@ class BetMassEditController extends Controller
 
         // Get list of available sports
         $sports = Bet::distinct()->pluck('sports')->filter()->values()->toArray();
-        
+
         // Debug: Log the query and results
         \Log::info('Sport filter value:', ['sport' => $request->sport]);
         \Log::info('Available sports in database:', $sports);
@@ -79,18 +79,18 @@ class BetMassEditController extends Controller
         DB::transaction(function () use ($validated, &$updatedCount) {
             foreach ($validated['updates'] as $update) {
                 $bet = Bet::find($update['id']);
-                
+
                 // Only update if it's a Golf bet
                 if ($bet->sports === 'Golf') {
                     $bet->winning_amount = $update['winning_amount'];
-                    
+
                     // Calculate profit if not provided
                     if (isset($update['profit_amount'])) {
                         $bet->profit_amount = $update['profit_amount'];
                     } else {
                         $bet->profit_amount = $update['winning_amount'] - $bet->wager_amount;
                     }
-                    
+
                     $bet->save();
                     $updatedCount++;
                 }
@@ -126,6 +126,7 @@ class BetMassEditController extends Controller
                     // Required fields
                     if (empty($record['date']) || empty($record['player']) || empty($record['winning_amount'])) {
                         $errors[] = "Row {$rowNumber}: Missing required fields (date, player, winning_amount)";
+
                         continue;
                     }
 
@@ -134,6 +135,7 @@ class BetMassEditController extends Controller
                         $date = \Carbon\Carbon::parse($record['date'])->format('Y-m-d');
                     } catch (\Exception $e) {
                         $errors[] = "Row {$rowNumber}: Invalid date format '{$record['date']}'";
+
                         continue;
                     }
 
@@ -146,23 +148,24 @@ class BetMassEditController extends Controller
                     $playerName = trim($record['player']);
                     $query->where(function ($q) use ($playerName) {
                         $q->where('matches', 'LIKE', "%{$playerName}%")
-                          ->orWhere('wager_name', 'LIKE', "%{$playerName}%")
-                          ->orWhere('tips', 'LIKE', "%{$playerName}%");
+                            ->orWhere('wager_name', 'LIKE', "%{$playerName}%")
+                            ->orWhere('tips', 'LIKE', "%{$playerName}%");
                     });
 
                     $bet = $query->first();
 
-                    if (!$bet) {
+                    if (! $bet) {
                         $notFoundCount++;
                         $errors[] = "Row {$rowNumber}: No matching bet found for {$playerName} on {$date}";
+
                         continue;
                     }
 
                     // Update the bet
                     $bet->winning_amount = (float) $record['winning_amount'];
-                    
+
                     // Calculate profit or use provided value
-                    if (!empty($record['profit_amount'])) {
+                    if (! empty($record['profit_amount'])) {
                         $bet->profit_amount = (float) $record['profit_amount'];
                     } else {
                         $bet->profit_amount = $bet->winning_amount - $bet->wager_amount;
@@ -189,7 +192,7 @@ class BetMassEditController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Import failed: ' . $e->getMessage(),
+                'message' => 'Import failed: '.$e->getMessage(),
             ], 422);
         }
     }
@@ -206,15 +209,15 @@ class BetMassEditController extends Controller
 
         $callback = function () {
             $handle = fopen('php://output', 'w');
-            
+
             // Header row
             fputcsv($handle, ['date', 'player', 'winning_amount', 'profit_amount']);
-            
+
             // Sample rows
             fputcsv($handle, ['2024-02-11', 'Tom McKibbin', '99.00', '69.00']);
             fputcsv($handle, ['2024-03-24', 'Sam Bairstow', '67.50', '57.50']);
             fputcsv($handle, ['2024-03-31', 'Mac Meissner', '105.00', '75.00']);
-            
+
             fclose($handle);
         };
 

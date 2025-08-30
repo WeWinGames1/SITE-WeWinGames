@@ -16,7 +16,7 @@ class TomorrowsBetsSeeder extends Seeder
     {
         // Get tomorrow's date
         $tomorrow = Carbon::tomorrow();
-        
+
         // Get operators
         $operators = Operator::all();
         if ($operators->isEmpty()) {
@@ -27,7 +27,7 @@ class TomorrowsBetsSeeder extends Seeder
                 Operator::create(['name' => 'Caesars']),
             ]);
         }
-        
+
         // Sports and their games/bets for tomorrow
         $sportsData = [
             'Football' => [
@@ -78,17 +78,17 @@ class TomorrowsBetsSeeder extends Seeder
                 ['home' => 'UFC 299', 'away' => 'Co-Main Event', 'time' => '21:30', 'membership' => 'silver'],
             ],
         ];
-        
+
         // Get admin user for bets
         $adminUser = User::where('email', 'admin@wewingames.com')->first();
-        if (!$adminUser) {
+        if (! $adminUser) {
             $adminUser = User::first();
         }
-        
+
         foreach ($sportsData as $sportName => $games) {
             // Get or create sport
             $sport = Sport::firstOrCreate(['name' => $sportName]);
-            
+
             foreach ($games as $gameData) {
                 // Get or create teams
                 $homeTeam = Team::firstOrCreate(
@@ -99,18 +99,18 @@ class TomorrowsBetsSeeder extends Seeder
                     ['name' => $gameData['away']],
                     ['sport_id' => $sport->id]
                 );
-                
+
                 // Generate bet details
                 $operator = $operators->random();
                 $isPositive = rand(0, 1);
                 $odds = $isPositive ? rand(100, 250) : rand(-250, -110);
-                
+
                 // Create different bet types based on sport
                 $betTypes = $this->getBetTypes($sportName);
                 $betType = $betTypes[array_rand($betTypes)];
                 $pick = $this->generatePick($sportName, $homeTeam->name, $awayTeam->name, $betType);
                 $analysis = $this->generateAnalysis($sportName, $homeTeam->name, $awayTeam->name);
-                
+
                 // Create bet
                 Bet::create([
                     'user_id' => $adminUser->id,
@@ -142,10 +142,10 @@ class TomorrowsBetsSeeder extends Seeder
                 ]);
             }
         }
-        
+
         $this->command->info("Tomorrow's bets seeded successfully!");
     }
-    
+
     private function getBetTypes($sport): array
     {
         $types = [
@@ -158,10 +158,10 @@ class TomorrowsBetsSeeder extends Seeder
             'Golf' => ['Tournament Winner', 'Top 5', 'Top 10', 'Head to Head', 'Round Leader'],
             'Ultimate Fighting Championship' => ['Fight Winner', 'Method of Victory', 'Round Betting', 'Total Rounds', 'Decision'],
         ];
-        
+
         return $types[$sport] ?? ['Match Winner', 'Total Points', 'Spread'];
     }
-    
+
     private function generatePick($sport, $home, $away, $betType): string
     {
         switch ($sport) {
@@ -169,79 +169,93 @@ class TomorrowsBetsSeeder extends Seeder
             case 'Basketball':
                 if (strpos($betType, 'Spread') !== false) {
                     $spread = rand(1, 14) * 0.5;
+
                     return rand(0, 1) ? "{$home} -{$spread}" : "{$away} +{$spread}";
                 } elseif (strpos($betType, 'Total') !== false || strpos($betType, 'Over/Under') !== false) {
                     $total = $sport === 'Football' ? rand(38, 58) : rand(200, 240);
+
                     return rand(0, 1) ? "Over {$total}" : "Under {$total}";
                 }
+
                 return rand(0, 1) ? $home : $away;
-                
+
             case 'Hockey':
                 if ($betType === 'Puck Line') {
                     return rand(0, 1) ? "{$home} -1.5" : "{$away} +1.5";
                 } elseif ($betType === 'Total Goals') {
                     $total = rand(5, 7) + 0.5;
+
                     return rand(0, 1) ? "Over {$total}" : "Under {$total}";
                 }
+
                 return rand(0, 1) ? $home : $away;
-                
+
             case 'Baseball':
                 if ($betType === 'Run Line') {
                     return rand(0, 1) ? "{$home} -1.5" : "{$away} +1.5";
                 } elseif ($betType === 'Total Runs') {
                     $total = rand(7, 11) + 0.5;
+
                     return rand(0, 1) ? "Over {$total}" : "Under {$total}";
                 }
+
                 return rand(0, 1) ? $home : $away;
-                
+
             case 'Soccer':
                 if ($betType === 'Total Goals') {
                     $total = rand(2, 3) + 0.5;
+
                     return rand(0, 1) ? "Over {$total}" : "Under {$total}";
                 } elseif ($betType === 'Both Teams Score') {
-                    return rand(0, 1) ? "Yes" : "No";
+                    return rand(0, 1) ? 'Yes' : 'No';
                 }
+
                 return rand(0, 1) ? $home : $away;
-                
+
             case 'Tennis':
                 if ($betType === 'Total Games') {
                     $total = rand(20, 24) + 0.5;
+
                     return rand(0, 1) ? "Over {$total}" : "Under {$total}";
                 }
+
                 return rand(0, 1) ? "{$home} in Straight Sets" : "{$away} 2-1";
-                
+
             case 'Golf':
                 $positions = ['Win', 'Top 5', 'Top 10', 'Top 20'];
-                return "{$home} to " . $positions[array_rand($positions)];
-                
+
+                return "{$home} to ".$positions[array_rand($positions)];
+
             case 'Ultimate Fighting Championship':
                 if ($betType === 'Method of Victory') {
                     $methods = ['KO/TKO', 'Submission', 'Decision'];
-                    return "Fight ends by " . $methods[array_rand($methods)];
+
+                    return 'Fight ends by '.$methods[array_rand($methods)];
                 }
-                return $home . " to Win";
-                
+
+                return $home.' to Win';
+
             default:
                 return rand(0, 1) ? $home : $away;
         }
     }
-    
+
     private function generateAnalysis($sport, $home, $away): string
     {
         $analyses = [
             "Tomorrow's matchup presents excellent value with recent form analysis.",
             "Key statistics favor this selection for tomorrow's contest.",
-            "Momentum and matchup advantages align perfectly here.",
-            "Historical performance in similar conditions supports this pick.",
-            "Advanced metrics indicate strong potential for tomorrow.",
-            "Recent trends and head-to-head data favor this outcome.",
-            "Situational factors create a prime betting opportunity.",
+            'Momentum and matchup advantages align perfectly here.',
+            'Historical performance in similar conditions supports this pick.',
+            'Advanced metrics indicate strong potential for tomorrow.',
+            'Recent trends and head-to-head data favor this outcome.',
+            'Situational factors create a prime betting opportunity.',
             "Form analysis shows clear edge in tomorrow's matchup.",
         ];
-        
-        return $analyses[array_rand($analyses)] . " {$home} vs {$away}.";
+
+        return $analyses[array_rand($analyses)]." {$home} vs {$away}.";
     }
-    
+
     private function getLeague($sport): string
     {
         $leagues = [
@@ -254,7 +268,7 @@ class TomorrowsBetsSeeder extends Seeder
             'Golf' => 'PGA Tour',
             'Ultimate Fighting Championship' => 'UFC',
         ];
-        
+
         return $leagues[$sport] ?? $sport;
     }
 }

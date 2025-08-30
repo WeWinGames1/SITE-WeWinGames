@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('order_column')->default(0);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            
+
             $table->index('slug');
             $table->index('is_active');
         });

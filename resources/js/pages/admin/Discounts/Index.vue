@@ -18,6 +18,8 @@ interface DiscountCode {
     times_used: number;
     valid_from: string | null;
     valid_until: string | null;
+    applicable_products: number[] | null;
+    minimum_amount: number | null;
     is_active: boolean;
     is_valid: boolean;
     redemptions_count: number;

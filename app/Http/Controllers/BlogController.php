@@ -42,6 +42,7 @@ class BlogController extends Controller
         $posts->through(function ($post) {
             $postArray = $post->toArray();
             $postArray['featured_image_url'] = $post->featured_image_url;
+
             return $postArray;
         });
 
@@ -84,15 +85,16 @@ class BlogController extends Controller
             ->map(function ($relatedPost) {
                 $data = $relatedPost->toArray();
                 $data['featured_image_url'] = $relatedPost->featured_image_url;
+
                 return $data;
             });
 
         // Ensure all attributes are loaded
         $postData = $post->load('author:id,name')->toArray();
-        
+
         // Ensure featured_image_url is included
         $postData['featured_image_url'] = $post->featured_image_url;
-        
+
         return Inertia::render('blog/Show', [
             'post' => $postData,
             'relatedPosts' => $relatedPosts,

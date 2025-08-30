@@ -213,12 +213,12 @@ const gameColumnName = computed(() => {
 onMounted(() => {
     // Initialize with detected mappings, but filter out 'level' field
     const filteredMappings = { ...props.detectedMappings };
-    
+
     // Remove 'level' field if it exists - we only use 'membership' now
     if ('level' in filteredMappings) {
         delete filteredMappings.level;
     }
-    
+
     mappings.value = filteredMappings;
 
     // Ensure all required fields are initialized

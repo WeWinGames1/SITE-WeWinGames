@@ -57,7 +57,7 @@ class Affiliate extends Model
 
     public function getShareUrl(): string
     {
-        return url('/?affiliate=' . $this->code);
+        return url('/?affiliate='.$this->code);
     }
 
     public function getTotalCustomers(): int

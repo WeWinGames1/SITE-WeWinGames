@@ -42,22 +42,24 @@ class MigrateFeaturedImagesToMediaLibrary extends Command
 
             // Check if already has media
             if ($post->getFirstMedia('featured-image')) {
-                $this->warn("  - Post already has media in library, skipping.");
+                $this->warn('  - Post already has media in library, skipping.');
                 $skipped++;
+
                 continue;
             }
 
             // Check if the featured image exists
-            if (!Storage::disk('public')->exists($post->featured_image)) {
+            if (! Storage::disk('public')->exists($post->featured_image)) {
                 $this->error("  - Featured image not found: {$post->featured_image}");
                 $failed++;
+
                 continue;
             }
 
             try {
                 // Get the full path to the image
                 $fullPath = Storage::disk('public')->path($post->featured_image);
-                
+
                 // Add to media library
                 $media = $post->addMedia($fullPath)
                     ->preservingOriginal()
@@ -79,7 +81,7 @@ class MigrateFeaturedImagesToMediaLibrary extends Command
 
         if ($migrated > 0) {
             $this->info("\nNote: Original featured_image paths have been preserved in the database.");
-            $this->info("The media library will now be used as the primary source for featured images.");
+            $this->info('The media library will now be used as the primary source for featured images.');
         }
     }
 }

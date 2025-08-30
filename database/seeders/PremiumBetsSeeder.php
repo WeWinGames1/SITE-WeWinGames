@@ -15,7 +15,7 @@ class PremiumBetsSeeder extends Seeder
     public function run(): void
     {
         $today = Carbon::today();
-        
+
         // Get operators
         $operators = Operator::all();
         if ($operators->isEmpty()) {
@@ -24,10 +24,10 @@ class PremiumBetsSeeder extends Seeder
                 Operator::create(['name' => 'FanDuel']),
             ]);
         }
-        
+
         // Get admin user
         $adminUser = User::where('email', 'admin@wewingames.com')->first() ?? User::first();
-        
+
         // Premium picks for today with detailed analysis
         $premiumPicks = [
             [
@@ -131,10 +131,10 @@ class PremiumBetsSeeder extends Seeder
                 'analysis' => '💰 VALUE PLAY: Jokic has 4 triple-doubles in last 6 vs Suns. Great odds for likely outcome.',
             ],
         ];
-        
+
         foreach ($premiumPicks as $pickData) {
             $sport = Sport::firstOrCreate(['name' => $pickData['sport']]);
-            
+
             $homeTeam = Team::firstOrCreate(
                 ['name' => $pickData['home']],
                 ['sport_id' => $sport->id]
@@ -143,7 +143,7 @@ class PremiumBetsSeeder extends Seeder
                 ['name' => $pickData['away']],
                 ['sport_id' => $sport->id]
             );
-            
+
             Bet::create([
                 'user_id' => $adminUser->id,
                 'sport_id' => $sport->id,
@@ -174,10 +174,10 @@ class PremiumBetsSeeder extends Seeder
                 'updated_at' => now(),
             ]);
         }
-        
+
         $this->command->info('Premium bets with detailed analysis seeded successfully!');
     }
-    
+
     private function getLeague($sport): string
     {
         $leagues = [
@@ -189,7 +189,7 @@ class PremiumBetsSeeder extends Seeder
             'Golf' => 'PGA Tour',
             'Ultimate Fighting Championship' => 'UFC',
         ];
-        
+
         return $leagues[$sport] ?? $sport;
     }
 }

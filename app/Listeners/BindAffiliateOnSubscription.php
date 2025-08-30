@@ -4,9 +4,6 @@ namespace App\Listeners;
 
 use App\Models\Affiliate;
 use App\Services\SendGridService;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Support\Facades\Cookie;
 use Laravel\Cashier\Events\WebhookReceived;
 
 class BindAffiliateOnSubscription
@@ -27,18 +24,18 @@ class BindAffiliateOnSubscription
     public function handle(WebhookReceived $event): void
     {
         // Handle subscription created or updated
-        if (!in_array($event->payload['type'], ['customer.subscription.created', 'customer.subscription.updated'])) {
+        if (! in_array($event->payload['type'], ['customer.subscription.created', 'customer.subscription.updated'])) {
             return;
         }
 
         $stripeCustomerId = $event->payload['data']['object']['customer'] ?? null;
-        if (!$stripeCustomerId) {
+        if (! $stripeCustomerId) {
             return;
         }
 
         // Find user by Stripe customer ID
         $user = \App\Models\User::where('stripe_id', $stripeCustomerId)->first();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
@@ -51,7 +48,7 @@ class BindAffiliateOnSubscription
         $metadata = $event->payload['data']['object']['metadata'] ?? [];
         $affiliateCode = $metadata['affiliate_code'] ?? null;
 
-        if (!$affiliateCode) {
+        if (! $affiliateCode) {
             return;
         }
 
@@ -60,7 +57,7 @@ class BindAffiliateOnSubscription
             ->where('is_active', true)
             ->first();
 
-        if (!$affiliate) {
+        if (! $affiliate) {
             return;
         }
 
@@ -74,7 +71,7 @@ class BindAffiliateOnSubscription
         try {
             $this->sendGridService->updateContactSubscription($user);
         } catch (\Exception $e) {
-            \Log::error('Failed to update SendGrid contact after affiliate binding: ' . $e->getMessage());
+            \Log::error('Failed to update SendGrid contact after affiliate binding: '.$e->getMessage());
         }
     }
 }

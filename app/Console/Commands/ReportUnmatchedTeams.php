@@ -87,7 +87,7 @@ class ReportUnmatchedTeams extends Command
         $teamStats = [];
         foreach ($unmatchedTeams as $team) {
             $key = $team->team_name;
-            if (!isset($teamStats[$key])) {
+            if (! isset($teamStats[$key])) {
                 $teamStats[$key] = [
                     'team_name' => $team->team_name,
                     'sports' => [],
@@ -95,15 +95,15 @@ class ReportUnmatchedTeams extends Command
                     'total_count' => 0,
                 ];
             }
-            
-            if ($team->sports && !in_array($team->sports, $teamStats[$key]['sports'])) {
+
+            if ($team->sports && ! in_array($team->sports, $teamStats[$key]['sports'])) {
                 $teamStats[$key]['sports'][] = $team->sports;
             }
-            
-            if ($team->league && !in_array($team->league, $teamStats[$key]['leagues'])) {
+
+            if ($team->league && ! in_array($team->league, $teamStats[$key]['leagues'])) {
                 $teamStats[$key]['leagues'][] = $team->league;
             }
-            
+
             $teamStats[$key]['total_count'] += $team->count;
         }
 
@@ -132,15 +132,15 @@ class ReportUnmatchedTeams extends Command
         $this->info("\n=== SUMMARY ===");
         $this->line("Total Bets: {$totalBets}");
         $this->line("Unmatched Bets: {$totalUnmatchedBets} ({$percentUnmatched}%)");
-        $this->line("Unique Unmatched Teams: " . count($teamStats));
+        $this->line('Unique Unmatched Teams: '.count($teamStats));
 
         if ($export) {
-            $filename = 'unmatched_teams_' . date('Y-m-d_His') . '.csv';
+            $filename = 'unmatched_teams_'.date('Y-m-d_His').'.csv';
             $handle = fopen($filename, 'w');
-            
+
             // Write headers
             fputcsv($handle, ['Team Name', 'Sports', 'Leagues', 'Bet Count']);
-            
+
             // Write data
             foreach ($teamStats as $stat) {
                 fputcsv($handle, [
@@ -150,7 +150,7 @@ class ReportUnmatchedTeams extends Command
                     $stat['total_count'],
                 ]);
             }
-            
+
             fclose($handle);
             $this->info("\nExported to: {$filename}");
         } else {
@@ -169,8 +169,8 @@ class ReportUnmatchedTeams extends Command
             );
 
             if (count($teamStats) > 20) {
-                $this->info("\n... and " . (count($teamStats) - 20) . " more unmatched teams.");
-                $this->info("Use --export option to get the full list.");
+                $this->info("\n... and ".(count($teamStats) - 20).' more unmatched teams.');
+                $this->info('Use --export option to get the full list.');
             }
         }
 
@@ -178,7 +178,7 @@ class ReportUnmatchedTeams extends Command
         $this->info("\n=== SUGGESTED ACTIONS ===");
         $this->line("1. Run 'php artisan bets:extract-teams' to create teams from bet data");
         $this->line("2. Create aliases for common variations (e.g., 'LA Lakers' -> 'Lakers')");
-        $this->line("3. Use the admin panel to manually map teams");
+        $this->line('3. Use the admin panel to manually map teams');
 
         return Command::SUCCESS;
     }

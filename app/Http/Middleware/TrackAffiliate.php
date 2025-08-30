@@ -2,10 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Affiliate;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use App\Models\Affiliate;
 
 class TrackAffiliate
 {
@@ -21,7 +21,7 @@ class TrackAffiliate
         // Check if affiliate parameter is in query string
         if ($request->has('affiliate')) {
             $affiliateCode = $request->query('affiliate');
-            
+
             // Verify affiliate exists and is active
             $affiliate = Affiliate::where('code', $affiliateCode)
                 ->where('is_active', true)

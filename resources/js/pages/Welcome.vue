@@ -308,12 +308,12 @@ const allGroupedBets = computed(() => {
     // Add teaser cards for guest/free users
     if (!auth?.user || isDefault) {
         // Add teaser card to each sport group
-        Object.keys(grouped).forEach(sport => {
-            const visibleCount = grouped[sport].filter(bet => !bet.isCovered).length;
+        Object.keys(grouped).forEach((sport) => {
+            const visibleCount = grouped[sport].filter((bet) => !bet.isCovered).length;
             const totalCount = totalBetsPerSport[sport] || 0;
             // For the teaser card, show the TOTAL number of picks, not remaining
             const remainingCount = totalCount;
-            
+
             // Always add exactly one teaser card per sport for guests/free users
             grouped[sport].push({
                 id: `teaser-${sport}`,
@@ -321,22 +321,24 @@ const allGroupedBets = computed(() => {
                 sport: sport,
                 sports: sport,
                 remainingCount: remainingCount,
-                isGuest: !auth?.user
+                isGuest: !auth?.user,
             });
         });
-        
+
         // Also check if any sports have bets but aren't shown due to filtering
-        Object.keys(totalBetsPerSport).forEach(sport => {
+        Object.keys(totalBetsPerSport).forEach((sport) => {
             if (!grouped[sport] && totalBetsPerSport[sport] > 0) {
                 // This sport has bets but none are visible, create a group with just a teaser
-                grouped[sport] = [{
-                    id: `teaser-${sport}`,
-                    isTeaser: true,
-                    sport: sport,
-                    sports: sport,
-                    remainingCount: totalBetsPerSport[sport],
-                    isGuest: !auth?.user
-                }];
+                grouped[sport] = [
+                    {
+                        id: `teaser-${sport}`,
+                        isTeaser: true,
+                        sport: sport,
+                        sports: sport,
+                        remainingCount: totalBetsPerSport[sport],
+                        isGuest: !auth?.user,
+                    },
+                ];
             }
         });
     }
@@ -660,17 +662,23 @@ const allGroupedBets = computed(() => {
                         <h3 class="h4 fw-bold text-white text-center mb-4">Subscription Plans</h3>
                         <div class="row justify-content-center">
                             <div class="col-lg-8">
-                                <div class="card shadow-lg" style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); border: 3px solid #ff7900; overflow: hidden">
+                                <div
+                                    class="card shadow-lg"
+                                    style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); border: 3px solid #ff7900; overflow: hidden"
+                                >
                                     <div class="card-body p-4 position-relative">
                                         <!-- Background DraftKings logo -->
-                                        <div class="position-absolute top-0 end-0" style="opacity: 0.15; transform: rotate(-15deg) translate(20px, -20px); z-index: 0">
-                                            <img 
-                                                src="/images/DraftKings_FC_on_dark.svg" 
-                                                alt="" 
+                                        <div
+                                            class="position-absolute top-0 end-0"
+                                            style="opacity: 0.15; transform: rotate(-15deg) translate(20px, -20px); z-index: 0"
+                                        >
+                                            <img
+                                                src="/images/DraftKings_FC_on_dark.svg"
+                                                alt=""
                                                 style="height: 200px; width: auto; filter: grayscale(100%) brightness(2)"
                                             />
                                         </div>
-                                        
+
                                         <div class="row align-items-center position-relative">
                                             <div class="col-lg-8">
                                                 <div class="d-flex align-items-start gap-3">
@@ -685,7 +693,7 @@ const allGroupedBets = computed(() => {
                                                             <h4 class="h5 text-white mb-0 fw-bold">DraftKings Sportsbook</h4>
                                                             <span class="badge bg-warning text-dark" style="font-size: 0.65rem">NEW CUSTOMERS</span>
                                                         </div>
-                                                        
+
                                                         <div class="mb-3">
                                                             <div class="d-flex align-items-baseline gap-2 flex-wrap">
                                                                 <span class="display-6 fw-bold text-warning">BET $5</span>
@@ -701,14 +709,18 @@ const allGroupedBets = computed(() => {
                                                     </div>
                                                 </div>
                                             </div>
-                                            
+
                                             <div class="col-lg-4 text-center text-lg-end mt-3 mt-lg-0">
                                                 <a
                                                     href="https://sportsbook.draftkings.com/acq-bet-and-get?pcid=420313&pcn=Promo1&pcrid=xx&pcrn=xx&pscid=xx&pscn=WeWinGames&psn=1967&referrer=singular_click_id%3d63c8a1b6-2dcc-42b9-928e-bdb91b06dee3&sl_id=tqhb&wpcid=420313&wpcn=Promo1&wpcrid=xx&wpcrn=xx&wpscid=xx&wpscn=WeWinGames&wpsrc=1967"
                                                     target="_blank"
                                                     rel="noopener"
                                                     class="btn btn-warning btn-lg px-5 py-3 fw-bold shadow"
-                                                    style="background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%); border: none; transition: all 0.3s ease"
+                                                    style="
+                                                        background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+                                                        border: none;
+                                                        transition: all 0.3s ease;
+                                                    "
                                                     onmouseover="this.style.transform='scale(1.05)'"
                                                     onmouseout="this.style.transform='scale(1)'"
                                                 >

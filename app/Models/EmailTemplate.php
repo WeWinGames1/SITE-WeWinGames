@@ -43,11 +43,11 @@ class EmailTemplate extends Model
     const SUBSCRIPTION_CANCELLED = 'subscription_cancelled';
 
     const WELCOME_SUBSCRIBER = 'welcome_subscriber';
-    
+
     const NEW_BET_PICK = 'new_bet_pick';
-    
+
     const NEW_BATCH_UPLOAD = 'new_batch_upload';
-    
+
     const CAREER_APPLICATION = 'career_application';
 
     /**
@@ -122,17 +122,17 @@ class EmailTemplate extends Model
         // Handle SendGrid subdomain replacement
         $fromEmail = $this->from_email ?: config('mail.from.address');
         $replyToEmail = $fromEmail; // Keep original for reply-to
-        
+
         // If using SendGrid and MAIL_EHLO_DOMAIN is set, replace domain
         if (config('mail.default') === 'sendgrid' && config('mail.mailers.sendgrid.ehlo_domain')) {
             $sendgridDomain = config('mail.mailers.sendgrid.ehlo_domain');
             // Extract username from email
             if (strpos($fromEmail, '@') !== false) {
-                list($username, $domain) = explode('@', $fromEmail, 2);
-                $fromEmail = $username . '@' . $sendgridDomain;
+                [$username, $domain] = explode('@', $fromEmail, 2);
+                $fromEmail = $username.'@'.$sendgridDomain;
             }
         }
-        
+
         return [
             'subject' => $subject,
             'body_html' => $bodyHtml,

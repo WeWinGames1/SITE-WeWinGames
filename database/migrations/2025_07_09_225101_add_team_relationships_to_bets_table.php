@@ -15,7 +15,7 @@ return new class extends Migration
             // Add foreign keys for teams
             $table->foreignId('team_one_id')->nullable()->after('team_one')->constrained('teams')->nullOnDelete();
             $table->foreignId('team_two_id')->nullable()->after('team_two')->constrained('teams')->nullOnDelete();
-            
+
             // Add index for faster lookups
             $table->index(['team_one_id', 'team_two_id']);
         });

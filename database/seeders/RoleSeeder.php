@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RoleSeeder extends Seeder
 {
@@ -39,7 +38,7 @@ class RoleSeeder extends Seeder
             'edit users',
             'delete users',
             'impersonate users',
-            
+
             // Bet management
             'view bets',
             'create bets',
@@ -47,21 +46,21 @@ class RoleSeeder extends Seeder
             'delete bets',
             'import bets',
             'export bets',
-            
+
             // Content management
             'view content',
             'create content',
             'edit content',
             'delete content',
-            
+
             // Subscription management
             'view subscriptions',
             'manage subscriptions',
-            
+
             // System settings
             'view settings',
             'edit settings',
-            
+
             // Admin access
             'access admin panel',
         ];
@@ -85,7 +84,7 @@ class RoleSeeder extends Seeder
         ]);
 
         // Regular users have no special permissions by default
-        
+
         $this->command->info('Roles and permissions seeded successfully.');
     }
 }

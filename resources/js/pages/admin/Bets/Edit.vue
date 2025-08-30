@@ -89,7 +89,7 @@ interface Props {
     sports: Sport[];
     leagues: League[];
     betTypes: Record<string, string>;
-    teams: Array<{ id: number; text: string; }>;
+    teams: Array<{ id: number; text: string }>;
 }
 
 const props = defineProps<Props>();
@@ -173,10 +173,7 @@ onMounted(() => {
 
     // Try to find league by name and sport
     if (form.sport_id && props.bet.league) {
-        const league = props.leagues.find((l) => 
-            l.name.toLowerCase() === props.bet.league.toLowerCase() && 
-            l.sport_id === form.sport_id
-        );
+        const league = props.leagues.find((l) => l.name.toLowerCase() === props.bet.league.toLowerCase() && l.sport_id === form.sport_id);
         if (league) {
             form.league_id = league.id;
         }
@@ -189,7 +186,7 @@ onMounted(() => {
             team_one_id: form.team_one_id,
             team_two: form.team_two,
             team_two_id: form.team_two_id,
-            teams: props.teams
+            teams: props.teams,
         });
         initializeSelect2();
     });
@@ -256,7 +253,7 @@ watch(
             });
         }
     },
-    { immediate: true }
+    { immediate: true },
 );
 
 // Watch for league changes to update the league name
@@ -371,7 +368,7 @@ function initializeSelect2() {
                 console.log('Initializing Select2 with:', {
                     team_one_id: form.team_one_id,
                     team_two_id: form.team_two_id,
-                    teams_count: props.teams.length
+                    teams_count: props.teams.length,
                 });
                 initTeamSelect('team_one_select', 'one');
                 initTeamSelect('team_two_select', 'two');
@@ -394,15 +391,14 @@ function initTeamSelect(elementId: string, teamType: 'one' | 'two') {
     // Clear and populate with teams
     $element.empty();
     $element.append('<option value="">Select a team...</option>');
-    
+
     // Add all teams as options
-    props.teams.forEach(team => {
-        const isSelected = (teamType === 'one' && form.team_one_id === team.id) || 
-                          (teamType === 'two' && form.team_two_id === team.id);
+    props.teams.forEach((team) => {
+        const isSelected = (teamType === 'one' && form.team_one_id === team.id) || (teamType === 'two' && form.team_two_id === team.id);
         const option = new Option(team.text, team.id.toString(), isSelected, isSelected);
         $element.append(option);
     });
-    
+
     // Initialize Select2 with simple configuration
     $element.select2({
         placeholder: `Select ${teamType === 'one' ? 'team one' : 'team two'}...`,
@@ -416,18 +412,18 @@ function initTeamSelect(elementId: string, teamType: 'one' | 'two') {
             return {
                 id: term,
                 text: term,
-                newTag: true
+                newTag: true,
             };
         },
         dropdownParent: window.$('.modal').length ? window.$('.modal') : window.$('body'),
     });
-    
+
     // Force set the value after Select2 initialization
     const valueToSet = teamType === 'one' ? form.team_one_id : form.team_two_id;
     if (valueToSet) {
         console.log(`Setting ${teamType} team value to:`, valueToSet);
         $element.val(valueToSet.toString()).trigger('change.select2');
-        
+
         // Double-check the value was set
         setTimeout(() => {
             const currentVal = $element.val();
@@ -465,28 +461,25 @@ function initTeamSelect(elementId: string, teamType: 'one' | 'two') {
     });
 }
 
-
 // Search for a team by name and set it if found
 async function searchAndSetTeam(teamType: 'one' | 'two', searchTerm: string) {
     if (!searchTerm) return;
-    
+
     try {
         const response = await axios.get(route('admin.api.teams.search'), {
             params: {
                 q: searchTerm,
                 sport_id: form.sport_id,
-                league_id: form.league_id
-            }
+                league_id: form.league_id,
+            },
         });
-        
+
         if (response.data.results && response.data.results.length > 0) {
             // Find exact match or closest match
-            const exactMatch = response.data.results.find((team: any) => 
-                team.name.toLowerCase() === searchTerm.toLowerCase()
-            );
-            
+            const exactMatch = response.data.results.find((team: any) => team.name.toLowerCase() === searchTerm.toLowerCase());
+
             const teamToUse = exactMatch || response.data.results[0];
-            
+
             if (teamToUse) {
                 // Update form with team ID
                 if (teamType === 'one') {
@@ -498,21 +491,22 @@ async function searchAndSetTeam(teamType: 'one' | 'two', searchTerm: string) {
                     // Keep the original full name with pitcher info
                     // form.team_two remains unchanged
                 }
-                
+
                 // Update Select2 dropdown
                 const elementId = teamType === 'one' ? 'team_one_select' : 'team_two_select';
                 const $element = window.$(`#${elementId}`);
-                
+
                 if ($element.length) {
                     // Clear existing option
                     $element.empty();
-                    
+
                     // Add the found team as selected option
-                    const $option = window.$('<option></option>')
+                    const $option = window
+                        .$('<option></option>')
                         .attr('value', teamToUse.id)
                         .text(form[teamType === 'one' ? 'team_one' : 'team_two']) // Use original name with pitcher
                         .prop('selected', true);
-                    
+
                     $element.append($option);
                     $element.trigger('change');
                 }
@@ -549,12 +543,12 @@ function formatTeamSelection(team: any) {
     if (!team || !team.id) {
         return '';
     }
-    
+
     // Get the text from the element if it's a DOM element
     if (team.element) {
         return team.text || '';
     }
-    
+
     // Ensure we always return a string
     if (team.name) {
         return team.name;
@@ -1131,7 +1125,9 @@ declare global {
 
                                 <!-- Team Two -->
                                 <div class="col-md-6">
-                                    <label for="team_two_select" class="form-label">Team Two <span v-if="!isIndividualSport" class="text-danger">*</span></label>
+                                    <label for="team_two_select" class="form-label"
+                                        >Team Two <span v-if="!isIndividualSport" class="text-danger">*</span></label
+                                    >
                                     <div class="d-flex gap-2">
                                         <select id="team_two_select" class="form-control flex-grow-1"></select>
                                         <button
@@ -1260,7 +1256,6 @@ declare global {
                                     {{ form.errors.tips }}
                                 </div>
                             </div>
-
 
                             <!-- Odds -->
                             <div class="col-md-4">
@@ -1574,11 +1569,11 @@ declare global {
                                         class="form-check-input"
                                         role="switch"
                                     />
-                                    <label class="form-check-label" for="premium_notes_enabled">
-                                        Enable Premium Notes
-                                    </label>
+                                    <label class="form-check-label" for="premium_notes_enabled"> Enable Premium Notes </label>
                                 </div>
-                                <div class="form-text">When enabled, premium notes will be displayed to customers at this membership level or higher</div>
+                                <div class="form-text">
+                                    When enabled, premium notes will be displayed to customers at this membership level or higher
+                                </div>
                             </div>
 
                             <!-- Notes Heading -->

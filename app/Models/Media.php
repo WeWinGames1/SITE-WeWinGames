@@ -25,9 +25,9 @@ class Media extends BaseMedia
     {
         // For library items, construct the URL manually
         if ($this->model_type === 'library' || ($this->model_type === null && $this->collection_name === 'library')) {
-            return asset('storage/media/' . $this->id . '/' . $this->file_name);
+            return asset('storage/media/'.$this->id.'/'.$this->file_name);
         }
-        
+
         // For other items, use the parent method
         return parent::getUrl($conversionName);
     }
@@ -49,7 +49,7 @@ class Media extends BaseMedia
         if ($this->model_type === 'library' || ($this->model_type === null && $this->collection_name === 'library')) {
             return $this->getUrl();
         }
-        
+
         return $this->getUrl('thumb');
     }
 
@@ -62,7 +62,7 @@ class Media extends BaseMedia
         if ($this->model_type === 'library' || ($this->model_type === null && $this->collection_name === 'library')) {
             return $this->getUrl();
         }
-        
+
         return $this->getUrl('preview');
     }
 

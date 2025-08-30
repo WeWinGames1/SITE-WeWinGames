@@ -39,18 +39,18 @@ class LandingPageController extends Controller
             'featured_image_media_id' => 'nullable|integer|exists:media,id',
             'published' => 'boolean',
         ]);
-        
+
         // Handle media library selection
         if ($request->filled('featured_image_media_id')) {
             $media = \App\Models\Media::find($request->featured_image_media_id);
             if ($media) {
                 // Store the direct path reference
-                $data['featured_image'] = 'media/' . $media->id . '/' . $media->file_name;
+                $data['featured_image'] = 'media/'.$media->id.'/'.$media->file_name;
             }
         } elseif ($request->hasFile('featured_image')) {
             $data['featured_image'] = $request->file('featured_image')->store('landing_pages', 'public');
         }
-        
+
         unset($data['featured_image_media_id']);
         $this->pages->create($data);
 
@@ -72,20 +72,20 @@ class LandingPageController extends Controller
             'featured_image_media_id' => 'nullable|integer|exists:media,id',
             'published' => 'boolean',
         ]);
-        
+
         // Handle media library selection
         if ($request->filled('featured_image_media_id')) {
             $media = \App\Models\Media::find($request->featured_image_media_id);
             if ($media) {
                 // Store the direct path reference
-                $data['featured_image'] = 'media/' . $media->id . '/' . $media->file_name;
+                $data['featured_image'] = 'media/'.$media->id.'/'.$media->file_name;
             }
         } elseif ($request->hasFile('featured_image')) {
             $data['featured_image'] = $request->file('featured_image')->store('landing_pages', 'public');
         } else {
             unset($data['featured_image']);
         }
-        
+
         unset($data['featured_image_media_id']);
         $this->pages->update($page, $data);
 

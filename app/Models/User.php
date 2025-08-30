@@ -161,11 +161,19 @@ class User extends Authenticatable implements MustVerifyEmail
     /**
      * Bind user to affiliate when they upgrade to paid plan
      */
-    public function bindToAffiliate(Affiliate $affiliate, string $plan = null): void
+    public function bindToAffiliate(Affiliate $affiliate, ?string $plan = null): void
     {
         $this->affiliate_id = $affiliate->id;
         $this->affiliate_bound_at = now();
         $this->affiliate_bound_plan = $plan;
         $this->save();
+    }
+
+    /**
+     * Get user's discount redemptions
+     */
+    public function discountRedemptions()
+    {
+        return $this->hasMany(\App\Models\DiscountRedemption::class);
     }
 }

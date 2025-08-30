@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('teams', function (Blueprint $table) {
             $table->foreignId('league_id')->nullable()->after('sport_id')->constrained()->onDelete('cascade');
             $table->text('description')->nullable()->after('country');
-            
+
             // Add index for faster lookups
             $table->index(['sport_id', 'league_id', 'name']);
         });

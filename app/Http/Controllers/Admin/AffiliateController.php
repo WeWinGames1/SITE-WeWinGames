@@ -20,8 +20,8 @@ class AffiliateController extends Controller
             ->when($request->search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('code', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
+                        ->orWhere('code', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
                 });
             })
             ->when($request->status, function ($query, $status) {
@@ -77,7 +77,7 @@ class AffiliateController extends Controller
     public function show(Affiliate $affiliate)
     {
         $affiliate->loadCount(['users', 'activeUsers']);
-        
+
         $customers = $affiliate->users()
             ->with('subscriptions')
             ->orderBy('created_at', 'desc')
@@ -107,7 +107,7 @@ class AffiliateController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:255|unique:affiliates,code,' . $affiliate->id,
+            'code' => 'required|string|max:255|unique:affiliates,code,'.$affiliate->id,
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:255',
             'commission_rate' => 'required|numeric|min:0|max:100',

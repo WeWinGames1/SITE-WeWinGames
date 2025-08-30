@@ -89,7 +89,7 @@ class SportController extends Controller
     public function update(Request $request, Sport $sport)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:sports,name,' . $sport->id,
+            'name' => 'required|string|max:255|unique:sports,name,'.$sport->id,
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ]);

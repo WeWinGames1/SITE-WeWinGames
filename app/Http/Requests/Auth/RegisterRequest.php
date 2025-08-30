@@ -65,7 +65,7 @@ class RegisterRequest extends FormRequest
                 'max:255',
                 function ($attribute, $value, $fail) {
                     // Only validate format if a value is provided
-                    if ($value && !preg_match('/^[a-zA-Z0-9._-]+#[0-9]{4}$/', $value)) {
+                    if ($value && ! preg_match('/^[a-zA-Z0-9._-]+#[0-9]{4}$/', $value)) {
                         $fail('Please enter a valid Discord username (e.g., username#1234).');
                     }
                 },
@@ -98,17 +98,18 @@ class RegisterRequest extends FormRequest
      */
     private function getTurnstileRules(): array|string
     {
-        if (!config('services.turnstile.enabled')) {
+        if (! config('services.turnstile.enabled')) {
             return 'nullable';
         }
-        
+
         // Check if ValidateTurnstile class exists
         if (class_exists(ValidateTurnstile::class)) {
             return ['required', 'string', new ValidateTurnstile];
         }
-        
+
         // Fallback if class doesn't exist (for deployment issues)
         \Log::warning('ValidateTurnstile class not found, using basic validation only');
+
         return 'required|string';
     }
 

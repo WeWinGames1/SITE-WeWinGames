@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\BlogCategory;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class BlogCategorySeeder extends Seeder
@@ -21,7 +20,7 @@ class BlogCategorySeeder extends Seeder
             ['slug' => 'beginners-guide', 'name' => 'Beginners Guide', 'order_column' => 5],
             ['slug' => 'advanced-betting', 'name' => 'Advanced Betting', 'order_column' => 6],
         ];
-        
+
         foreach ($categories as $category) {
             BlogCategory::updateOrCreate(
                 ['slug' => $category['slug']],

@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -24,7 +24,7 @@ return new class extends Migration
             ->whereRaw('LOWER(wager_type) = ?', ['each way'])
             ->update([
                 'is_each_way' => true,
-                'each_way_stake' => DB::raw('wager_amount / 2')
+                'each_way_stake' => DB::raw('wager_amount / 2'),
             ]);
     }
 

@@ -203,10 +203,8 @@ function openGrantModal(customer: Customer) {
     grantForm.action_type = 'create';
 
     // Pre-fill form if customer has active subscription
-    const activeSubscription = customer.subscriptions?.find(
-        sub => !sub.ends_at && ['active', 'trialing'].includes(sub.stripe_status)
-    );
-    
+    const activeSubscription = customer.subscriptions?.find((sub) => !sub.ends_at && ['active', 'trialing'].includes(sub.stripe_status));
+
     if (activeSubscription) {
         // Customer has an active subscription
         const matchingPriceKey = Object.keys(stripePrices).find((key) => stripePrices[key] === activeSubscription.stripe_price);
@@ -851,15 +849,31 @@ function getCustomerBadgeClass(status: string) {
                     <form @submit.prevent="grantSubscription">
                         <div class="modal-body">
                             <!-- Current Subscription Info -->
-                            <div v-if="selectedCustomer?.subscriptions?.some(s => !s.ends_at && ['active', 'trialing'].includes(s.stripe_status))" class="alert alert-info mb-4">
+                            <div
+                                v-if="selectedCustomer?.subscriptions?.some((s) => !s.ends_at && ['active', 'trialing'].includes(s.stripe_status))"
+                                class="alert alert-info mb-4"
+                            >
                                 <h6 class="alert-heading mb-3">Current Subscription</h6>
                                 <div class="row small">
                                     <div class="col-md-6">
                                         <p class="mb-1"><strong>Plan:</strong> {{ getCurrentPlanName(selectedCustomer) }}</p>
                                         <p class="mb-1">
                                             <strong>Status:</strong>
-                                            <span :class="['badge', getSubscriptionBadgeClass(selectedCustomer.subscriptions.find(s => !s.ends_at && ['active', 'trialing'].includes(s.stripe_status))?.stripe_status || '')]">
-                                                {{ selectedCustomer.subscriptions.find(s => !s.ends_at && ['active', 'trialing'].includes(s.stripe_status))?.stripe_status }}
+                                            <span
+                                                :class="[
+                                                    'badge',
+                                                    getSubscriptionBadgeClass(
+                                                        selectedCustomer.subscriptions.find(
+                                                            (s) => !s.ends_at && ['active', 'trialing'].includes(s.stripe_status),
+                                                        )?.stripe_status || '',
+                                                    ),
+                                                ]"
+                                            >
+                                                {{
+                                                    selectedCustomer.subscriptions.find(
+                                                        (s) => !s.ends_at && ['active', 'trialing'].includes(s.stripe_status),
+                                                    )?.stripe_status
+                                                }}
                                             </span>
                                         </p>
                                     </div>
@@ -867,8 +881,14 @@ function getCustomerBadgeClass(status: string) {
                                         <p class="mb-1">
                                             <strong>Next Billing:</strong>
                                             {{
-                                                selectedCustomer.subscriptions.find(s => !s.ends_at && ['active', 'trialing'].includes(s.stripe_status))?.current_period_end
-                                                    ? new Date(selectedCustomer.subscriptions.find(s => !s.ends_at && ['active', 'trialing'].includes(s.stripe_status))!.current_period_end!).toLocaleDateString()
+                                                selectedCustomer.subscriptions.find(
+                                                    (s) => !s.ends_at && ['active', 'trialing'].includes(s.stripe_status),
+                                                )?.current_period_end
+                                                    ? new Date(
+                                                          selectedCustomer.subscriptions.find(
+                                                              (s) => !s.ends_at && ['active', 'trialing'].includes(s.stripe_status),
+                                                          )!.current_period_end!,
+                                                      ).toLocaleDateString()
                                                     : 'N/A'
                                             }}
                                         </p>
@@ -937,8 +957,26 @@ function getCustomerBadgeClass(status: string) {
                                 <label class="form-label">Action Type</label>
                                 <select v-model="grantForm.action_type" class="form-select" required>
                                     <option value="create">Create New Subscription</option>
-                                    <option value="update" v-if="selectedCustomer?.subscriptions?.some(s => !s.ends_at && ['active', 'trialing'].includes(s.stripe_status))">Update Existing Subscription</option>
-                                    <option value="cancel" v-if="selectedCustomer?.subscriptions?.some(s => !s.ends_at && ['active', 'trialing'].includes(s.stripe_status))">Cancel Subscription</option>
+                                    <option
+                                        value="update"
+                                        v-if="
+                                            selectedCustomer?.subscriptions?.some(
+                                                (s) => !s.ends_at && ['active', 'trialing'].includes(s.stripe_status),
+                                            )
+                                        "
+                                    >
+                                        Update Existing Subscription
+                                    </option>
+                                    <option
+                                        value="cancel"
+                                        v-if="
+                                            selectedCustomer?.subscriptions?.some(
+                                                (s) => !s.ends_at && ['active', 'trialing'].includes(s.stripe_status),
+                                            )
+                                        "
+                                    >
+                                        Cancel Subscription
+                                    </option>
                                     <option value="manual">Manual Override (No Billing)</option>
                                 </select>
                                 <div class="form-text">

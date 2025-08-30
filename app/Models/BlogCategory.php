@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class BlogCategory extends Model
 {
@@ -14,11 +14,11 @@ class BlogCategory extends Model
         'order_column',
         'is_active',
     ];
-    
+
     protected $casts = [
         'is_active' => 'boolean',
     ];
-    
+
     /**
      * Scope for active categories.
      */
@@ -26,7 +26,7 @@ class BlogCategory extends Model
     {
         return $query->where('is_active', true);
     }
-    
+
     /**
      * Scope for ordered categories.
      */
@@ -34,7 +34,7 @@ class BlogCategory extends Model
     {
         return $query->orderBy('order_column')->orderBy('name');
     }
-    
+
     /**
      * Get posts for this category.
      */
@@ -42,7 +42,7 @@ class BlogCategory extends Model
     {
         return $this->hasMany(Post::class, 'category', 'slug');
     }
-    
+
     /**
      * Get posts count for this category.
      */
@@ -50,6 +50,6 @@ class BlogCategory extends Model
     {
         return $this->posts()->count();
     }
-    
+
     protected $appends = ['posts_count'];
 }

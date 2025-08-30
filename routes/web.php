@@ -7,13 +7,15 @@ use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\BetImportWizardController;
 use App\Http\Controllers\Admin\BetManagementController;
 use App\Http\Controllers\Admin\BetMassEditController;
-use App\Http\Controllers\Admin\BlogPostController;
 use App\Http\Controllers\Admin\BlogCategoryController;
+use App\Http\Controllers\Admin\BlogPostController;
 use App\Http\Controllers\Admin\CacheController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DiscountCodeController;
+use App\Http\Controllers\Admin\KnowledgebaseController;
 use App\Http\Controllers\Admin\LandingPageController;
 use App\Http\Controllers\Admin\LeagueController;
+use App\Http\Controllers\Admin\MediaLibraryController;
 use App\Http\Controllers\Admin\Notifications\EmailLogController;
 use App\Http\Controllers\Admin\Notifications\EmailTemplateController;
 use App\Http\Controllers\Admin\Notifications\PushNotificationController;
@@ -22,8 +24,6 @@ use App\Http\Controllers\Admin\SportController;
 use App\Http\Controllers\Admin\StripeProductController;
 use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\UnderConstructionController;
-use App\Http\Controllers\Admin\KnowledgebaseController;
-use App\Http\Controllers\Admin\MediaLibraryController;
 use App\Http\Controllers\BetController;
 use App\Http\Controllers\BettingEducationController;
 use App\Http\Controllers\CustomerDashboardController;
@@ -62,12 +62,12 @@ Route::get('/subscription-checkout', [\App\Http\Controllers\SubscriptionControll
     ->middleware(['auth', 'verified']);
 
 Route::post('/subscription-process', [\App\Http\Controllers\SubscriptionController::class, 'process'])
-        ->name('subscription.process')
-        ->middleware(['auth', 'verified']);
+    ->name('subscription.process')
+    ->middleware(['auth', 'verified']);
 
 Route::post('/validate-coupon', [\App\Http\Controllers\SubscriptionController::class, 'validateCoupon'])
-        ->name('subscription.validate-coupon')
-        ->middleware(['auth', 'verified']);
+    ->name('subscription.validate-coupon')
+    ->middleware(['auth', 'verified']);
 
 // Subscription management routes
 Route::middleware(['auth', 'verified'])->prefix('subscription')->name('subscription.')->group(function () {
@@ -102,7 +102,7 @@ Route::prefix('admin')->group(function () {
 // Admin Dashboard
 Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
-    
+
     // Cache management
     Route::post('/cache/clear', [CacheController::class, 'clear'])->name('cache.clear');
 
@@ -123,7 +123,7 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
     Route::post('bets/bulk-update-status', [BetManagementController::class, 'bulkUpdateStatus'])->name('bets.bulk-update-status');
     Route::get('bets/statistics', [BetManagementController::class, 'statistics'])->name('bets.statistics');
     Route::get('bets/export', [BetManagementController::class, 'export'])->name('bets.export')->middleware('admin.rate_limit:export');
-    
+
     // Mass Edit for Golf Each-Way Bets
     Route::prefix('bets/mass-edit')->name('bets.mass-edit.')->group(function () {
         Route::get('/', [BetMassEditController::class, 'index'])->name('index');
@@ -137,7 +137,7 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
 
     // Sport Management
     Route::resource('sports', SportController::class);
-    
+
     // Sport Preferences
     Route::prefix('sport-preferences')->name('sport-preferences.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\SportPreferenceController::class, 'index'])->name('index');

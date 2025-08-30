@@ -17,13 +17,14 @@ class ValidateTurnstile implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         // Skip validation if Turnstile is disabled
-        if (!config('services.turnstile.enabled')) {
+        if (! config('services.turnstile.enabled')) {
             return;
         }
 
         // Skip if no value provided
         if (empty($value)) {
             $fail('Please complete the security verification.');
+
             return;
         }
 
@@ -45,9 +46,9 @@ class ValidateTurnstile implements ValidationRule
                 'hostname' => $result['hostname'] ?? null,
             ]);
 
-            if (!($result['success'] ?? false)) {
+            if (! ($result['success'] ?? false)) {
                 $errorCodes = $result['error-codes'] ?? [];
-                
+
                 // Map error codes to user-friendly messages
                 $errorMessages = [
                     'missing-input-secret' => 'Security configuration error. Please contact support.',
@@ -74,7 +75,7 @@ class ValidateTurnstile implements ValidationRule
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Don't block registration if Turnstile service is down
             // But log the issue for monitoring
             Log::warning('Turnstile verification failed, allowing registration', [

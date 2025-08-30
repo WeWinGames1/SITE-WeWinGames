@@ -16,7 +16,7 @@ class TodaysBetsSeeder extends Seeder
     {
         // Get today's date
         $today = Carbon::today();
-        
+
         // Get or create operators
         $operators = [
             'DraftKings' => Operator::firstOrCreate(['name' => 'DraftKings']),
@@ -24,7 +24,7 @@ class TodaysBetsSeeder extends Seeder
             'BetMGM' => Operator::firstOrCreate(['name' => 'BetMGM']),
             'Caesars' => Operator::firstOrCreate(['name' => 'Caesars']),
         ];
-        
+
         // Sports and their games/bets for today
         $sportsData = [
             'Football' => [
@@ -72,7 +72,7 @@ class TodaysBetsSeeder extends Seeder
                 ['home' => 'UFC Fight Night', 'away' => 'Prelims', 'time' => '18:00'],
             ],
         ];
-        
+
         // Bet types and descriptions
         $betTypes = [
             'spread' => ['Point Spread', 'Against the Spread'],
@@ -80,22 +80,22 @@ class TodaysBetsSeeder extends Seeder
             'total' => ['Over/Under', 'Total Points'],
             'prop' => ['Player Prop', 'Prop Bet'],
         ];
-        
+
         // Membership tiers distribution
         $memberships = ['bronze', 'bronze', 'bronze', 'silver', 'silver', 'gold', 'gold', 'platinum'];
-        
+
         // Get admin user for bets
         $adminUser = User::where('email', 'admin@wewingames.com')->first();
-        if (!$adminUser) {
+        if (! $adminUser) {
             $adminUser = User::first();
         }
-        
+
         $betId = 1000; // Start with a high ID to avoid conflicts
-        
+
         foreach ($sportsData as $sportName => $games) {
             // Get or create sport
             $sport = Sport::firstOrCreate(['name' => $sportName]);
-            
+
             $betIndex = 0;
             foreach ($games as $gameData) {
                 // Get or create teams
@@ -107,7 +107,7 @@ class TodaysBetsSeeder extends Seeder
                     ['name' => $gameData['away']],
                     ['sport_id' => $sport->id]
                 );
-                
+
                 // Create 1-3 bets per game
                 $numBets = rand(1, 3);
                 for ($i = 0; $i < $numBets; $i++) {
@@ -115,11 +115,11 @@ class TodaysBetsSeeder extends Seeder
                     $betDescription = $betTypes[$betType][array_rand($betTypes[$betType])];
                     $operator = $operators[array_rand($operators)];
                     $membership = $memberships[$betIndex % count($memberships)];
-                    
+
                     // Generate odds
                     $isPositive = rand(0, 1);
                     $odds = $isPositive ? rand(100, 300) : rand(-300, -100);
-                    
+
                     // Generate pick details based on bet type
                     $pick = '';
                     switch ($betType) {
@@ -143,10 +143,10 @@ class TodaysBetsSeeder extends Seeder
                             $pick = "{$player} Over {$value} {$propType}";
                             break;
                     }
-                    
+
                     // Create analysis
                     $analysis = $this->generateAnalysis($sportName, $homeTeam->name, $awayTeam->name, $pick);
-                    
+
                     // Create bet directly without game reference
                     Bet::create([
                         'user_id' => $adminUser->id,
@@ -176,32 +176,32 @@ class TodaysBetsSeeder extends Seeder
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
-                    
+
                     $betIndex++;
                     $betId++;
                 }
             }
         }
-        
+
         $this->command->info('Today\'s bets seeded successfully!');
     }
-    
+
     private function generateAnalysis($sport, $homeTeam, $awayTeam, $pick): string
     {
         $analyses = [
-            "Strong momentum favors this pick with recent performance trends.",
-            "Statistical analysis shows a clear edge in this matchup.",
-            "Key player matchups favor this selection significantly.",
-            "Historical data supports this betting opportunity.",
-            "Current form and conditions align perfectly for this pick.",
-            "Advanced metrics indicate high value in this selection.",
-            "Defensive/offensive matchups create a favorable situation.",
-            "Recent head-to-head results support this prediction.",
+            'Strong momentum favors this pick with recent performance trends.',
+            'Statistical analysis shows a clear edge in this matchup.',
+            'Key player matchups favor this selection significantly.',
+            'Historical data supports this betting opportunity.',
+            'Current form and conditions align perfectly for this pick.',
+            'Advanced metrics indicate high value in this selection.',
+            'Defensive/offensive matchups create a favorable situation.',
+            'Recent head-to-head results support this prediction.',
         ];
-        
-        return $analyses[array_rand($analyses)] . " {$homeTeam} vs {$awayTeam} presents an excellent opportunity.";
+
+        return $analyses[array_rand($analyses)]." {$homeTeam} vs {$awayTeam} presents an excellent opportunity.";
     }
-    
+
     private function getLeague($sport): string
     {
         $leagues = [
@@ -213,7 +213,7 @@ class TodaysBetsSeeder extends Seeder
             'Golf' => 'PGA Tour',
             'Ultimate Fighting Championship' => 'UFC',
         ];
-        
+
         return $leagues[$sport] ?? $sport;
     }
 }

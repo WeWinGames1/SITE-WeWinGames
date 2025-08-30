@@ -14,7 +14,7 @@ class LogSendingEmail
     {
         // Store the log in a temporary property so we can update it after sending
         $log = EmailLogService::logFromMailEvent($event);
-        
+
         if ($log) {
             // Store the log ID in the message headers so we can retrieve it after sending
             $event->message->getHeaders()->addTextHeader('X-Email-Log-Id', $log->id);

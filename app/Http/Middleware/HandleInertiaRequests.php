@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use App\Http\Resources\UserResource;
 use App\Models\Faq;
-use App\Services\BetService;
 use App\Services\SimpleCacheService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -62,7 +61,7 @@ class HandleInertiaRequests extends Middleware
         if ($request->user() && $request->user()->hasRole('admin')) {
             // Only load admin pages for navigation, not all bets
             $sharedData['adminPages'] = \App\Models\Page::orderBy('title')->get(['id', 'title', 'slug']);
-            
+
             // Note: Bets should be loaded on specific pages that need them, not globally
             // This prevents memory exhaustion from loading thousands of records
         }

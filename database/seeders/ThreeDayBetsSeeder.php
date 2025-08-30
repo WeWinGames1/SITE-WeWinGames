@@ -18,7 +18,7 @@ class ThreeDayBetsSeeder extends Seeder
         $today = Carbon::today();
         $tomorrow = Carbon::tomorrow();
         $dayAfter = Carbon::tomorrow()->addDay();
-        
+
         // Get or create operators
         $operators = [
             'DraftKings' => Operator::firstOrCreate(['name' => 'DraftKings']),
@@ -28,7 +28,7 @@ class ThreeDayBetsSeeder extends Seeder
             'PointsBet' => Operator::firstOrCreate(['name' => 'PointsBet']),
             'BetRivers' => Operator::firstOrCreate(['name' => 'BetRivers']),
         ];
-        
+
         // Sports and their games/bets for each day
         $dailyBets = [
             $today->format('Y-m-d') => [
@@ -116,7 +116,7 @@ class ThreeDayBetsSeeder extends Seeder
                 ],
             ],
         ];
-        
+
         // Bet types and descriptions
         $betTypes = [
             'spread' => ['Point Spread', 'Against the Spread', 'ATS'],
@@ -125,30 +125,30 @@ class ThreeDayBetsSeeder extends Seeder
             'prop' => ['Player Prop', 'Prop Bet', 'Player Performance'],
             'futures' => ['Futures', 'Championship', 'Season Long'],
         ];
-        
+
         // Membership tiers with more premium picks
         $membershipDistribution = [
             'bronze' => 30,  // 30% bronze
             'silver' => 30,  // 30% silver
             'gold' => 25,    // 25% gold
-            'platinum' => 15 // 15% platinum
+            'platinum' => 15, // 15% platinum
         ];
-        
+
         // Get admin user for bets
         $adminUser = User::where('email', 'admin@wewingames.com')->first();
-        if (!$adminUser) {
+        if (! $adminUser) {
             $adminUser = User::first();
         }
-        
+
         $totalBetsCreated = 0;
-        
+
         foreach ($dailyBets as $date => $sportsData) {
             $this->command->info("Creating bets for {$date}...");
-            
+
             foreach ($sportsData as $sportName => $games) {
                 // Get or create sport
                 $sport = Sport::firstOrCreate(['name' => $sportName]);
-                
+
                 foreach ($games as $gameData) {
                     // Get or create teams
                     $homeTeam = Team::firstOrCreate(
@@ -159,13 +159,13 @@ class ThreeDayBetsSeeder extends Seeder
                         ['name' => $gameData['away']],
                         ['sport_id' => $sport->id]
                     );
-                    
+
                     // Create specified number of bets per game
                     for ($i = 0; $i < $gameData['bets']; $i++) {
                         $betType = array_rand($betTypes);
                         $betDescription = $betTypes[$betType][array_rand($betTypes[$betType])];
                         $operator = $operators[array_rand($operators)];
-                        
+
                         // Assign membership based on distribution
                         $rand = rand(1, 100);
                         if ($rand <= 30) {
@@ -177,17 +177,17 @@ class ThreeDayBetsSeeder extends Seeder
                         } else {
                             $membership = 'platinum';
                         }
-                        
+
                         // Generate odds
                         $isPositive = rand(0, 1);
                         $odds = $isPositive ? rand(100, 300) : rand(-300, -100);
-                        
+
                         // Generate pick details based on bet type
                         $pick = $this->generatePick($betType, $homeTeam, $awayTeam, $sportName);
-                        
+
                         // Create analysis
                         $analysis = $this->generateAnalysis($sportName, $homeTeam->name, $awayTeam->name, $pick, $membership);
-                        
+
                         // Create bet
                         Bet::create([
                             'user_id' => $adminUser->id,
@@ -218,20 +218,20 @@ class ThreeDayBetsSeeder extends Seeder
                             'created_at' => now(),
                             'updated_at' => now(),
                         ]);
-                        
+
                         $totalBetsCreated++;
                     }
                 }
             }
         }
-        
+
         $this->command->info("Successfully created {$totalBetsCreated} bets across 3 days!");
-        $this->command->info("Date breakdown:");
-        $this->command->info("- Today ({$today->format('Y-m-d')}): " . array_sum(array_column(array_merge(...array_values($dailyBets[$today->format('Y-m-d')])), 'bets')) . " bets");
-        $this->command->info("- Tomorrow ({$tomorrow->format('Y-m-d')}): " . array_sum(array_column(array_merge(...array_values($dailyBets[$tomorrow->format('Y-m-d')])), 'bets')) . " bets");
-        $this->command->info("- Day After ({$dayAfter->format('Y-m-d')}): " . array_sum(array_column(array_merge(...array_values($dailyBets[$dayAfter->format('Y-m-d')])), 'bets')) . " bets");
+        $this->command->info('Date breakdown:');
+        $this->command->info("- Today ({$today->format('Y-m-d')}): ".array_sum(array_column(array_merge(...array_values($dailyBets[$today->format('Y-m-d')])), 'bets')).' bets');
+        $this->command->info("- Tomorrow ({$tomorrow->format('Y-m-d')}): ".array_sum(array_column(array_merge(...array_values($dailyBets[$tomorrow->format('Y-m-d')])), 'bets')).' bets');
+        $this->command->info("- Day After ({$dayAfter->format('Y-m-d')}): ".array_sum(array_column(array_merge(...array_values($dailyBets[$dayAfter->format('Y-m-d')])), 'bets')).' bets');
     }
-    
+
     private function generatePick($betType, $homeTeam, $awayTeam, $sport): string
     {
         switch ($betType) {
@@ -241,11 +241,12 @@ class ThreeDayBetsSeeder extends Seeder
                 } else {
                     $spread = rand(1, 3) + 0.5;
                 }
+
                 return rand(0, 1) ? "{$homeTeam->name} -{$spread}" : "{$awayTeam->name} +{$spread}";
-                
+
             case 'moneyline':
                 return rand(0, 1) ? $homeTeam->name : $awayTeam->name;
-                
+
             case 'total':
                 $totals = [
                     'Football' => rand(38, 58),
@@ -255,84 +256,87 @@ class ThreeDayBetsSeeder extends Seeder
                     'Soccer' => rand(2, 4) + 0.5,
                 ];
                 $total = $totals[$sport] ?? rand(140, 240);
+
                 return rand(0, 1) ? "Over {$total}" : "Under {$total}";
-                
+
             case 'prop':
                 $playerProps = [
                     'Football' => [
                         'players' => ['Mahomes', 'Allen', 'Hurts', 'Prescott', 'Rodgers'],
                         'props' => ['Passing Yards', 'TD Passes', 'Rushing Yards'],
-                        'values' => [250, 300, 2.5, 3.5, 50]
+                        'values' => [250, 300, 2.5, 3.5, 50],
                     ],
                     'Basketball' => [
                         'players' => ['LeBron', 'Curry', 'Giannis', 'Jokic', 'Tatum'],
                         'props' => ['Points', 'Rebounds', 'Assists'],
-                        'values' => [25.5, 30.5, 8.5, 10.5, 7.5]
+                        'values' => [25.5, 30.5, 8.5, 10.5, 7.5],
                     ],
                     'Hockey' => [
                         'players' => ['McDavid', 'Matthews', 'MacKinnon', 'Ovechkin'],
                         'props' => ['Goals', 'Assists', 'Points'],
-                        'values' => [0.5, 1.5, 2.5]
+                        'values' => [0.5, 1.5, 2.5],
                     ],
                     'Baseball' => [
                         'players' => ['Judge', 'Ohtani', 'Acuna', 'Betts'],
                         'props' => ['Hits', 'RBIs', 'Total Bases'],
-                        'values' => [1.5, 2.5, 0.5]
+                        'values' => [1.5, 2.5, 0.5],
                     ],
                 ];
-                
+
                 if (isset($playerProps[$sport])) {
                     $sportProps = $playerProps[$sport];
                     $player = $sportProps['players'][array_rand($sportProps['players'])];
                     $prop = $sportProps['props'][array_rand($sportProps['props'])];
                     $value = $sportProps['values'][array_rand($sportProps['values'])];
+
                     return "{$player} Over {$value} {$prop}";
                 }
-                return "Player Prop Special";
-                
+
+                return 'Player Prop Special';
+
             case 'futures':
                 return rand(0, 1) ? "{$homeTeam->name} to Win Division" : "{$awayTeam->name} Championship Odds";
-                
+
             default:
                 return rand(0, 1) ? $homeTeam->name : $awayTeam->name;
         }
     }
-    
+
     private function generateAnalysis($sport, $homeTeam, $awayTeam, $pick, $membership): string
     {
         $premiumAnalyses = [
             'gold' => [
-                "🔥 PREMIUM PICK: Advanced analytics and insider information strongly favor this selection.",
-                "⭐ GOLD MEMBER EXCLUSIVE: Our proprietary model shows 75%+ win probability on this pick.",
-                "💎 HIGH CONFIDENCE: Multiple indicators align perfectly for this premium selection.",
+                '🔥 PREMIUM PICK: Advanced analytics and insider information strongly favor this selection.',
+                '⭐ GOLD MEMBER EXCLUSIVE: Our proprietary model shows 75%+ win probability on this pick.',
+                '💎 HIGH CONFIDENCE: Multiple indicators align perfectly for this premium selection.',
             ],
             'platinum' => [
-                "🏆 PLATINUM PICK: Our top analysts are unanimous on this elite selection.",
-                "💰 BEST BET: Historical data combined with current form makes this our strongest pick today.",
+                '🏆 PLATINUM PICK: Our top analysts are unanimous on this elite selection.',
+                '💰 BEST BET: Historical data combined with current form makes this our strongest pick today.',
                 "🎯 LOCK OF THE DAY: Everything points to this being a can't-miss opportunity.",
             ],
         ];
-        
+
         $regularAnalyses = [
-            "Strong momentum and recent performance trends favor this pick.",
-            "Statistical analysis shows a clear edge in this matchup.",
-            "Key player matchups create a favorable betting opportunity.",
-            "Historical head-to-head data supports this selection.",
-            "Current form and conditions align well for this pick.",
-            "Advanced metrics indicate solid value in this selection.",
-            "Defensive/offensive matchups favor this prediction.",
-            "Trend analysis points to a profitable opportunity.",
+            'Strong momentum and recent performance trends favor this pick.',
+            'Statistical analysis shows a clear edge in this matchup.',
+            'Key player matchups create a favorable betting opportunity.',
+            'Historical head-to-head data supports this selection.',
+            'Current form and conditions align well for this pick.',
+            'Advanced metrics indicate solid value in this selection.',
+            'Defensive/offensive matchups favor this prediction.',
+            'Trend analysis points to a profitable opportunity.',
         ];
-        
+
         if (isset($premiumAnalyses[$membership])) {
             $analysis = $premiumAnalyses[$membership][array_rand($premiumAnalyses[$membership])];
         } else {
             $analysis = $regularAnalyses[array_rand($regularAnalyses)];
         }
-        
-        return $analysis . " {$homeTeam} vs {$awayTeam} - {$pick}";
+
+        return $analysis." {$homeTeam} vs {$awayTeam} - {$pick}";
     }
-    
+
     private function getLeague($sport): string
     {
         $leagues = [
@@ -345,7 +349,7 @@ class ThreeDayBetsSeeder extends Seeder
             'Tennis' => 'ATP',
             'Ultimate Fighting Championship' => 'UFC',
         ];
-        
+
         return $leagues[$sport] ?? $sport;
     }
 }

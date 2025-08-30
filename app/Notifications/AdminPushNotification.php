@@ -4,8 +4,8 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use NotificationChannels\WebPush\WebPushMessage;
 use NotificationChannels\WebPush\WebPushChannel;
+use NotificationChannels\WebPush\WebPushMessage;
 
 class AdminPushNotification extends Notification
 {
@@ -19,8 +19,7 @@ class AdminPushNotification extends Notification
         public string $body,
         public ?string $url = null,
         public ?string $icon = null
-    ) {
-    }
+    ) {}
 
     /**
      * Get the notification's delivery channels.

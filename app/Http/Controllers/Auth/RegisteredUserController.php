@@ -40,9 +40,9 @@ class RegisteredUserController extends Controller
         \Log::info('Registration attempt', [
             'has_turnstile' => $request->has('cf-turnstile-response'),
             'turnstile_value' => $request->input('cf-turnstile-response') ? 'present' : 'missing',
-            'all_inputs' => array_keys($request->all())
+            'all_inputs' => array_keys($request->all()),
         ]);
-        
+
         // Perform security checks
         $securityCheck = $securityService->canRegister($request);
 
@@ -65,7 +65,7 @@ class RegisteredUserController extends Controller
                     $affiliate = Affiliate::where('code', $affiliateCode)
                         ->where('is_active', true)
                         ->first();
-                    
+
                     if ($affiliate) {
                         $affiliateId = $affiliate->id;
                     }
@@ -102,7 +102,7 @@ class RegisteredUserController extends Controller
             try {
                 $sendGridService->syncContact($user);
             } catch (\Exception $e) {
-                \Log::error('Failed to sync user to SendGrid: ' . $e->getMessage());
+                \Log::error('Failed to sync user to SendGrid: '.$e->getMessage());
                 // Don't fail registration if SendGrid sync fails
             }
 
@@ -119,14 +119,14 @@ class RegisteredUserController extends Controller
 
         } catch (\Exception $e) {
             $securityService->logRegistrationAttempt($request, false);
-            
+
             \Log::error('Registration failed', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             throw ValidationException::withMessages([
-                'email' => ['Registration failed. Please try again later. Error: ' . $e->getMessage()],
+                'email' => ['Registration failed. Please try again later. Error: '.$e->getMessage()],
             ]);
         }
     }

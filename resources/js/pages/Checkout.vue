@@ -3,7 +3,7 @@ import CustomerLayout from '@/layouts/CustomerLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { loadStripe } from '@stripe/stripe-js';
 import axios from 'axios';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 interface PaymentMethod {
     id: string;
@@ -20,6 +20,7 @@ interface Props {
         price: string;
         period: string;
         priceId: string;
+        productId?: string;
     };
     stripeKey: string;
     discountCodes?: any[];
@@ -127,11 +128,30 @@ onMounted(async () => {
     } else if (props.plan.period === 'monthly') {
         // Auto-apply 50% off first month discount for all monthly plans
         form.coupon = 'FIRSTMONTH50';
+        autoAppliedDiscount.value = true;
         await validateCoupon();
     }
 });
 
+// Track if FIRSTMONTH50 was auto-applied
+const autoAppliedDiscount = ref(false);
+
+// Watch for manual coupon changes to clear existing discount
+watch(
+    () => form.coupon,
+    (newValue, oldValue) => {
+        // Only clear if user is typing (not on initial load)
+        if (oldValue !== undefined && newValue !== oldValue) {
+            discount.value = null;
+            form.clearErrors('coupon');
+        }
+    },
+);
+
 const validateCoupon = async () => {
+    // Clear any previous errors
+    form.clearErrors('coupon');
+
     if (!form.coupon) {
         discount.value = null;
         return;
@@ -140,19 +160,33 @@ const validateCoupon = async () => {
     try {
         const response = await axios.post(route('subscription.validate-coupon'), {
             code: form.coupon,
+            product_id: props.plan.productId,
         });
 
         if (response.data.valid) {
             discount.value = response.data.discount;
             form.clearErrors('coupon');
+            // Track if we're replacing an auto-applied discount
+            if (autoAppliedDiscount.value && form.coupon !== 'FIRSTMONTH50') {
+                autoAppliedDiscount.value = false;
+            }
         } else {
-            form.errors.coupon = 'Invalid discount code';
+            form.errors.coupon = response.data.message || 'Invalid discount code';
             discount.value = null;
+            // Don't clear the field, let the user see what they typed
         }
     } catch (error) {
         form.errors.coupon = 'Invalid discount code';
         discount.value = null;
+        // Don't clear the field, let the user see what they typed
     }
+};
+
+const clearDiscount = () => {
+    form.coupon = '';
+    discount.value = null;
+    form.clearErrors('coupon');
+    autoAppliedDiscount.value = false;
 };
 
 const submit = async () => {
@@ -230,9 +264,12 @@ const submit = async () => {
                                     </div>
 
                                     <div class="mt-3">
-                                        <small class="text-muted">
+                                        <small class="text-muted d-block">
                                             <i class="bi bi-shield-check me-1"></i>
                                             Secure payment powered by Stripe
+                                        </small>
+                                        <small v-if="discount && form.coupon === 'FIRSTMONTH50'" class="text-muted d-block mt-1">
+                                            * First payment only. Renewal at {{ plan.price }}/{{ plan.period }}
                                         </small>
                                     </div>
                                 </div>
@@ -274,17 +311,24 @@ const submit = async () => {
                                                 class="form-control"
                                                 :class="{ 'is-invalid': form.errors.coupon }"
                                                 placeholder="Enter discount code"
-                                                @blur="validateCoupon"
+                                                @keyup.enter="validateCoupon"
                                             />
                                             <button type="button" class="btn btn-outline-secondary" @click="validateCoupon">Apply</button>
+                                            <button v-if="discount" type="button" class="btn btn-outline-danger" @click="clearDiscount">Clear</button>
                                             <div v-if="form.errors.coupon" class="invalid-feedback">
                                                 {{ form.errors.coupon }}
                                             </div>
                                         </div>
-                                        <div v-if="discount && discount.valid" class="text-success mt-2">
+                                        <div v-if="discount" class="text-success mt-2">
                                             <i class="bi bi-check-circle me-1"></i>
-                                            Discount applied successfully!
+                                            Discount applied: {{ form.coupon }} ({{
+                                                discount.percent_off ? discount.percent_off + '% off' : '$' + discount.amount_off / 100 + ' off'
+                                            }})
                                         </div>
+                                        <small v-if="autoAppliedDiscount && form.coupon !== 'FIRSTMONTH50'" class="text-muted d-block mt-1">
+                                            Note: Only one discount code can be used per subscription. Your new code has replaced the automatic first
+                                            month discount.
+                                        </small>
                                     </div>
                                 </div>
 
@@ -352,7 +396,7 @@ const submit = async () => {
 
                                         <button type="submit" class="btn btn-primary btn-lg w-100" :disabled="processing || form.processing">
                                             <span v-if="processing || form.processing" class="spinner-border spinner-border-sm me-2"></span>
-                                            {{ processing || form.processing ? 'Processing...' : `Subscribe for ${plan.price}` }}
+                                            {{ processing || form.processing ? 'Processing...' : `Subscribe for $${total.toFixed(2)}` }}
                                         </button>
 
                                         <p class="text-center text-muted mt-3 mb-0">

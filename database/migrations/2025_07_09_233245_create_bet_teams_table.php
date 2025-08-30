@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('spread')->nullable(); // For spread bets
             $table->string('line')->nullable(); // For over/under
             $table->timestamps();
-            
+
             // Indexes
             $table->index(['bet_id', 'position']);
             $table->index('team_id');

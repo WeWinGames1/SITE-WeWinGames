@@ -25,15 +25,15 @@ class KnowledgebaseController extends Controller
     public function getForPage(Request $request)
     {
         // Check if user is admin
-        if (!$request->user() || !$request->user()->hasRole('admin')) {
+        if (! $request->user() || ! $request->user()->hasRole('admin')) {
             return response()->json([
                 'article' => null,
-                'error' => 'Unauthorized'
+                'error' => 'Unauthorized',
             ], 403);
         }
-        
+
         $pageIdentifier = $request->input('page_identifier');
-        
+
         $article = KnowledgebaseArticle::active()
             ->forPage($pageIdentifier)
             ->first();

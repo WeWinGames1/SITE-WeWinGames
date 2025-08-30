@@ -36,7 +36,7 @@ class CareerApplicationSubmitted extends Notification implements ShouldQueue
             // Prepare data for template variables
             $data = [
                 'recipient_name' => 'Tony',
-                'applicant_name' => $this->data['first_name'] . ' ' . $this->data['last_name'],
+                'applicant_name' => $this->data['first_name'].' '.$this->data['last_name'],
                 'applicant_phone' => $this->data['phone'],
                 'applicant_email' => $this->data['email'],
                 'applicant_about' => $this->data['about'],
@@ -47,7 +47,7 @@ class CareerApplicationSubmitted extends Notification implements ShouldQueue
 
             // Send using the templated email system
             Mail::to($notifiable)->send(new TemplatedEmail($template, $data));
-            
+
             // Return a dummy MailMessage to satisfy the return type
             return (new \Illuminate\Notifications\Messages\MailMessage)->subject('Career Application');
         }

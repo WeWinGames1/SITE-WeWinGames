@@ -2,9 +2,9 @@
 import BlogCategoryModal from '@/components/BlogCategoryModal.vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { route } from 'ziggy-js';
 import { debounce } from 'lodash';
 import { ref } from 'vue';
+import { route } from 'ziggy-js';
 
 interface Author {
     id: number;
@@ -306,7 +306,7 @@ function formatDate(date: string | null): string {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="post in (posts?.data || [])" :key="post.id">
+                            <tr v-for="post in posts?.data || []" :key="post.id">
                                 <td>
                                     <div>
                                         <div class="fw-medium">{{ post.title }}</div>

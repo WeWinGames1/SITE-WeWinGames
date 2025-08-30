@@ -21,25 +21,25 @@ class CacheController extends Controller
             Artisan::call('route:clear');
             Artisan::call('config:clear');
             Artisan::call('view:clear');
-            
+
             // Clear compiled classes
             if (file_exists(base_path('bootstrap/cache/compiled.php'))) {
                 @unlink(base_path('bootstrap/cache/compiled.php'));
             }
-            
+
             // Clear any custom caches
             Cache::flush();
 
             // Clear Cloudflare cache if enabled
             $cloudflareMessage = '';
-            $cloudflareService = new CloudflareService();
+            $cloudflareService = new CloudflareService;
             $cloudflareResult = $cloudflareService->purgeEverything();
-            
+
             if (config('cloudflare.enabled')) {
                 if ($cloudflareResult['success']) {
                     $cloudflareMessage = ' Cloudflare cache also purged.';
                 } else {
-                    $cloudflareMessage = ' Cloudflare cache purge failed: ' . $cloudflareResult['message'];
+                    $cloudflareMessage = ' Cloudflare cache purge failed: '.$cloudflareResult['message'];
                 }
             }
 
@@ -56,7 +56,7 @@ class CacheController extends Controller
             // Always return JSON for this endpoint
             return response()->json([
                 'success' => true,
-                'message' => 'All caches cleared successfully!' . $cloudflareMessage
+                'message' => 'All caches cleared successfully!'.$cloudflareMessage,
             ]);
         } catch (\Exception $e) {
             \Log::error('Cache clear failed', [
@@ -67,7 +67,7 @@ class CacheController extends Controller
             // Always return JSON for this endpoint
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to clear some caches. Please check the logs.'
+                'message' => 'Failed to clear some caches. Please check the logs.',
             ], 500);
         }
     }

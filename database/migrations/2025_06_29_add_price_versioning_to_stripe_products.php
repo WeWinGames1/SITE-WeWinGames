@@ -12,19 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('stripe_products', function (Blueprint $table) {
-            if (!Schema::hasColumn('stripe_products', 'is_current')) {
+            if (! Schema::hasColumn('stripe_products', 'is_current')) {
                 $table->boolean('is_current')->default(true)->after('is_active');
             }
-            if (!Schema::hasColumn('stripe_products', 'version')) {
+            if (! Schema::hasColumn('stripe_products', 'version')) {
                 $table->string('version')->nullable()->after('is_current');
             }
-            if (!Schema::hasColumn('stripe_products', 'legacy_price')) {
+            if (! Schema::hasColumn('stripe_products', 'legacy_price')) {
                 $table->decimal('legacy_price', 8, 2)->nullable()->after('version');
             }
-            if (!Schema::hasColumn('stripe_products', 'superseded_at')) {
+            if (! Schema::hasColumn('stripe_products', 'superseded_at')) {
                 $table->timestamp('superseded_at')->nullable()->after('legacy_price');
             }
-            if (!Schema::hasColumn('stripe_products', 'superseded_by_product_id')) {
+            if (! Schema::hasColumn('stripe_products', 'superseded_by_product_id')) {
                 $table->string('superseded_by_product_id')->nullable()->after('superseded_at');
             }
 

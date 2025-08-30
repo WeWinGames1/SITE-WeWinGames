@@ -3,11 +3,10 @@
 namespace App\Console\Commands;
 
 use App\Models\Bet;
-use App\Models\Sport;
 use App\Models\League;
+use App\Models\Sport;
 use App\Models\Team;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class ExtractTeamsFromBets extends Command
@@ -29,7 +28,9 @@ class ExtractTeamsFromBets extends Command
     protected $description = 'Extract sports, leagues, and teams from existing bets and populate the database';
 
     private array $sportsCache = [];
+
     private array $leaguesCache = [];
+
     private array $teamsCache = [];
 
     /**
@@ -41,7 +42,7 @@ class ExtractTeamsFromBets extends Command
         $limit = (int) $this->option('limit');
 
         $this->info('Starting extraction of sports, leagues, and teams from bets...');
-        
+
         if ($dryRun) {
             $this->warn('Running in DRY-RUN mode - no data will be saved.');
         }
@@ -75,8 +76,8 @@ class ExtractTeamsFromBets extends Command
             foreach ($bets as $bet) {
                 // Extract sport
                 $sportName = $this->normalizeSportName($bet->sports);
-                if ($sportName && !isset($this->sportsCache[$sportName])) {
-                    if (!$dryRun) {
+                if ($sportName && ! isset($this->sportsCache[$sportName])) {
+                    if (! $dryRun) {
                         $sport = Sport::firstOrCreate(
                             ['name' => $sportName],
                             [
@@ -98,34 +99,34 @@ class ExtractTeamsFromBets extends Command
                 if ($bet->league && $sportName) {
                     $leagueName = $this->normalizeLeagueName($bet->league);
                     $cacheKey = "{$sportName}:{$leagueName}";
-                    
-                    if ($leagueName && !isset($this->leaguesCache[$cacheKey])) {
+
+                    if ($leagueName && ! isset($this->leaguesCache[$cacheKey])) {
                         $sportId = $this->sportsCache[$sportName] ?? null;
-                        
-                        if ($sportId && !$dryRun) {
+
+                        if ($sportId && ! $dryRun) {
                             // First check if league exists with this name in this sport
                             $league = League::where('name', $leagueName)
                                 ->where('sport_id', $sportId)
                                 ->first();
-                            
-                            if (!$league) {
+
+                            if (! $league) {
                                 // Generate a unique slug
                                 $baseSlug = Str::slug($leagueName);
                                 $slug = $baseSlug;
                                 $counter = 1;
-                                
+
                                 while (League::where('slug', $slug)->exists()) {
                                     // Add sport name to make it unique
                                     $sportNameForSlug = $this->sportsCache ? array_search($sportId, $this->sportsCache) : '';
-                                    $slug = $baseSlug . '-' . Str::slug($sportNameForSlug);
-                                    
+                                    $slug = $baseSlug.'-'.Str::slug($sportNameForSlug);
+
                                     // If still not unique, add counter
                                     if (League::where('slug', $slug)->exists()) {
-                                        $slug = $baseSlug . '-' . $counter;
+                                        $slug = $baseSlug.'-'.$counter;
                                         $counter++;
                                     }
                                 }
-                                
+
                                 $league = League::create([
                                     'name' => $leagueName,
                                     'sport_id' => $sportId,
@@ -134,7 +135,7 @@ class ExtractTeamsFromBets extends Command
                                 ]);
                                 $stats['leagues_created']++;
                             }
-                            
+
                             $this->leaguesCache[$cacheKey] = $league->id;
                         } else {
                             $this->leaguesCache[$cacheKey] = 'dry-run-id';
@@ -147,11 +148,13 @@ class ExtractTeamsFromBets extends Command
                 $teams = $this->extractTeamsFromBet($bet);
                 foreach ($teams as $teamData) {
                     $teamName = $this->normalizeTeamName($teamData['name']);
-                    if (!$teamName) continue;
+                    if (! $teamName) {
+                        continue;
+                    }
 
                     $sportId = isset($this->sportsCache[$sportName]) ? $this->sportsCache[$sportName] : null;
                     $leagueId = null;
-                    
+
                     if ($bet->league && $sportName) {
                         $leagueName = $this->normalizeLeagueName($bet->league);
                         $cacheKey = "{$sportName}:{$leagueName}";
@@ -160,45 +163,45 @@ class ExtractTeamsFromBets extends Command
 
                     $leagueName = $this->normalizeLeagueName($bet->league);
                     $cacheKey = "{$sportName}:{$leagueName}:{$teamName}";
-                    
+
                     if ($sportId) {
                         // Check if we already have this team in cache
-                        if (!isset($this->teamsCache[$cacheKey])) {
-                            if (!$dryRun && $sportId !== 'dry-run-id') {
+                        if (! isset($this->teamsCache[$cacheKey])) {
+                            if (! $dryRun && $sportId !== 'dry-run-id') {
                                 // First check if team exists with this name in this sport/league
                                 $team = Team::where('name', $teamName)
                                     ->where('sport_id', $sportId)
                                     ->where('league_id', $leagueId !== 'dry-run-id' ? $leagueId : null)
                                     ->first();
-                                
-                                if (!$team) {
-                                // Generate a unique slug
-                                $baseSlug = Str::slug($teamName);
-                                $slug = $baseSlug;
-                                $counter = 1;
-                                
-                                while (Team::where('slug', $slug)->exists()) {
-                                    // Add sport name to make it unique
-                                    $sportName = $this->sportsCache ? array_search($sportId, $this->sportsCache) : '';
-                                    $slug = $baseSlug . '-' . Str::slug($sportName);
-                                    
-                                    // If still not unique, add counter
-                                    if (Team::where('slug', $slug)->exists()) {
-                                        $slug = $baseSlug . '-' . $counter;
-                                        $counter++;
+
+                                if (! $team) {
+                                    // Generate a unique slug
+                                    $baseSlug = Str::slug($teamName);
+                                    $slug = $baseSlug;
+                                    $counter = 1;
+
+                                    while (Team::where('slug', $slug)->exists()) {
+                                        // Add sport name to make it unique
+                                        $sportName = $this->sportsCache ? array_search($sportId, $this->sportsCache) : '';
+                                        $slug = $baseSlug.'-'.Str::slug($sportName);
+
+                                        // If still not unique, add counter
+                                        if (Team::where('slug', $slug)->exists()) {
+                                            $slug = $baseSlug.'-'.$counter;
+                                            $counter++;
+                                        }
                                     }
+
+                                    $team = Team::create([
+                                        'name' => $teamName,
+                                        'sport_id' => $sportId,
+                                        'league_id' => $leagueId !== 'dry-run-id' ? $leagueId : null,
+                                        'slug' => $slug,
+                                        'is_active' => true,
+                                    ]);
+                                    $stats['teams_created']++;
                                 }
-                                
-                                $team = Team::create([
-                                    'name' => $teamName,
-                                    'sport_id' => $sportId,
-                                    'league_id' => $leagueId !== 'dry-run-id' ? $leagueId : null,
-                                    'slug' => $slug,
-                                    'is_active' => true,
-                                ]);
-                                $stats['teams_created']++;
-                            }
-                            
+
                                 $this->teamsCache[$cacheKey] = $team->id;
                             } else {
                                 $this->teamsCache[$cacheKey] = 'dry-run-id';
@@ -207,7 +210,7 @@ class ExtractTeamsFromBets extends Command
                         }
 
                         // Update bet with team relationship using cached team ID
-                        if (!$dryRun && isset($this->teamsCache[$cacheKey]) && $this->teamsCache[$cacheKey] !== 'dry-run-id') {
+                        if (! $dryRun && isset($this->teamsCache[$cacheKey]) && $this->teamsCache[$cacheKey] !== 'dry-run-id') {
                             if ($teamData['position'] === 'team_one') {
                                 $bet->team_one_id = $this->teamsCache[$cacheKey];
                             } elseif ($teamData['position'] === 'team_two') {
@@ -218,7 +221,7 @@ class ExtractTeamsFromBets extends Command
                 }
 
                 // Save bet updates
-                if (!$dryRun && ($bet->team_one_id || $bet->team_two_id)) {
+                if (! $dryRun && ($bet->team_one_id || $bet->team_two_id)) {
                     $bet->save();
                     $stats['bets_updated']++;
                 }
@@ -292,10 +295,12 @@ class ExtractTeamsFromBets extends Command
 
     private function normalizeSportName(?string $name): ?string
     {
-        if (!$name) return null;
-        
+        if (! $name) {
+            return null;
+        }
+
         $name = trim($name);
-        
+
         // Special cases
         $specialCases = [
             'ufc' => 'UFC',
@@ -316,18 +321,22 @@ class ExtractTeamsFromBets extends Command
 
     private function normalizeLeagueName(?string $name): ?string
     {
-        if (!$name) return null;
-        
+        if (! $name) {
+            return null;
+        }
+
         return trim($name);
     }
 
     private function normalizeTeamName(?string $name): ?string
     {
-        if (!$name) return null;
-        
+        if (! $name) {
+            return null;
+        }
+
         // Remove number prefixes like "1. "
         $name = preg_replace('/^\d+\.\s+/', '', $name);
-        
+
         return trim($name);
     }
 }

@@ -9,12 +9,12 @@ class SportPreference extends Model
     protected $fillable = [
         'sport_name',
         'priority',
-        'is_active'
+        'is_active',
     ];
 
     protected $casts = [
         'priority' => 'integer',
-        'is_active' => 'boolean'
+        'is_active' => 'boolean',
     ];
 
     /**

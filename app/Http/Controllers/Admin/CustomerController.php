@@ -85,12 +85,12 @@ class CustomerController extends Controller
             ->map(function ($subscription) {
                 $tier = null;
                 $interval = null;
-                
+
                 // Get tier/interval from StripeProduct or config
                 if ($subscription->stripe_price) {
                     $stripeProduct = \App\Models\StripeProduct::where('stripe_price_id', $subscription->stripe_price)
                         ->first();
-                    
+
                     if ($stripeProduct) {
                         $tier = $stripeProduct->tier;
                         $interval = $stripeProduct->billing_period;
@@ -102,7 +102,7 @@ class CustomerController extends Controller
                         }
                     }
                 }
-                
+
                 return [
                     'id' => $subscription->id,
                     'stripe_id' => $subscription->stripe_id,
@@ -130,7 +130,7 @@ class CustomerController extends Controller
                 'current_period_end' => $activeSubscription->current_period_end,
                 'ends_at' => $activeSubscription->ends_at,
                 'is_manual' => str_starts_with($activeSubscription->stripe_id, 'manual_'),
-                'days_until_renewal' => $activeSubscription->current_period_end ? 
+                'days_until_renewal' => $activeSubscription->current_period_end ?
                     (int) now()->diffInDays($activeSubscription->current_period_end, false) : null,
             ];
         }
@@ -138,7 +138,7 @@ class CustomerController extends Controller
         // Get invoices if available
         $invoices = collect([]); // Initialize as collection to ensure consistent type
         try {
-            if ($user->stripe_id && !str_starts_with($user->stripe_id, 'manual_')) {
+            if ($user->stripe_id && ! str_starts_with($user->stripe_id, 'manual_')) {
                 $invoices = $user->invoices()->take(10)->map(function ($invoice) {
                     return [
                         'id' => $invoice->id,
@@ -199,12 +199,12 @@ class CustomerController extends Controller
             $q->latest();
         }])
             ->withCount('subscriptions');
-        
+
         // Debug: Log the initial request
         \Log::info('CustomerController index request', [
             'all_params' => $request->all(),
             'tier' => $request->get('tier'),
-            'subscription_status' => $request->get('subscription_status')
+            'subscription_status' => $request->get('subscription_status'),
         ]);
 
         // Search functionality
@@ -224,7 +224,7 @@ class CustomerController extends Controller
         // Subscription Status filter
         if ($subscriptionStatus = $request->get('subscription_status')) {
             \Log::info('Applying subscription status filter', ['status' => $subscriptionStatus]);
-            
+
             if ($subscriptionStatus === 'no_subscription') {
                 $query->whereDoesntHave('subscriptions', function (Builder $q) {
                     $q->whereIn('stripe_status', ['active', 'trialing']);
@@ -232,7 +232,7 @@ class CustomerController extends Controller
             } else {
                 $query->whereHas('subscriptions', function (Builder $q) use ($subscriptionStatus) {
                     $q->where('stripe_status', $subscriptionStatus)
-                      ->whereNull('ends_at'); // Ensure it's not cancelled
+                        ->whereNull('ends_at'); // Ensure it's not cancelled
                 });
             }
         }
@@ -240,19 +240,19 @@ class CustomerController extends Controller
         // Tier filter (Free, Silver, Gold, Platinum)
         if ($tier = $request->get('tier')) {
             \Log::info('Applying tier filter', ['tier' => $tier]);
-            
+
             if ($tier === 'free') {
                 // Free users have no active subscriptions AND no admin override
                 $query->whereDoesntHave('subscriptions', function (Builder $q) {
                     $q->whereIn('stripe_status', ['active', 'trialing']);
                 })->where(function ($q) {
                     $q->where('admin_override', '!=', true)
-                      ->orWhereNull('admin_override');
+                        ->orWhereNull('admin_override');
                 });
-            } else if ($tier !== 'all') {
+            } elseif ($tier !== 'all') {
                 // Normalize tier name to proper case (Silver, Gold, Platinum)
                 $normalizedTier = ucfirst(strtolower($tier));
-                
+
                 // Get all price IDs for this tier from StripeProduct table
                 $priceIds = \App\Models\StripeProduct::where('tier', $normalizedTier)
                     ->where('is_active', true)
@@ -260,7 +260,7 @@ class CustomerController extends Controller
                     ->filter()
                     ->values()
                     ->toArray();
-                
+
                 // Also check for legacy price IDs from config
                 $priceToTier = config('stripe.price_to_tier', []);
                 foreach ($priceToTier as $priceId => $tierInfo) {
@@ -268,45 +268,45 @@ class CustomerController extends Controller
                         $priceIds[] = $priceId;
                     }
                 }
-                
+
                 // Add legacy hardcoded price IDs that might be in the database
                 $legacyPriceIds = [
                     'Silver' => ['price_silver_monthly', 'price_silver_weekly', 'price_silver_daily'],
                     'Gold' => ['price_gold_monthly', 'price_gold_weekly', 'price_gold_daily'],
                     'Platinum' => ['price_platinum_monthly', 'price_platinum_weekly', 'price_platinum_daily'],
                 ];
-                
+
                 if (isset($legacyPriceIds[$normalizedTier])) {
                     $priceIds = array_merge($priceIds, $legacyPriceIds[$normalizedTier]);
                 }
-                
+
                 // Remove duplicates and ensure unique values
                 $priceIds = array_values(array_unique(array_filter($priceIds)));
-                
+
                 \Log::info('Tier filter price IDs', [
                     'tier' => $tier,
                     'normalized_tier' => $normalizedTier,
                     'price_ids_count' => count($priceIds),
-                    'price_ids' => $priceIds
+                    'price_ids' => $priceIds,
                 ]);
-                
+
                 // Apply the filter - users must have EXACTLY this tier
                 $query->where(function ($mainQuery) use ($priceIds, $normalizedTier) {
                     // Option 1: Has active subscription with this tier's price ID
                     $mainQuery->where(function ($subQuery) use ($priceIds) {
-                        if (!empty($priceIds)) {
+                        if (! empty($priceIds)) {
                             $subQuery->whereHas('subscriptions', function (Builder $q) use ($priceIds) {
                                 $q->whereIn('stripe_price', $priceIds)
-                                  ->whereIn('stripe_status', ['active', 'trialing'])
-                                  ->whereNull('ends_at');
+                                    ->whereIn('stripe_status', ['active', 'trialing'])
+                                    ->whereNull('ends_at');
                             });
                         }
                     })
                     // Option 2: OR has admin override for this tier
-                    ->orWhere(function ($overrideQuery) use ($normalizedTier) {
-                        $overrideQuery->where('admin_override', true)
-                                      ->where('override_tier', $normalizedTier);
-                    });
+                        ->orWhere(function ($overrideQuery) use ($normalizedTier) {
+                            $overrideQuery->where('admin_override', true)
+                                ->where('override_tier', $normalizedTier);
+                        });
                 });
             }
             // If tier === 'all', don't add any tier filtering
@@ -489,7 +489,7 @@ class CustomerController extends Controller
                     foreach ($existingSubscriptions as $subscription) {
                         $subscription->cancelNow();
                     }
-                    
+
                     // Clear any admin override fields
                     $user->update([
                         'admin_override' => false,
@@ -526,7 +526,7 @@ class CustomerController extends Controller
                         ->whereNull('ends_at')
                         ->whereIn('stripe_status', ['active', 'trialing'])
                         ->first();
-                    
+
                     if (! $subscription) {
                         return back()->withErrors(['subscription' => 'No active subscription found to update']);
                     }
@@ -535,28 +535,28 @@ class CustomerController extends Controller
                     if (str_starts_with($subscription->stripe_id, 'manual_')) {
                         // For manual subscriptions, we need to cancel and create a new one
                         $subscription->cancelNow();
-                        
+
                         // Create new subscription
                         $builder = $user->newSubscription('default', $data['subscription_price']);
-                        
+
                         // Add trial if specified
                         if (! empty($data['trial_days'])) {
                             $builder->trialDays($data['trial_days']);
                         }
-                        
+
                         // Create subscription
                         if ($user->hasPaymentMethod()) {
                             $builder->create();
                         } else {
                             $builder->createWithoutPaymentMethod();
                         }
-                        
+
                         return back()->with('success', 'Subscription updated successfully!'.
                             (! $user->hasPaymentMethod() ? ' Customer will need to add a payment method to activate billing.' : ''));
                     } else {
                         // For regular Stripe subscriptions, use swap
                         $subscription->swap($data['subscription_price']);
-                        
+
                         return back()->with('success', 'Subscription plan updated! Changes will take effect at the next billing cycle.');
                     }
 
@@ -566,7 +566,7 @@ class CustomerController extends Controller
                         ->whereNull('ends_at')
                         ->whereIn('stripe_status', ['active', 'trialing'])
                         ->first();
-                    
+
                     if (! $subscription) {
                         return back()->withErrors(['subscription' => 'No active subscription found to cancel']);
                     }
@@ -593,12 +593,12 @@ class CustomerController extends Controller
                         // Parse price to get tier information
                         $tier = null;
                         $billingPeriod = 'monthly'; // default
-                        
+
                         // Try to get from StripeProduct table first
                         $stripeProduct = \App\Models\StripeProduct::where('stripe_price_id', $data['subscription_price'])
                             ->where('is_active', true)
                             ->first();
-                        
+
                         if ($stripeProduct) {
                             $tier = $stripeProduct->tier;
                             $billingPeriod = $stripeProduct->billing_period;
@@ -856,14 +856,14 @@ class CustomerController extends Controller
         try {
             if ($immediately) {
                 $subscription->cancelNow();
-                
+
                 // Clear any admin override fields when cancelling immediately
                 $user->update([
                     'admin_override' => false,
                     'override_tier' => null,
                     'override_expiry' => null,
                 ]);
-                
+
                 $message = 'Subscription cancelled immediately.';
             } else {
                 $subscription->cancel();
@@ -899,18 +899,18 @@ class CustomerController extends Controller
     public function search(Request $request)
     {
         $query = $request->get('q', '');
-        
+
         if (strlen($query) < 2) {
             return response()->json(['customers' => []]);
         }
 
         $customers = User::where(function ($q) use ($query) {
-            $q->where('name', 'like', '%' . $query . '%')
-              ->orWhere('email', 'like', '%' . $query . '%');
+            $q->where('name', 'like', '%'.$query.'%')
+                ->orWhere('email', 'like', '%'.$query.'%');
         })
-        ->orderBy('name')
-        ->limit(20)
-        ->get(['id', 'name', 'email']);
+            ->orderBy('name')
+            ->limit(20)
+            ->get(['id', 'name', 'email']);
 
         return response()->json(['customers' => $customers]);
     }

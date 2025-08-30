@@ -16,7 +16,7 @@ class AdditionalSportsBetsSeeder extends Seeder
     {
         // Get today's date
         $today = Carbon::today();
-        
+
         // Get operators
         $operators = Operator::all();
         if ($operators->isEmpty()) {
@@ -25,7 +25,7 @@ class AdditionalSportsBetsSeeder extends Seeder
                 Operator::create(['name' => 'FanDuel']),
             ]);
         }
-        
+
         // Additional sports with different bet counts to showcase blurred cards
         $sportsData = [
             // Tennis - only 1 bronze bet (will show blurred card for rest)
@@ -73,17 +73,17 @@ class AdditionalSportsBetsSeeder extends Seeder
                 ['home' => 'Charles Leclerc', 'away' => 'Monaco GP', 'time' => '14:00', 'membership' => 'platinum'],
             ],
         ];
-        
+
         // Get admin user for bets
         $adminUser = User::where('email', 'admin@wewingames.com')->first();
-        if (!$adminUser) {
+        if (! $adminUser) {
             $adminUser = User::first();
         }
-        
+
         foreach ($sportsData as $sportName => $games) {
             // Get or create sport
             $sport = Sport::firstOrCreate(['name' => $sportName]);
-            
+
             foreach ($games as $gameData) {
                 // Get or create teams
                 $homeTeam = Team::firstOrCreate(
@@ -94,17 +94,17 @@ class AdditionalSportsBetsSeeder extends Seeder
                     ['name' => $gameData['away']],
                     ['sport_id' => $sport->id]
                 );
-                
+
                 // Generate bet details
                 $operator = $operators->random();
                 $isPositive = rand(0, 1);
                 $odds = $isPositive ? rand(100, 250) : rand(-250, -110);
-                
+
                 // Create different bet types based on sport
                 $pick = $this->generatePick($sportName, $homeTeam->name, $awayTeam->name);
                 $description = $this->getDescription($sportName);
                 $analysis = $this->generateAnalysis($sportName, $homeTeam->name, $awayTeam->name);
-                
+
                 // Create bet
                 Bet::create([
                     'user_id' => $adminUser->id,
@@ -136,10 +136,10 @@ class AdditionalSportsBetsSeeder extends Seeder
                 ]);
             }
         }
-        
+
         $this->command->info('Additional sports bets seeded successfully!');
     }
-    
+
     private function generatePick($sport, $home, $away): string
     {
         switch ($sport) {
@@ -147,23 +147,27 @@ class AdditionalSportsBetsSeeder extends Seeder
                 return rand(0, 1) ? "{$home} to Win" : "{$away} in Straight Sets";
             case 'Boxing':
                 $methods = ['KO/TKO', 'Decision', 'Points'];
-                return "{$home} by " . $methods[array_rand($methods)];
+
+                return "{$home} by ".$methods[array_rand($methods)];
             case 'NASCAR':
                 $positions = ['Win', 'Top 3', 'Top 5', 'Top 10'];
-                return "{$home} to " . $positions[array_rand($positions)];
+
+                return "{$home} to ".$positions[array_rand($positions)];
             case 'Cricket':
                 $types = ['to Win', 'Top Batsman', 'Total Runs Over 300'];
-                return "{$home} " . $types[array_rand($types)];
+
+                return "{$home} ".$types[array_rand($types)];
             case 'eSports':
-                return rand(0, 1) ? "{$home} Map 1 Winner" : "Total Maps Over 2.5";
+                return rand(0, 1) ? "{$home} Map 1 Winner" : 'Total Maps Over 2.5';
             case 'Formula 1':
                 $bets = ['to Win', 'Podium Finish', 'Fastest Lap'];
-                return "{$home} " . $bets[array_rand($bets)];
+
+                return "{$home} ".$bets[array_rand($bets)];
             default:
                 return "{$home} to Win";
         }
     }
-    
+
     private function getDescription($sport): string
     {
         $descriptions = [
@@ -174,23 +178,23 @@ class AdditionalSportsBetsSeeder extends Seeder
             'eSports' => ['Map Winner', 'Match Winner', 'Total Maps'],
             'Formula 1' => ['Race Winner', 'Podium', 'Qualifying'],
         ];
-        
+
         return $descriptions[$sport][array_rand($descriptions[$sport])] ?? 'Match Winner';
     }
-    
+
     private function generateAnalysis($sport, $home, $away): string
     {
         $analyses = [
             "Current form strongly favors this selection in today's matchup.",
-            "Head-to-head statistics show clear advantage here.",
-            "Recent performance metrics indicate excellent value.",
-            "Conditions perfectly align for this betting opportunity.",
-            "Historical data supports this high-confidence pick.",
+            'Head-to-head statistics show clear advantage here.',
+            'Recent performance metrics indicate excellent value.',
+            'Conditions perfectly align for this betting opportunity.',
+            'Historical data supports this high-confidence pick.',
         ];
-        
-        return $analyses[array_rand($analyses)] . " {$home} vs {$away}.";
+
+        return $analyses[array_rand($analyses)]." {$home} vs {$away}.";
     }
-    
+
     private function getLeague($sport): string
     {
         $leagues = [
@@ -201,7 +205,7 @@ class AdditionalSportsBetsSeeder extends Seeder
             'eSports' => 'Major League',
             'Formula 1' => 'F1 World Championship',
         ];
-        
+
         return $leagues[$sport] ?? $sport;
     }
 }

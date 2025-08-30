@@ -15,12 +15,11 @@ use App\Traits\HasFilters;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Response;
 use Inertia\Inertia;
 
 class BetManagementController extends Controller
 {
-    use HasFilters, CreatesTeamsWithUniqueSlug;
+    use CreatesTeamsWithUniqueSlug, HasFilters;
 
     /**
      * Display a listing of bets with optimized queries and caching.
@@ -48,12 +47,13 @@ class BetManagementController extends Controller
 
         // Execute query with optimized pagination
         $bets = $query->paginate($perPage)->withQueryString();
-        
+
         // Transform bet data to ensure team fields are strings
         $bets->getCollection()->transform(function ($bet) {
             // Make sure team_one and team_two remain as strings
             $bet->team_one = (string) $bet->team_one;
             $bet->team_two = (string) $bet->team_two;
+
             return $bet;
         });
 
@@ -119,7 +119,7 @@ class BetManagementController extends Controller
         if ($request->filled('user_id')) {
             $query->where('user_id', $request->user_id);
         }
-        
+
         // Referrer filter (code field)
         if ($request->filled('referrer')) {
             $query->where('code', $request->referrer);
@@ -273,7 +273,7 @@ class BetManagementController extends Controller
         // Define individual sports that don't require team_two
         $individualSports = ['golf', 'tennis', 'boxing', 'mma', 'ufc', 'racing', 'nascar'];
         $isIndividualSport = in_array(strtolower($request->input('sports', '')), $individualSports);
-        
+
         $validated = $request->validate([
             'sports' => 'required|string|max:255',
             'sport_id' => 'nullable|exists:sports,id',
@@ -318,21 +318,21 @@ class BetManagementController extends Controller
 
         // Set the user_id to the authenticated admin
         $validated['user_id'] = Auth::id();
-        
+
         // Normalize sports name to lowercase
         if (isset($validated['sports'])) {
             $validated['sports'] = strtolower($validated['sports']);
         }
-        
+
         // For individual sports, set team_two to empty string if not provided
         if ($isIndividualSport && empty($validated['team_two'])) {
             $validated['team_two'] = '';
         }
-        
+
         // Handle new team creation
         DB::transaction(function () use (&$validated, $request) {
             // Create team one if it's new
-            if ($request->boolean('team_one_is_new') && !empty($validated['team_one']) && empty($validated['team_one_id'])) {
+            if ($request->boolean('team_one_is_new') && ! empty($validated['team_one']) && empty($validated['team_one_id'])) {
                 $teamOne = $this->findOrCreateTeam(
                     $validated['team_one'],
                     $validated['sport_id'] ?? null,
@@ -340,7 +340,7 @@ class BetManagementController extends Controller
                     true
                 );
                 $validated['team_one_id'] = $teamOne->id;
-                
+
                 if ($teamOne->wasRecentlyCreated) {
                     activity()
                         ->causedBy(Auth::user())
@@ -348,9 +348,9 @@ class BetManagementController extends Controller
                         ->log('Created new team/player via bet creation');
                 }
             }
-            
+
             // Create team two if it's new
-            if ($request->boolean('team_two_is_new') && !empty($validated['team_two']) && empty($validated['team_two_id'])) {
+            if ($request->boolean('team_two_is_new') && ! empty($validated['team_two']) && empty($validated['team_two_id'])) {
                 $teamTwo = $this->findOrCreateTeam(
                     $validated['team_two'],
                     $validated['sport_id'] ?? null,
@@ -358,7 +358,7 @@ class BetManagementController extends Controller
                     true
                 );
                 $validated['team_two_id'] = $teamTwo->id;
-                
+
                 if ($teamTwo->wasRecentlyCreated) {
                     activity()
                         ->causedBy(Auth::user())
@@ -367,7 +367,7 @@ class BetManagementController extends Controller
                 }
             }
         });
-        
+
         // Remove the is_new flags from validated data
         unset($validated['team_one_is_new'], $validated['team_two_is_new']);
 
@@ -376,26 +376,26 @@ class BetManagementController extends Controller
             $validated['is_each_way'] = true;
             $validated['each_way_stake'] = $validated['wager_amount'] / 2;
             // Default place fraction to 1/5 if not provided
-            if (!isset($validated['place_fraction'])) {
+            if (! isset($validated['place_fraction'])) {
                 $validated['place_fraction'] = 0.2;
             }
-            
+
             // If position data is provided, calculate status automatically
-            if (!empty($validated['finishing_position']) && !empty($validated['places_paid'])) {
+            if (! empty($validated['finishing_position']) && ! empty($validated['places_paid'])) {
                 $betService = app(\App\Services\BetService::class);
-                
+
                 // Create temporary bet object for calculation
                 $tempBet = new Bet($validated);
-                
+
                 // Prepare dead heat info if applicable
                 $deadHeatInfo = null;
-                if (!empty($validated['is_dead_heat']) && !empty($validated['dead_heat_players']) && isset($validated['dead_heat_spots'])) {
+                if (! empty($validated['is_dead_heat']) && ! empty($validated['dead_heat_players']) && isset($validated['dead_heat_spots'])) {
                     $deadHeatInfo = [
                         'players_tied' => $validated['dead_heat_players'],
                         'spots_available' => $validated['dead_heat_spots'],
                     ];
                 }
-                
+
                 // Calculate using automatic determination
                 $calculation = $betService->calculateEachWayPayoutWithDeadHeat(
                     $tempBet,
@@ -403,14 +403,14 @@ class BetManagementController extends Controller
                     $validated['places_paid'],
                     $deadHeatInfo
                 );
-                
+
                 // Apply calculated values
                 $validated['status'] = $calculation['status'];
                 $validated['bet_result_type'] = $calculation['bet_result_type'];
                 $validated['winning_amount'] = $calculation['winning_amount'];
                 $validated['place_payout'] = $calculation['place_payout'];
                 $validated['profit_amount'] = $calculation['profit_amount'];
-                
+
                 // Store position numeric
                 $validated['position_numeric'] = $betService->parsePosition($validated['finishing_position']);
             } else {
@@ -419,7 +419,7 @@ class BetManagementController extends Controller
                 $validated['profit_amount'] = $this->calculateProfit([
                     'status' => $validated['status'],
                     'stake' => $validated['wager_amount'],
-                    'potential_win' => $validated['winning_amount']
+                    'potential_win' => $validated['winning_amount'],
                 ]);
             }
         } else {
@@ -428,7 +428,7 @@ class BetManagementController extends Controller
             $validated['profit_amount'] = $this->calculateProfit([
                 'status' => $validated['status'],
                 'stake' => $validated['wager_amount'],
-                'potential_win' => $validated['winning_amount']
+                'potential_win' => $validated['winning_amount'],
             ]);
         }
 
@@ -440,21 +440,21 @@ class BetManagementController extends Controller
         if ($isParlay && isset($validated['parlay_teams'])) {
             $parlayTeams = $validated['parlay_teams'];
             unset($validated['parlay_teams']);
-            
+
             DB::transaction(function () use ($validated, $parlayTeams) {
                 // Create the bet
                 $bet = Bet::create($validated);
-                
+
                 // Create parlay team associations
                 foreach ($parlayTeams as $teamData) {
-                    if (!empty($teamData['id'])) {
+                    if (! empty($teamData['id'])) {
                         \App\Models\BetTeam::create([
                             'bet_id' => $bet->id,
                             'team_id' => $teamData['id'],
                         ]);
                     }
                 }
-                
+
                 // Clear related caches
                 SimpleCacheService::invalidateRelated('bet');
 
@@ -466,7 +466,7 @@ class BetManagementController extends Controller
         } else {
             // Remove parlay_teams from validated data if not a parlay
             unset($validated['parlay_teams']);
-            
+
             $bet = Bet::create($validated);
 
             // Clear related caches
@@ -510,11 +510,11 @@ class BetManagementController extends Controller
 
         // Convert bet to array and ensure team relationships are properly formatted
         $betArray = $bet->toArray();
-        
+
         // Ensure wager_type and league are included
         $betArray['wager_type'] = $bet->wager_type;
         $betArray['league'] = $bet->league;
-        
+
         // Ensure team relationships are properly formatted
         if ($bet->teamOne) {
             $betArray['teamOne'] = [
@@ -525,7 +525,7 @@ class BetManagementController extends Controller
                 'logo_url' => $bet->teamOne->logo_url,
             ];
         }
-        
+
         if ($bet->teamTwo) {
             $betArray['teamTwo'] = [
                 'id' => $bet->teamTwo->id,
@@ -535,7 +535,7 @@ class BetManagementController extends Controller
                 'logo_url' => $bet->teamTwo->logo_url,
             ];
         }
-        
+
         // Get all teams for the sport to populate Select2
         $sportId = null;
         if ($bet->sports) {
@@ -544,20 +544,20 @@ class BetManagementController extends Controller
                 $sportId = $sport->id;
             }
         }
-        
+
         $teams = [];
         if ($sportId) {
             $teams = Team::where('sport_id', $sportId)
                 ->orderBy('name')
                 ->get(['id', 'name'])
-                ->map(function($team) {
+                ->map(function ($team) {
                     return [
                         'id' => $team->id,
                         'text' => $team->name,
                     ];
                 });
         }
-        
+
         return Inertia::render('admin/Bets/Edit', [
             'bet' => $betArray,
             'sports' => $sports,
@@ -577,7 +577,7 @@ class BetManagementController extends Controller
         // Define individual sports that don't require team_two
         $individualSports = ['golf', 'tennis', 'boxing', 'mma', 'ufc', 'racing', 'nascar'];
         $isIndividualSport = in_array(strtolower($request->input('sports', '')), $individualSports);
-        
+
         $validated = $request->validate([
             'user_id' => 'nullable|exists:users,id',
             'sports' => 'required|string|max:255',
@@ -622,21 +622,21 @@ class BetManagementController extends Controller
             'golf_place' => 'nullable|boolean',
             'golf_place_fraction' => 'nullable|numeric|between:0,1',
         ]);
-        
+
         // Normalize sports name to lowercase
         if (isset($validated['sports'])) {
             $validated['sports'] = strtolower($validated['sports']);
         }
-        
+
         // For individual sports, set team_two to empty string if not provided
         if ($isIndividualSport && empty($validated['team_two'])) {
             $validated['team_two'] = '';
         }
-        
+
         // Handle new team creation
         DB::transaction(function () use (&$validated, $request) {
             // Create team one if it's new
-            if ($request->boolean('team_one_is_new') && !empty($validated['team_one']) && empty($validated['team_one_id'])) {
+            if ($request->boolean('team_one_is_new') && ! empty($validated['team_one']) && empty($validated['team_one_id'])) {
                 $teamOne = $this->findOrCreateTeam(
                     $validated['team_one'],
                     $validated['sport_id'] ?? null,
@@ -644,7 +644,7 @@ class BetManagementController extends Controller
                     true
                 );
                 $validated['team_one_id'] = $teamOne->id;
-                
+
                 if ($teamOne->wasRecentlyCreated) {
                     activity()
                         ->causedBy(Auth::user())
@@ -652,9 +652,9 @@ class BetManagementController extends Controller
                         ->log('Created new team/player via bet update');
                 }
             }
-            
+
             // Create team two if it's new
-            if ($request->boolean('team_two_is_new') && !empty($validated['team_two']) && empty($validated['team_two_id'])) {
+            if ($request->boolean('team_two_is_new') && ! empty($validated['team_two']) && empty($validated['team_two_id'])) {
                 $teamTwo = $this->findOrCreateTeam(
                     $validated['team_two'],
                     $validated['sport_id'] ?? null,
@@ -662,7 +662,7 @@ class BetManagementController extends Controller
                     true
                 );
                 $validated['team_two_id'] = $teamTwo->id;
-                
+
                 if ($teamTwo->wasRecentlyCreated) {
                     activity()
                         ->causedBy(Auth::user())
@@ -671,7 +671,7 @@ class BetManagementController extends Controller
                 }
             }
         });
-        
+
         // Remove the is_new flags from validated data
         unset($validated['team_one_is_new'], $validated['team_two_is_new']);
 
@@ -680,26 +680,26 @@ class BetManagementController extends Controller
             $validated['is_each_way'] = true;
             $validated['each_way_stake'] = $validated['wager_amount'] / 2;
             // Default place fraction to 1/5 if not provided
-            if (!isset($validated['place_fraction'])) {
+            if (! isset($validated['place_fraction'])) {
                 $validated['place_fraction'] = 0.2;
             }
-            
+
             // If position data is provided, calculate status automatically
-            if (!empty($validated['finishing_position']) && !empty($validated['places_paid'])) {
+            if (! empty($validated['finishing_position']) && ! empty($validated['places_paid'])) {
                 $betService = app(\App\Services\BetService::class);
-                
+
                 // Update bet with current data first
                 $bet->fill($validated);
-                
+
                 // Prepare dead heat info if applicable
                 $deadHeatInfo = null;
-                if (!empty($validated['is_dead_heat']) && !empty($validated['dead_heat_players']) && isset($validated['dead_heat_spots'])) {
+                if (! empty($validated['is_dead_heat']) && ! empty($validated['dead_heat_players']) && isset($validated['dead_heat_spots'])) {
                     $deadHeatInfo = [
                         'players_tied' => $validated['dead_heat_players'],
                         'spots_available' => $validated['dead_heat_spots'],
                     ];
                 }
-                
+
                 // Calculate using automatic determination
                 $calculation = $betService->calculateEachWayPayoutWithDeadHeat(
                     $bet,
@@ -707,14 +707,14 @@ class BetManagementController extends Controller
                     $validated['places_paid'],
                     $deadHeatInfo
                 );
-                
+
                 // Apply calculated values
                 $validated['status'] = $calculation['status'];
                 $validated['bet_result_type'] = $calculation['bet_result_type'];
                 $validated['winning_amount'] = $calculation['winning_amount'];
                 $validated['place_payout'] = $calculation['place_payout'];
                 $validated['profit_amount'] = $calculation['profit_amount'];
-                
+
                 // Store position numeric
                 $validated['position_numeric'] = $betService->parsePosition($validated['finishing_position']);
             }
@@ -725,12 +725,12 @@ class BetManagementController extends Controller
             DB::transaction(function () use ($bet, $validated) {
                 // Update bet
                 $bet->update(array_diff_key($validated, ['parlay_teams' => '']));
-                
+
                 // Update parlay teams
                 $bet->parlayTeams()->delete();
-                
+
                 foreach ($validated['parlay_teams'] as $teamData) {
-                    if (!empty($teamData['id'])) {
+                    if (! empty($teamData['id'])) {
                         \App\Models\BetTeam::create([
                             'bet_id' => $bet->id,
                             'team_id' => $teamData['id'],
@@ -848,22 +848,22 @@ class BetManagementController extends Controller
     {
         // Build the same query as index with filters
         $query = Bet::query()->select(['bets.*']);
-        
+
         // Apply filters using the same method as index
         $this->applyFilters($query, $request);
-        
+
         // Apply sorting
         $validSortFields = ['betting_date', 'created_at', 'wager_amount', 'winning_amount', 'profit_amount', 'wager_odds', 'status'];
         $this->applySorting($query, $request, $validSortFields, 'betting_date', 'desc');
 
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="bets_export_' . date('Y-m-d_His') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="bets_export_'.date('Y-m-d_His').'.csv"',
         ];
 
         $callback = function () use ($query) {
             $handle = fopen('php://output', 'w');
-            
+
             // CSV header matching the import format (17 columns)
             fputcsv($handle, [
                 'Sport', 'League', 'Month', 'Date', 'Home Team', 'Away Team', 'Bet Type',
@@ -879,12 +879,12 @@ class BetManagementController extends Controller
                 $date = $bettingDate ? $bettingDate->format('Y-m-d') : '';
 
                 // Format ROI as percentage
-                $roi = $bet->roi ? number_format($bet->roi, 2) . '%' : '0.00%';
+                $roi = $bet->roi ? number_format($bet->roi, 2).'%' : '0.00%';
 
                 // Format monetary values
-                $wager = '$' . number_format($bet->wager_amount ?? 0, 2);
-                $profits = '$' . number_format($bet->profit_amount ?? 0, 2);
-                $winningAmount = '$' . number_format($bet->winning_amount ?? 0, 2);
+                $wager = '$'.number_format($bet->wager_amount ?? 0, 2);
+                $profits = '$'.number_format($bet->profit_amount ?? 0, 2);
+                $winningAmount = '$'.number_format($bet->winning_amount ?? 0, 2);
 
                 fputcsv($handle, [
                     $bet->sports ?? '',                    // Sport

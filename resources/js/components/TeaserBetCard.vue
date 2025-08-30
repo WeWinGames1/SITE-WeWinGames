@@ -24,10 +24,10 @@ const props = defineProps<{
                             <div class="text-white fw-bold">--/--</div>
                         </div>
                     </div>
-                    
+
                     <h6 class="text-white mb-2">--- @ ---</h6>
                     <p class="text-white-50 mb-3">--------</p>
-                    
+
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <small class="text-white-50">Odds</small>
@@ -44,47 +44,29 @@ const props = defineProps<{
                     </div>
                 </div>
             </div>
-            
+
             <!-- Overlay content -->
             <div class="overlay-content position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center p-4">
                 <div class="text-center">
                     <i class="bi bi-lock-fill text-warning display-4 mb-3"></i>
                     <h5 class="text-white mb-3">
-                        <template v-if="bet.remainingCount === 1">
-                            Unlock Premium Pick
-                        </template>
-                        <template v-else-if="bet.remainingCount > 0">
-                            Unlock {{ bet.remainingCount }} Premium Picks
-                        </template>
-                        <template v-else>
-                            Unlock Premium Picks
-                        </template>
+                        <template v-if="bet.remainingCount === 1"> Unlock Premium Pick </template>
+                        <template v-else-if="bet.remainingCount > 0"> Unlock {{ bet.remainingCount }} Premium Picks </template>
+                        <template v-else> Unlock Premium Picks </template>
                     </h5>
                     <p class="text-white-50 mb-4 small">
                         {{ bet.isGuest ? 'Create a free account' : 'Upgrade your membership' }} to access exclusive betting insights and premium picks
                     </p>
                     <div class="d-flex flex-column gap-2">
-                        <Link 
-                            v-if="bet.isGuest" 
-                            href="/register" 
-                            class="btn btn-warning btn-sm"
-                        >
+                        <Link v-if="bet.isGuest" href="/register" class="btn btn-warning btn-sm">
                             <i class="bi bi-person-plus me-2"></i>
                             Register for Free
                         </Link>
-                        <Link 
-                            v-else 
-                            href="/buy-our-picks" 
-                            class="btn btn-warning btn-sm"
-                        >
+                        <Link v-else href="/buy-our-picks" class="btn btn-warning btn-sm">
                             <i class="bi bi-arrow-up-circle me-2"></i>
                             Upgrade Now
                         </Link>
-                        <Link 
-                            v-if="bet.isGuest" 
-                            href="/login" 
-                            class="btn btn-outline-light btn-sm"
-                        >
+                        <Link v-if="bet.isGuest" href="/login" class="btn btn-outline-light btn-sm">
                             <i class="bi bi-box-arrow-in-right me-2"></i>
                             Login
                         </Link>
@@ -113,7 +95,9 @@ const props = defineProps<{
 }
 
 .card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
     border: 2px solid transparent !important;
 }
 

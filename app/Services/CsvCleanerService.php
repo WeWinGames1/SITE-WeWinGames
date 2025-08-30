@@ -165,17 +165,17 @@ class CsvCleanerService
         // Direct mapping based on expected headers
         foreach ($this->expectedHeaders as $header) {
             $index = $columnIndices[$header] ?? null;
-            
+
             if ($index !== null && isset($data[$index])) {
                 $value = trim($data[$index]);
-                
+
                 // Special handling for specific fields
                 switch ($header) {
                     case 'Sport':
                         // Keep original casing for sports
                         $newRow[$header] = $value;
                         break;
-                    
+
                     case 'Game Date':
                         // Format date from m/d/Y to Y-m-d
                         if (! empty($value)) {
@@ -195,19 +195,19 @@ class CsvCleanerService
                             return null;
                         }
                         break;
-                    
+
                     case 'Wager':
                     case 'Profits':
                     case 'Winning Amount':
                         // Clean monetary values - remove $ and spaces
                         $newRow[$header] = str_replace(['$', ' ', ','], '', $value);
                         break;
-                    
+
                     case 'ROI(net)':
                         // Keep ROI as is (including % sign)
                         $newRow[$header] = $value;
                         break;
-                    
+
                     default:
                         $newRow[$header] = $value;
                         break;
@@ -216,7 +216,7 @@ class CsvCleanerService
                 $newRow[$header] = '';
             }
         }
-        
+
         // Skip rows without essential data
         if (empty($newRow['Sport']) || empty($newRow['Game Date'])) {
             return null;

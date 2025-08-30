@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Team;
-use App\Models\Sport;
 use App\Models\League;
-use App\Models\TeamAlias;
+use App\Models\Sport;
+use App\Models\Team;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 class TeamController extends Controller
 {
@@ -97,9 +96,9 @@ class TeamController extends Controller
         $team = Team::create($validated);
 
         // Create aliases
-        if (!empty($validated['aliases'])) {
+        if (! empty($validated['aliases'])) {
             foreach ($validated['aliases'] as $alias) {
-                if (!empty(trim($alias))) {
+                if (! empty(trim($alias))) {
                     $team->aliases()->create(['alias' => trim($alias)]);
                 }
             }
@@ -167,9 +166,9 @@ class TeamController extends Controller
 
         // Update aliases
         $team->aliases()->delete();
-        if (!empty($validated['aliases'])) {
+        if (! empty($validated['aliases'])) {
             foreach ($validated['aliases'] as $alias) {
-                if (!empty(trim($alias))) {
+                if (! empty(trim($alias))) {
                     $team->aliases()->create(['alias' => trim($alias)]);
                 }
             }

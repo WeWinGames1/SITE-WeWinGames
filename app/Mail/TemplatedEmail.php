@@ -15,7 +15,9 @@ class TemplatedEmail extends Mailable
     use Queueable, SerializesModels;
 
     protected EmailTemplate $template;
+
     protected array $data;
+
     protected array $emailMetadata;
 
     /**
@@ -34,17 +36,17 @@ class TemplatedEmail extends Mailable
     public function envelope(): Envelope
     {
         $rendered = $this->template->render($this->data);
-        
+
         $envelope = new Envelope(
             subject: $rendered['subject'],
             from: [$rendered['from_email'] => $rendered['from_name']],
         );
-        
+
         // Add reply-to if different from from_email
         if (isset($rendered['reply_to_email']) && $rendered['reply_to_email'] !== $rendered['from_email']) {
             $envelope->replyTo($rendered['reply_to_email'], $rendered['from_name']);
         }
-        
+
         return $envelope;
     }
 
@@ -54,7 +56,7 @@ class TemplatedEmail extends Mailable
     public function content(): Content
     {
         $rendered = $this->template->render($this->data);
-        
+
         return new Content(
             html: $rendered['body_html'],
             text: $rendered['body_text'],

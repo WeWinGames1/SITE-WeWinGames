@@ -106,13 +106,13 @@ class BlogPostController extends Controller
         // Create the post first (without media library field)
         $postData = $validated;
         unset($postData['featured_image_media_id']);
-        
+
         // Handle media library selection first
         if ($request->filled('featured_image_media_id')) {
             $media = \App\Models\Media::find($request->featured_image_media_id);
             if ($media) {
                 // For library items, store the direct path reference
-                $mediaPath = 'media/' . $media->id . '/' . $media->file_name;
+                $mediaPath = 'media/'.$media->id.'/'.$media->file_name;
                 $postData['featured_image'] = $mediaPath;
             }
         } elseif ($request->hasFile('featured_image')) {
@@ -120,10 +120,10 @@ class BlogPostController extends Controller
             $path = $request->file('featured_image')->store('posts/featured-images', 'public');
             $postData['featured_image'] = $path;
         }
-        
+
         // Create the post
         $post = Post::create($postData);
-        
+
         // Handle media library association
         if ($request->filled('featured_image_media_id')) {
             $media = \App\Models\Media::find($request->featured_image_media_id);
@@ -149,7 +149,7 @@ class BlogPostController extends Controller
         // Ensure featured_image_url is included
         $postData = $post->load('author:id,name,email')->toArray();
         $postData['featured_image_url'] = $post->featured_image_url;
-        
+
         return Inertia::render('admin/BlogPosts/Edit', [
             'post' => $postData,
             'categories' => Post::getCategories(),
@@ -188,7 +188,7 @@ class BlogPostController extends Controller
         // Update the post (without media library field)
         $postData = $validated;
         unset($postData['featured_image_media_id']);
-        
+
         // Handle media library selection first
         if ($request->filled('featured_image_media_id')) {
             $media = \App\Models\Media::find($request->featured_image_media_id);
@@ -197,14 +197,14 @@ class BlogPostController extends Controller
                 if ($post->featured_image && Storage::disk('public')->exists($post->featured_image)) {
                     Storage::disk('public')->delete($post->featured_image);
                 }
-                
+
                 // For library items, store the direct path reference
-                $mediaPath = 'media/' . $media->id . '/' . $media->file_name;
+                $mediaPath = 'media/'.$media->id.'/'.$media->file_name;
                 $postData['featured_image'] = $mediaPath;
-                
+
                 // Clear any existing media collection
                 $post->clearMediaCollection('featured-image');
-                
+
                 // We don't copy library items - just reference them directly
             }
         } elseif ($request->hasFile('featured_image')) {
@@ -216,15 +216,15 @@ class BlogPostController extends Controller
 
             $path = $request->file('featured_image')->store('posts/featured-images', 'public');
             $postData['featured_image'] = $path;
-            
+
             // Update the post first to save the path
             $post->update($postData);
-            
+
             // Also add uploaded image to media library
             $post->clearMediaCollection('featured-image');
             $post->addMediaFromRequest('featured_image')
                 ->toMediaCollection('featured-image');
-            
+
             // Return early since we already updated
             return redirect()->route('admin.blog-posts.edit', $post)
                 ->with('success', 'Blog post updated successfully.');

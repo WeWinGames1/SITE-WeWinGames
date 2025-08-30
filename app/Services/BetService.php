@@ -194,14 +194,14 @@ class BetService
                             'spots_available' => $positionData['spots_available'],
                         ];
                     }
-                    
+
                     $data = $this->calculateEachWayPayoutWithDeadHeat(
                         $bet,
                         $positionData['position'],
                         $positionData['places_paid'],
                         $deadHeatInfo
                     );
-                    
+
                     // Store position data
                     $data['finishing_position'] = $positionData['position'];
                     $data['places_paid'] = $positionData['places_paid'];
@@ -423,10 +423,10 @@ class BetService
             if ($stat->total_stake > 0) {
                 $roi = round(($stat->total_profit / $stat->total_stake) * 100, 2);
             }
-            
+
             // Normalize the membership level to proper case (capitalize first letter)
             $normalizedLevel = ucfirst(strtolower($stat->membership));
-            
+
             // Return just the ROI value for each membership level
             $result[$normalizedLevel] = $roi;
         }
@@ -476,9 +476,10 @@ class BetService
 
         // Sort by the expected order: Bronze, Silver, Gold, Platinum
         $levelOrder = ['Bronze' => 1, 'Silver' => 2, 'Gold' => 3, 'Platinum' => 4];
-        usort($result, function($a, $b) use ($levelOrder) {
+        usort($result, function ($a, $b) use ($levelOrder) {
             $orderA = $levelOrder[$a['level']] ?? 999;
             $orderB = $levelOrder[$b['level']] ?? 999;
+
             return $orderA <=> $orderB;
         });
 
@@ -563,17 +564,17 @@ class BetService
     {
         $now = now();
         $user = auth()->user();
-        
+
         // Show bets where:
         // 1. betting_date <= now (picks have been posted)
         // 2. game_date >= now (games haven't happened yet)
         $query = Bet::where('betting_date', '<=', $now)
             ->where('game_date', '>=', $now);
-        
+
         // Apply tier-based filtering if user is authenticated
         if ($user) {
             $userTier = $user->getCurrentTier() ?? 'Bronze';
-            
+
             // Determine which levels to show based on user's tier
             $visibleLevels = [];
             switch (strtolower($userTier)) {
@@ -590,14 +591,14 @@ class BetService
                     $visibleLevels = ['bronze'];
                     break;
             }
-            
+
             // Use membership column (with case-insensitive comparison)
             $query->whereIn(DB::raw('LOWER(membership)'), $visibleLevels);
         } else {
             // Non-authenticated users only see Bronze picks
             $query->whereRaw('LOWER(membership) = ?', ['bronze']);
         }
-        
+
         return $query->orderBy('game_date', 'asc')
             ->orderBy('betting_date', 'asc')
             ->get();
@@ -610,25 +611,25 @@ class BetService
     {
         $now = now();
         $user = auth()->user();
-        
+
         // Base query
         $query = Bet::where('betting_date', '<=', $now);
-        
+
         // Check if it's a specific date or month range
         if (preg_match('/^\d{4}-\d{2}$/', $dateOrMonth)) {
             // It's a month (YYYY-MM format)
-            $startOfMonth = Carbon::parse($dateOrMonth . '-01')->startOfMonth();
+            $startOfMonth = Carbon::parse($dateOrMonth.'-01')->startOfMonth();
             $endOfMonth = $startOfMonth->copy()->endOfMonth();
             $query->whereBetween('game_date', [$startOfMonth, $endOfMonth]);
         } else {
             // It's a specific date
             $query->whereDate('game_date', $dateOrMonth);
         }
-        
+
         // Apply tier-based filtering
         if ($user) {
             $userTier = $user->getCurrentTier() ?? 'Bronze';
-            
+
             $visibleLevels = [];
             switch (strtolower($userTier)) {
                 case 'platinum':
@@ -644,12 +645,12 @@ class BetService
                     $visibleLevels = ['bronze'];
                     break;
             }
-            
+
             $query->whereIn(DB::raw('LOWER(membership)'), $visibleLevels);
         } else {
             $query->whereRaw('LOWER(membership) = ?', ['bronze']);
         }
-        
+
         return $query->orderBy('game_date', 'asc')
             ->orderBy('betting_date', 'asc')
             ->get();
@@ -664,15 +665,15 @@ class BetService
         $now = now();
         $user = auth()->user();
         $oneWeekFromNow = now()->addWeek();
-        
+
         // Base query for active picks
         $query = Bet::where('betting_date', '<=', $now)
             ->where('game_date', '>=', $now);
-        
+
         // Apply tier filtering
         if ($user) {
             $userTier = $user->getCurrentTier() ?? 'Bronze';
-            
+
             $visibleLevels = [];
             switch (strtolower($userTier)) {
                 case 'platinum':
@@ -688,23 +689,23 @@ class BetService
                     $visibleLevels = ['bronze'];
                     break;
             }
-            
+
             $query->whereIn(DB::raw('LOWER(membership)'), $visibleLevels);
         } else {
             $query->whereRaw('LOWER(membership) = ?', ['bronze']);
         }
-        
+
         // Get all game dates
         $gameDates = $query->distinct()
             ->pluck('game_date')
-            ->map(function($date) {
+            ->map(function ($date) {
                 return Carbon::parse($date);
             })
             ->sort();
-        
+
         // Group dates
         $groupedDates = [];
-        
+
         foreach ($gameDates as $date) {
             if ($date->lte($oneWeekFromNow)) {
                 // Within a week - use individual dates
@@ -713,12 +714,12 @@ class BetService
                 // Beyond a week - group by month
                 $monthKey = $date->format('Y-m');
                 $monthLabel = $date->format('F Y');
-                if (!isset($groupedDates[$monthKey])) {
+                if (! isset($groupedDates[$monthKey])) {
                     $groupedDates[$monthKey] = $monthLabel;
                 }
             }
         }
-        
+
         return $groupedDates;
     }
 
@@ -883,7 +884,7 @@ class BetService
         }
 
         // Sort by year descending
-        usort($result, function($a, $b) {
+        usort($result, function ($a, $b) {
             return $b['year'] - $a['year'];
         });
 
@@ -937,7 +938,7 @@ class BetService
         }
 
         // Sort by month descending
-        usort($result, function($a, $b) {
+        usort($result, function ($a, $b) {
             return strcmp($b['month'], $a['month']);
         });
 
@@ -981,21 +982,22 @@ class BetService
             ->pluck('sport_name')
             ->toArray();
 
-        if (!$user) {
+        if (! $user) {
             // PUBLIC USER: Only show older/expired picks
             $bets = Bet::query()
                 ->select('id', 'sport', 'game', 'wager_name', 'odds', 'level', 'game_date', 'betting_date')
                 ->whereIn('status', ['won', 'loss', 'placed', 'push']) // Only settled bets
                 ->where('game_date', '<', $now) // Only past games
-                ->when(!empty($preferredSports), function ($query) use ($preferredSports) {
+                ->when(! empty($preferredSports), function ($query) use ($preferredSports) {
                     // Sort by preferred sports using a CASE statement with safe bindings
                     $cases = [];
                     $bindings = [];
                     foreach ($preferredSports as $index => $sport) {
-                        $cases[] = "WHEN sport = ? THEN " . $index;
+                        $cases[] = 'WHEN sport = ? THEN '.$index;
                         $bindings[] = $sport;
                     }
-                    $caseStatement = "CASE " . implode(" ", $cases) . " ELSE 999 END";
+                    $caseStatement = 'CASE '.implode(' ', $cases).' ELSE 999 END';
+
                     return $query->orderByRaw($caseStatement, $bindings);
                 })
                 ->orderBy('game_date', 'desc')
@@ -1004,7 +1006,7 @@ class BetService
         } else {
             // LOGGED IN USER: Show current picks based on tier
             $userTier = $user->getCurrentTier() ?? 'Bronze';
-            
+
             // Determine which levels to show based on user's tier
             $visibleLevels = [];
             switch (strtolower($userTier)) {
@@ -1026,20 +1028,21 @@ class BetService
             $currentBets = Bet::query()
                 ->select('id', 'sport', 'game', 'wager_name', 'odds', 'level', 'game_date', 'betting_date')
                 ->where('status', 'pending')
-                ->where(function($query) use ($visibleLevels) {
+                ->where(function ($query) use ($visibleLevels) {
                     $query->whereIn('level', $visibleLevels)
-                          ->orWhereIn('level', array_map('strtolower', $visibleLevels));
+                        ->orWhereIn('level', array_map('strtolower', $visibleLevels));
                 })
                 ->where('game_date', '>=', $now) // Future games
-                ->when(!empty($preferredSports), function ($query) use ($preferredSports) {
+                ->when(! empty($preferredSports), function ($query) use ($preferredSports) {
                     // Sort by preferred sports using a CASE statement with safe bindings
                     $cases = [];
                     $bindings = [];
                     foreach ($preferredSports as $index => $sport) {
-                        $cases[] = "WHEN sport = ? THEN " . $index;
+                        $cases[] = 'WHEN sport = ? THEN '.$index;
                         $bindings[] = $sport;
                     }
-                    $caseStatement = "CASE " . implode(" ", $cases) . " ELSE 999 END";
+                    $caseStatement = 'CASE '.implode(' ', $cases).' ELSE 999 END';
+
                     return $query->orderByRaw($caseStatement, $bindings);
                 })
                 ->orderBy('game_date', 'asc')
@@ -1051,25 +1054,26 @@ class BetService
             // If we have less than 10 current picks, fill with older picks
             if ($currentBets->count() < 10) {
                 $needed = 10 - $currentBets->count();
-                
+
                 $olderBets = Bet::query()
                     ->select('id', 'sport', 'game', 'wager_name', 'odds', 'level', 'game_date', 'betting_date')
                     ->whereIn('status', ['won', 'loss', 'placed', 'push']) // Settled bets
-                    ->where(function($query) use ($visibleLevels) {
-                    $query->whereIn('level', $visibleLevels)
-                          ->orWhereIn('level', array_map('strtolower', $visibleLevels));
-                })
+                    ->where(function ($query) use ($visibleLevels) {
+                        $query->whereIn('level', $visibleLevels)
+                            ->orWhereIn('level', array_map('strtolower', $visibleLevels));
+                    })
                     ->where('game_date', '<', $now) // Past games
                     ->whereNotIn('id', $currentBets->pluck('id')) // Exclude already selected
-                    ->when(!empty($preferredSports), function ($query) use ($preferredSports) {
+                    ->when(! empty($preferredSports), function ($query) use ($preferredSports) {
                         // Sort by preferred sports using a CASE statement with safe bindings
                         $cases = [];
                         $bindings = [];
                         foreach ($preferredSports as $index => $sport) {
-                            $cases[] = "WHEN sport = ? THEN " . $index;
+                            $cases[] = 'WHEN sport = ? THEN '.$index;
                             $bindings[] = $sport;
                         }
-                        $caseStatement = "CASE " . implode(" ", $cases) . " ELSE 999 END";
+                        $caseStatement = 'CASE '.implode(' ', $cases).' ELSE 999 END';
+
                         return $query->orderByRaw($caseStatement, $bindings);
                     })
                     ->orderBy('game_date', 'desc')
@@ -1090,53 +1094,53 @@ class BetService
     {
         $halfStake = $bet->each_way_stake ?: ($bet->wager_amount / 2);
         $placeFraction = $bet->place_fraction ?: 0.2; // Default 1/5
-        
+
         // Calculate place odds
         $placeOdds = $this->calculatePlaceOdds($bet->odds, $placeFraction);
-        
+
         $data = ['status' => $result];
-        
+
         switch ($result) {
             case 'won':
                 // Both win and place parts win
                 $winPayout = $this->calculateAmericanOddsPayout($halfStake, $bet->odds);
                 $placePayout = $this->calculateAmericanOddsPayout($halfStake, $placeOdds);
-                
+
                 $data['winning_amount'] = $winPayout + $placePayout;
                 $data['place_payout'] = $placePayout;
                 $data['profit_amount'] = ($winPayout + $placePayout) - $bet->wager_amount;
                 break;
-                
+
             case 'placed':
                 // Only place part wins
                 $placePayout = $this->calculateAmericanOddsPayout($halfStake, $placeOdds);
-                
+
                 $data['winning_amount'] = $placePayout;
                 $data['place_payout'] = $placePayout;
                 $data['profit_amount'] = $placePayout - $bet->wager_amount;
                 break;
-                
+
             case 'loss':
                 // Both parts lose
                 $data['winning_amount'] = 0;
                 $data['place_payout'] = 0;
                 $data['profit_amount'] = -$bet->wager_amount;
                 break;
-                
+
             case 'void':
             case 'push':
                 // Return full stake
                 $data['winning_amount'] = $bet->wager_amount;
                 $data['profit_amount'] = 0;
                 break;
-                
+
             default:
                 throw new \InvalidArgumentException('Invalid bet result for Each Way bet');
         }
-        
+
         return $data;
     }
-    
+
     /**
      * Calculate place odds from win odds and place fraction
      */
@@ -1149,7 +1153,7 @@ class BetService
             // Negative odds: Convert to decimal, apply fraction, convert back
             $decimal = ($americanOdds < 0) ? (100 / abs($americanOdds)) + 1 : ($americanOdds / 100) + 1;
             $placeDecimal = 1 + (($decimal - 1) * $placeFraction);
-            
+
             // Convert back to American
             if ($placeDecimal >= 2) {
                 return ($placeDecimal - 1) * 100;
@@ -1158,7 +1162,7 @@ class BetService
             }
         }
     }
-    
+
     /**
      * Calculate payout for American odds
      */
@@ -1172,22 +1176,23 @@ class BetService
             return $stake * (100 / abs($odds)) + $stake;
         }
     }
-    
+
     /**
      * Determine Each Way bet status based on finishing position
      */
     public function determineEachWayStatus(string $position, int $placesPaid): string
     {
         $numericPosition = $this->parsePosition($position);
-        
+
         if ($numericPosition === null) {
             // Handle special cases like MC (Missed Cut), WD (Withdrawn), DQ (Disqualified)
             if (in_array(strtoupper($position), ['MC', 'WD', 'DQ', 'CUT', 'DNS', 'DNF'])) {
                 return 'loss';
             }
+
             return 'loss'; // Default to lost if we can't parse
         }
-        
+
         if ($numericPosition === 1) {
             return 'won'; // Outright win
         } elseif ($numericPosition <= $placesPaid) {
@@ -1196,7 +1201,7 @@ class BetService
             return 'loss'; // Outside paying places
         }
     }
-    
+
     /**
      * Parse position string to numeric value
      * Handles formats like "1", "T5", "2nd", "3rd", etc.
@@ -1204,22 +1209,22 @@ class BetService
     public function parsePosition(string $position): ?int
     {
         $position = strtoupper(trim($position));
-        
+
         // Handle tied positions (T5, T10, etc.)
         if (preg_match('/^T(\d+)$/i', $position, $matches)) {
             return (int) $matches[1];
         }
-        
+
         // Handle ordinal positions (1st, 2nd, 3rd, etc.)
         if (preg_match('/^(\d+)(st|nd|rd|th)$/i', $position, $matches)) {
             return (int) $matches[1];
         }
-        
+
         // Handle plain numeric positions
         if (is_numeric($position)) {
             return (int) $position;
         }
-        
+
         // Handle special text positions
         $textPositions = [
             'FIRST' => 1, '1ST' => 1,
@@ -1233,14 +1238,14 @@ class BetService
             'NINTH' => 9, '9TH' => 9,
             'TENTH' => 10, '10TH' => 10,
         ];
-        
+
         if (isset($textPositions[$position])) {
             return $textPositions[$position];
         }
-        
+
         return null; // Unable to parse
     }
-    
+
     /**
      * Calculate dead heat reduction factor
      */
@@ -1249,11 +1254,11 @@ class BetService
         if ($playersTied <= 0 || $spotsAvailable <= 0) {
             return 0; // Invalid input
         }
-        
+
         // Reduction factor = available spots / players tied
         return min(1, $spotsAvailable / $playersTied);
     }
-    
+
     /**
      * Apply dead heat reduction to a payout
      */
@@ -1262,11 +1267,11 @@ class BetService
         // For dead heat, only the profit portion is reduced, not the stake return
         $profit = $basePayout - $stake;
         $reducedProfit = $profit * $reductionFactor;
-        
+
         // Return stake + reduced profit
         return $stake + $reducedProfit;
     }
-    
+
     /**
      * Calculate Each Way payout with dead heat consideration
      */
@@ -1276,7 +1281,7 @@ class BetService
         $halfStake = $bet->each_way_stake ?: ($bet->wager_amount / 2);
         $placeFraction = $bet->place_fraction ?: 0.2; // Default 1/5
         $placeOdds = $this->calculatePlaceOdds($bet->odds, $placeFraction);
-        
+
         $result = [
             'status' => $status,
             'bet_result_type' => $status === 'won' ? 'won_outright' : ($status === 'placed' ? 'placed' : 'loss'),
@@ -1287,43 +1292,43 @@ class BetService
             'dead_heat_players' => null,
             'dead_heat_spots' => null,
         ];
-        
+
         switch ($status) {
             case 'won':
                 // Both win and place parts win (no dead heat on outright wins)
                 $winPayout = $this->calculateAmericanOddsPayout($halfStake, $bet->odds);
                 $placePayout = $this->calculateAmericanOddsPayout($halfStake, $placeOdds);
-                
+
                 $result['winning_amount'] = $winPayout + $placePayout;
                 $result['place_payout'] = $placePayout;
                 $result['profit_amount'] = ($winPayout + $placePayout) - $bet->wager_amount;
                 $result['bet_result_type'] = 'won_outright';
                 break;
-                
+
             case 'placed':
                 // Only place part wins - check for dead heat
                 $placePayout = $this->calculateAmericanOddsPayout($halfStake, $placeOdds);
-                
+
                 if ($deadHeatInfo && isset($deadHeatInfo['players_tied']) && isset($deadHeatInfo['spots_available'])) {
                     // Apply dead heat reduction
                     $reductionFactor = $this->calculateDeadHeatReduction(
                         $deadHeatInfo['players_tied'],
                         $deadHeatInfo['spots_available']
                     );
-                    
+
                     $placePayout = $this->applyDeadHeatToPlacePayout($placePayout, $halfStake, $reductionFactor);
-                    
+
                     $result['is_dead_heat'] = true;
                     $result['dead_heat_players'] = $deadHeatInfo['players_tied'];
                     $result['dead_heat_spots'] = $deadHeatInfo['spots_available'];
                     $result['bet_result_type'] = 'placed_dead_heat';
                 }
-                
+
                 $result['winning_amount'] = $placePayout;
                 $result['place_payout'] = $placePayout;
                 $result['profit_amount'] = $placePayout - $bet->wager_amount;
                 break;
-                
+
             case 'loss':
                 // Both parts lose
                 $result['winning_amount'] = 0;
@@ -1332,7 +1337,7 @@ class BetService
                 $result['bet_result_type'] = 'loss';
                 break;
         }
-        
+
         return $result;
     }
 }

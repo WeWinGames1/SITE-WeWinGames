@@ -46,7 +46,7 @@ class EmailTemplateController extends Controller
             'body_text' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
-        
+
         // Don't strip HTML tags from body_html - preserve rich content
         // The frontend Tiptap editor already sanitizes dangerous content
 
@@ -156,12 +156,12 @@ class EmailTemplateController extends Controller
                 $message->to($user->email, $user->name)
                     ->subject($rendered['subject'])
                     ->from($rendered['from_email'], $rendered['from_name']);
-                
+
                 // Add reply-to if different from from_email
                 if (isset($rendered['reply_to_email']) && $rendered['reply_to_email'] !== $rendered['from_email']) {
                     $message->replyTo($rendered['reply_to_email'], $rendered['from_name']);
                 }
-                
+
                 // Add headers for email logging
                 $message->getHeaders()->addTextHeader('X-Template-Key', $emailTemplate->key);
                 $message->getHeaders()->addTextHeader('X-Email-Metadata', json_encode([
@@ -196,7 +196,7 @@ class EmailTemplateController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to send test email: ' . $e->getMessage(),
+                'message' => 'Failed to send test email: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -216,16 +216,16 @@ class EmailTemplateController extends Controller
         $subscription = $user->subscriptions()->active()->first();
         $planName = 'Free';
         $amount = '$0.00';
-        
+
         if ($subscription && $subscription->stripe_price) {
             // Try to get from StripeProduct table first
             $stripeProduct = \App\Models\StripeProduct::where('stripe_price_id', $subscription->stripe_price)
                 ->where('is_active', true)
                 ->first();
-            
+
             if ($stripeProduct) {
-                $planName = $stripeProduct->tier . ' ' . ucfirst($stripeProduct->billing_period);
-                $amount = '$' . number_format($stripeProduct->price, 2);
+                $planName = $stripeProduct->tier.' '.ucfirst($stripeProduct->billing_period);
+                $amount = '$'.number_format($stripeProduct->price, 2);
             }
         }
 
@@ -245,7 +245,7 @@ class EmailTemplateController extends Controller
             EmailTemplate::PLAN_RENEWAL => array_merge($baseData, [
                 'plan_name' => $planName,
                 'amount' => $amount,
-                'next_renewal_date' => $subscription && $subscription->current_period_end 
+                'next_renewal_date' => $subscription && $subscription->current_period_end
                     ? \Carbon\Carbon::parse($subscription->current_period_end)->format('F j, Y')
                     : now()->addMonth()->format('F j, Y'),
             ]),

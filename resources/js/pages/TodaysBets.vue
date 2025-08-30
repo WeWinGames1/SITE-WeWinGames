@@ -15,7 +15,7 @@ const selectedSport = ref('all');
 const sports = computed(() => {
     // Filter bets by selected date first
     let filteredBets = bets;
-    
+
     // Apply guest restriction - only show today's game_date for guests
     if (isGuest) {
         filteredBets = filteredBets.filter((bet) => {
@@ -24,7 +24,7 @@ const sports = computed(() => {
             return new Date(gameDate).toDateString() === today;
         });
     }
-    
+
     // Filter by selected date
     if (selectedDate.value !== 'all') {
         filteredBets = filteredBets.filter((bet) => {
@@ -32,7 +32,7 @@ const sports = computed(() => {
             if (!gameDate) return false;
             const betDate = new Date(gameDate);
             const betDateString = betDate.toDateString();
-            
+
             if (selectedDate.value === 'today') {
                 return betDateString === today;
             } else if (selectedDate.value === 'future') {
@@ -45,7 +45,7 @@ const sports = computed(() => {
             }
         });
     }
-    
+
     // Get unique sports from filtered bets
     const sportSet = new Set(filteredBets.map((bet) => bet.sports));
     return Array.from(sportSet);
@@ -144,23 +144,23 @@ let teaserCount = 0;
 // For guests/free users, limit bronze picks and calculate teaser count
 if (userSubscriptionType === 'free' || isGuest) {
     const bronzeBets = viewableBets.filter((bet) => (bet.membership?.toLowerCase() || 'bronze') === 'bronze');
-    
+
     // Sort bronze bets by sport preferences
     const sortedBronzeBets = bronzeBets.sort((a, b) => {
         const priorityA = getSportPriority(a.sports);
         const priorityB = getSportPriority(b.sports);
         return priorityA - priorityB;
     });
-    
+
     // Determine the limit based on user status
     const bronzeLimit = isGuest ? 2 : 4;
-    
+
     // Take only the limited bronze picks
     const limitedBronzeBets = sortedBronzeBets.slice(0, bronzeLimit);
-    
+
     // Calculate how many bronze picks are being hidden
     teaserCount = Math.max(0, sortedBronzeBets.length - bronzeLimit);
-    
+
     // Keep non-bronze bets (if any) and add limited bronze bets
     viewableBets = [...viewableBets.filter((bet) => (bet.membership?.toLowerCase() || 'bronze') !== 'bronze'), ...limitedBronzeBets];
 }
@@ -209,10 +209,10 @@ const categorizeBet = (bet) => {
 // Create teaser cards for each sport
 const createTeaserCards = (sport, visibleBetsCount, coveredBetsCount = null) => {
     if (!isGuest && userSubscriptionType !== 'free') return [];
-    
+
     // Calculate the actual number of covered/premium bets
     let remainingCount = 0;
-    
+
     if (coveredBetsCount !== null) {
         // Use the provided covered bets count
         remainingCount = coveredBetsCount;
@@ -221,16 +221,18 @@ const createTeaserCards = (sport, visibleBetsCount, coveredBetsCount = null) => 
         const totalBetsForSport = totalBetsPerSport[sport] || 0;
         remainingCount = totalBetsForSport - visibleBetsCount;
     }
-    
+
     // Always create exactly one teaser card per sport for guests and free users
-    return [{
-        id: `teaser-${sport}`,
-        isTeaser: true,
-        sport: sport,
-        sports: sport,
-        remainingCount: remainingCount,
-        isGuest: isGuest
-    }];
+    return [
+        {
+            id: `teaser-${sport}`,
+            isTeaser: true,
+            sport: sport,
+            sports: sport,
+            remainingCount: remainingCount,
+            isGuest: isGuest,
+        },
+    ];
 };
 
 // Combine all bets for grouping
@@ -253,7 +255,7 @@ const allGroupedBets = computed(() => {
             if (!gameDate) return false;
             const betDate = new Date(gameDate);
             const betDateString = betDate.toDateString();
-            
+
             if (selectedDate.value === 'today') {
                 return betDateString === today;
             } else if (selectedDate.value === 'future') {
@@ -294,37 +296,37 @@ const allGroupedBets = computed(() => {
         acc[bet.sports].push(bet);
         return acc;
     }, {});
-    
+
     // Add teaser cards for guest/free users
     if (isGuest || userSubscriptionType === 'free') {
         // For each sport group, add a teaser card
-        Object.keys(grouped).forEach(sport => {
+        Object.keys(grouped).forEach((sport) => {
             const sportBets = grouped[sport];
-            const visibleBetsForSport = sportBets.filter(bet => !bet.isCovered);
-            const coveredBetsForSport = sportBets.filter(bet => bet.isCovered);
-            
+            const visibleBetsForSport = sportBets.filter((bet) => !bet.isCovered);
+            const coveredBetsForSport = sportBets.filter((bet) => bet.isCovered);
+
             // Calculate the total bets for this sport from the backend data
             const totalForSport = totalBetsPerSport[sport] || 0;
             const visibleCount = visibleBetsForSport.length;
             // For the teaser card, show the TOTAL number of picks, not remaining
             const remainingCount = totalForSport;
-            
+
             const teaserCards = createTeaserCards(sport, visibleCount, remainingCount);
-            
+
             // Insert teaser card at the appropriate position
             const bronzeLimit = isGuest ? 2 : 4;
             const insertPosition = Math.min(bronzeLimit, visibleBetsForSport.length);
-            
+
             grouped[sport] = [
                 ...visibleBetsForSport.slice(0, insertPosition),
                 ...teaserCards,
                 ...visibleBetsForSport.slice(insertPosition),
-                ...coveredBetsForSport
+                ...coveredBetsForSport,
             ];
         });
-        
+
         // Also check if any sports have bets but aren't shown due to filtering
-        Object.keys(totalBetsPerSport).forEach(sport => {
+        Object.keys(totalBetsPerSport).forEach((sport) => {
             if (!grouped[sport] && totalBetsPerSport[sport] > 0) {
                 // This sport has bets but none are visible due to filtering
                 // Only show if it matches the selected sport filter or if showing all sports

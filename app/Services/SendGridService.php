@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 class SendGridService
 {
     protected string $apiKey;
+
     protected string $baseUrl = 'https://api.sendgrid.com/v3';
 
     public function __construct()
@@ -23,12 +24,13 @@ class SendGridService
     {
         if (empty($this->apiKey)) {
             Log::warning('SendGrid API key not configured');
+
             return;
         }
 
         try {
             $response = Http::withToken($this->apiKey)
-                ->put($this->baseUrl . '/marketing/contacts', [
+                ->put($this->baseUrl.'/marketing/contacts', [
                     'contacts' => [
                         [
                             'email' => $user->email,
@@ -40,22 +42,22 @@ class SendGridService
                                 'subscription_status' => $user->subscribed() ? 'active' : 'free',
                                 'subscription_tier' => $user->getCurrentTier() ?? 'free',
                                 'affiliate_code' => $user->affiliate?->code ?? '',
-                            ]
-                        ]
-                    ]
+                            ],
+                        ],
+                    ],
                 ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::error('SendGrid contact sync failed', [
                     'user_id' => $user->id,
                     'response' => $response->json(),
-                    'status' => $response->status()
+                    'status' => $response->status(),
                 ]);
             }
         } catch (\Exception $e) {
             Log::error('SendGrid contact sync exception', [
                 'user_id' => $user->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
             throw $e;
         }
@@ -80,21 +82,21 @@ class SendGridService
 
         try {
             $response = Http::withToken($this->apiKey)
-                ->put($this->baseUrl . "/marketing/lists/{$listId}/contacts", [
-                    'contact_ids' => [$this->getContactId($user->email)]
+                ->put($this->baseUrl."/marketing/lists/{$listId}/contacts", [
+                    'contact_ids' => [$this->getContactId($user->email)],
                 ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::error('Failed to add contact to SendGrid list', [
                     'user_id' => $user->id,
                     'list_id' => $listId,
-                    'response' => $response->json()
+                    'response' => $response->json(),
                 ]);
             }
         } catch (\Exception $e) {
             Log::error('SendGrid add to list exception', [
                 'user_id' => $user->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -106,8 +108,8 @@ class SendGridService
     {
         try {
             $response = Http::withToken($this->apiKey)
-                ->post($this->baseUrl . '/marketing/contacts/search', [
-                    'query' => "email = '{$email}'"
+                ->post($this->baseUrl.'/marketing/contacts/search', [
+                    'query' => "email = '{$email}'",
                 ]);
 
             if ($response->successful() && isset($response->json()['result'][0]['id'])) {
@@ -116,7 +118,7 @@ class SendGridService
         } catch (\Exception $e) {
             Log::error('Failed to get SendGrid contact ID', [
                 'email' => $email,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
 
