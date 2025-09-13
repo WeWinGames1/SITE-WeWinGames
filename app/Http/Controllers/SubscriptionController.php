@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
+use Stripe\Exception\CardException;
+use Stripe\Exception\InvalidRequestException;
+use Stripe\Exception\AuthenticationException;
 
 class SubscriptionController extends Controller
 {
@@ -147,6 +150,7 @@ class SubscriptionController extends Controller
 
                 // Get product ID from price to check restrictions
                 $stripeProductId = null;
+                $stripeProduct = null;
                 if ($priceId) {
                     $stripeProduct = StripeProduct::where('stripe_price_id', $priceId)->first();
                     if ($stripeProduct) {
@@ -197,6 +201,21 @@ class SubscriptionController extends Controller
                         } else {
                             $discountAmount = $discountCode->discount_amount;
                         }
+                    } else {
+                        // If we can't find the product, log an error but don't fail the subscription
+                        Log::warning('Could not find StripeProduct for price_id when calculating discount', [
+                            'price_id' => $priceId,
+                            'discount_code' => $discountCode->code,
+                            'user_id' => $user->id
+                        ]);
+                        // Set a default discount amount based on the discount type
+                        // This ensures the redemption record can be created
+                        if ($discountCode->discount_type === 'fixed') {
+                            $discountAmount = $discountCode->discount_amount;
+                        } else {
+                            // For percentage discounts, we'll store 0 since we don't know the base price
+                            $discountAmount = 0;
+                        }
                     }
 
                     // Track coupon usage
@@ -213,17 +232,70 @@ class SubscriptionController extends Controller
             }
 
             // Create the subscription with the payment method
-            $subscription->create($request->payment_method);
+            $createdSubscription = $subscription->create($request->payment_method);
+
+            // Check if subscription requires additional action (3D Secure)
+            if ($createdSubscription->hasIncompletePayment()) {
+                // Get the latest invoice's payment intent
+                $latestInvoice = $createdSubscription->latestInvoice();
+                
+                if ($latestInvoice && $latestInvoice->payment_intent) {
+                    // Return the client secret for 3D Secure authentication
+                    return back()->with([
+                        'requires_action' => true,
+                        'payment_intent_client_secret' => $latestInvoice->payment_intent->client_secret,
+                        'subscription_id' => $createdSubscription->id,
+                    ]);
+                }
+            }
 
             return redirect()->route('dashboard')->with('success', 'Subscription activated successfully!');
 
-        } catch (\Exception $e) {
-            Log::error('Subscription creation failed', [
+        } catch (\Stripe\Exception\CardException $e) {
+            // Card was declined or 3D Secure failed
+            Log::error('Card payment failed', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+                'decline_code' => $e->getDeclineCode(),
+                'stripe_error' => $e->getStripeCode(),
+            ]);
+
+            $errorMessage = match($e->getStripeCode()) {
+                'authentication_required' => 'Your card requires additional authentication. Please try again and complete the verification process.',
+                'card_declined' => 'Your card was declined. Please try a different card.',
+                'insufficient_funds' => 'Your card has insufficient funds. Please try a different card.',
+                'expired_card' => 'Your card has expired. Please use a different card.',
+                'incorrect_cvc' => 'The CVC code is incorrect. Please check and try again.',
+                'processing_error' => 'An error occurred while processing your card. Please try again.',
+                default => 'Payment failed: ' . $e->getMessage(),
+            };
+
+            return back()->withErrors(['payment' => $errorMessage]);
+        } catch (\Stripe\Exception\InvalidRequestException $e) {
+            // Invalid parameters were supplied to Stripe's API
+            Log::error('Invalid Stripe request', [
                 'user_id' => $user->id,
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->withErrors(['payment' => 'Payment failed. Please try again.']);
+            return back()->withErrors(['payment' => 'Invalid payment request. Please contact support.']);
+        } catch (\Stripe\Exception\AuthenticationException $e) {
+            // Authentication with Stripe's API failed
+            Log::error('Stripe authentication failed', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->withErrors(['payment' => 'Payment system error. Please try again later.']);
+        } catch (\Exception $e) {
+            // Generic error handling
+            Log::error('Subscription creation failed', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+                'type' => get_class($e),
+            ]);
+
+            return back()->withErrors(['payment' => 'An unexpected error occurred. Please try again or contact support.']);
         }
     }
 

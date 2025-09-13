@@ -10,6 +10,7 @@ import { createApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
 import { initializeTheme } from './composables/useAppearance';
 import { useGoogleAnalytics } from './composables/useGoogleAnalytics';
+import { useCsrf } from './composables/useCsrf';
 
 // Make Bootstrap available globally
 window.bootstrap = bootstrap;
@@ -28,6 +29,8 @@ if (typeof window !== 'undefined') {
     }
 
     // Add global error interceptor for debugging
+    const { refreshCsrfToken } = useCsrf();
+    
     axios.interceptors.response.use(
         (response) => response,
         async (error) => {
@@ -41,9 +44,9 @@ if (typeof window !== 'undefined') {
                 const noRetryUrls = ['/logout', '/admin/logout'];
                 const shouldReload = noRetryUrls.some((url) => error.config?.url?.includes(url));
 
-                if (shouldReload || retryCount >= 2) {
+                if (shouldReload || retryCount >= 1) {
                     console.error(`CSRF token refresh failed${retryCount > 0 ? ' after ' + retryCount + ' attempts' : ''}`);
-                    // For logout or after 2 attempts, just reload
+                    // For logout or after 1 attempt, just reload
                     if (!shouldReload) {
                         alert('Your session has expired. The page will refresh.');
                     }
@@ -51,45 +54,18 @@ if (typeof window !== 'undefined') {
                     return Promise.reject(error);
                 }
 
-                console.warn(`CSRF token expired, refreshing... (attempt ${retryCount + 1} of 2)`);
+                console.warn('CSRF token expired, refreshing...');
 
                 // Mark that we're retrying
                 error.config._retryCount = retryCount + 1;
 
                 // Try to get a fresh CSRF token
                 try {
-                    // For login requests, don't try to refresh via sanctum
-                    if (!error.config?.url?.includes('/login')) {
-                        await axios.get('/sanctum/csrf-cookie');
-                    }
-
-                    // Wait a moment for the cookie to be set
-                    await new Promise((resolve) => setTimeout(resolve, 100));
-
-                    // Get fresh token from meta tag or generate new request
-                    const freshToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-                    if (freshToken) {
-                        axios.defaults.headers.common['X-CSRF-TOKEN'] = freshToken;
-                        // Update the failed request with new token
-                        error.config.headers['X-CSRF-TOKEN'] = freshToken;
-                    }
-
-                    // For login, we might need to get a fresh page token
-                    if (error.config?.url?.includes('/login') && retryCount === 0) {
-                        // Fetch the login page to get a fresh token
-                        const loginResponse = await fetch('/login', {
-                            credentials: 'include',
-                            headers: {
-                                Accept: 'text/html',
-                            },
-                        });
-                        const html = await loginResponse.text();
-                        const tokenMatch = html.match(/<meta name="csrf-token" content="([^"]+)"/);
-                        if (tokenMatch?.[1]) {
-                            const newToken = tokenMatch[1];
-                            axios.defaults.headers.common['X-CSRF-TOKEN'] = newToken;
-                            error.config.headers['X-CSRF-TOKEN'] = newToken;
-                        }
+                    const newToken = await refreshCsrfToken();
+                    
+                    // Update the failed request with new token
+                    if (newToken) {
+                        error.config.headers['X-CSRF-TOKEN'] = newToken;
                     }
 
                     // Retry the request
@@ -167,15 +143,39 @@ router.on('error', (event) => {
 
     if (status === 419) {
         // CSRF token mismatch
-        alert('Your session has expired. The page will refresh to restore your session.');
-
+        console.warn('Inertia 419 error - attempting to refresh CSRF token');
+        
         // Prevent the default error modal
         event.preventDefault();
-
-        // Reload the page to get a fresh CSRF token
-        setTimeout(() => {
-            window.location.reload();
-        }, 1000);
+        
+        // Try to refresh the token and retry
+        const { refreshCsrfToken } = useCsrf();
+        refreshCsrfToken().then(() => {
+            // Show a message to the user
+            const message = 'Your session was refreshed. Please try your action again.';
+            
+            // Create a Bootstrap toast or alert
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
+            alertDiv.style.zIndex = '9999';
+            alertDiv.innerHTML = `
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }).catch(() => {
+            // If refresh fails, reload the page
+            alert('Your session has expired. The page will refresh to restore your session.');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        });
     } else if (status === 429) {
         // Rate limit error
         const data = event.detail.response?.data;

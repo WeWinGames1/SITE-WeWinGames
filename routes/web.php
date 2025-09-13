@@ -404,3 +404,8 @@ Route::post(
     'stripe/webhook',
     '\Laravel\Cashier\Http\Controllers\WebhookController@handleWebhook'
 )->name('cashier.webhook');
+
+// Session check route
+Route::get('/session/check', [\App\Http\Controllers\SessionController::class, 'check'])
+    ->middleware('web')
+    ->name('session.check');

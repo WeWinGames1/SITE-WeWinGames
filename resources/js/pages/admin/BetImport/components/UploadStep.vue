@@ -186,14 +186,6 @@ const uploadFile = async () => {
     error.value = '';
 
     try {
-        // Refresh CSRF token first
-        try {
-            const tokenResponse = await axios.get('/csrf-token');
-            axios.defaults.headers.common['X-CSRF-TOKEN'] = tokenResponse.data.token;
-        } catch (e) {
-            console.warn('Could not refresh CSRF token');
-        }
-
         const formData = new FormData();
         formData.append('file', file.value);
 

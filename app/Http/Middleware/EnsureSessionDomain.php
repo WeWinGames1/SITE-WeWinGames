@@ -15,12 +15,13 @@ class EnsureSessionDomain
      */
     public function handle(Request $request, Closure $next)
     {
-        // For production, ensure session domain is set correctly
-        if (app()->environment('production')) {
+        // Only set session domain if it's not already set in config
+        if (app()->environment('production') && !Config::get('session.domain')) {
             $host = $request->getHost();
 
             // Extract the base domain (e.g., wewingames.com from www.wewingames.com)
             if (strpos($host, 'wewingames.com') !== false) {
+                // Only set if not already configured
                 Config::set('session.domain', '.wewingames.com');
             }
         }

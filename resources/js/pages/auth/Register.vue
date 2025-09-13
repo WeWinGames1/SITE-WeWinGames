@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
-import { Head, useForm, usePage } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
+import { useForm } from '@/composables/useInertiaForm';
+import { useSessionKeepAlive } from '@/composables/useSessionKeepAlive';
 import { computed, nextTick, onMounted, ref } from 'vue';
 
 const page = usePage();
@@ -25,6 +27,9 @@ const form = useForm({
     timestamp: 0, // Will be set on mount
     'cf-turnstile-response': '',
 });
+
+// Keep session alive while user is on registration page
+useSessionKeepAlive(15); // Ping every 15 minutes
 
 // Function to render Turnstile widget
 const renderTurnstile = (container: HTMLElement) => {

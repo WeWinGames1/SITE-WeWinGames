@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\PushNotificationController as V1PushNotification
 use App\Http\Controllers\Api\V1\UserApiController;
 use App\Http\Controllers\BetController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,6 +43,17 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:api'])->group(functio
 
 // Ticker endpoint - no auth required
 Route::get('/ticker-bets', [BetController::class, 'getTickerBets']);
+
+// Session keep-alive endpoint
+Route::middleware('web')->get('/session/ping', function (Request $request) {
+    // Touch the session to keep it alive
+    $request->session()->touch();
+    
+    return response()->json([
+        'status' => 'alive',
+        'timestamp' => now()->toIso8601String(),
+    ]);
+})->name('session.ping');
 
 /*
 |--------------------------------------------------------------------------

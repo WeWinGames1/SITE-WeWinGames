@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
+import { useForm, usePeriodicCsrfRefresh } from '@/composables/useInertiaForm';
+import { useSessionKeepAlive } from '@/composables/useSessionKeepAlive';
 import axios from 'axios';
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 
 interface User {
     id: number;
@@ -83,11 +85,23 @@ const form = useForm({
     golf_place: false,
 });
 
-// Initialize Select2 after component is mounted
+// Initialize Select2 after component is mounted and start CSRF refresh
+const { start: startCsrfRefresh, stop: stopCsrfRefresh } = usePeriodicCsrfRefresh(10); // Refresh every 10 minutes
+
+// Keep session alive while user is creating bet
+useSessionKeepAlive(15); // Ping every 15 minutes
+
 onMounted(() => {
     nextTick(() => {
         initializeSelect2();
     });
+    // Start periodic CSRF refresh for long forms
+    startCsrfRefresh();
+});
+
+onUnmounted(() => {
+    // Clean up CSRF refresh
+    stopCsrfRefresh();
 });
 
 // Computed properties

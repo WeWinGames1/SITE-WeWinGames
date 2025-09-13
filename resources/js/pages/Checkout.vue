@@ -131,6 +131,11 @@ onMounted(async () => {
         autoAppliedDiscount.value = true;
         await validateCoupon();
     }
+
+    // Check if we need to handle 3D Secure authentication
+    if (page.props.flash.requires_action && page.props.flash.payment_intent_client_secret) {
+        await handle3DSecure();
+    }
 });
 
 // Track if FIRSTMONTH50 was auto-applied
@@ -189,6 +194,26 @@ const clearDiscount = () => {
     autoAppliedDiscount.value = false;
 };
 
+const handle3DSecure = async () => {
+    processing.value = true;
+    cardError.value = 'Completing authentication...';
+
+    try {
+        const { error } = await stripe.value.confirmCardPayment(page.props.flash.payment_intent_client_secret);
+
+        if (error) {
+            cardError.value = error.message || 'Authentication failed. Please try again.';
+            processing.value = false;
+        } else {
+            // Authentication successful, redirect to dashboard
+            window.location.href = route('dashboard');
+        }
+    } catch (error) {
+        cardError.value = 'Authentication failed. Please try again.';
+        processing.value = false;
+    }
+};
+
 const submit = async () => {
     processing.value = true;
     cardError.value = '';
@@ -215,6 +240,20 @@ const submit = async () => {
 
         // Submit to backend
         form.post(route('subscription.process'), {
+            onSuccess: (response) => {
+                // Check if 3D Secure is required
+                if (page.props.flash.requires_action) {
+                    handle3DSecure();
+                }
+            },
+            onError: () => {
+                // Display payment error message
+                if (form.errors.payment) {
+                    cardError.value = form.errors.payment;
+                } else {
+                    cardError.value = 'Payment failed. Please check your card details and try again.';
+                }
+            },
             onFinish: () => {
                 processing.value = false;
             },
@@ -384,9 +423,12 @@ const submit = async () => {
                                         <div v-if="showNewCardForm" class="mb-3">
                                             <label class="form-label">Card Information</label>
                                             <div id="card-element" class="form-control" style="padding: 12px"></div>
-                                            <div v-if="cardError" class="text-danger mt-2">
-                                                {{ cardError }}
-                                            </div>
+                                        </div>
+
+                                        <!-- Error Messages -->
+                                        <div v-if="cardError || form.errors.payment" class="alert alert-danger mt-3">
+                                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                            {{ cardError || form.errors.payment }}
                                         </div>
 
                                         <div class="alert alert-info">

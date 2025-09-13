@@ -21,6 +21,8 @@ class SanitizeInput
         'markdown',
         'body_html', // Email template HTML content
         'body_text', // Email template plain text content
+        '_token', // CSRF token
+        'cf-turnstile-response', // Cloudflare Turnstile token
     ];
 
     /**
