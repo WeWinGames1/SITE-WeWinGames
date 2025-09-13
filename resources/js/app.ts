@@ -200,8 +200,26 @@ router.on('error', (event) => {
 });
 
 if ('serviceWorker' in navigator) {
-    console.log('Service Worker is supported');
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js');
+    window.addEventListener('load', async () => {
+        try {
+            // Check if a service worker is already registered
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            
+            // Look for our service worker
+            const existingRegistration = registrations.find(reg => 
+                reg.active && reg.active.scriptURL.includes('/sw.js')
+            );
+            
+            if (!existingRegistration) {
+                // Only register if not already registered
+                console.log('Registering service worker...');
+                await navigator.serviceWorker.register('/sw.js');
+                console.log('Service worker registered successfully');
+            } else {
+                console.log('Service worker already registered');
+            }
+        } catch (error) {
+            console.error('Service worker registration failed:', error);
+        }
     });
 }

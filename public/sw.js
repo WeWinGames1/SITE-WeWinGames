@@ -1,5 +1,14 @@
-// Import OneSignal Service Worker first
-importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
+// Add message event listener immediately to prevent timing warnings
+self.addEventListener('message', (event) => {
+    // Handle messages if needed
+});
+
+// Import OneSignal Service Worker
+try {
+    importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
+} catch (e) {
+    console.warn('OneSignal SDK import warning (safe to ignore):', e.message);
+}
 
 // Your existing cache configuration
 const CACHE_NAME = 'wwg-cache-v1.7.0';

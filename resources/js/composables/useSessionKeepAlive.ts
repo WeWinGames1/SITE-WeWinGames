@@ -16,7 +16,7 @@ export function useSessionKeepAlive(intervalMinutes: number = 30) {
             // Only ping if there was recent activity (within the last hour)
             const timeSinceActivity = Date.now() - lastActivity;
             if (timeSinceActivity < 60 * 60 * 1000) { // 1 hour
-                await axios.get('/api/session/ping', {
+                await axios.get('/session/ping', {
                     headers: {
                         'X-Session-Keep-Alive': 'true'
                     }

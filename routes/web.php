@@ -409,3 +409,17 @@ Route::post(
 Route::get('/session/check', [\App\Http\Controllers\SessionController::class, 'check'])
     ->middleware('web')
     ->name('session.check');
+
+// Session keep-alive endpoint
+Route::get('/session/ping', function (Illuminate\Http\Request $request) {
+    // Touch the session to keep it alive
+    if ($request->hasSession()) {
+        $request->session()->touch();
+    }
+    
+    return response()->json([
+        'status' => 'alive',
+        'timestamp' => now()->toIso8601String(),
+        'has_session' => $request->hasSession(),
+    ]);
+})->name('session.ping');
