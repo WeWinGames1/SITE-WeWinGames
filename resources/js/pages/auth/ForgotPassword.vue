@@ -1,12 +1,6 @@
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue';
-import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import AuthLayout from '@/layouts/AuthLayout.vue';
+import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
-import { LoaderCircle } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 defineProps<{
@@ -18,6 +12,7 @@ const form = useForm({
 });
 
 const loginUrl = computed(() => route('login'));
+const registerUrl = computed(() => route('register'));
 
 const submit = () => {
     form.post(route('password.email'));
@@ -25,33 +20,119 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthLayout title="Forgot password" description="Enter your email to receive a password reset link">
+    <WelcomeLayout>
         <Head title="Forgot password" />
 
-        <div v-if="status" class="mb-4 text-center text-sm font-medium text-green-600">
-            {{ status }}
-        </div>
+        <div class="min-vh-100 d-flex align-items-center" style="background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 100%)">
+            <div class="container py-5">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 col-lg-7">
+                        <div class="text-center mb-4">
+                            <h1 class="display-4 fw-bold text-white mb-2">Forgot Password?</h1>
+                            <p class="fs-5 text-gray-light">No worries, we'll send you reset instructions</p>
+                        </div>
 
-        <div class="space-y-6">
-            <form @submit.prevent="submit">
-                <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
-                    <Input id="email" type="email" name="email" autocomplete="off" v-model="form.email" autofocus placeholder="email@example.com" />
-                    <InputError :message="form.errors.email" />
+                        <div class="card" style="background-color: #1a2332; border: 1px solid #2e4057">
+                            <div class="card-body p-5">
+                                <h2 class="h4 fw-bold text-white mb-4">Reset your password</h2>
+
+                                <div v-if="status" class="alert alert-success mb-4">
+                                    {{ status }}
+                                </div>
+
+                                <form @submit.prevent="submit">
+                                    <div class="mb-4">
+                                        <label for="email" class="form-label text-white fw-medium">Email Address</label>
+                                        <input
+                                            id="email"
+                                            type="email"
+                                            class="form-control form-control-lg"
+                                            :class="{ 'is-invalid': form.errors.email }"
+                                            required
+                                            autofocus
+                                            autocomplete="email"
+                                            v-model="form.email"
+                                            placeholder="you@example.com"
+                                        />
+                                        <div v-if="form.errors.email" class="invalid-feedback">
+                                            {{ form.errors.email }}
+                                        </div>
+                                        <p class="text-gray-light small mt-2">Enter the email associated with your account and we'll send you a password reset link.</p>
+                                    </div>
+
+                                    <div class="d-grid mb-4">
+                                        <button type="submit" class="btn btn-warning btn-lg py-3 text-dark fw-bold" :disabled="form.processing">
+                                            <span v-if="form.processing" class="spinner-border spinner-border-sm me-2" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </span>
+                                            <span class="fw-semibold">Send Reset Link</span>
+                                            <i class="bi bi-envelope ms-2"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="position-relative">
+                                        <hr class="text-gray-medium" />
+                                        <span
+                                            class="position-absolute top-50 start-50 translate-middle bg-dark px-3 text-gray-light small"
+                                            style="background-color: #1a2332"
+                                            >OR</span
+                                        >
+                                    </div>
+                                </form>
+
+                                <div class="text-center mt-4">
+                                    <p class="text-gray-light mb-2">Remember your password?</p>
+                                    <a :href="loginUrl" class="btn btn-outline-warning btn-lg w-100">
+                                        <i class="bi bi-arrow-left me-2"></i>
+                                        Back to Login
+                                    </a>
+                                </div>
+
+                                <div class="text-center mt-3">
+                                    <p class="text-gray-light small mb-0">
+                                        Don't have an account? 
+                                        <a :href="registerUrl" class="text-warning text-decoration-none">Create one</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Note -->
+                    <div class="text-center mt-5">
+                        <p class="text-gray-light small mb-0">
+                            <i class="bi bi-shield-lock me-2"></i>
+                            Your data is encrypted and secure
+                        </p>
+                    </div>
                 </div>
-
-                <div class="my-6 flex items-center justify-start">
-                    <Button class="w-full" :disabled="form.processing">
-                        <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
-                        Email password reset link
-                    </Button>
-                </div>
-            </form>
-
-            <div class="space-x-1 text-center text-sm text-muted-foreground">
-                <span>Or, return to</span>
-                <TextLink :href="loginUrl">log in</TextLink>
             </div>
         </div>
-    </AuthLayout>
+    </WelcomeLayout>
 </template>
+
+<style scoped>
+/* Custom styles for form controls */
+.form-control {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: #2e4057;
+    color: white;
+}
+
+.form-control:focus {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: #ffc107;
+    color: white;
+    box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.btn-outline-warning:hover {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #000 !important;
+}
+</style>
