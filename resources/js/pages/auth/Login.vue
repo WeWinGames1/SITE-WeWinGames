@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 defineProps<{
     status?: string;
@@ -14,8 +14,14 @@ const isLocal = page.props.env?.APP_ENV === 'local';
 const passwordResetUrl = computed(() => route('password.request'));
 const registerUrl = computed(() => route('register'));
 
+const showPassword = ref(false);
+
+// Get email from URL query parameter if present
+const urlParams = new URLSearchParams(window.location.search);
+const emailFromUrl = urlParams.get('email') || '';
+
 const form = useForm({
-    email: '',
+    email: emailFromUrl,
     password: '',
     remember: false,
 });
@@ -114,17 +120,27 @@ function fillCredentials(email: string, password: string) {
                                                 Forgot password?
                                             </a>
                                         </div>
-                                        <input
-                                            id="password"
-                                            type="password"
-                                            class="form-control form-control-lg"
-                                            :class="{ 'is-invalid': form.errors.password }"
-                                            required
-                                            autocomplete="current-password"
-                                            v-model="form.password"
-                                            placeholder="Enter your password"
-                                        />
-                                        <div v-if="form.errors.password" class="invalid-feedback">
+                                        <div class="position-relative">
+                                            <input
+                                                id="password"
+                                                :type="showPassword ? 'text' : 'password'"
+                                                class="form-control form-control-lg pe-5"
+                                                :class="{ 'is-invalid': form.errors.password }"
+                                                required
+                                                autocomplete="current-password"
+                                                v-model="form.password"
+                                                placeholder="Enter your password"
+                                            />
+                                            <button
+                                                type="button"
+                                                class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-gray-light p-0 me-3"
+                                                @click="showPassword = !showPassword"
+                                                style="text-decoration: none;"
+                                            >
+                                                <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'" class="fs-5"></i>
+                                            </button>
+                                        </div>
+                                        <div v-if="form.errors.password" class="invalid-feedback d-block">
                                             {{ form.errors.password }}
                                         </div>
                                     </div>

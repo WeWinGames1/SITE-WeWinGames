@@ -1,5 +1,22 @@
 <?php
 
+// Check if Scribe is installed (dev dependency)
+if (!class_exists(\Knuckles\Scribe\Config\AuthIn::class)) {
+    // Return minimal config for production where Scribe isn't installed
+    return [
+        'title' => config('app.name').' API Documentation',
+        'description' => 'API Documentation',
+        'base_url' => null,
+        'routes' => [
+            [
+                'match' => [
+                    'prefixes' => ['api/*'],
+                ],
+            ],
+        ],
+    ];
+}
+
 use Knuckles\Scribe\Config\AuthIn;
 use Knuckles\Scribe\Config\Defaults;
 use Knuckles\Scribe\Extracting\Strategies;

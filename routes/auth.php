@@ -16,7 +16,7 @@ Route::middleware('guest')->group(function () {
         ->middleware(['throttle:10,1']); // 10 requests per minute
 
     Route::post('register', [RegisteredUserController::class, 'store'])
-        ->middleware(['throttle:3,10']); // 3 attempts per 10 minutes - TEMPORARILY DISABLED spam prevention
+        ->middleware(['throttle:10,60']); // 10 attempts per hour
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');

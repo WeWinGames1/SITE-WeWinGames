@@ -14,7 +14,17 @@ const turnstileLoading = ref(true);
 const turnstileRendered = ref(false);
 const submissionError = ref<string>('');
 
+const showPassword = ref(false);
+const showPasswordConfirmation = ref(false);
+const emailAlreadyExists = ref(false);
+
 const loginUrl = computed(() => route('login'));
+const loginUrlWithEmail = computed(() => {
+    if (form.email) {
+        return route('login') + '?email=' + encodeURIComponent(form.email);
+    }
+    return route('login');
+});
 
 const form = useForm({
     name: '',
@@ -242,7 +252,19 @@ const submit = () => {
         },
         onError: (errors) => {
             console.error('Registration errors:', errors);
-            submissionError.value = Object.values(errors).flat().join(' ');
+            
+            // Check if email already exists error
+            if (errors.email && (
+                errors.email.toString().toLowerCase().includes('already been taken') ||
+                errors.email.toString().toLowerCase().includes('email has already been taken') ||
+                errors.email.toString().toLowerCase().includes('unique')
+            )) {
+                emailAlreadyExists.value = true;
+            } else {
+                emailAlreadyExists.value = false;
+                submissionError.value = Object.values(errors).flat().join(' ');
+            }
+            
             // Reset Turnstile on error
             if (turnstileEnabled.value && window.turnstile && turnstileWidget.value) {
                 window.turnstile.reset(turnstileWidget.value);
@@ -274,6 +296,21 @@ const submit = () => {
                             <div class="card-body p-5">
                                 <h2 class="h4 fw-bold text-white mb-2">Create your account</h2>
                                 <p class="text-gray-light mb-4">Take your first step towards winning!</p>
+
+                                <!-- Email Already Exists Alert -->
+                                <div v-if="emailAlreadyExists" class="alert alert-warning mb-4">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-exclamation-triangle-fill me-3 fs-5"></i>
+                                        <div class="flex-grow-1">
+                                            <h5 class="alert-heading mb-2">Account Already Exists</h5>
+                                            <p class="mb-3">This email address is already registered. If this is your account, please sign in instead.</p>
+                                            <a :href="loginUrlWithEmail" class="btn btn-warning btn-sm">
+                                                <i class="bi bi-box-arrow-in-right me-2"></i>
+                                                Go to Login
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
 
                                 <form @submit.prevent="submit" id="registration-form">
                                     <div class="mb-4">
@@ -355,34 +392,54 @@ const submit = () => {
 
                                     <div class="mb-4">
                                         <label for="password" class="form-label text-white fw-medium">Password</label>
-                                        <input
-                                            id="password"
-                                            type="password"
-                                            class="form-control form-control-lg"
-                                            :class="{ 'is-invalid': form.errors.password }"
-                                            required
-                                            autocomplete="new-password"
-                                            v-model="form.password"
-                                            placeholder="Create a strong password"
-                                        />
-                                        <div v-if="form.errors.password" class="invalid-feedback">
+                                        <div class="position-relative">
+                                            <input
+                                                id="password"
+                                                :type="showPassword ? 'text' : 'password'"
+                                                class="form-control form-control-lg pe-5"
+                                                :class="{ 'is-invalid': form.errors.password }"
+                                                required
+                                                autocomplete="new-password"
+                                                v-model="form.password"
+                                                placeholder="Create a strong password"
+                                            />
+                                            <button
+                                                type="button"
+                                                class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-gray-light p-0 me-3"
+                                                @click="showPassword = !showPassword"
+                                                style="text-decoration: none;"
+                                            >
+                                                <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'" class="fs-5"></i>
+                                            </button>
+                                        </div>
+                                        <div v-if="form.errors.password" class="invalid-feedback d-block">
                                             {{ form.errors.password }}
                                         </div>
                                     </div>
 
                                     <div class="mb-4">
                                         <label for="password_confirmation" class="form-label text-white fw-medium">Confirm Password</label>
-                                        <input
-                                            id="password_confirmation"
-                                            type="password"
-                                            class="form-control form-control-lg"
-                                            :class="{ 'is-invalid': form.errors.password_confirmation }"
-                                            required
-                                            autocomplete="new-password"
-                                            v-model="form.password_confirmation"
-                                            placeholder="Confirm your password"
-                                        />
-                                        <div v-if="form.errors.password_confirmation" class="invalid-feedback">
+                                        <div class="position-relative">
+                                            <input
+                                                id="password_confirmation"
+                                                :type="showPasswordConfirmation ? 'text' : 'password'"
+                                                class="form-control form-control-lg pe-5"
+                                                :class="{ 'is-invalid': form.errors.password_confirmation }"
+                                                required
+                                                autocomplete="new-password"
+                                                v-model="form.password_confirmation"
+                                                placeholder="Confirm your password"
+                                            />
+                                            <button
+                                                type="button"
+                                                class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-gray-light p-0 me-3"
+                                                @click="showPasswordConfirmation = !showPasswordConfirmation"
+                                                style="text-decoration: none;"
+                                            >
+                                                <i :class="showPasswordConfirmation ? 'bi bi-eye-slash' : 'bi bi-eye'" class="fs-5"></i>
+                                            </button>
+                                        </div>
+                                        <div v-if="form.errors.password_confirmation" class="invalid-feedback d-block">
                                             {{ form.errors.password_confirmation }}
                                         </div>
                                     </div>
