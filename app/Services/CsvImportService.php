@@ -100,6 +100,8 @@ class CsvImportService
             'profits' => ['profit amount', 'profits', 'profit', 'net gain', 'pnl', 'p&l', 'net gain/loss'],
             'winning_amount' => ['winning amount', 'winning_amount', 'winningamount', 'total returned', 'payout'],
             'golf_place_fraction' => ['golf only: place fraction', 'golf place fraction', 'place fraction', 'golf_place_fraction', 'place_fraction'],
+            'home_team' => ['home team', 'home_team', 'hometeam', 'home', 'team 1', 'team1', 'team_1', 'fighter 1', 'fighter1', 'player 1', 'player1'],
+            'away_team' => ['away team', 'away_team', 'awayteam', 'away', 'team 2', 'team2', 'team_2', 'fighter 2', 'fighter2', 'player 2', 'player2'],
         ];
 
         // First pass: exact matches only (to avoid incorrect fuzzy matches)
@@ -484,8 +486,10 @@ class CsvImportService
      */
     private function transformData(array $data): array
     {
-        // Always parse teams from game column when present
-        if (isset($data['game']) && ! empty($data['game'])) {
+        // Only parse teams from game column if home_team and away_team aren't already provided
+        if (isset($data['game']) && ! empty($data['game']) && 
+            (!isset($data['home_team']) || empty($data['home_team'])) && 
+            (!isset($data['away_team']) || empty($data['away_team']))) {
             $teams = $this->parseGameColumn($data['game']);
             if ($teams) {
                 $data['home_team'] = $teams['home'];
@@ -1026,6 +1030,8 @@ class CsvImportService
                 'winning_amount' => 'Total payout if won',
                 'golf_place_fraction' => 'Golf Only: Place fraction for Each Way bets (e.g., 1/5, 1/4)',
                 'level' => 'Optional confidence level or tier',
+                'home_team' => 'Home team name (automatically parsed from Game column if not provided)',
+                'away_team' => 'Away team name (automatically parsed from Game column if not provided)',
             ],
         ];
     }
