@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Settings\BettingPreferencesController;
 use App\Http\Controllers\Settings\BillingController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
@@ -11,6 +12,9 @@ Route::middleware('auth')->group(function () {
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('settings/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('settings/betting-preferences', [BettingPreferencesController::class, 'edit'])->name('betting-preferences.edit');
+    Route::patch('settings/betting-preferences', [BettingPreferencesController::class, 'update'])->name('betting-preferences.update');
 
     Route::get('settings/password', [PasswordController::class, 'edit'])->name('password.edit');
     Route::put('settings/password', [PasswordController::class, 'update'])->name('password.update');

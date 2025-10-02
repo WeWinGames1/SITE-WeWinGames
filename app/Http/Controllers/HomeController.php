@@ -24,8 +24,32 @@ class HomeController extends Controller
         $profitByYear = $this->betService->getProfitByYear();
         $roiByYear = $this->betService->getROIByYear();
 
+        // Get golf statistics for 2025
+        $golf2025Bets = \App\Models\Bet::whereYear('game_date', 2025)
+            ->where(function ($query) {
+                $query->where('sports', 'LIKE', '%golf%')
+                    ->orWhere('sport', 'LIKE', '%golf%');
+            })
+            ->get();
+
+        $golfWinners2025 = $golf2025Bets->where('status', 'won')->count();
+
+        // Calculate golf ROI for 2025
+        $totalWager = $golf2025Bets->sum('wager_amount');
+        $totalProfit = $golf2025Bets->sum('profit_amount');
+        $golfROI2025 = $totalWager > 0 ? round(($totalProfit / $totalWager) * 100) : 0;
+
         // Get active bets (betting_date <= now, game_date >= now)
-        $allBets = $this->betService->getTodaysBets();
+        $allBets = $this->betService->getTodaysBets()->map(function ($bet) {
+            // Add team logos from relationships if not already set
+            if (empty($bet->team_one_logo) && $bet->teamOne && $bet->teamOne->logo_url) {
+                $bet->team_one_logo = \Storage::url($bet->teamOne->logo_url);
+            }
+            if (empty($bet->team_two_logo) && $bet->teamTwo && $bet->teamTwo->logo_url) {
+                $bet->team_two_logo = \Storage::url($bet->teamTwo->logo_url);
+            }
+            return $bet;
+        });
 
         // Calculate total bets per sport from active bets
         $totalBetsPerSport = $allBets->groupBy(function ($bet) {
@@ -87,6 +111,8 @@ class HomeController extends Controller
             'lastMonthROI' => $this->betService->getROIByMonth($lastMonthYear, $lastMonthNum),
             'lastMonthWinLoss' => $this->betService->getWinLossRatioByMonth($lastMonthYear, $lastMonthNum)['win_rate'] ?? 0,
             'monthlyProfit' => $this->betService->getAverageMonthlyProfit(),
+            'golfWinners2025' => $golfWinners2025,
+            'golfROI2025' => $golfROI2025,
             'testimonials' => SimpleCacheService::rememberQuery(
                 SimpleCacheService::KEY_TESTIMONIALS,
                 SimpleCacheService::TTL_LONG,

@@ -95,6 +95,7 @@ watch(
                     <h2 class="mb-3">Settings</h2>
                     <nav class="nav nav-pills">
                         <Link :href="route('profile.edit')" class="nav-link active"> <i class="bi bi-person me-2"></i>Profile </Link>
+                        <Link :href="route('betting-preferences.edit')" class="nav-link"> <i class="bi bi-graph-up me-2"></i>Betting Preferences </Link>
                         <Link :href="route('billing.edit')" class="nav-link"> <i class="bi bi-credit-card me-2"></i>Billing </Link>
                         <Link :href="route('password.edit')" class="nav-link"> <i class="bi bi-shield-lock me-2"></i>Security </Link>
                     </nav>

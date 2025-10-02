@@ -32,6 +32,8 @@ const props = defineProps<{
     lastMonthWinLoss?: number;
     lastMonthROI?: number;
     thisMonthWinLoss?: number;
+    golfWinners2025?: number;
+    golfROI2025?: number;
     testimonials?: any[];
 }>(); // Get ROI data by subscription level
 // Get user's subscription type from auth.currentTier
@@ -488,8 +490,8 @@ const allGroupedBets = computed(() => {
                                             </tr>
                                             <tr>
                                                 <td>2025 to date</td>
-                                                <td>9</td>
-                                                <td>93%</td>
+                                                <td>{{ props.golfWinners2025 || 0 }}</td>
+                                                <td>{{ props.golfROI2025 || 0 }}%</td>
                                             </tr>
                                         </tbody>
                                     </table>

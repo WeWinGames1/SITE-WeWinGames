@@ -42,6 +42,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'discord_username',
         'affiliate_bound_at',
         'affiliate_bound_plan',
+        'favorite_team',
+        'favorite_sport',
+        'primary_betting_app',
     ];
 
     /**

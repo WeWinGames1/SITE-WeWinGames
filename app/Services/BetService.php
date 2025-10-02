@@ -568,7 +568,8 @@ class BetService
         // Show bets where:
         // 1. betting_date <= now (picks have been posted)
         // 2. game_date >= now (games haven't happened yet)
-        $query = Bet::where('betting_date', '<=', $now)
+        $query = Bet::with(['teamOne', 'teamTwo'])
+            ->where('betting_date', '<=', $now)
             ->where('game_date', '>=', $now);
 
         // Apply tier-based filtering if user is authenticated
@@ -960,8 +961,20 @@ class BetService
      */
     public function getAllBets()
     {
-        return Bet::orderBy('game_date', 'desc')
+        return Bet::with(['teamOne', 'teamTwo'])
+            ->orderBy('game_date', 'desc')
             ->get()
+            ->map(function ($bet) {
+                $betArray = $bet->toArray();
+                // Add team logos from relationships with Storage URL
+                $betArray['team_one_logo'] = $bet->teamOne?->logo_url
+                    ? \Storage::url($bet->teamOne->logo_url)
+                    : null;
+                $betArray['team_two_logo'] = $bet->teamTwo?->logo_url
+                    ? \Storage::url($bet->teamTwo->logo_url)
+                    : null;
+                return $betArray;
+            })
             ->toArray();
     }
 

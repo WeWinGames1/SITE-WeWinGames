@@ -31,6 +31,9 @@ const form = useForm({
     email: '',
     phone: '',
     discord_username: '',
+    favorite_team: '',
+    favorite_sport: '',
+    primary_betting_app: '',
     password: '',
     password_confirmation: '',
     website: '', // Honeypot field
@@ -388,6 +391,84 @@ const submit = () => {
                                             </div>
                                         </div>
                                         <div class="form-text text-gray-light small">Enter your Discord username for exclusive community access</div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label for="favorite_team" class="form-label text-white fw-medium">
+                                            Favorite Sports Team
+                                            <span class="text-gray-light small">(Optional)</span>
+                                        </label>
+                                        <input
+                                            id="favorite_team"
+                                            type="text"
+                                            class="form-control form-control-lg"
+                                            :class="{ 'is-invalid': form.errors.favorite_team }"
+                                            autocomplete="off"
+                                            v-model="form.favorite_team"
+                                            placeholder="e.g. Los Angeles Lakers"
+                                        />
+                                        <div v-if="form.errors.favorite_team" class="invalid-feedback">
+                                            {{ form.errors.favorite_team }}
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label for="favorite_sport" class="form-label text-white fw-medium">
+                                            Favorite Sport to Bet
+                                            <span class="text-gray-light small">(Optional)</span>
+                                        </label>
+                                        <select
+                                            id="favorite_sport"
+                                            class="form-select form-select-lg"
+                                            :class="{ 'is-invalid': form.errors.favorite_sport }"
+                                            v-model="form.favorite_sport"
+                                        >
+                                            <option value="">Select a sport...</option>
+                                            <option value="football">Football (NFL)</option>
+                                            <option value="basketball">Basketball (NBA)</option>
+                                            <option value="baseball">Baseball (MLB)</option>
+                                            <option value="hockey">Hockey (NHL)</option>
+                                            <option value="soccer">Soccer</option>
+                                            <option value="mma">MMA/UFC</option>
+                                            <option value="boxing">Boxing</option>
+                                            <option value="golf">Golf</option>
+                                            <option value="tennis">Tennis</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                        <div v-if="form.errors.favorite_sport" class="invalid-feedback">
+                                            {{ form.errors.favorite_sport }}
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label for="primary_betting_app" class="form-label text-white fw-medium">
+                                            Primary Betting App
+                                            <span class="text-gray-light small">(Optional)</span>
+                                        </label>
+                                        <select
+                                            id="primary_betting_app"
+                                            class="form-select form-select-lg"
+                                            :class="{ 'is-invalid': form.errors.primary_betting_app }"
+                                            v-model="form.primary_betting_app"
+                                        >
+                                            <option value="">Select an app...</option>
+                                            <option value="draftkings">DraftKings</option>
+                                            <option value="fanduel">FanDuel</option>
+                                            <option value="bet365">Bet365</option>
+                                            <option value="caesars">Caesars Sportsbook</option>
+                                            <option value="betmgm">BetMGM</option>
+                                            <option value="pointsbet">PointsBet</option>
+                                            <option value="barstool">Barstool Sportsbook</option>
+                                            <option value="betrivers">BetRivers</option>
+                                            <option value="williamhill">William Hill</option>
+                                            <option value="foxbet">FOX Bet</option>
+                                            <option value="wynnbet">WynnBET</option>
+                                            <option value="unibet">Unibet</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                        <div v-if="form.errors.primary_betting_app" class="invalid-feedback">
+                                            {{ form.errors.primary_betting_app }}
+                                        </div>
                                     </div>
 
                                     <div class="mb-4">

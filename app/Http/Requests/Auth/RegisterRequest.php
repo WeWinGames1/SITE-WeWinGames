@@ -70,6 +70,9 @@ class RegisterRequest extends FormRequest
                     }
                 },
             ],
+            'favorite_team' => ['nullable', 'string', 'max:255'],
+            'favorite_sport' => ['nullable', 'string', 'max:255'],
+            'primary_betting_app' => ['nullable', 'string', 'max:255'],
             // Honeypot field - should be empty
             'website' => 'present|max:0',
             // Time-based validation
