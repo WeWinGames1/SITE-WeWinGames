@@ -25,6 +25,12 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            'phone' => [
+                'required',
+                'string',
+                'regex:/^[+]?[(]?[0-9]{1,3}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,4}[-\s\.]?[0-9]{1,9}$/',
+                Rule::unique(User::class)->ignore($this->user()->id),
+            ],
             'notification_preferences' => ['nullable', 'array'], // Made optional by adding 'nullable'
             'notification_preferences.email' => ['boolean'], // Validate email preference as a boolean
             'notification_preferences.push' => ['boolean'], // Validate push preference as a boolean

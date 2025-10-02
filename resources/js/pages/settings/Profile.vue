@@ -19,6 +19,7 @@ const vapid_key = page.props.env?.VAPID_PUBLIC_KEY;
 const form = useForm({
     name: user.name,
     email: user.email,
+    phone: user.phone || '',
     notification_preferences: {
         email: user.notification_preferences?.email || false,
         push: user.notification_preferences?.push || false,
@@ -139,6 +140,21 @@ watch(
                                         placeholder="Email address"
                                     />
                                     <InputError class="mt-2" :message="form.errors.email" />
+                                </div>
+
+                                <!-- Phone Number -->
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Phone Number</label>
+                                    <input
+                                        id="phone"
+                                        type="tel"
+                                        class="form-control"
+                                        v-model="form.phone"
+                                        required
+                                        autocomplete="tel"
+                                        placeholder="+1 (555) 123-4567"
+                                    />
+                                    <InputError class="mt-2" :message="form.errors.phone" />
                                 </div>
 
                                 <!-- Notification Preferences -->

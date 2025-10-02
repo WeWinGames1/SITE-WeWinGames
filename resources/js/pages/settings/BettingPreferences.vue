@@ -74,7 +74,7 @@ const submit = () => {
                                         autocomplete="off"
                                         placeholder="e.g. Los Angeles Lakers"
                                     />
-                                    <div class="form-text">
+                                    <div class="form-text text-white">
                                         Tell us your favorite team to help us personalize your experience
                                     </div>
                                     <InputError class="mt-2" :message="form.errors.favorite_team" />
@@ -99,7 +99,7 @@ const submit = () => {
                                         <option value="tennis">Tennis</option>
                                         <option value="other">Other</option>
                                     </select>
-                                    <div class="form-text">
+                                    <div class="form-text text-white">
                                         We'll prioritize showing you picks for your favorite sports
                                     </div>
                                     <InputError class="mt-2" :message="form.errors.favorite_sport" />
@@ -127,7 +127,7 @@ const submit = () => {
                                         <option value="unibet">Unibet</option>
                                         <option value="other">Other</option>
                                     </select>
-                                    <div class="form-text">
+                                    <div class="form-text text-white">
                                         Know which app you use most? We can tailor our recommendations
                                     </div>
                                     <InputError class="mt-2" :message="form.errors.primary_betting_app" />
