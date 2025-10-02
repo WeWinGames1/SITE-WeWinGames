@@ -24,17 +24,18 @@ class HomeController extends Controller
         $profitByYear = $this->betService->getProfitByYear();
         $roiByYear = $this->betService->getROIByYear();
 
-        // Get golf statistics for 2025
+        // Get golf statistics for 2025 (only settled bets for ROI calculation)
         $golf2025Bets = \App\Models\Bet::whereYear('game_date', 2025)
             ->where(function ($query) {
                 $query->where('sports', 'LIKE', '%golf%')
                     ->orWhere('sport', 'LIKE', '%golf%');
             })
+            ->whereIn('status', ['won', 'lost', 'push', 'void', 'placed']) // Only settled bets
             ->get();
 
         $golfWinners2025 = $golf2025Bets->where('status', 'won')->count();
 
-        // Calculate golf ROI for 2025
+        // Calculate golf ROI for 2025 (only from settled bets)
         $totalWager = $golf2025Bets->sum('wager_amount');
         $totalProfit = $golf2025Bets->sum('profit_amount');
         $golfROI2025 = $totalWager > 0 ? round(($totalProfit / $totalWager) * 100) : 0;
