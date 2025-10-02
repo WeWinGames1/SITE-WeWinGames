@@ -22,6 +22,7 @@ const form = useForm({
     notification_preferences: {
         email: user.notification_preferences?.email || false,
         push: user.notification_preferences?.push || false,
+        sms: user.notification_preferences?.sms || false,
     },
 });
 
@@ -161,6 +162,23 @@ watch(
                                             />
                                             <label class="form-check-label" for="pushNotifications"> Push Notifications </label>
                                         </div>
+                                        <div class="form-check">
+                                            <input
+                                                type="checkbox"
+                                                v-model="form.notification_preferences.sms"
+                                                class="form-check-input"
+                                                id="smsNotifications"
+                                            />
+                                            <label class="form-check-label" for="smsNotifications"> SMS Notifications </label>
+                                        </div>
+                                    </div>
+                                    <!-- SMS Opt-in Agreement Text -->
+                                    <div v-if="form.notification_preferences.sms" class="alert alert-info mt-3 mb-0" style="font-size: 0.875rem;">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        <strong>SMS Agreement:</strong> You agree to receive recurring promotional messages. You also agree to our
+                                        <a href="/terms-of-service" target="_blank" class="alert-link">Terms of Service</a> and
+                                        <a href="/privacy-policy" target="_blank" class="alert-link">Privacy Policy</a>.
+                                        Msg freq. varies. Msg & Data rates may apply. Reply STOP to end or HELP for help.
                                     </div>
                                     <InputError class="mt-2" :message="form.errors.notification_preferences" />
                                 </div>

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\SupportTicketNotification;
 use App\Models\SupportTicket;
 use App\Models\TicketCategory;
 use App\Models\User;
 use App\Services\CloudflareService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -49,6 +51,17 @@ class SupportTicketController extends Controller
             'priority' => $validated['priority'],
             'status' => 'open',
         ]);
+
+        // Send email notification to admin
+        try {
+            Mail::to('admin@wewingames.com')
+                ->send(new SupportTicketNotification($ticket));
+        } catch (\Exception $e) {
+            \Log::error('Failed to send support ticket notification', [
+                'ticket_id' => $ticket->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return redirect("/support/tickets/{$ticket->id}")
             ->with('success', 'Support ticket created successfully.');
@@ -209,6 +222,17 @@ class SupportTicketController extends Controller
         }
 
         $ticket = SupportTicket::create($ticketData);
+
+        // Send email notification to admin
+        try {
+            Mail::to('admin@wewingames.com')
+                ->send(new SupportTicketNotification($ticket));
+        } catch (\Exception $e) {
+            \Log::error('Failed to send support ticket notification', [
+                'ticket_id' => $ticket->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         // Return appropriate response
         if (auth()->check()) {

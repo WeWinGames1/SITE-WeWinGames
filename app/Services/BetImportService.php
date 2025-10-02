@@ -45,6 +45,46 @@ class BetImportService
     }
 
     /**
+     * Convert Excel serial date to MySQL datetime format
+     * Excel stores dates as numbers where 1 = January 1, 1900
+     * Note: Excel has a leap year bug where it thinks 1900 was a leap year
+     */
+    private function convertExcelSerialDate($serialDate): ?string
+    {
+        try {
+            // Use Carbon for easier date manipulation
+            // Excel epoch: January 1, 1900 = serial day 1
+            // But due to Excel's 1900 leap year bug, we use December 31, 1899 as base
+            $baseDate = \Carbon\Carbon::create(1899, 12, 31, 0, 0, 0);
+
+            // Excel incorrectly treats 1900 as a leap year
+            // For dates after February 28, 1900 (serial 60), subtract 1 to correct
+            $days = floor($serialDate);
+            if ($days > 60) {
+                $days--; // Correct for the leap year bug
+            }
+
+            // Add the days
+            $date = $baseDate->copy()->addDays($days);
+
+            // Handle time component if present (decimal part)
+            $timeFraction = $serialDate - floor($serialDate);
+            if ($timeFraction > 0) {
+                $totalSeconds = round($timeFraction * 86400);
+                $date->addSeconds($totalSeconds);
+            }
+
+            return $date->format('Y-m-d H:i:s');
+        } catch (\Exception $e) {
+            \Log::warning('Failed to convert Excel serial date', [
+                'value' => $serialDate,
+                'error' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
+
+    /**
      * Normalize membership values to lowercase standard names
      */
     private function normalizeMembership(?string $membership): string
@@ -99,6 +139,12 @@ class BetImportService
         try {
             // Replace non-breaking hyphens (U+2011) with regular hyphens
             $dateValue = str_replace('‑', '-', $dateValue);
+
+            // Check if this is an Excel serial date (numeric value >= 1)
+            // Excel dates are stored as numbers where 1 = January 1, 1900
+            if (is_numeric($dateValue) && $dateValue >= 1) {
+                return $this->convertExcelSerialDate($dateValue);
+            }
 
             // If already in Y-m-d H:i:s format, return as is
             if (preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $dateValue)) {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
+import BetCalculator from '@/components/BetCalculator.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { useForm, usePeriodicCsrfRefresh } from '@/composables/useInertiaForm';
 import { useSessionKeepAlive } from '@/composables/useSessionKeepAlive';
@@ -1057,6 +1058,17 @@ declare global {
                                 <div v-if="form.errors.roi" class="invalid-feedback">
                                     {{ form.errors.roi }}
                                 </div>
+                            </div>
+
+                            <!-- Bet Calculator -->
+                            <div class="col-12 my-3">
+                                <BetCalculator
+                                    :wager-amount="form.wager_amount"
+                                    :odds="form.wager_odds"
+                                    :status="form.status"
+                                    :is-each-way="form.wager_type === 'each_way'"
+                                    :place-fraction="form.place_fraction"
+                                />
                             </div>
 
                             <!-- Place Fraction -->

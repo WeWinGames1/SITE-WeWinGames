@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ResumeSubmissionNotification;
 use App\Models\ResumeSubmission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 
 class ResumeSubmissionController extends Controller
 {
@@ -37,7 +39,7 @@ class ResumeSubmissionController extends Controller
         }
 
         // Create the submission
-        ResumeSubmission::create([
+        $submission = ResumeSubmission::create([
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
             'phone' => $validated['phone'],
@@ -48,7 +50,16 @@ class ResumeSubmissionController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
-        // You could also send an email notification here
+        // Send email notification to HR
+        try {
+            Mail::to('jose@wewingames.com')
+                ->send(new ResumeSubmissionNotification($submission));
+        } catch (\Exception $e) {
+            \Log::error('Failed to send resume submission notification', [
+                'submission_id' => $submission->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return back()->with('success', 'Your application has been submitted successfully! We will review it and get back to you soon.');
     }
