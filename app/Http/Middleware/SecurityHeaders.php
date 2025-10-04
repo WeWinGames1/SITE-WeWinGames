@@ -73,7 +73,7 @@ class SecurityHeaders
         } else {
             $csp[] = "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdnjs.cloudflare.com https://unpkg.com https://www.googletagmanager.com https://www.google-analytics.com https://challenges.cloudflare.com https://cdn.onesignal.com https://api.onesignal.com";
             $csp[] = "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.bunny.net https://cdnjs.cloudflare.com https://rsms.me https://onesignal.com";
-            $csp[] = "connect-src 'self' https://api.stripe.com https://www.google-analytics.com https://region1.google-analytics.com https://onesignal.com https://api.onesignal.com wss://localhost:* ws://localhost:*";
+            $csp[] = "connect-src 'self' https://api.stripe.com https://www.google-analytics.com https://region1.google-analytics.com https://onesignal.com https://api.onesignal.com https://cdn.onesignal.com wss://localhost:* ws://localhost:*";
         }
 
         // Common CSP directives - skip font-src if already set in local
