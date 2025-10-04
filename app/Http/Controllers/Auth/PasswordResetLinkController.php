@@ -32,6 +32,19 @@ class PasswordResetLinkController extends Controller
             'email' => 'required|email',
         ]);
 
+        // Log password reset request (if user exists)
+        $user = \App\Models\User::where('email', $request->email)->first();
+        if ($user) {
+            activity()
+                ->performedOn($user)
+                ->causedBy($user)
+                ->withProperties([
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ])
+                ->log('password_reset_requested');
+        }
+
         $status = Password::sendResetLink(
             $request->only('email')
         );

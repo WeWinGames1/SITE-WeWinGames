@@ -30,9 +30,22 @@ class PasswordController extends Controller
             'password' => ['required', Password::defaults(), 'confirmed'],
         ]);
 
-        $request->user()->update([
+        $user = $request->user();
+
+        $user->update([
             'password' => Hash::make($validated['password']),
         ]);
+
+        // Log password change activity
+        activity()
+            ->performedOn($user)
+            ->causedBy($user)
+            ->withProperties([
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'changed_via' => 'settings_page',
+            ])
+            ->log('password_changed');
 
         return back();
     }

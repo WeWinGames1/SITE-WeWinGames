@@ -36,8 +36,19 @@ class AuthenticatedSessionController extends Controller
         // Ensure CSRF token is refreshed
         $request->session()->put('_token', csrf_token());
 
+        // Log activity
+        $user = Auth::user();
+        activity()
+            ->performedOn($user)
+            ->causedBy($user)
+            ->withProperties([
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ])
+            ->log('user_logged_in');
+
         // If user is admin, go to admin dashboard
-        if (Auth::user()->hasRole('admin')) {
+        if ($user->hasRole('admin')) {
             return redirect()->intended(route('admin.dashboard'));
         }
 
@@ -50,6 +61,20 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user = Auth::user();
+
+        // Log activity before logout
+        if ($user) {
+            activity()
+                ->performedOn($user)
+                ->causedBy($user)
+                ->withProperties([
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ])
+                ->log('user_logged_out');
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

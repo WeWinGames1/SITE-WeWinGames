@@ -119,6 +119,9 @@ class SubscriptionController extends Controller
 
         $user = Auth::user();
 
+        // Clean up orphaned redemptions from previous failed attempts
+        $this->cleanupOrphanedRedemptions($user);
+
         try {
             // Get price ID from request (it should be passed from the checkout form)
             $priceId = $request->price_id;
@@ -191,6 +194,20 @@ class SubscriptionController extends Controller
                     }
 
                     $subscription = $subscription->withCoupon($discountCode->stripe_coupon_id);
+                }
+
+            }
+
+            // Create the subscription with the payment method
+            $createdSubscription = $subscription->create($request->payment_method);
+
+            // Track coupon usage AFTER successful subscription creation
+            if ($request->filled('coupon')) {
+                $discountCode = DiscountCode::where('code', $request->coupon)->active()->first();
+
+                if ($discountCode && $discountCode->isValid() && $discountCode->canBeUsedBy($user)) {
+                    // Get product for discount calculation
+                    $stripeProduct = StripeProduct::where('stripe_price_id', $priceId)->first();
 
                     // Calculate the discount amount to store
                     $discountAmount = 0;
@@ -209,7 +226,6 @@ class SubscriptionController extends Controller
                             'user_id' => $user->id
                         ]);
                         // Set a default discount amount based on the discount type
-                        // This ensures the redemption record can be created
                         if ($discountCode->discount_type === 'fixed') {
                             $discountAmount = $discountCode->discount_amount;
                         } else {
@@ -218,40 +234,35 @@ class SubscriptionController extends Controller
                         }
                     }
 
-                    // Track coupon usage
+                    // Create redemption record with subscription ID
                     $discountCode->redemptions()->create([
                         'user_id' => $user->id,
-                        'subscription_id' => null, // Will be updated after subscription is created
+                        'subscription_id' => $createdSubscription->id,
                         'discount_applied' => $discountAmount,
                     ]);
 
                     // Increment usage count
                     $discountCode->incrementUsage();
                 }
-
             }
 
-            // Create the subscription with the payment method
-            $createdSubscription = $subscription->create($request->payment_method);
-
-            // Update redemption record with subscription ID if coupon was used
-            if ($request->filled('coupon')) {
-                $discountCode = DiscountCode::where('code', $request->coupon)->active()->first();
-                if ($discountCode) {
-                    $discountCode->redemptions()
-                        ->where('user_id', $user->id)
-                        ->whereNull('subscription_id')
-                        ->latest()
-                        ->first()
-                        ?->update(['subscription_id' => $createdSubscription->id]);
-                }
-            }
+            // Log successful subscription creation
+            activity()
+                ->performedOn($user)
+                ->causedBy($user)
+                ->withProperties([
+                    'subscription_id' => $createdSubscription->id,
+                    'stripe_id' => $createdSubscription->stripe_id,
+                    'price_id' => $priceId,
+                    'coupon_used' => $request->coupon ?? null,
+                ])
+                ->log('subscription_created');
 
             // Check if subscription requires additional action (3D Secure)
             if ($createdSubscription->hasIncompletePayment()) {
                 // Get the latest invoice's payment intent
                 $latestInvoice = $createdSubscription->latestInvoice();
-                
+
                 if ($latestInvoice && $latestInvoice->payment_intent) {
                     // Return the client secret for 3D Secure authentication
                     return back()->with([
@@ -273,6 +284,18 @@ class SubscriptionController extends Controller
                 'stripe_error' => $e->getStripeCode(),
             ]);
 
+            // Log activity for failed subscription attempt
+            activity()
+                ->performedOn($user)
+                ->causedBy($user)
+                ->withProperties([
+                    'error_type' => 'card_error',
+                    'stripe_code' => $e->getStripeCode(),
+                    'decline_code' => $e->getDeclineCode(),
+                    'coupon_used' => $request->coupon ?? null,
+                ])
+                ->log('subscription_attempt_failed');
+
             $errorMessage = match($e->getStripeCode()) {
                 'authentication_required' => 'Your card requires additional authentication. Please try again and complete the verification process.',
                 'card_declined' => 'Your card was declined. Please try a different card.',
@@ -291,6 +314,17 @@ class SubscriptionController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
+            // Log activity for failed subscription attempt
+            activity()
+                ->performedOn($user)
+                ->causedBy($user)
+                ->withProperties([
+                    'error_type' => 'invalid_request',
+                    'error_message' => $e->getMessage(),
+                    'coupon_used' => $request->coupon ?? null,
+                ])
+                ->log('subscription_attempt_failed');
+
             return back()->withErrors(['payment' => 'Invalid payment request. Please contact support.']);
         } catch (\Stripe\Exception\AuthenticationException $e) {
             // Authentication with Stripe's API failed
@@ -298,6 +332,17 @@ class SubscriptionController extends Controller
                 'user_id' => $user->id,
                 'error' => $e->getMessage(),
             ]);
+
+            // Log activity for failed subscription attempt
+            activity()
+                ->performedOn($user)
+                ->causedBy($user)
+                ->withProperties([
+                    'error_type' => 'authentication_error',
+                    'error_message' => $e->getMessage(),
+                    'coupon_used' => $request->coupon ?? null,
+                ])
+                ->log('subscription_attempt_failed');
 
             return back()->withErrors(['payment' => 'Payment system error. Please try again later.']);
         } catch (\Exception $e) {
@@ -307,6 +352,18 @@ class SubscriptionController extends Controller
                 'error' => $e->getMessage(),
                 'type' => get_class($e),
             ]);
+
+            // Log activity for failed subscription attempt
+            activity()
+                ->performedOn($user)
+                ->causedBy($user)
+                ->withProperties([
+                    'error_type' => 'general_error',
+                    'error_message' => $e->getMessage(),
+                    'exception_class' => get_class($e),
+                    'coupon_used' => $request->coupon ?? null,
+                ])
+                ->log('subscription_attempt_failed');
 
             return back()->withErrors(['payment' => 'An unexpected error occurred. Please try again or contact support.']);
         }
@@ -483,6 +540,71 @@ class SubscriptionController extends Controller
 
             return redirect()->route('billing.edit')
                 ->with('error', 'Failed to resume subscription. Please try again or contact support.');
+        }
+    }
+
+    /**
+     * Clean up orphaned discount redemptions from failed subscription attempts
+     *
+     * This method finds and removes discount code redemptions that were created
+     * but never attached to a successful subscription (subscription_id is null).
+     * It also decrements the usage count for those codes.
+     */
+    private function cleanupOrphanedRedemptions($user)
+    {
+        try {
+            // Find orphaned redemptions (older than 1 hour to avoid race conditions)
+            $orphanedRedemptions = \App\Models\DiscountRedemption::where('user_id', $user->id)
+                ->whereNull('subscription_id')
+                ->where('created_at', '<', now()->subHour())
+                ->get();
+
+            if ($orphanedRedemptions->isEmpty()) {
+                return;
+            }
+
+            foreach ($orphanedRedemptions as $redemption) {
+                $discountCode = $redemption->discountCode;
+
+                if ($discountCode) {
+                    // Log the cleanup activity
+                    activity()
+                        ->performedOn($user)
+                        ->causedBy($user)
+                        ->withProperties([
+                            'discount_code' => $discountCode->code,
+                            'discount_amount' => $redemption->discount_applied,
+                            'failed_at' => $redemption->created_at,
+                            'reason' => 'Failed subscription attempt - discount code restored',
+                        ])
+                        ->log('discount_code_restored');
+
+                    // Decrement the usage count
+                    $discountCode->decrement('times_used');
+
+                    Log::info('Cleaned up orphaned discount redemption', [
+                        'user_id' => $user->id,
+                        'discount_code' => $discountCode->code,
+                        'redemption_id' => $redemption->id,
+                        'created_at' => $redemption->created_at,
+                    ]);
+                }
+
+                // Delete the orphaned redemption record
+                $redemption->delete();
+            }
+
+            Log::info('Orphaned redemptions cleanup completed', [
+                'user_id' => $user->id,
+                'cleaned_count' => $orphanedRedemptions->count(),
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to cleanup orphaned redemptions', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+            // Don't fail the subscription process if cleanup fails
         }
     }
 }

@@ -112,6 +112,17 @@ class RegisteredUserController extends Controller
             // Log successful registration
             $securityService->logRegistrationAttempt($request, true);
 
+            // Log activity
+            activity()
+                ->performedOn($user)
+                ->causedBy($user)
+                ->withProperties([
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'affiliate_id' => $user->affiliate_id,
+                ])
+                ->log('user_registered');
+
             // Fire registered event
             event(new Registered($user));
 
