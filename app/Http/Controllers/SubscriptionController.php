@@ -134,7 +134,7 @@ class SubscriptionController extends Controller
                     ->first();
 
                 if ($affiliate) {
-                    $subscription->withMetadata([
+                    $subscription = $subscription->withMetadata([
                         'affiliate_code' => $affiliateCode,
                     ]);
                 }
@@ -190,7 +190,7 @@ class SubscriptionController extends Controller
                         $discountCode->update(['stripe_coupon_id' => $stripeCoupon->id]);
                     }
 
-                    $subscription->withCoupon($discountCode->stripe_coupon_id);
+                    $subscription = $subscription->withCoupon($discountCode->stripe_coupon_id);
 
                     // Calculate the discount amount to store
                     $discountAmount = 0;
@@ -233,6 +233,19 @@ class SubscriptionController extends Controller
 
             // Create the subscription with the payment method
             $createdSubscription = $subscription->create($request->payment_method);
+
+            // Update redemption record with subscription ID if coupon was used
+            if ($request->filled('coupon')) {
+                $discountCode = DiscountCode::where('code', $request->coupon)->active()->first();
+                if ($discountCode) {
+                    $discountCode->redemptions()
+                        ->where('user_id', $user->id)
+                        ->whereNull('subscription_id')
+                        ->latest()
+                        ->first()
+                        ?->update(['subscription_id' => $createdSubscription->id]);
+                }
+            }
 
             // Check if subscription requires additional action (3D Secure)
             if ($createdSubscription->hasIncompletePayment()) {
@@ -352,6 +365,7 @@ class SubscriptionController extends Controller
         $validated = $request->validate([
             'price_id' => 'required|string',
             'subscription_name' => 'required|string|in:silver,gold,platinum',
+            'coupon' => 'nullable|string',
         ]);
 
         $user = $request->user();
@@ -371,7 +385,17 @@ class SubscriptionController extends Controller
 
             if (! $subscription) {
                 // No current subscription, create new one
-                $user->newSubscription('default', $priceId)->create();
+                $newSubscription = $user->newSubscription('default', $priceId);
+
+                // Apply coupon if provided (for first-time subscribers)
+                if ($request->filled('coupon')) {
+                    $discountCode = DiscountCode::where('code', $request->coupon)->active()->first();
+                    if ($discountCode && $discountCode->isValid() && $discountCode->canBeUsedBy($user)) {
+                        $newSubscription = $newSubscription->withCoupon($discountCode->stripe_coupon_id);
+                    }
+                }
+
+                $newSubscription->create();
 
                 return redirect()->route('billing.edit')
                     ->with('success', 'Successfully subscribed to the new plan!');

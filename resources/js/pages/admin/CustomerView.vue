@@ -253,6 +253,28 @@ function formatPropertyKey(key: string): string {
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
 }
+
+function formatCustomerDuration(days: number): string {
+    // Convert days to hours
+    const hours = days * 24;
+
+    // If less than 24 hours, show in hours
+    if (hours < 24) {
+        const roundedHours = Math.round(hours);
+        return `${roundedHours} ${roundedHours === 1 ? 'hour' : 'hours'}`;
+    }
+
+    // If less than 7 days, show in days
+    if (days < 7) {
+        const roundedDays = Math.round(days);
+        return `${roundedDays} ${roundedDays === 1 ? 'day' : 'days'}`;
+    }
+
+    // If 7 or more days, show in weeks
+    const weeks = days / 7;
+    const roundedWeeks = Math.round(weeks);
+    return `${roundedWeeks} ${roundedWeeks === 1 ? 'week' : 'weeks'}`;
+}
 </script>
 
 <template>
@@ -297,7 +319,7 @@ function formatPropertyKey(key: string): string {
 
             <!-- Customer Overview Cards -->
             <div class="row g-3 mb-4">
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="card h-100">
                         <div class="card-body">
                             <h6 class="card-subtitle mb-2 text-muted">Account Status</h6>
@@ -318,7 +340,7 @@ function formatPropertyKey(key: string): string {
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="card h-100">
                         <div class="card-body">
                             <h6 class="card-subtitle mb-2 text-muted">Subscription</h6>
@@ -348,29 +370,13 @@ function formatPropertyKey(key: string): string {
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h6 class="card-subtitle mb-2 text-muted">Payment Method</h6>
-                            <div v-if="paymentMethods.length > 0">
-                                <div v-for="method in paymentMethods" :key="method.id" class="small">
-                                    <i class="bi bi-credit-card me-1"></i>
-                                    {{ method.brand }} ending in {{ method.last4 }}
-                                    <span v-if="method.is_default" class="badge bg-primary ms-1" style="font-size: 0.65rem">Default</span>
-                                    <div class="text-muted">Expires {{ method.exp_month }}/{{ method.exp_year }}</div>
-                                </div>
-                            </div>
-                            <div v-else class="small text-danger"><i class="bi bi-exclamation-circle me-1"></i>No payment method</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="card h-100">
                         <div class="card-body">
                             <h6 class="card-subtitle mb-2 text-muted">Lifetime Value</h6>
                             <div class="h4 mb-0">{{ formatCurrency(stats.total_spent * 100) }}</div>
-                            <div class="small text-muted">{{ stats.subscription_count }} subscriptions</div>
-                            <div class="small text-muted">{{ stats.days_as_customer }} days as customer</div>
+                            <div class="small text-muted">{{ stats.subscription_count }} {{ stats.subscription_count === 1 ? 'subscription' : 'subscriptions' }}</div>
+                            <div class="small text-muted">{{ formatCustomerDuration(stats.days_as_customer) }} as customer</div>
                         </div>
                     </div>
                 </div>

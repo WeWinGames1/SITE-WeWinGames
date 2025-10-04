@@ -83,6 +83,15 @@ class Bet extends Model
         'golf_place_fraction' => 'decimal:4',
     ];
 
+    /**
+     * Hide relationship objects from JSON serialization to prevent
+     * displaying raw JSON data on frontend bet cards
+     */
+    protected $hidden = [
+        'teamOne',
+        'teamTwo',
+    ];
+
     // Relationships
     public function user()
     {

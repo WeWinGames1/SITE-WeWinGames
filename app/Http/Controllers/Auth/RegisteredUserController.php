@@ -147,7 +147,7 @@ class RegisteredUserController extends Controller
 
         // Apply coupon if provided
         if ($request->filled('coupon')) {
-            $checkout->withCoupon($request->coupon);
+            $checkout = $checkout->withCoupon($request->coupon);
         }
 
         return $checkout->checkout([
