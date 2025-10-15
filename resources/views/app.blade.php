@@ -90,8 +90,8 @@
             @endif
         @endproduction
         
-        {{-- OneSignal Push Notifications (non-admin pages only) --}}
-        @if(!request()->is('admin*'))
+        {{-- OneSignal Push Notifications (non-admin pages only, HTTPS only) --}}
+        @if(!request()->is('admin*') && request()->secure())
             <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
             <script>
                 window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -166,7 +166,12 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-        
+
+        {{-- MetaBet.io Live Odds Integration (non-admin pages only) --}}
+        @if(!request()->is('admin*'))
+            <script defer src="https://go.metabet.io/js/global.js?siteID=wewingames"></script>
+        @endif
+
         @routes
         @vite(['resources/js/app.ts', 'resources/css/app.css'])
         @inertiaHead

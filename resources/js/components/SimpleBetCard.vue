@@ -1,5 +1,6 @@
 <template>
-    <div class="bet-card position-relative" :style="{ backgroundColor: cardBgColor }">
+    <div class="bet-card-with-tile">
+        <div class="bet-card position-relative" :style="{ backgroundColor: cardBgColor }">
         <!-- Odds Ribbon -->
         <div class="odds-ribbon">
             {{ getOdds(bet) }}
@@ -54,6 +55,10 @@
             </div>
             <p class="text-white small mb-0">{{ bet.premium_notes }}</p>
         </div>
+        </div>
+
+        <!-- MetaBet Game Tile - Below the card -->
+        <div v-if="bet.metabet_query_id" :class="`metabet-gametile metabet-query-${bet.metabet_query_id} metabet-size-320x50`" style="margin-top: -2px;"></div>
     </div>
 </template>
 

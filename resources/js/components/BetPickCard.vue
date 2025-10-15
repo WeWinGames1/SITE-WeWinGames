@@ -1,10 +1,11 @@
 <template>
-    <div
-        class="card h-100 position-relative overflow-hidden"
-        style="background-color: #1a2332; border: 2px solid #2a3441; border-radius: 12px"
-        @mouseenter="showDetails = true"
-        @mouseleave="showDetails = false"
-    >
+    <div class="bet-card-with-tile">
+        <div
+            class="card h-100 position-relative overflow-hidden"
+            style="background-color: #1a2332; border: 2px solid #2a3441; border-radius: 12px"
+            @mouseenter="showDetails = true"
+            @mouseleave="showDetails = false"
+        >
         <!-- Header -->
         <div class="px-4 py-3" style="background-color: #0a1628; border-bottom: 1px solid #2a3441">
             <div class="d-flex justify-content-between align-items-center">
@@ -146,6 +147,10 @@
                 </div>
             </div>
         </div>
+        </div>
+
+        <!-- MetaBet Game Tile - Below the card -->
+        <div v-if="bet.metabet_query_id" :class="`metabet-gametile metabet-query-${bet.metabet_query_id} metabet-size-320x50`" style="margin-top: -2px;"></div>
     </div>
 </template>
 

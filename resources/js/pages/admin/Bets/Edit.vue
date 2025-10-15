@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import BetCalculator from '@/components/BetCalculator.vue';
+import MetaBetLookupModal from '@/components/MetaBetLookupModal.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
@@ -82,6 +83,10 @@ interface Bet {
     place_terms_denominator?: number;
     golf_place?: boolean;
     golf_place_fraction?: number;
+    // MetaBet integration
+    metabet_query_id?: string | null;
+    metabet_game_name?: string | null;
+    metabet_linked_at?: string | null;
 }
 
 interface Props {
@@ -117,6 +122,9 @@ const showLogoModal = ref(false);
 const logoModalTeam = ref<'one' | 'two'>('one');
 const selectedTeamForLogo = ref<Team | null>(null);
 const logoFile = ref<File | null>(null);
+
+// MetaBet modal state
+const showMetaBetModal = ref(false);
 
 const form = useForm({
     wager_type: normalizeWagerType(props.bet.wager_type || props.bet.markets || ''),
@@ -159,6 +167,8 @@ const form = useForm({
     user_id: props.bet.user_id || null,
     golf_place: props.bet.golf_place || false,
     golf_place_fraction: props.bet.golf_place_fraction || null,
+    metabet_query_id: props.bet.metabet_query_id || null,
+    metabet_game_name: props.bet.metabet_game_name || null,
 });
 
 // Initialize sport_id and league_id from existing data
@@ -826,6 +836,23 @@ function validateForm(): boolean {
     }
 
     return isValid;
+}
+
+function openMetaBetModal() {
+    showMetaBetModal.value = true;
+}
+
+function handleMetaBetLinked(payload: { queryId: string; gameName: string }) {
+    form.metabet_query_id = payload.queryId || null;
+    form.metabet_game_name = payload.gameName || null;
+    showMetaBetModal.value = false;
+
+    // Show success message
+    if (payload.queryId) {
+        alert(`MetaBet linked successfully!\nQuery ID: ${payload.queryId}`);
+    } else {
+        alert('MetaBet link removed successfully!');
+    }
 }
 
 function submit() {
@@ -1561,6 +1588,57 @@ declare global {
                     </div>
                 </div>
 
+                <!-- MetaBet Integration Section -->
+                <div class="card mt-4">
+                    <div class="card-header bg-info bg-opacity-10">
+                        <h5 class="mb-0">
+                            <i class="bi bi-graph-up-arrow text-info me-2"></i>
+                            MetaBet Live Odds Integration
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <p class="text-muted mb-3">
+                                    Link this bet to MetaBet.io to display live, real-time odds from major sportsbooks on your bet pages.
+                                </p>
+
+                                <!-- Current Status -->
+                                <div v-if="form.metabet_query_id" class="alert alert-success mb-3">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-check-circle-fill me-2 mt-1"></i>
+                                        <div class="flex-grow-1">
+                                            <strong>MetaBet Linked</strong>
+                                            <div class="mt-1">
+                                                <small class="d-block"><strong>Query ID:</strong> {{ form.metabet_query_id }}</small>
+                                                <small v-if="form.metabet_game_name" class="d-block"><strong>Game:</strong> {{ form.metabet_game_name }}</small>
+                                                <small v-if="bet.metabet_linked_at" class="d-block text-muted">
+                                                    <strong>Linked:</strong> {{ new Date(bet.metabet_linked_at).toLocaleString() }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div v-else class="alert alert-warning mb-3">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    Not linked to MetaBet. Live odds will not be displayed.
+                                </div>
+
+                                <!-- Action Button -->
+                                <button
+                                    type="button"
+                                    class="btn btn-info"
+                                    @click="openMetaBetModal"
+                                >
+                                    <i class="bi bi-link-45deg me-1"></i>
+                                    {{ form.metabet_query_id ? 'Update MetaBet Link' : 'Link to MetaBet' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Premium Notes Section -->
                 <div class="card mt-4">
                     <div class="card-header bg-warning bg-opacity-10">
@@ -1670,6 +1748,19 @@ declare global {
                 </div>
             </div>
         </div>
+
+        <!-- MetaBet Lookup Modal -->
+        <MetaBetLookupModal
+            :show="showMetaBetModal"
+            :bet-id="bet.id"
+            :current-query-id="form.metabet_query_id"
+            :current-game-name="form.metabet_game_name"
+            :team-one="form.team_one"
+            :team-two="form.team_two"
+            :sport="form.sports"
+            @close="showMetaBetModal = false"
+            @linked="handleMetaBetLinked"
+        />
     </AdminLayout>
 </template>
 

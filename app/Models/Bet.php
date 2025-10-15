@@ -61,6 +61,10 @@ class Bet extends Model
         'place_terms_denominator',
         'golf_place',
         'golf_place_fraction',
+        // MetaBet integration fields
+        'metabet_query_id',
+        'metabet_game_name',
+        'metabet_linked_at',
     ];
 
     protected $casts = [
@@ -81,6 +85,7 @@ class Bet extends Model
         'place_terms_denominator' => 'integer',
         'golf_place' => 'boolean',
         'golf_place_fraction' => 'decimal:4',
+        'metabet_linked_at' => 'datetime',
     ];
 
     /**

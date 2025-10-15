@@ -314,10 +314,20 @@ class BetManagementController extends Controller
             'dead_heat_spots' => 'nullable|numeric|min:0|required_if:is_dead_heat,true',
             'golf_place' => 'nullable|boolean',
             'golf_place_fraction' => 'nullable|numeric|between:0,1',
+            // MetaBet integration
+            'metabet_query_id' => 'nullable|string|max:255',
+            'metabet_game_name' => 'nullable|string|max:255',
         ]);
 
         // Set the user_id to the authenticated admin
         $validated['user_id'] = Auth::id();
+
+        // Set metabet_linked_at timestamp if query_id is being set
+        if (isset($validated['metabet_query_id']) && ! empty($validated['metabet_query_id'])) {
+            $validated['metabet_linked_at'] = now();
+        } elseif (isset($validated['metabet_query_id']) && empty($validated['metabet_query_id'])) {
+            $validated['metabet_linked_at'] = null;
+        }
 
         // Normalize sports name to lowercase
         if (isset($validated['sports'])) {
@@ -621,7 +631,17 @@ class BetManagementController extends Controller
             'dead_heat_spots' => 'nullable|numeric|min:0',
             'golf_place' => 'nullable|boolean',
             'golf_place_fraction' => 'nullable|numeric|between:0,1',
+            // MetaBet integration
+            'metabet_query_id' => 'nullable|string|max:255',
+            'metabet_game_name' => 'nullable|string|max:255',
         ]);
+
+        // Set metabet_linked_at timestamp if query_id is being set/updated
+        if (isset($validated['metabet_query_id']) && ! empty($validated['metabet_query_id'])) {
+            $validated['metabet_linked_at'] = now();
+        } elseif (isset($validated['metabet_query_id']) && empty($validated['metabet_query_id'])) {
+            $validated['metabet_linked_at'] = null;
+        }
 
         // Normalize sports name to lowercase
         if (isset($validated['sports'])) {
