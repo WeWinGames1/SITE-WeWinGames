@@ -167,11 +167,6 @@
         <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 
-        {{-- MetaBet.io Live Odds Integration (non-admin pages only) --}}
-        @if(!request()->is('admin*'))
-            <script defer src="https://go.metabet.io/js/global.js?siteID=wewingames"></script>
-        @endif
-
         @routes
         @vite(['resources/js/app.ts', 'resources/css/app.css'])
         @inertiaHead
@@ -206,7 +201,31 @@
             </div>
         @endif
         @inertia
-        
+
+        {{-- MetaBet.io Live Odds Integration (non-admin pages only) --}}
+        @if(!request()->is('admin*'))
+            <script src="https://go.metabet.io/js/global.js?siteID=wewingames" async></script>
+            <script>
+                // Trigger MetaBet to scan for game tiles after page load and after Inertia navigations
+                document.addEventListener('DOMContentLoaded', function() {
+                    setTimeout(function() {
+                        if (window.mb_initializeProducts) {
+                            window.mb_initializeProducts();
+                        }
+                    }, 1000);
+                });
+
+                // Re-initialize on Inertia page visits
+                document.addEventListener('inertia:success', function() {
+                    setTimeout(function() {
+                        if (window.mb_initializeProducts) {
+                            window.mb_initializeProducts();
+                        }
+                    }, 500);
+                });
+            </script>
+        @endif
+
         {{-- Service Worker Registration --}}
         <script>
             if ('serviceWorker' in navigator) {
