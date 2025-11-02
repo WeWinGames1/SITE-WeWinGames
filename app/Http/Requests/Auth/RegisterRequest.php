@@ -65,8 +65,16 @@ class RegisterRequest extends FormRequest
                 'max:255',
                 function ($attribute, $value, $fail) {
                     // Only validate format if a value is provided
-                    if ($value && ! preg_match('/^[a-zA-Z0-9._-]+#[0-9]{4}$/', $value)) {
-                        $fail('Please enter a valid Discord username (e.g., username#1234).');
+                    if ($value) {
+                        // Support both old format (username#1234) and new format (username)
+                        // New format: 2-32 characters, lowercase letters, numbers, underscores, periods
+                        // Old format: username#1234
+                        $newFormat = '/^[a-z0-9._]{2,32}$/';
+                        $oldFormat = '/^[a-zA-Z0-9._-]+#[0-9]{4}$/';
+
+                        if (!preg_match($newFormat, $value) && !preg_match($oldFormat, $value)) {
+                            $fail('Please enter a valid Discord username (e.g., username or username#1234).');
+                        }
                     }
                 },
             ],

@@ -255,7 +255,7 @@ const submit = () => {
         },
         onError: (errors) => {
             console.error('Registration errors:', errors);
-            
+
             // Check if email already exists error
             if (errors.email && (
                 errors.email.toString().toLowerCase().includes('already been taken') ||
@@ -265,9 +265,25 @@ const submit = () => {
                 emailAlreadyExists.value = true;
             } else {
                 emailAlreadyExists.value = false;
-                submissionError.value = Object.values(errors).flat().join(' ');
             }
-            
+
+            // Always show general error message for any validation errors
+            // This catches timestamp, honeypot, and other hidden field errors
+            const errorMessages = Object.entries(errors)
+                .map(([field, message]) => {
+                    // Format field names to be more user-friendly
+                    const fieldName = field
+                        .replace(/_/g, ' ')
+                        .replace(/\b\w/g, l => l.toUpperCase())
+                        .replace('Cf Turnstile Response', 'Security verification');
+                    return `${fieldName}: ${message}`;
+                })
+                .join('; ');
+
+            if (errorMessages) {
+                submissionError.value = errorMessages;
+            }
+
             // Reset Turnstile on error
             if (turnstileEnabled.value && window.turnstile && turnstileWidget.value) {
                 window.turnstile.reset(turnstileWidget.value);
@@ -277,7 +293,7 @@ const submit = () => {
             console.log('Registration successful', page);
         },
         preserveScroll: true,
-        preserveState: false,
+        preserveState: true, // Keep form data on validation errors
     });
 };
 </script>
@@ -299,6 +315,17 @@ const submit = () => {
                             <div class="card-body p-5">
                                 <h2 class="h4 fw-bold text-white mb-2">Create your account</h2>
                                 <p class="text-gray-light mb-4">Take your first step towards winning!</p>
+
+                                <!-- General Error Display -->
+                                <div v-if="submissionError && !emailAlreadyExists" class="alert alert-danger mb-4">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-exclamation-triangle-fill me-3 fs-5"></i>
+                                        <div class="flex-grow-1">
+                                            <h5 class="alert-heading mb-2">Registration Error</h5>
+                                            <p class="mb-0">{{ submissionError }}</p>
+                                        </div>
+                                    </div>
+                                </div>
 
                                 <!-- Email Already Exists Alert -->
                                 <div v-if="emailAlreadyExists" class="alert alert-warning mb-4">
@@ -384,13 +411,13 @@ const submit = () => {
                                                 :class="{ 'is-invalid': form.errors.discord_username }"
                                                 autocomplete="off"
                                                 v-model="form.discord_username"
-                                                placeholder="username#1234"
+                                                placeholder="username or username#1234"
                                             />
                                             <div v-if="form.errors.discord_username" class="invalid-feedback">
                                                 {{ form.errors.discord_username }}
                                             </div>
                                         </div>
-                                        <div class="form-text text-gray-light small">Enter your Discord username for exclusive community access</div>
+                                        <div class="form-text text-gray-light small">Enter your Discord username (new or legacy format with #1234) for exclusive community access</div>
                                     </div>
 
                                     <div class="mb-4">
@@ -577,12 +604,6 @@ const submit = () => {
                                             <span class="fw-semibold">Create Account</span>
                                             <i class="bi bi-arrow-right ms-2"></i>
                                         </button>
-                                    </div>
-
-                                    <!-- Debug error display -->
-                                    <div v-if="submissionError" class="alert alert-danger mb-3">
-                                        <i class="bi bi-exclamation-triangle me-1"></i>
-                                        {{ submissionError }}
                                     </div>
 
                                     <div class="text-center text-gray-light small mb-4">
