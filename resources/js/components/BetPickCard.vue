@@ -48,11 +48,35 @@
                 </div>
             </div>
 
-            <!-- Game Level Badge -->
-            <div class="text-center mb-4">
-                <span class="badge px-4 py-2" :class="getMembershipBadgeClass()" style="font-size: 14px; border-radius: 20px">
-                    Game Level: {{ bet.membership.toUpperCase() }}
-                </span>
+            <!-- Game Level Badge & Place Bet Button (inline on mobile, stacked on desktop) -->
+            <div class="d-flex flex-column flex-md-column align-items-center justify-content-center gap-2 mb-4">
+                <div class="d-flex align-items-center justify-content-center gap-3">
+                    <span class="badge px-4 py-2" :class="getMembershipBadgeClass()" style="font-size: 14px; border-radius: 20px">
+                        Game Level: {{ bet.membership.toUpperCase() }}
+                    </span>
+                    <a
+                        v-if="bet.place_bet_url"
+                        :href="bet.place_bet_url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="btn btn-sm btn-primary d-md-none"
+                        style="border-radius: 20px; padding: 4px 12px; text-decoration: none; font-size: 13px; white-space: nowrap"
+                    >
+                        <i class="bi bi-box-arrow-up-right me-1"></i>
+                        Place a Bet
+                    </a>
+                </div>
+                <a
+                    v-if="bet.place_bet_url"
+                    :href="bet.place_bet_url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn btn-sm btn-primary d-none d-md-inline-block"
+                    style="border-radius: 20px; padding: 4px 12px; text-decoration: none; font-size: 13px"
+                >
+                    <i class="bi bi-box-arrow-up-right me-1"></i>
+                    Place a Bet
+                </a>
             </div>
 
             <!-- Betting Button -->

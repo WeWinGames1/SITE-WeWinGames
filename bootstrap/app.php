@@ -40,6 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
         $middleware->validateCsrfTokens(except: [
             'stripe/*',
+            'session/ping',
         ]);
         $middleware->statefulApi();
         $middleware->web(append: [

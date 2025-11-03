@@ -67,9 +67,9 @@ class RegisterRequest extends FormRequest
                     // Only validate format if a value is provided
                     if ($value) {
                         // Support both old format (username#1234) and new format (username)
-                        // New format: 2-32 characters, lowercase letters, numbers, underscores, periods
+                        // New format: 2-32 characters, letters (case-insensitive), numbers, underscores, periods
                         // Old format: username#1234
-                        $newFormat = '/^[a-z0-9._]{2,32}$/';
+                        $newFormat = '/^[a-zA-Z0-9._]{2,32}$/';
                         $oldFormat = '/^[a-zA-Z0-9._-]+#[0-9]{4}$/';
 
                         if (!preg_match($newFormat, $value) && !preg_match($oldFormat, $value)) {

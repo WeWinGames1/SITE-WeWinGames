@@ -762,14 +762,38 @@ function formatCurrency(amount: number | null | undefined): string {
                                         </td>
                                         <td>
                                             <div>
-                                                <div>{{ formatCurrency(bet.wager_amount) }}</div>
-                                                <div class="text-muted small">Win: {{ formatCurrency(bet.winning_amount) }}</div>
+                                                <div class="fw-medium">Stake: {{ formatCurrency(bet.wager_amount) }}</div>
                                                 <div
-                                                    v-if="bet.profit_amount !== null"
-                                                    class="fw-medium"
-                                                    :class="(bet.profit_amount || 0) >= 0 ? 'text-success' : 'text-danger'"
+                                                    class="small"
+                                                    :class="{
+                                                        'text-success': bet.status === 'won' || bet.status === 'placed',
+                                                        'text-danger': bet.status === 'loss',
+                                                        'text-muted': bet.status === 'pending' || bet.status === 'push' || bet.status === 'void'
+                                                    }"
                                                 >
-                                                    {{ (bet.profit_amount || 0) >= 0 ? '+' : '' }}{{ formatCurrency(bet.profit_amount) }}
+                                                    <template v-if="bet.status === 'won' || bet.status === 'placed'">
+                                                        Win: {{ formatCurrency(bet.winning_amount) }}
+                                                    </template>
+                                                    <template v-else-if="bet.status === 'loss'">
+                                                        Lost: {{ formatCurrency(bet.wager_amount) }}
+                                                    </template>
+                                                    <template v-else-if="bet.status === 'push' || bet.status === 'void'">
+                                                        Refund: {{ formatCurrency(bet.wager_amount) }}
+                                                    </template>
+                                                    <template v-else>
+                                                        Potential: {{ formatCurrency(bet.winning_amount || 0) }}
+                                                    </template>
+                                                </div>
+                                                <div
+                                                    v-if="bet.status !== 'pending'"
+                                                    class="fw-medium small"
+                                                    :class="{
+                                                        'text-success': (bet.profit_amount || 0) > 0,
+                                                        'text-danger': (bet.profit_amount || 0) < 0,
+                                                        'text-muted': (bet.profit_amount || 0) === 0
+                                                    }"
+                                                >
+                                                    Profit: {{ (bet.profit_amount || 0) >= 0 ? '+' : '' }}{{ formatCurrency(bet.profit_amount) }}
                                                 </div>
                                             </div>
                                         </td>

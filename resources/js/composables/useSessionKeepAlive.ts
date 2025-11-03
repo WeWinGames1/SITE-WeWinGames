@@ -19,12 +19,14 @@ export function useSessionKeepAlive(intervalMinutes: number = 30) {
                 await axios.get('/session/ping', {
                     headers: {
                         'X-Session-Keep-Alive': 'true'
-                    }
+                    },
+                    timeout: 5000, // 5 second timeout
                 });
-                console.log('Session kept alive');
+                // Silently succeed - no console log needed in production
             }
         } catch (error) {
-            console.error('Failed to keep session alive:', error);
+            // Silently fail - don't log to console in production to avoid noise
+            // The session will still work, just won't be kept alive
         }
     };
     

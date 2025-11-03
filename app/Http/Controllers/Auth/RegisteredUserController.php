@@ -76,7 +76,7 @@ class RegisteredUserController extends Controller
                     'email' => strtolower($request->email),
                     'phone' => $request->phone,
                     'password' => Hash::make($request->password),
-                    'discord_username' => $request->discord_username,
+                    'discord_username' => $request->discord_username ? strtolower($request->discord_username) : null,
                     'favorite_team' => $request->favorite_team,
                     'favorite_sport' => $request->favorite_sport,
                     'primary_betting_app' => $request->primary_betting_app,
@@ -94,7 +94,7 @@ class RegisteredUserController extends Controller
                         'registration_ip' => $request->ip(),
                         'registration_date' => now()->toDateTimeString(),
                         'affiliate_code' => $affiliateCode ?? '',
-                        'discord_username' => $request->discord_username ?? '',
+                        'discord_username' => $request->discord_username ? strtolower($request->discord_username) : '',
                     ],
                 ]);
 

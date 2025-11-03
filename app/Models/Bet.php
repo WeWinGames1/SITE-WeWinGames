@@ -65,6 +65,8 @@ class Bet extends Model
         'metabet_query_id',
         'metabet_game_name',
         'metabet_linked_at',
+        // External betting link
+        'place_bet_url',
     ];
 
     protected $casts = [
@@ -207,5 +209,75 @@ class Bet extends Model
         }
 
         return $this->team_one_id == $teamId || $this->team_two_id == $teamId;
+    }
+
+    /**
+     * Get the actual profit based on status
+     * For pending bets, return 0 (not hypothetical profit)
+     * For losses, return negative wager amount
+     */
+    public function getActualProfitAttribute(): float
+    {
+        switch (strtolower($this->status ?? '')) {
+            case 'won':
+            case 'placed':
+                return $this->profit_amount ?? 0;
+
+            case 'loss':
+                return -abs($this->wager_amount ?? 0);
+
+            case 'push':
+            case 'void':
+                return 0;
+
+            case 'pending':
+            case 'open':
+            default:
+                return 0; // Pending bets have no actual profit yet
+        }
+    }
+
+    /**
+     * Get the actual winning amount based on status
+     * For pending/loss bets, return 0 (not hypothetical)
+     */
+    public function getActualWinningAmountAttribute(): float
+    {
+        switch (strtolower($this->status ?? '')) {
+            case 'won':
+            case 'placed':
+                return $this->winning_amount ?? 0;
+
+            case 'push':
+            case 'void':
+                return $this->wager_amount ?? 0; // Get stake back
+
+            case 'loss':
+            case 'pending':
+            case 'open':
+            default:
+                return 0; // No winnings for losses or pending
+        }
+    }
+
+    /**
+     * Get display label for the winning amount column
+     */
+    public function getWinningAmountLabelAttribute(): string
+    {
+        switch (strtolower($this->status ?? '')) {
+            case 'won':
+            case 'placed':
+                return 'Win';
+            case 'loss':
+                return 'Loss';
+            case 'push':
+            case 'void':
+                return 'Refund';
+            case 'pending':
+            case 'open':
+            default:
+                return 'Potential';
+        }
     }
 }

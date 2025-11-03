@@ -169,6 +169,7 @@ const form = useForm({
     golf_place_fraction: props.bet.golf_place_fraction || null,
     metabet_query_id: props.bet.metabet_query_id || null,
     metabet_game_name: props.bet.metabet_game_name || null,
+    place_bet_url: props.bet.place_bet_url || '',
 });
 
 // Initialize sport_id and league_id from existing data
@@ -1696,6 +1697,37 @@ declare global {
                                 />
                                 <div v-if="form.errors.premium_notes" class="invalid-feedback">
                                     {{ form.errors.premium_notes }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Place Bet URL Section -->
+                <div class="card mt-4">
+                    <div class="card-header bg-info bg-opacity-10">
+                        <h5 class="mb-0">
+                            <i class="bi bi-box-arrow-up-right me-2"></i>
+                            External Betting Link
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label for="place_bet_url" class="form-label">Place a Bet URL</label>
+                                <input
+                                    id="place_bet_url"
+                                    v-model="form.place_bet_url"
+                                    type="url"
+                                    class="form-control"
+                                    :class="{ 'is-invalid': form.errors.place_bet_url }"
+                                    placeholder="https://example.com/bet"
+                                />
+                                <div class="form-text">
+                                    Optional: Add a link to an external betting site where users can place this bet. The button will only show if this URL is provided.
+                                </div>
+                                <div v-if="form.errors.place_bet_url" class="invalid-feedback">
+                                    {{ form.errors.place_bet_url }}
                                 </div>
                             </div>
                         </div>

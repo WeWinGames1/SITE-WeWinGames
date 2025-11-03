@@ -410,16 +410,16 @@ Route::get('/session/check', [\App\Http\Controllers\SessionController::class, 'c
     ->middleware('web')
     ->name('session.check');
 
-// Session keep-alive endpoint
+// Session keep-alive endpoint (20 requests per minute max)
 Route::get('/session/ping', function (Illuminate\Http\Request $request) {
     // Touch the session to keep it alive
     if ($request->hasSession()) {
         $request->session()->touch();
     }
-    
+
     return response()->json([
         'status' => 'alive',
         'timestamp' => now()->toIso8601String(),
         'has_session' => $request->hasSession(),
     ]);
-})->name('session.ping');
+})->middleware('throttle:20,1')->name('session.ping');

@@ -3,7 +3,7 @@ import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import { useForm } from '@/composables/useInertiaForm';
 import { useSessionKeepAlive } from '@/composables/useSessionKeepAlive';
-import { computed, nextTick, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 const page = usePage();
 const turnstileEnabled = ref(false);
@@ -17,6 +17,16 @@ const submissionError = ref<string>('');
 const showPassword = ref(false);
 const showPasswordConfirmation = ref(false);
 const emailAlreadyExists = ref(false);
+
+// Client-side validation errors
+const clientErrors = ref({
+    name: '',
+    email: '',
+    phone: '',
+    discord_username: '',
+    password: '',
+    password_confirmation: '',
+});
 
 const loginUrl = computed(() => route('login'));
 const loginUrlWithEmail = computed(() => {
@@ -42,7 +52,168 @@ const form = useForm({
 });
 
 // Keep session alive while user is on registration page
-useSessionKeepAlive(15); // Ping every 15 minutes
+// Disabled on registration page as it's causing 500 errors and not needed here
+// useSessionKeepAlive(15); // Ping every 15 minutes
+
+// Validation functions
+const validateName = (value: string): string => {
+    if (!value || value.trim() === '') {
+        return 'Name is required';
+    }
+    if (value.length < 2) {
+        return 'Name must be at least 2 characters';
+    }
+    if (value.length > 255) {
+        return 'Name must not exceed 255 characters';
+    }
+    // Only letters, spaces, hyphens, dots
+    if (!/^[a-zA-Z\s\-\.]+$/.test(value)) {
+        return 'Name can only contain letters, spaces, hyphens, and periods';
+    }
+    // No repeated characters more than twice
+    if (/(.)\1{2,}/.test(value)) {
+        return 'Name contains too many repeated characters';
+    }
+    return '';
+};
+
+const validateEmail = (value: string): string => {
+    if (!value || value.trim() === '') {
+        return 'Email is required';
+    }
+    if (value.length > 255) {
+        return 'Email must not exceed 255 characters';
+    }
+    // Basic email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value)) {
+        return 'Please enter a valid email address';
+    }
+    // Check for suspicious patterns
+    const localPart = value.split('@')[0];
+    if (/\d{5,}/.test(localPart)) {
+        return 'Email address appears invalid';
+    }
+    return '';
+};
+
+const validatePhone = (value: string): string => {
+    if (!value || value.trim() === '') {
+        return 'Phone number is required';
+    }
+    // Phone regex from server validation
+    const phoneRegex = /^[+]?[(]?[0-9]{1,3}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,4}[-\s\.]?[0-9]{1,9}$/;
+    if (!phoneRegex.test(value)) {
+        return 'Please enter a valid phone number (e.g., +1 (555) 123-4567)';
+    }
+    return '';
+};
+
+const validateDiscordUsername = (value: string): string => {
+    // Optional field - only validate if provided
+    if (!value || value.trim() === '') {
+        return '';
+    }
+    if (value.length > 255) {
+        return 'Discord username must not exceed 255 characters';
+    }
+    // New format: 2-32 characters, letters (case-insensitive), numbers, underscores, periods
+    const newFormat = /^[a-zA-Z0-9._]{2,32}$/;
+    // Old format: username#1234
+    const oldFormat = /^[a-zA-Z0-9._-]+#[0-9]{4}$/;
+
+    if (!newFormat.test(value) && !oldFormat.test(value)) {
+        return 'Please enter a valid Discord username (e.g., username or username#1234)';
+    }
+    return '';
+};
+
+const validatePassword = (value: string): string => {
+    if (!value || value === '') {
+        return 'Password is required';
+    }
+    if (value.length < 8) {
+        return 'Password must be at least 8 characters';
+    }
+    // Check for uppercase letter
+    if (!/[A-Z]/.test(value)) {
+        return 'Password must contain at least one uppercase letter';
+    }
+    // Check for lowercase letter
+    if (!/[a-z]/.test(value)) {
+        return 'Password must contain at least one lowercase letter';
+    }
+    // Check for number
+    if (!/[0-9]/.test(value)) {
+        return 'Password must contain at least one number';
+    }
+    // Check for special character
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value)) {
+        return 'Password must contain at least one special character';
+    }
+    return '';
+};
+
+const validatePasswordConfirmation = (value: string, password: string): string => {
+    if (!value || value === '') {
+        return 'Please confirm your password';
+    }
+    if (value !== password) {
+        return 'Passwords do not match';
+    }
+    return '';
+};
+
+// Watchers for real-time validation
+watch(() => form.name, (value) => {
+    if (value) {
+        clientErrors.value.name = validateName(value);
+    } else {
+        clientErrors.value.name = '';
+    }
+});
+
+watch(() => form.email, (value) => {
+    if (value) {
+        clientErrors.value.email = validateEmail(value);
+        // Clear the "email already exists" error when user modifies email
+        emailAlreadyExists.value = false;
+    } else {
+        clientErrors.value.email = '';
+    }
+});
+
+watch(() => form.phone, (value) => {
+    if (value) {
+        clientErrors.value.phone = validatePhone(value);
+    } else {
+        clientErrors.value.phone = '';
+    }
+});
+
+watch(() => form.discord_username, (value) => {
+    clientErrors.value.discord_username = validateDiscordUsername(value);
+});
+
+watch(() => form.password, (value) => {
+    if (value) {
+        clientErrors.value.password = validatePassword(value);
+        // Re-validate password confirmation if it has a value
+        if (form.password_confirmation) {
+            clientErrors.value.password_confirmation = validatePasswordConfirmation(form.password_confirmation, value);
+        }
+    } else {
+        clientErrors.value.password = '';
+    }
+});
+
+watch(() => form.password_confirmation, (value) => {
+    if (value) {
+        clientErrors.value.password_confirmation = validatePasswordConfirmation(value, form.password);
+    } else {
+        clientErrors.value.password_confirmation = '';
+    }
+});
 
 // Function to render Turnstile widget
 const renderTurnstile = (container: HTMLElement) => {
@@ -244,6 +415,15 @@ const submit = () => {
         onStart: () => {
             console.log('Request started');
             submissionError.value = '';
+            // Clear client-side errors on submission
+            clientErrors.value = {
+                name: '',
+                email: '',
+                phone: '',
+                discord_username: '',
+                password: '',
+                password_confirmation: '',
+            };
         },
         onFinish: () => {
             console.log('Request finished');
@@ -349,15 +529,15 @@ const submit = () => {
                                             id="name"
                                             type="text"
                                             class="form-control form-control-lg"
-                                            :class="{ 'is-invalid': form.errors.name }"
+                                            :class="{ 'is-invalid': form.errors.name || clientErrors.name }"
                                             required
                                             autofocus
                                             autocomplete="name"
                                             v-model="form.name"
                                             placeholder="John Doe"
                                         />
-                                        <div v-if="form.errors.name" class="invalid-feedback">
-                                            {{ form.errors.name }}
+                                        <div v-if="form.errors.name || clientErrors.name" class="invalid-feedback d-block">
+                                            {{ form.errors.name || clientErrors.name }}
                                         </div>
                                     </div>
 
@@ -367,14 +547,14 @@ const submit = () => {
                                             id="email"
                                             type="email"
                                             class="form-control form-control-lg"
-                                            :class="{ 'is-invalid': form.errors.email }"
+                                            :class="{ 'is-invalid': form.errors.email || clientErrors.email }"
                                             required
                                             autocomplete="email"
                                             v-model="form.email"
                                             placeholder="you@example.com"
                                         />
-                                        <div v-if="form.errors.email" class="invalid-feedback">
-                                            {{ form.errors.email }}
+                                        <div v-if="form.errors.email || clientErrors.email" class="invalid-feedback d-block">
+                                            {{ form.errors.email || clientErrors.email }}
                                         </div>
                                     </div>
 
@@ -384,14 +564,14 @@ const submit = () => {
                                             id="phone"
                                             type="tel"
                                             class="form-control form-control-lg"
-                                            :class="{ 'is-invalid': form.errors.phone }"
+                                            :class="{ 'is-invalid': form.errors.phone || clientErrors.phone }"
                                             required
                                             autocomplete="tel"
                                             v-model="form.phone"
                                             placeholder="+1 (555) 123-4567"
                                         />
-                                        <div v-if="form.errors.phone" class="invalid-feedback">
-                                            {{ form.errors.phone }}
+                                        <div v-if="form.errors.phone || clientErrors.phone" class="invalid-feedback d-block">
+                                            {{ form.errors.phone || clientErrors.phone }}
                                         </div>
                                     </div>
 
@@ -408,16 +588,16 @@ const submit = () => {
                                                 id="discord_username"
                                                 type="text"
                                                 class="form-control form-control-lg"
-                                                :class="{ 'is-invalid': form.errors.discord_username }"
+                                                :class="{ 'is-invalid': form.errors.discord_username || clientErrors.discord_username }"
                                                 autocomplete="off"
                                                 v-model="form.discord_username"
                                                 placeholder="username or username#1234"
                                             />
-                                            <div v-if="form.errors.discord_username" class="invalid-feedback">
-                                                {{ form.errors.discord_username }}
-                                            </div>
                                         </div>
-                                        <div class="form-text text-gray-light small">Enter your Discord username (new or legacy format with #1234) for exclusive community access</div>
+                                        <div v-if="form.errors.discord_username || clientErrors.discord_username" class="invalid-feedback d-block">
+                                            {{ form.errors.discord_username || clientErrors.discord_username }}
+                                        </div>
+                                        <div v-else class="form-text text-gray-light small">Enter your Discord username (new or legacy format with #1234) for exclusive community access</div>
                                     </div>
 
                                     <div class="mb-4">
@@ -504,8 +684,9 @@ const submit = () => {
                                             <input
                                                 id="password"
                                                 :type="showPassword ? 'text' : 'password'"
-                                                class="form-control form-control-lg pe-5"
-                                                :class="{ 'is-invalid': form.errors.password }"
+                                                class="form-control form-control-lg"
+                                                :class="{ 'is-invalid': form.errors.password || clientErrors.password, 'pe-5': !(form.errors.password || clientErrors.password) }"
+                                                :style="(form.errors.password || clientErrors.password) ? 'padding-right: 4rem !important;' : ''"
                                                 required
                                                 autocomplete="new-password"
                                                 v-model="form.password"
@@ -513,15 +694,19 @@ const submit = () => {
                                             />
                                             <button
                                                 type="button"
-                                                class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-gray-light p-0 me-3"
+                                                class="btn btn-link position-absolute top-50 translate-middle-y text-gray-light p-0"
+                                                :style="(form.errors.password || clientErrors.password) ? 'right: 2.5rem;' : 'right: 0.75rem;'"
                                                 @click="showPassword = !showPassword"
                                                 style="text-decoration: none;"
                                             >
                                                 <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'" class="fs-5"></i>
                                             </button>
                                         </div>
-                                        <div v-if="form.errors.password" class="invalid-feedback d-block">
-                                            {{ form.errors.password }}
+                                        <div v-if="form.errors.password || clientErrors.password" class="invalid-feedback d-block">
+                                            {{ form.errors.password || clientErrors.password }}
+                                        </div>
+                                        <div v-else class="form-text text-gray-light small">
+                                            Password must be at least 8 characters with uppercase, lowercase, number, and special character
                                         </div>
                                     </div>
 
@@ -531,8 +716,9 @@ const submit = () => {
                                             <input
                                                 id="password_confirmation"
                                                 :type="showPasswordConfirmation ? 'text' : 'password'"
-                                                class="form-control form-control-lg pe-5"
-                                                :class="{ 'is-invalid': form.errors.password_confirmation }"
+                                                class="form-control form-control-lg"
+                                                :class="{ 'is-invalid': form.errors.password_confirmation || clientErrors.password_confirmation, 'pe-5': !(form.errors.password_confirmation || clientErrors.password_confirmation) }"
+                                                :style="(form.errors.password_confirmation || clientErrors.password_confirmation) ? 'padding-right: 4rem !important;' : ''"
                                                 required
                                                 autocomplete="new-password"
                                                 v-model="form.password_confirmation"
@@ -540,15 +726,16 @@ const submit = () => {
                                             />
                                             <button
                                                 type="button"
-                                                class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-gray-light p-0 me-3"
+                                                class="btn btn-link position-absolute top-50 translate-middle-y text-gray-light p-0"
+                                                :style="(form.errors.password_confirmation || clientErrors.password_confirmation) ? 'right: 2.5rem;' : 'right: 0.75rem;'"
                                                 @click="showPasswordConfirmation = !showPasswordConfirmation"
                                                 style="text-decoration: none;"
                                             >
                                                 <i :class="showPasswordConfirmation ? 'bi bi-eye-slash' : 'bi bi-eye'" class="fs-5"></i>
                                             </button>
                                         </div>
-                                        <div v-if="form.errors.password_confirmation" class="invalid-feedback d-block">
-                                            {{ form.errors.password_confirmation }}
+                                        <div v-if="form.errors.password_confirmation || clientErrors.password_confirmation" class="invalid-feedback d-block">
+                                            {{ form.errors.password_confirmation || clientErrors.password_confirmation }}
                                         </div>
                                     </div>
 
