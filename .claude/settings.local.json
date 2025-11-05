@@ -67,7 +67,8 @@
       "mcp__laravel-boost__read-log-entries",
       "mcp__laravel-boost__list-routes",
       "Bash(git log:*)",
-      "WebFetch(domain:www.metabet.io)"
+      "WebFetch(domain:www.metabet.io)",
+      "mcp__laravel-boost__browser-logs"
     ],
     "deny": []
   },

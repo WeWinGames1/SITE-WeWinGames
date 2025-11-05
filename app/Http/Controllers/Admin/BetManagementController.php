@@ -317,6 +317,8 @@ class BetManagementController extends Controller
             // MetaBet integration
             'metabet_query_id' => 'nullable|string|max:255',
             'metabet_game_name' => 'nullable|string|max:255',
+            // Place Bet URL
+            'place_bet_url' => 'nullable|url|max:1000',
         ]);
 
         // Set the user_id to the authenticated admin
@@ -634,6 +636,8 @@ class BetManagementController extends Controller
             // MetaBet integration
             'metabet_query_id' => 'nullable|string|max:255',
             'metabet_game_name' => 'nullable|string|max:255',
+            // Place Bet URL
+            'place_bet_url' => 'nullable|url|max:1000',
         ]);
 
         // Set metabet_linked_at timestamp if query_id is being set/updated

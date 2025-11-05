@@ -50,7 +50,7 @@
                     style="border-radius: 20px; padding: 4px 12px; text-decoration: none; font-size: 13px; white-space: nowrap"
                 >
                     <i class="bi bi-box-arrow-up-right me-1"></i>
-                    Place a Bet
+                    Place this Bet
                 </a>
             </div>
             <a
@@ -62,7 +62,7 @@
                 style="border-radius: 20px; padding: 4px 12px; text-decoration: none; font-size: 13px"
             >
                 <i class="bi bi-box-arrow-up-right me-1"></i>
-                Place a Bet
+                Place this Bet
             </a>
         </div>
 
