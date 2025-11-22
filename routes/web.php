@@ -402,7 +402,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/affiliates')-
 // Stripe Webhook - Laravel Cashier
 Route::post(
     'stripe/webhook',
-    '\Laravel\Cashier\Http\Controllers\WebhookController@handleWebhook'
+    '\App\Http\Controllers\StripeWebhookController@handleWebhook'
 )->name('cashier.webhook');
 
 // Session check route

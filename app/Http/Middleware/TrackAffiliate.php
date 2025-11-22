@@ -16,6 +16,11 @@ class TrackAffiliate
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Skip for Stripe webhooks
+        if ($request->is('stripe/*')) {
+            return $next($request);
+        }
+
         $response = $next($request);
 
         // Check if affiliate parameter is in query string
