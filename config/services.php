@@ -63,6 +63,7 @@ return [
 
     'reddit' => [
         'pixel_id' => env('REDDIT_PIXEL_ID'),
+        'conversion_token' => env('REDDIT_CONVERSION_TOKEN'),
     ],
 
 ];

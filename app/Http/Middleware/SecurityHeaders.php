@@ -71,14 +71,63 @@ class SecurityHeaders
             $csp[] = 'font-src * data:';
             $csp[] = 'connect-src *';
         } else {
-            $csp[] = "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdnjs.cloudflare.com https://unpkg.com https://www.googletagmanager.com https://www.google-analytics.com https://challenges.cloudflare.com https://cdn.onesignal.com https://api.onesignal.com https://go.metabet.io";
-            $csp[] = "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.bunny.net https://cdnjs.cloudflare.com https://rsms.me https://onesignal.com https://go.metabet.io";
-            $csp[] = "connect-src 'self' https://api.stripe.com https://www.google-analytics.com https://region1.google-analytics.com https://onesignal.com https://api.onesignal.com https://cdn.onesignal.com https://go.metabet.io https://www.metabet.io https://metabet.static.api.areyouwatchingthis.com wss://localhost:* ws://localhost:*";
+            $scriptSrc = [
+                "'self'",
+                "'unsafe-inline'",
+                "'unsafe-eval'",
+                'https://js.stripe.com',
+                'https://cdnjs.cloudflare.com',
+                'https://unpkg.com',
+                'https://www.googletagmanager.com',
+                'https://www.google-analytics.com',
+                'https://challenges.cloudflare.com',
+                'https://cdn.onesignal.com',
+                'https://api.onesignal.com',
+                'https://go.metabet.io',
+                'https://www.redditstatic.com',
+                'https://static.klaviyo.com',
+                'https://static-tracking.klaviyo.com',
+                'https://static.cloudflareinsights.com',
+            ];
+
+            $styleSrc = [
+                "'self'",
+                "'unsafe-inline'",
+                'https://fonts.googleapis.com',
+                'https://fonts.bunny.net',
+                'https://cdnjs.cloudflare.com',
+                'https://rsms.me',
+                'https://onesignal.com',
+                'https://go.metabet.io',
+            ];
+
+            $connectSrc = [
+                "'self'",
+                'https://api.stripe.com',
+                'https://www.google-analytics.com',
+                'https://region1.google-analytics.com',
+                'https://onesignal.com',
+                'https://api.onesignal.com',
+                'https://cdn.onesignal.com',
+                'https://go.metabet.io',
+                'https://www.metabet.io',
+                'https://metabet.static.api.areyouwatchingthis.com',
+                'wss://localhost:*',
+                'ws://localhost:*',
+                'https://alb.reddit.com',
+                'https://pixel-config.reddit.com',
+                'https://a.klaviyo.com',
+                'https://cloudflareinsights.com',
+            ];
+
+            $csp[] = 'script-src ' . implode(' ', $scriptSrc);
+            $csp[] = 'style-src ' . implode(' ', $styleSrc);
+            $csp[] = 'connect-src ' . implode(' ', $connectSrc);
         }
 
         // Common CSP directives - skip font-src if already set in local
         $commonCsp = [
-            ! app()->environment('local') ? "font-src 'self' https://fonts.gstatic.com https://fonts.bunny.net https://cdnjs.cloudflare.com https://rsms.me data:" : null,
+            !app()->environment('local') ? "font-src 'self' https://fonts.gstatic.com https://fonts.bunny.net https://cdnjs.cloudflare.com https://rsms.me data:" : null,
             "img-src 'self' data: https: blob:",
             "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://challenges.cloudflare.com",
             "object-src 'none'",
@@ -91,7 +140,7 @@ class SecurityHeaders
         $csp = array_merge($csp, array_filter($commonCsp));
 
         // Only add these in production
-        if (! app()->environment('local')) {
+        if (!app()->environment('local')) {
             $csp[] = 'block-all-mixed-content';
             $csp[] = 'upgrade-insecure-requests';
         }
