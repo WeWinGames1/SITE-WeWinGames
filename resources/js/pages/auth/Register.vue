@@ -471,6 +471,18 @@ const submit = () => {
         },
         onSuccess: (page) => {
             console.log('Registration successful', page);
+
+            // Reddit Pixel - Advanced Matching for Sign Up
+            // Cast to any to avoid TS errors with dynamic env property
+            const pixelId = (page.props as any).env?.REDDIT_PIXEL_ID;
+            
+            if ((window as any).rdt && pixelId) {
+                (window as any).rdt('init', pixelId, {
+                    email: form.email,
+                    phoneNumber: form.phone
+                });
+                (window as any).rdt('track', 'SignUp');
+            }
         },
         preserveScroll: true,
         preserveState: true, // Keep form data on validation errors

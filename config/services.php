@@ -61,4 +61,8 @@ return [
         'security_enabled' => env('CLOUDFLARE_SECURITY_ENABLED', false),
     ],
 
+    'reddit' => [
+        'pixel_id' => env('REDDIT_PIXEL_ID'),
+    ],
+
 ];

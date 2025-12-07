@@ -23,7 +23,7 @@ class HandleInertiaRequests extends Middleware
         if (!$request->header('X-Inertia') && !$request->header('Accept')) {
             $request->headers->set('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8');
         }
-        
+
         return parent::handle($request, $next);
     }
     /**
@@ -103,7 +103,7 @@ class HandleInertiaRequests extends Middleware
         $footerFaqs = SimpleCacheService::rememberQuery(
             'footer_faqs',
             SimpleCacheService::TTL_LONG,
-            fn () => Faq::active()
+            fn() => Faq::active()
                 ->ordered()
                 ->limit(4)
                 ->get(['id', 'question', 'answer'])
@@ -131,6 +131,7 @@ class HandleInertiaRequests extends Middleware
                 'TURNSTILE_ENABLED' => config('services.turnstile.enabled'),
                 'TURNSTILE_SITE_KEY' => config('services.turnstile.site_key'),
                 'VAPID_PUBLIC_KEY' => config('webpush.vapid.public_key'),
+                'REDDIT_PIXEL_ID' => config('services.reddit.pixel_id'),
             ],
             'social' => [
                 'links' => config('social.links'),
