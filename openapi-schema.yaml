@@ -1,0 +1,1821 @@
+openapi: 3.0.3
+info:
+  title: WeWinGames API
+  description: Sports betting picks and subscription platform API
+  version: 1.0.0
+  contact:
+    name: WeWinGames Support
+    url: https://wewingames.com/support
+
+servers:
+  - url: https://wewingames.com
+    description: Production server
+
+paths:
+  # ============================================
+  # Public Pages
+  # ============================================
+  /:
+    get:
+      summary: Home page
+      operationId: home
+      tags: [Pages]
+      responses:
+        '200':
+          description: Home page rendered
+
+  /about-us:
+    get:
+      summary: About Us page
+      operationId: aboutUs
+      tags: [Pages]
+      responses:
+        '200':
+          description: About Us page rendered
+
+  /betting-education:
+    get:
+      summary: Betting education tips page
+      operationId: bettingEducation
+      tags: [Pages]
+      responses:
+        '200':
+          description: Betting education page rendered
+
+  /betting-results:
+    get:
+      summary: Betting results page
+      operationId: bettingResults
+      tags: [Pages]
+      responses:
+        '200':
+          description: Betting results page rendered
+
+  /buy-our-picks:
+    get:
+      summary: Buy our picks page
+      operationId: buyOurPicks
+      tags: [Pages]
+      responses:
+        '200':
+          description: Purchase page rendered
+
+  /careers-jobs:
+    get:
+      summary: Careers and jobs page
+      operationId: careersJobs
+      tags: [Pages]
+      responses:
+        '200':
+          description: Careers page rendered
+
+  /faq:
+    get:
+      summary: FAQ page
+      operationId: faq
+      tags: [Pages]
+      responses:
+        '200':
+          description: FAQ page rendered
+
+  /futures:
+    get:
+      summary: Futures betting page
+      operationId: futures
+      tags: [Pages]
+      responses:
+        '200':
+          description: Futures page rendered
+
+  /odds:
+    get:
+      summary: Odds page
+      operationId: odds
+      tags: [Pages]
+      responses:
+        '200':
+          description: Odds page rendered
+
+  /partners-offers:
+    get:
+      summary: Partners and offers page
+      operationId: partnerOffers
+      tags: [Pages]
+      responses:
+        '200':
+          description: Partners page rendered
+
+  /privacy-policy:
+    get:
+      summary: Privacy policy page
+      operationId: privacyPolicy
+      tags: [Pages]
+      responses:
+        '200':
+          description: Privacy policy rendered
+
+  /terms:
+    get:
+      summary: Terms of service page
+      operationId: terms
+      tags: [Pages]
+      responses:
+        '200':
+          description: Terms page rendered
+
+  /todays-bets:
+    get:
+      summary: Today's bets page
+      operationId: todaysBets
+      tags: [Pages]
+      responses:
+        '200':
+          description: Today's bets page rendered
+
+  /pages/{slug}:
+    get:
+      summary: Dynamic CMS page
+      operationId: showPage
+      tags: [Pages]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-z0-9-]+$'
+            maxLength: 255
+      responses:
+        '200':
+          description: Page rendered
+        '404':
+          description: Page not found
+
+  /landing/{slug}:
+    get:
+      summary: Landing page
+      operationId: showLanding
+      tags: [Pages]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-z0-9-]+$'
+            maxLength: 255
+      responses:
+        '200':
+          description: Landing page rendered
+        '404':
+          description: Landing page not found
+
+  # ============================================
+  # Blog
+  # ============================================
+  /blog:
+    get:
+      summary: Blog index
+      operationId: blogIndex
+      tags: [Blog]
+      responses:
+        '200':
+          description: Blog listing page
+
+  /blog/{post}:
+    get:
+      summary: Blog post detail
+      operationId: blogShow
+      tags: [Blog]
+      parameters:
+        - name: post
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-z0-9-]+$'
+            maxLength: 255
+      responses:
+        '200':
+          description: Blog post rendered
+        '404':
+          description: Post not found
+
+  # ============================================
+  # Bets
+  # ============================================
+  /bet/{bet}:
+    get:
+      summary: Show single bet (authenticated)
+      operationId: betShow
+      tags: [Bets]
+      parameters:
+        - name: bet
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Bet details rendered
+        '404':
+          description: Bet not found
+
+  /pick/{id}:
+    get:
+      summary: Show pick details
+      operationId: pickShow
+      tags: [Bets]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Pick details rendered
+        '404':
+          description: Pick not found
+
+  # ============================================
+  # Authentication
+  # ============================================
+  /login:
+    get:
+      summary: Login page
+      operationId: loginForm
+      tags: [Authentication]
+      responses:
+        '200':
+          description: Login form rendered
+    post:
+      summary: Process login
+      operationId: loginStore
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 255
+                remember:
+                  type: boolean
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect on success
+        '422':
+          description: Validation error
+
+  /logout:
+    post:
+      summary: Logout
+      operationId: logout
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect to home
+
+  /register:
+    get:
+      summary: Registration page
+      operationId: registerForm
+      tags: [Authentication]
+      responses:
+        '200':
+          description: Registration form rendered
+    post:
+      summary: Process registration
+      operationId: registerStore
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password, password_confirmation]
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 255
+                password_confirmation:
+                  type: string
+                  minLength: 8
+                  maxLength: 255
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect on success
+        '422':
+          description: Validation error
+
+  /forgot-password:
+    get:
+      summary: Forgot password page
+      operationId: forgotPasswordForm
+      tags: [Authentication]
+      responses:
+        '200':
+          description: Forgot password form rendered
+    post:
+      summary: Send password reset link
+      operationId: forgotPasswordStore
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect with status
+        '422':
+          description: Validation error
+
+  /reset-password/{token}:
+    get:
+      summary: Password reset page
+      operationId: resetPasswordForm
+      tags: [Authentication]
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 255
+      responses:
+        '200':
+          description: Reset form rendered
+
+  /reset-password:
+    post:
+      summary: Reset password
+      operationId: resetPasswordStore
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, email, password, password_confirmation]
+              properties:
+                token:
+                  type: string
+                  maxLength: 255
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 255
+                password_confirmation:
+                  type: string
+                  minLength: 8
+                  maxLength: 255
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect on success
+        '422':
+          description: Validation error
+
+  /confirm-password:
+    get:
+      summary: Confirm password page
+      operationId: confirmPasswordForm
+      tags: [Authentication]
+      responses:
+        '200':
+          description: Confirm password form rendered
+    post:
+      summary: Confirm password
+      operationId: confirmPasswordStore
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties:
+                password:
+                  type: string
+                  maxLength: 255
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect on success
+        '422':
+          description: Invalid password
+
+  /verify-email:
+    get:
+      summary: Email verification notice
+      operationId: verifyEmailNotice
+      tags: [Authentication]
+      responses:
+        '200':
+          description: Verification notice rendered
+
+  /verify-email/{id}/{hash}:
+    get:
+      summary: Verify email address
+      operationId: verifyEmail
+      tags: [Authentication]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: hash
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-f0-9]{64}$'
+      responses:
+        '302':
+          description: Redirect on verification
+
+  /email/verification-notification:
+    post:
+      summary: Resend verification email
+      operationId: resendVerification
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect with status
+
+  # ============================================
+  # Dashboard & Settings
+  # ============================================
+  /dashboard:
+    get:
+      summary: Customer dashboard
+      operationId: dashboard
+      tags: [Dashboard]
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Dashboard rendered
+        '302':
+          description: Redirect to login
+
+  /settings/profile:
+    get:
+      summary: Profile settings page
+      operationId: profileEdit
+      tags: [Settings]
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Profile form rendered
+    patch:
+      summary: Update profile
+      operationId: profileUpdate
+      tags: [Settings]
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect on success
+        '422':
+          description: Validation error
+    delete:
+      summary: Delete account
+      operationId: profileDestroy
+      tags: [Settings]
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties:
+                password:
+                  type: string
+                  maxLength: 255
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect on deletion
+
+  /settings/password:
+    get:
+      summary: Password settings page
+      operationId: passwordEdit
+      tags: [Settings]
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Password form rendered
+    put:
+      summary: Update password
+      operationId: passwordUpdate
+      tags: [Settings]
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [current_password, password, password_confirmation]
+              properties:
+                current_password:
+                  type: string
+                  maxLength: 255
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 255
+                password_confirmation:
+                  type: string
+                  minLength: 8
+                  maxLength: 255
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect on success
+        '422':
+          description: Validation error
+
+  /settings/billing:
+    get:
+      summary: Billing settings page
+      operationId: billingEdit
+      tags: [Settings]
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Billing form rendered
+    put:
+      summary: Update billing
+      operationId: billingUpdate
+      tags: [Settings]
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect on success
+
+  /settings/billing-portal:
+    get:
+      summary: Redirect to Stripe billing portal
+      operationId: billingPortal
+      tags: [Settings]
+      security:
+        - sessionAuth: []
+      responses:
+        '302':
+          description: Redirect to Stripe portal
+
+  /settings/billing/set-default-payment-method:
+    post:
+      summary: Set default payment method
+      operationId: setDefaultPaymentMethod
+      tags: [Settings]
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [payment_method]
+              properties:
+                payment_method:
+                  type: string
+                  maxLength: 255
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect on success
+
+  /settings/betting-preferences:
+    get:
+      summary: Betting preferences page
+      operationId: bettingPreferencesEdit
+      tags: [Settings]
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Preferences form rendered
+    patch:
+      summary: Update betting preferences
+      operationId: bettingPreferencesUpdate
+      tags: [Settings]
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sports:
+                  type: array
+                  items:
+                    type: integer
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect on success
+
+  # ============================================
+  # Subscriptions
+  # ============================================
+  /subscription-checkout:
+    get:
+      summary: Subscription checkout page
+      operationId: subscriptionCheckout
+      tags: [Subscriptions]
+      responses:
+        '200':
+          description: Checkout page rendered
+
+  /subscription-process:
+    post:
+      summary: Process subscription
+      operationId: subscriptionProcess
+      tags: [Subscriptions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [plan]
+              properties:
+                plan:
+                  type: string
+                  maxLength: 100
+                payment_method:
+                  type: string
+                  maxLength: 255
+                coupon:
+                  type: string
+                  maxLength: 50
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect on success
+        '422':
+          description: Validation error
+
+  /subscription/cancel:
+    post:
+      summary: Cancel subscription
+      operationId: subscriptionCancel
+      tags: [Subscriptions]
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect on cancellation
+
+  /subscription/resume:
+    post:
+      summary: Resume subscription
+      operationId: subscriptionResume
+      tags: [Subscriptions]
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect on resume
+
+  /subscription/switch:
+    post:
+      summary: Switch subscription plan
+      operationId: subscriptionSwitch
+      tags: [Subscriptions]
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [plan]
+              properties:
+                plan:
+                  type: string
+                  maxLength: 100
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect on switch
+
+  /validate-coupon:
+    post:
+      summary: Validate discount coupon
+      operationId: validateCoupon
+      tags: [Subscriptions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+                  maxLength: 50
+      responses:
+        '200':
+          description: Coupon validation result
+        '422':
+          description: Invalid coupon
+
+  # ============================================
+  # Support Tickets
+  # ============================================
+  /support:
+    get:
+      summary: Public support form
+      operationId: supportPublicForm
+      tags: [Support]
+      responses:
+        '200':
+          description: Support form rendered
+    post:
+      summary: Submit public support ticket
+      operationId: supportPublicStore
+      tags: [Support]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, subject, message]
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+                subject:
+                  type: string
+                  maxLength: 255
+                message:
+                  type: string
+                  maxLength: 10000
+                cf-turnstile-response:
+                  type: string
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect on success
+        '422':
+          description: Validation error
+
+  /support/tickets:
+    get:
+      summary: List user tickets
+      operationId: supportTicketsIndex
+      tags: [Support]
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Tickets list rendered
+    post:
+      summary: Create support ticket
+      operationId: supportTicketsStore
+      tags: [Support]
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subject, message]
+              properties:
+                subject:
+                  type: string
+                  maxLength: 255
+                message:
+                  type: string
+                  maxLength: 10000
+                priority:
+                  type: string
+                  enum: [low, medium, high]
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect on success
+        '422':
+          description: Validation error
+
+  /support/tickets/create:
+    get:
+      summary: Create ticket form
+      operationId: supportTicketsCreate
+      tags: [Support]
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Create form rendered
+
+  /support/tickets/{ticket}:
+    get:
+      summary: View ticket details
+      operationId: supportTicketsShow
+      tags: [Support]
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: ticket
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Ticket details rendered
+        '404':
+          description: Ticket not found
+
+  /support/tickets/{ticket}/close:
+    put:
+      summary: Close ticket
+      operationId: supportTicketsClose
+      tags: [Support]
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: ticket
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect on close
+
+  /support/tickets/{ticket}/reopen:
+    put:
+      summary: Reopen ticket
+      operationId: supportTicketsReopen
+      tags: [Support]
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: ticket
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect on reopen
+
+  /support/tickets/{ticket}/request-close:
+    put:
+      summary: Request ticket closure
+      operationId: supportTicketsRequestClose
+      tags: [Support]
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: ticket
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect on request
+
+  /support/tickets/{ticket}/replies:
+    post:
+      summary: Reply to ticket
+      operationId: supportTicketsReply
+      tags: [Support]
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: ticket
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message:
+                  type: string
+                  maxLength: 10000
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect on reply
+        '422':
+          description: Validation error
+
+  # ============================================
+  # Careers
+  # ============================================
+  /careers/submit-resume:
+    post:
+      summary: Submit job application
+      operationId: submitResume
+      tags: [Careers]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, position_id]
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+                phone:
+                  type: string
+                  maxLength: 50
+                position_id:
+                  type: integer
+                  minimum: 1
+                cover_letter:
+                  type: string
+                  maxLength: 10000
+                resume_base64:
+                  type: string
+                  description: Base64 encoded resume file
+                resume_filename:
+                  type: string
+                  maxLength: 255
+                cf-turnstile-response:
+                  type: string
+                _token:
+                  type: string
+      responses:
+        '302':
+          description: Redirect on success
+        '422':
+          description: Validation error
+
+  # ============================================
+  # Public API Endpoints
+  # ============================================
+  /api/bets:
+    get:
+      summary: Get all bets
+      operationId: apiBetsIndex
+      tags: [API]
+      responses:
+        '200':
+          description: Bets list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Bet'
+    post:
+      summary: Create bet
+      operationId: apiBetsStore
+      tags: [API]
+      security:
+        - sanctumAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BetInput'
+      responses:
+        '201':
+          description: Bet created
+        '422':
+          description: Validation error
+
+  /api/bets/{bet}:
+    put:
+      summary: Update bet
+      operationId: apiBetsUpdate
+      tags: [API]
+      security:
+        - sanctumAuth: []
+      parameters:
+        - name: bet
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BetInput'
+      responses:
+        '200':
+          description: Bet updated
+        '404':
+          description: Bet not found
+        '422':
+          description: Validation error
+    delete:
+      summary: Delete bet
+      operationId: apiBetsDestroy
+      tags: [API]
+      security:
+        - sanctumAuth: []
+      parameters:
+        - name: bet
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '204':
+          description: Bet deleted
+        '404':
+          description: Bet not found
+
+  /api/ticker-bets:
+    get:
+      summary: Get ticker bets
+      operationId: apiTickerBets
+      tags: [API]
+      responses:
+        '200':
+          description: Ticker bets list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Bet'
+
+  /api/user:
+    get:
+      summary: Get current user
+      operationId: apiUser
+      tags: [API]
+      security:
+        - sanctumAuth: []
+      responses:
+        '200':
+          description: User data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+
+  /api/push/subscribe:
+    post:
+      summary: Subscribe to push notifications
+      operationId: apiPushSubscribe
+      tags: [API]
+      security:
+        - sanctumAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [endpoint, keys]
+              properties:
+                endpoint:
+                  type: string
+                  format: uri
+                  maxLength: 500
+                keys:
+                  type: object
+                  required: [p256dh, auth]
+                  properties:
+                    p256dh:
+                      type: string
+                      maxLength: 255
+                    auth:
+                      type: string
+                      maxLength: 255
+      responses:
+        '201':
+          description: Subscription created
+        '422':
+          description: Validation error
+
+  /api/push/subscription:
+    get:
+      summary: Get push subscription status
+      operationId: apiPushSubscriptionShow
+      tags: [API]
+      security:
+        - sanctumAuth: []
+      responses:
+        '200':
+          description: Subscription status
+
+  /api/push/unsubscribe:
+    post:
+      summary: Unsubscribe from push notifications
+      operationId: apiPushUnsubscribe
+      tags: [API]
+      security:
+        - sanctumAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [endpoint]
+              properties:
+                endpoint:
+                  type: string
+                  format: uri
+                  maxLength: 500
+      responses:
+        '204':
+          description: Unsubscribed
+
+  /api/knowledgebase/page:
+    get:
+      summary: Get knowledgebase page
+      operationId: apiKnowledgebasePage
+      tags: [API]
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+        - name: article
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+      responses:
+        '200':
+          description: Knowledgebase content
+
+  # ============================================
+  # API v1 Endpoints
+  # ============================================
+  /api/v1/bets:
+    get:
+      summary: Get bets (v1)
+      operationId: apiV1BetsIndex
+      tags: [API v1]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 15
+        - name: sport_id
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, won, lost, push, cancelled]
+      responses:
+        '200':
+          description: Paginated bets list
+    post:
+      summary: Create bet (v1)
+      operationId: apiV1BetsStore
+      tags: [API v1]
+      security:
+        - sanctumAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BetInput'
+      responses:
+        '201':
+          description: Bet created
+        '422':
+          description: Validation error
+
+  /api/v1/bets/statistics:
+    get:
+      summary: Get bet statistics (v1)
+      operationId: apiV1BetsStatistics
+      tags: [API v1]
+      responses:
+        '200':
+          description: Betting statistics
+
+  /api/v1/bets/{bet}:
+    get:
+      summary: Get bet details (v1)
+      operationId: apiV1BetsShow
+      tags: [API v1]
+      parameters:
+        - name: bet
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Bet details
+        '404':
+          description: Bet not found
+    put:
+      summary: Update bet (v1)
+      operationId: apiV1BetsUpdate
+      tags: [API v1]
+      security:
+        - sanctumAuth: []
+      parameters:
+        - name: bet
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BetInput'
+      responses:
+        '200':
+          description: Bet updated
+        '404':
+          description: Bet not found
+        '422':
+          description: Validation error
+    patch:
+      summary: Partially update bet (v1)
+      operationId: apiV1BetsPatch
+      tags: [API v1]
+      security:
+        - sanctumAuth: []
+      parameters:
+        - name: bet
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BetInput'
+      responses:
+        '200':
+          description: Bet updated
+        '404':
+          description: Bet not found
+    delete:
+      summary: Delete bet (v1)
+      operationId: apiV1BetsDestroy
+      tags: [API v1]
+      security:
+        - sanctumAuth: []
+      parameters:
+        - name: bet
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '204':
+          description: Bet deleted
+        '404':
+          description: Bet not found
+
+  /api/v1/user:
+    get:
+      summary: Get current user (v1)
+      operationId: apiV1User
+      tags: [API v1]
+      security:
+        - sanctumAuth: []
+      responses:
+        '200':
+          description: User data
+        '401':
+          description: Unauthorized
+
+  /api/v1/push/subscribe:
+    post:
+      summary: Subscribe to push (v1)
+      operationId: apiV1PushSubscribe
+      tags: [API v1]
+      security:
+        - sanctumAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [endpoint, keys]
+              properties:
+                endpoint:
+                  type: string
+                  format: uri
+                  maxLength: 500
+                keys:
+                  type: object
+                  required: [p256dh, auth]
+                  properties:
+                    p256dh:
+                      type: string
+                      maxLength: 255
+                    auth:
+                      type: string
+                      maxLength: 255
+      responses:
+        '201':
+          description: Subscribed
+
+  /api/v1/push/subscription:
+    get:
+      summary: Get push subscription (v1)
+      operationId: apiV1PushSubscription
+      tags: [API v1]
+      security:
+        - sanctumAuth: []
+      responses:
+        '200':
+          description: Subscription status
+
+  /api/v1/push/unsubscribe:
+    post:
+      summary: Unsubscribe from push (v1)
+      operationId: apiV1PushUnsubscribe
+      tags: [API v1]
+      security:
+        - sanctumAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [endpoint]
+              properties:
+                endpoint:
+                  type: string
+                  format: uri
+                  maxLength: 500
+      responses:
+        '204':
+          description: Unsubscribed
+
+  # ============================================
+  # Stripe Webhook
+  # ============================================
+  /stripe/webhook:
+    post:
+      summary: Stripe webhook handler
+      operationId: stripeWebhook
+      tags: [Webhooks]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Webhook processed
+
+  /stripe/payment/{id}:
+    get:
+      summary: Stripe payment confirmation
+      operationId: stripePayment
+      tags: [Payments]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 255
+      responses:
+        '200':
+          description: Payment page rendered
+
+  # ============================================
+  # Session & CSRF
+  # ============================================
+  /csrf-token:
+    get:
+      summary: Get CSRF token
+      operationId: csrfToken
+      tags: [System]
+      responses:
+        '200':
+          description: CSRF token
+
+  /session/check:
+    get:
+      summary: Check session status
+      operationId: sessionCheck
+      tags: [System]
+      responses:
+        '200':
+          description: Session status
+
+  /session/ping:
+    get:
+      summary: Ping session
+      operationId: sessionPing
+      tags: [System]
+      responses:
+        '200':
+          description: Session pinged
+
+  /sanctum/csrf-cookie:
+    get:
+      summary: Get Sanctum CSRF cookie
+      operationId: sanctumCsrf
+      tags: [System]
+      responses:
+        '204':
+          description: CSRF cookie set
+
+  /up:
+    get:
+      summary: Health check
+      operationId: healthCheck
+      tags: [System]
+      responses:
+        '200':
+          description: Application is up
+
+  # ============================================
+  # Storage
+  # ============================================
+  /storage/{path}:
+    get:
+      summary: Serve stored file
+      operationId: storageLocal
+      tags: [Storage]
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-zA-Z0-9/_.-]+$'
+            maxLength: 500
+      responses:
+        '200':
+          description: File served
+        '404':
+          description: File not found
+
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: wewingames_session
+      description: Laravel session authentication
+    sanctumAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Token
+      description: Laravel Sanctum token authentication
+
+  schemas:
+    Bet:
+      type: object
+      properties:
+        id:
+          type: integer
+        sport_id:
+          type: integer
+        game_id:
+          type: integer
+          nullable: true
+        team_id:
+          type: integer
+          nullable: true
+        operator_id:
+          type: integer
+          nullable: true
+        bet_type:
+          type: string
+        pick:
+          type: string
+        odds:
+          type: number
+        stake:
+          type: number
+        status:
+          type: string
+          enum: [pending, won, lost, push, cancelled]
+        result:
+          type: string
+          nullable: true
+        profit:
+          type: number
+          nullable: true
+        is_premium:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    BetInput:
+      type: object
+      required: [sport_id, bet_type, pick, odds, stake]
+      properties:
+        sport_id:
+          type: integer
+          minimum: 1
+        game_id:
+          type: integer
+          minimum: 1
+          nullable: true
+        team_id:
+          type: integer
+          minimum: 1
+          nullable: true
+        operator_id:
+          type: integer
+          minimum: 1
+          nullable: true
+        bet_type:
+          type: string
+          maxLength: 100
+        pick:
+          type: string
+          maxLength: 500
+        odds:
+          type: number
+        stake:
+          type: number
+          minimum: 0
+        status:
+          type: string
+          enum: [pending, won, lost, push, cancelled]
+        is_premium:
+          type: boolean
+        notes:
+          type: string
+          maxLength: 5000
+          nullable: true
+        premium_notes:
+          type: string
+          maxLength: 5000
+          nullable: true
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        email_verified_at:
+          type: string
+          format: date-time
+          nullable: true
+        is_admin:
+          type: boolean
+        is_ambassador:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+tags:
+  - name: Pages
+    description: Public website pages
+  - name: Blog
+    description: Blog posts and content
+  - name: Bets
+    description: Betting picks and predictions
+  - name: Authentication
+    description: User authentication endpoints
+  - name: Dashboard
+    description: Customer dashboard
+  - name: Settings
+    description: User settings and preferences
+  - name: Subscriptions
+    description: Subscription management
+  - name: Support
+    description: Support ticket system
+  - name: Careers
+    description: Job applications
+  - name: API
+    description: Public API endpoints
+  - name: API v1
+    description: Versioned API endpoints
+  - name: Webhooks
+    description: External webhook handlers
+  - name: Payments
+    description: Payment processing
+  - name: System
+    description: System utilities
+  - name: Storage
+    description: File storage

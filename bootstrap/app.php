@@ -47,12 +47,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->statefulApi();
         $middleware->web(append: [
             BlockSuspiciousRequests::class,
-            EnsureSessionDomain::class,
             HandleAppearance::class,
             UnderConstructionMiddleware::class,
             TrackAffiliate::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+        ]);
+
+        $middleware->web(prepend: [
+            EnsureSessionDomain::class,
         ]);
 
         // Global middleware
