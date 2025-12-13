@@ -194,6 +194,20 @@ const clearDiscount = () => {
     autoAppliedDiscount.value = false;
 };
 
+// Log client-side Stripe errors for debugging (fire and forget)
+const logStripeError = (error: any, context: string) => {
+    axios
+        .post(route('subscription.log-client-error'), {
+            error_code: error.code || null,
+            error_message: error.message || 'Unknown error',
+            error_type: error.type || null,
+            context: context,
+        })
+        .catch(() => {
+            // Silently fail - don't interrupt user flow
+        });
+};
+
 const handle3DSecure = async () => {
     processing.value = true;
     cardError.value = 'Completing authentication...';
@@ -203,13 +217,17 @@ const handle3DSecure = async () => {
 
         if (error) {
             cardError.value = error.message || 'Authentication failed. Please try again.';
+            // Log 3D Secure error for debugging
+            logStripeError(error, '3DSecure');
             processing.value = false;
         } else {
             // Authentication successful, redirect to dashboard
             window.location.href = route('dashboard');
         }
-    } catch (error) {
+    } catch (error: any) {
         cardError.value = 'Authentication failed. Please try again.';
+        // Log unexpected error
+        logStripeError({ message: error?.message || 'Unknown 3DS error' }, '3DSecure');
         processing.value = false;
     }
 };
@@ -231,6 +249,8 @@ const submit = async () => {
 
             if (error) {
                 cardError.value = error.message;
+                // Log client-side Stripe error for debugging
+                logStripeError(error, 'createPaymentMethod');
                 processing.value = false;
                 return;
             }
@@ -277,8 +297,10 @@ const submit = async () => {
                 processing.value = false;
             },
         });
-    } catch (error) {
+    } catch (error: any) {
         cardError.value = 'An error occurred. Please try again.';
+        // Log unexpected error
+        logStripeError({ message: error?.message || 'Unknown submit error' }, 'submit');
         processing.value = false;
     }
 };

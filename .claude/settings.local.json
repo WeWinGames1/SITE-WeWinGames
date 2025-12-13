@@ -69,7 +69,8 @@
       "Bash(git log:*)",
       "WebFetch(domain:www.metabet.io)",
       "mcp__laravel-boost__browser-logs",
-      "WebFetch(domain:nightwatch.laravel.com)"
+      "WebFetch(domain:nightwatch.laravel.com)",
+      "mcp__laravel-boost__list-available-env-vars"
     ],
     "deny": []
   },

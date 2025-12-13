@@ -69,6 +69,10 @@ Route::post('/validate-coupon', [\App\Http\Controllers\SubscriptionController::c
     ->name('subscription.validate-coupon')
     ->middleware(['auth', 'verified']);
 
+Route::post('/log-stripe-error', [\App\Http\Controllers\SubscriptionController::class, 'logClientError'])
+    ->name('subscription.log-client-error')
+    ->middleware(['auth', 'verified']);
+
 // Subscription management routes
 Route::middleware(['auth', 'verified'])->prefix('subscription')->name('subscription.')->group(function () {
     Route::post('/switch', [\App\Http\Controllers\SubscriptionController::class, 'switchPlan'])->name('switch');
@@ -412,14 +416,13 @@ Route::get('/session/check', [\App\Http\Controllers\SessionController::class, 'c
 
 // Session keep-alive endpoint (20 requests per minute max)
 Route::get('/session/ping', function (Illuminate\Http\Request $request) {
-    // Touch the session to keep it alive
-    if ($request->hasSession()) {
-        $request->session()->touch();
-    }
+    // Simply accessing the session keeps it alive - the session middleware
+    // automatically updates the session's last activity timestamp on each request
+    $hasSession = $request->hasSession();
 
     return response()->json([
         'status' => 'alive',
         'timestamp' => now()->toIso8601String(),
-        'has_session' => $request->hasSession(),
+        'has_session' => $hasSession,
     ]);
 })->middleware('throttle:20,1')->name('session.ping');

@@ -10,9 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
-use Stripe\Exception\CardException;
-use Stripe\Exception\InvalidRequestException;
-use Stripe\Exception\AuthenticationException;
+use Sentry\Laravel\Integration as Sentry;
 
 class SubscriptionController extends Controller
 {
@@ -223,7 +221,7 @@ class SubscriptionController extends Controller
                         Log::warning('Could not find StripeProduct for price_id when calculating discount', [
                             'price_id' => $priceId,
                             'discount_code' => $discountCode->code,
-                            'user_id' => $user->id
+                            'user_id' => $user->id,
                         ]);
                         // Set a default discount amount based on the discount type
                         if ($discountCode->discount_type === 'fixed') {
@@ -276,7 +274,9 @@ class SubscriptionController extends Controller
             return redirect()->route('dashboard')->with('success', 'Subscription activated successfully!');
 
         } catch (\Stripe\Exception\CardException $e) {
-            // Card was declined or 3D Secure failed
+            // Card was declined or 3D Secure failed - report to Sentry for visibility
+            Sentry::captureException($e);
+
             Log::error('Card payment failed', [
                 'user_id' => $user->id,
                 'error' => $e->getMessage(),
@@ -296,19 +296,21 @@ class SubscriptionController extends Controller
                 ])
                 ->log('subscription_attempt_failed');
 
-            $errorMessage = match($e->getStripeCode()) {
+            $errorMessage = match ($e->getStripeCode()) {
                 'authentication_required' => 'Your card requires additional authentication. Please try again and complete the verification process.',
                 'card_declined' => 'Your card was declined. Please try a different card.',
                 'insufficient_funds' => 'Your card has insufficient funds. Please try a different card.',
                 'expired_card' => 'Your card has expired. Please use a different card.',
                 'incorrect_cvc' => 'The CVC code is incorrect. Please check and try again.',
                 'processing_error' => 'An error occurred while processing your card. Please try again.',
-                default => 'Payment failed: ' . $e->getMessage(),
+                default => 'Payment failed: '.$e->getMessage(),
             };
 
             return back()->withErrors(['payment' => $errorMessage]);
         } catch (\Stripe\Exception\InvalidRequestException $e) {
-            // Invalid parameters were supplied to Stripe's API
+            // Invalid parameters were supplied to Stripe's API - report to Sentry for visibility
+            Sentry::captureException($e);
+
             Log::error('Invalid Stripe request', [
                 'user_id' => $user->id,
                 'error' => $e->getMessage(),
@@ -327,7 +329,9 @@ class SubscriptionController extends Controller
 
             return back()->withErrors(['payment' => 'Invalid payment request. Please contact support.']);
         } catch (\Stripe\Exception\AuthenticationException $e) {
-            // Authentication with Stripe's API failed
+            // Authentication with Stripe's API failed - report to Sentry for visibility
+            Sentry::captureException($e);
+
             Log::error('Stripe authentication failed', [
                 'user_id' => $user->id,
                 'error' => $e->getMessage(),
@@ -346,7 +350,9 @@ class SubscriptionController extends Controller
 
             return back()->withErrors(['payment' => 'Payment system error. Please try again later.']);
         } catch (\Exception $e) {
-            // Generic error handling
+            // Generic error handling - report to Sentry for visibility
+            Sentry::captureException($e);
+
             Log::error('Subscription creation failed', [
                 'user_id' => $user->id,
                 'error' => $e->getMessage(),
@@ -412,6 +418,53 @@ class SubscriptionController extends Controller
                 'amount_off' => $discountCode->amount_off,
             ],
         ]);
+    }
+
+    /**
+     * Log client-side Stripe.js errors for debugging
+     * This catches errors that occur before form submission (card validation, etc.)
+     */
+    public function logClientError(Request $request)
+    {
+        $request->validate([
+            'error_code' => 'nullable|string|max:100',
+            'error_message' => 'required|string|max:500',
+            'error_type' => 'nullable|string|max:100',
+            'context' => 'nullable|string|max:100',
+        ]);
+
+        $user = $request->user();
+
+        // Log to Laravel logs
+        Log::error('Client-side Stripe error', [
+            'user_id' => $user?->id,
+            'user_email' => $user?->email,
+            'error_code' => $request->error_code,
+            'error_message' => $request->error_message,
+            'error_type' => $request->error_type,
+            'context' => $request->context ?? 'checkout',
+            'user_agent' => $request->userAgent(),
+            'ip' => $request->ip(),
+        ]);
+
+        // Report to Sentry as a message (not exception since it's client-side)
+        \Sentry\captureMessage('Client-side Stripe error: '.$request->error_message, \Sentry\Severity::error());
+
+        // Log activity for tracking
+        if ($user) {
+            activity()
+                ->performedOn($user)
+                ->causedBy($user)
+                ->withProperties([
+                    'error_type' => 'client_stripe_error',
+                    'error_code' => $request->error_code,
+                    'error_message' => $request->error_message,
+                    'stripe_error_type' => $request->error_type,
+                ])
+                ->log('subscription_attempt_failed');
+        }
+
+        return response()->json(['logged' => true]);
     }
 
     /**
