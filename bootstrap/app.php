@@ -17,13 +17,12 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Support\Facades\Route;
-use Sentry\Laravel\Integration;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__ . '/../routes/web.php',
-        api: __DIR__ . '/../routes/api.php',
-        commands: __DIR__ . '/../routes/console.php',
+        web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
+        commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
             Route::middleware('web')
@@ -82,5 +81,21 @@ return Application::configure(basePath: dirname(__DIR__))
             if (app()->bound(\App\Services\LoggingService::class)) {
                 app(\App\Services\LoggingService::class)->logError($e);
             }
+        });
+
+        // Render 500 errors with exception details
+        $exceptions->render(function (\Throwable $e, $request) {
+            if ($request->expectsJson()) {
+                return null; // Let Laravel handle JSON responses
+            }
+
+            // For server errors, render custom view with exception
+            if (! $e instanceof \Symfony\Component\HttpKernel\Exception\HttpException) {
+                return response()->view('errors.500', [
+                    'exception' => $e,
+                ], 500);
+            }
+
+            return null; // Let Laravel handle other HTTP exceptions normally
         });
     })->create();

@@ -43,10 +43,14 @@
 </head>
 <body>
     <div class="error-container">
-        <div class="text-center mb-4">
-            <div class="error-code">@yield('code', '500')</div>
-        </div>
-        
+        @hasSection('code')
+            @if(trim($__env->yieldContent('code')))
+                <div class="text-center mb-4">
+                    <div class="error-code">@yield('code')</div>
+                </div>
+            @endif
+        @endif
+
         @yield('message')
     </div>
     
