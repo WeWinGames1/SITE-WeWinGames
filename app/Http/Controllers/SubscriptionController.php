@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
-use Sentry\Laravel\Integration as Sentry;
 
 class SubscriptionController extends Controller
 {
@@ -275,7 +274,7 @@ class SubscriptionController extends Controller
 
         } catch (\Stripe\Exception\CardException $e) {
             // Card was declined or 3D Secure failed - report to Sentry for visibility
-            Sentry::captureException($e);
+            \Sentry\captureException($e);
 
             Log::error('Card payment failed', [
                 'user_id' => $user->id,
@@ -309,7 +308,7 @@ class SubscriptionController extends Controller
             return back()->withErrors(['payment' => $errorMessage]);
         } catch (\Stripe\Exception\InvalidRequestException $e) {
             // Invalid parameters were supplied to Stripe's API - report to Sentry for visibility
-            Sentry::captureException($e);
+            \Sentry\captureException($e);
 
             Log::error('Invalid Stripe request', [
                 'user_id' => $user->id,
@@ -330,7 +329,7 @@ class SubscriptionController extends Controller
             return back()->withErrors(['payment' => 'Invalid payment request. Please contact support.']);
         } catch (\Stripe\Exception\AuthenticationException $e) {
             // Authentication with Stripe's API failed - report to Sentry for visibility
-            Sentry::captureException($e);
+            \Sentry\captureException($e);
 
             Log::error('Stripe authentication failed', [
                 'user_id' => $user->id,
@@ -351,7 +350,7 @@ class SubscriptionController extends Controller
             return back()->withErrors(['payment' => 'Payment system error. Please try again later.']);
         } catch (\Exception $e) {
             // Generic error handling - report to Sentry for visibility
-            Sentry::captureException($e);
+            \Sentry\captureException($e);
 
             Log::error('Subscription creation failed', [
                 'user_id' => $user->id,
