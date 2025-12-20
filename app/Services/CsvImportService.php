@@ -295,20 +295,6 @@ class CsvImportService
                 $rowNumber++;
                 $totalRows++;
                 $mappedData = $this->mapRowData($record);
-
-                // Debug row 5 specifically (the one with the error)
-                if ($rowNumber == 5) {
-                    \Log::error('Debug Row 5 - CSV Import Issue', [
-                        'row_number' => $rowNumber,
-                        'raw_record' => $record,
-                        'record_keys' => array_keys($record),
-                        'column_mappings' => $this->columnMappings,
-                        'mapped_data_before_transform' => $mappedData,
-                        'has_game_date' => isset($mappedData['game_date']),
-                        'game_date_value' => $mappedData['game_date'] ?? 'NOT SET',
-                    ]);
-                }
-
                 $validation = $this->validateRow($mappedData, $rowNumber);
 
                 if ($validation['valid']) {
@@ -487,9 +473,9 @@ class CsvImportService
     private function transformData(array $data): array
     {
         // Only parse teams from game column if home_team and away_team aren't already provided
-        if (isset($data['game']) && ! empty($data['game']) && 
-            (!isset($data['home_team']) || empty($data['home_team'])) && 
-            (!isset($data['away_team']) || empty($data['away_team']))) {
+        if (isset($data['game']) && ! empty($data['game']) &&
+            (! isset($data['home_team']) || empty($data['home_team'])) &&
+            (! isset($data['away_team']) || empty($data['away_team']))) {
             $teams = $this->parseGameColumn($data['game']);
             if ($teams) {
                 $data['home_team'] = $teams['home'];
@@ -704,7 +690,7 @@ class CsvImportService
             ];
 
             foreach ($formats as $format) {
-                $parsed = \DateTime::createFromFormat($format, $value);
+                $parsed = \DateTime::createFromFormat('!'.$format, $value);
                 if ($parsed !== false) {
                     // Get the year as an integer
                     $year = (int) $parsed->format('Y');
@@ -725,7 +711,7 @@ class CsvImportService
 
             // If no format matched, try Carbon's parse as fallback
             if (! $date) {
-                $date = \Carbon\Carbon::parse($value);
+                $date = \Carbon\Carbon::parse($value)->startOfDay();
                 // Check for 2-digit year issue
                 $year = $date->year;
                 if ($year < 100) {
