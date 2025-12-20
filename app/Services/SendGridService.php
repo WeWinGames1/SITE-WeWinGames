@@ -10,21 +10,30 @@ class SendGridService
 {
     protected string $apiKey;
 
+    protected bool $marketingEnabled;
+
     protected string $baseUrl = 'https://api.sendgrid.com/v3';
 
     public function __construct()
     {
         $this->apiKey = config('services.sendgrid.api_key', '');
+        $this->marketingEnabled = config('services.sendgrid.marketing_enabled', false);
     }
 
     /**
-     * Sync user contact to SendGrid
+     * Check if marketing features are enabled
+     */
+    public function isMarketingEnabled(): bool
+    {
+        return $this->marketingEnabled && ! empty($this->apiKey);
+    }
+
+    /**
+     * Sync user contact to SendGrid Marketing
      */
     public function syncContact(User $user): void
     {
-        if (empty($this->apiKey)) {
-            Log::warning('SendGrid API key not configured');
-
+        if (! $this->isMarketingEnabled()) {
             return;
         }
 
@@ -48,18 +57,33 @@ class SendGridService
                 ]);
 
             if (! $response->successful()) {
-                Log::error('SendGrid contact sync failed', [
-                    'user_id' => $user->id,
-                    'response' => $response->json(),
-                    'status' => $response->status(),
-                ]);
+                $status = $response->status();
+                $responseData = $response->json();
+
+                // Handle specific error cases
+                if ($status === 403) {
+                    // Permission error - API key missing Marketing scope
+                    Log::error('SendGrid API key missing Marketing permission scope. Please update your API key permissions in SendGrid.', [
+                        'user_id' => $user->id,
+                        'status' => $status,
+                    ]);
+                    \Sentry\captureMessage('SendGrid API key missing Marketing permission scope', \Sentry\Severity::error());
+                } else {
+                    Log::error('SendGrid contact sync failed', [
+                        'user_id' => $user->id,
+                        'response' => $responseData,
+                        'status' => $status,
+                    ]);
+                    \Sentry\captureMessage("SendGrid contact sync failed with status {$status}", \Sentry\Severity::error());
+                }
             }
         } catch (\Exception $e) {
             Log::error('SendGrid contact sync exception', [
                 'user_id' => $user->id,
                 'error' => $e->getMessage(),
             ]);
-            throw $e;
+            \Sentry\captureException($e);
+            // Don't rethrow - SendGrid sync is non-critical and shouldn't break user flows
         }
     }
 
@@ -76,7 +100,7 @@ class SendGridService
      */
     public function addToList(User $user, string $listId): void
     {
-        if (empty($this->apiKey)) {
+        if (! $this->isMarketingEnabled()) {
             return;
         }
 
@@ -87,17 +111,30 @@ class SendGridService
                 ]);
 
             if (! $response->successful()) {
-                Log::error('Failed to add contact to SendGrid list', [
-                    'user_id' => $user->id,
-                    'list_id' => $listId,
-                    'response' => $response->json(),
-                ]);
+                $status = $response->status();
+
+                if ($status === 403) {
+                    Log::error('SendGrid API key missing Marketing permission scope for list operations.', [
+                        'user_id' => $user->id,
+                        'list_id' => $listId,
+                        'status' => $status,
+                    ]);
+                } else {
+                    Log::error('Failed to add contact to SendGrid list', [
+                        'user_id' => $user->id,
+                        'list_id' => $listId,
+                        'response' => $response->json(),
+                        'status' => $status,
+                    ]);
+                }
+                \Sentry\captureMessage("SendGrid add to list failed with status {$status}", \Sentry\Severity::error());
             }
         } catch (\Exception $e) {
             Log::error('SendGrid add to list exception', [
                 'user_id' => $user->id,
                 'error' => $e->getMessage(),
             ]);
+            \Sentry\captureException($e);
         }
     }
 

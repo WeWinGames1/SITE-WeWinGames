@@ -30,6 +30,7 @@ return [
 
     'sendgrid' => [
         'api_key' => env('SENDGRID_API_KEY'),
+        'marketing_enabled' => env('SENDGRID_MARKETING_ENABLED', false),
     ],
 
     'slack' => [
