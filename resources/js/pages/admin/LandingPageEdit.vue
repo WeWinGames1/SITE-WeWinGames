@@ -549,6 +549,27 @@ const addImage = () => {
                                 </div>
                             </div>
 
+                            <!-- Tips & Embeds -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bi bi-lightbulb me-1"></i>
+                                        Tips & Embeds
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <h6 class="fw-semibold mb-2">Elfsight Widgets</h6>
+                                    <p class="text-muted small mb-2">
+                                        Embed Elfsight carousels, reviews, or other widgets by pasting the shortcode in your content:
+                                    </p>
+                                    <code class="d-block bg-light p-2 rounded small mb-2"> {elfsight YOUR-WIDGET-ID} </code>
+                                    <p class="text-muted small mb-0">
+                                        Find your widget ID in your Elfsight dashboard. Example:
+                                        <code class="small">{elfsight 80550162-ade3-4967-9296-3ebecb119bd7}</code>
+                                    </p>
+                                </div>
+                            </div>
+
                             <!-- Marketing Tips -->
                             <div class="card mb-4">
                                 <div class="card-header">

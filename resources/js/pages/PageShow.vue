@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import { Head } from '@inertiajs/vue3';
+import { useElfsight } from '@/composables/useElfsight';
+
 const props = defineProps<{ page: any }>();
+
+// Process content for Elfsight widget shortcodes
+const { processedContent } = useElfsight(props.page.content);
 </script>
 <template>
     <WelcomeLayout>
@@ -24,7 +29,7 @@ const props = defineProps<{ page: any }>();
                             <div class="card" style="background-color: #1a2332; border: 1px solid #2e4057">
                                 <div class="card-body p-5">
                                     <img v-if="props.page.featured_image" :src="props.page.featured_image" class="img-fluid rounded mb-4" />
-                                    <div class="page-content text-white" v-html="props.page.content"></div>
+                                    <div class="page-content text-white" v-html="processedContent"></div>
                                 </div>
                             </div>
                         </div>
