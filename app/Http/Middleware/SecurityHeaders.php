@@ -88,6 +88,8 @@ class SecurityHeaders
                 'https://static.klaviyo.com',
                 'https://static-tracking.klaviyo.com',
                 'https://static.cloudflareinsights.com',
+                'https://static.elfsight.com',
+                'https://apps.elfsight.com',
             ];
 
             $styleSrc = [
@@ -99,6 +101,8 @@ class SecurityHeaders
                 'https://rsms.me',
                 'https://onesignal.com',
                 'https://go.metabet.io',
+                'https://static.elfsight.com',
+                'https://apps.elfsight.com',
             ];
 
             $connectSrc = [
@@ -118,6 +122,8 @@ class SecurityHeaders
                 'https://pixel-config.reddit.com',
                 'https://a.klaviyo.com',
                 'https://cloudflareinsights.com',
+                'https://core.service.elfsight.com',
+                'https://apps.elfsight.com',
             ];
 
             $csp[] = 'script-src ' . implode(' ', $scriptSrc);
@@ -129,7 +135,7 @@ class SecurityHeaders
         $commonCsp = [
             !app()->environment('local') ? "font-src 'self' https://fonts.gstatic.com https://fonts.bunny.net https://cdnjs.cloudflare.com https://rsms.me data:" : null,
             "img-src 'self' data: https: blob:",
-            "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://challenges.cloudflare.com",
+            "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://challenges.cloudflare.com https://apps.elfsight.com",
             "object-src 'none'",
             "base-uri 'self'",
             "form-action 'self'",

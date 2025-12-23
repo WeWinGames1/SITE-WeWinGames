@@ -19,6 +19,8 @@ export function useElfsight(content: string | null | undefined) {
     // Check if content contains any elfsight shortcodes
     const hasElfsightWidgets = computed(() => {
         if (!content) return false;
+        // Reset lastIndex before testing (global regex maintains state between test() calls)
+        elfsightPattern.lastIndex = 0;
         return elfsightPattern.test(content);
     });
 
@@ -54,7 +56,8 @@ export function useElfsight(content: string | null | undefined) {
 
     // Automatically load script on mount if widgets are present
     onMounted(() => {
-        // Re-test pattern since computed might have been evaluated
+        // Reset lastIndex before testing (global regex maintains state between test() calls)
+        elfsightPattern.lastIndex = 0;
         if (content && elfsightPattern.test(content)) {
             loadElfsightScript();
         }
