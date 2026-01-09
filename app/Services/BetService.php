@@ -474,8 +474,8 @@ class BetService
             ];
         }
 
-        // Sort by the expected order: Bronze, Silver, Gold, Platinum
-        $levelOrder = ['Bronze' => 1, 'Silver' => 2, 'Gold' => 3, 'Platinum' => 4];
+        // Sort by the expected order: Free, Gold, Platinum
+        $levelOrder = ['Free' => 1, 'Bronze' => 1, 'Silver' => 1, 'Gold' => 2, 'Platinum' => 3];
         usort($result, function ($a, $b) use ($levelOrder) {
             $orderA = $levelOrder[$a['level']] ?? 999;
             $orderB = $levelOrder[$b['level']] ?? 999;
@@ -574,30 +574,27 @@ class BetService
 
         // Apply tier-based filtering if user is authenticated
         if ($user) {
-            $userTier = $user->getCurrentTier() ?? 'Bronze';
+            $userTier = $user->getCurrentTier() ?? 'Free';
 
             // Determine which levels to show based on user's tier
             $visibleLevels = [];
             switch (strtolower($userTier)) {
                 case 'platinum':
-                    $visibleLevels = ['bronze', 'silver', 'gold', 'platinum'];
+                    $visibleLevels = ['free', 'bronze', 'silver', 'gold', 'platinum'];
                     break;
                 case 'gold':
-                    $visibleLevels = ['bronze', 'silver', 'gold'];
+                    $visibleLevels = ['free', 'bronze', 'silver', 'gold'];
                     break;
-                case 'silver':
-                    $visibleLevels = ['bronze', 'silver'];
-                    break;
-                default: // Bronze or no subscription
-                    $visibleLevels = ['bronze'];
+                default: // Free or no subscription - authenticated users see Free picks
+                    $visibleLevels = ['free', 'bronze', 'silver'];
                     break;
             }
 
             // Use membership column (with case-insensitive comparison)
             $query->whereIn(DB::raw('LOWER(membership)'), $visibleLevels);
         } else {
-            // Non-authenticated users only see Bronze picks
-            $query->whereRaw('LOWER(membership) = ?', ['bronze']);
+            // Non-authenticated users cannot see any picks - they must login
+            $query->whereRaw('1 = 0');
         }
 
         return $query->orderBy('game_date', 'asc')
@@ -629,27 +626,25 @@ class BetService
 
         // Apply tier-based filtering
         if ($user) {
-            $userTier = $user->getCurrentTier() ?? 'Bronze';
+            $userTier = $user->getCurrentTier() ?? 'Free';
 
             $visibleLevels = [];
             switch (strtolower($userTier)) {
                 case 'platinum':
-                    $visibleLevels = ['bronze', 'silver', 'gold', 'platinum'];
+                    $visibleLevels = ['free', 'bronze', 'silver', 'gold', 'platinum'];
                     break;
                 case 'gold':
-                    $visibleLevels = ['bronze', 'silver', 'gold'];
+                    $visibleLevels = ['free', 'bronze', 'silver', 'gold'];
                     break;
-                case 'silver':
-                    $visibleLevels = ['bronze', 'silver'];
-                    break;
-                default:
-                    $visibleLevels = ['bronze'];
+                default: // Free or no subscription - authenticated users see Free picks
+                    $visibleLevels = ['free', 'bronze', 'silver'];
                     break;
             }
 
             $query->whereIn(DB::raw('LOWER(membership)'), $visibleLevels);
         } else {
-            $query->whereRaw('LOWER(membership) = ?', ['bronze']);
+            // Non-authenticated users cannot see any picks - they must login
+            $query->whereRaw('1 = 0');
         }
 
         return $query->orderBy('game_date', 'asc')
@@ -673,27 +668,25 @@ class BetService
 
         // Apply tier filtering
         if ($user) {
-            $userTier = $user->getCurrentTier() ?? 'Bronze';
+            $userTier = $user->getCurrentTier() ?? 'Free';
 
             $visibleLevels = [];
             switch (strtolower($userTier)) {
                 case 'platinum':
-                    $visibleLevels = ['bronze', 'silver', 'gold', 'platinum'];
+                    $visibleLevels = ['free', 'bronze', 'silver', 'gold', 'platinum'];
                     break;
                 case 'gold':
-                    $visibleLevels = ['bronze', 'silver', 'gold'];
+                    $visibleLevels = ['free', 'bronze', 'silver', 'gold'];
                     break;
-                case 'silver':
-                    $visibleLevels = ['bronze', 'silver'];
-                    break;
-                default:
-                    $visibleLevels = ['bronze'];
+                default: // Free or no subscription - authenticated users see Free picks
+                    $visibleLevels = ['free', 'bronze', 'silver'];
                     break;
             }
 
             $query->whereIn(DB::raw('LOWER(membership)'), $visibleLevels);
         } else {
-            $query->whereRaw('LOWER(membership) = ?', ['bronze']);
+            // Non-authenticated users cannot see any picks - they must login
+            $query->whereRaw('1 = 0');
         }
 
         // Get all game dates
@@ -1018,22 +1011,19 @@ class BetService
                 ->get();
         } else {
             // LOGGED IN USER: Show current picks based on tier
-            $userTier = $user->getCurrentTier() ?? 'Bronze';
+            $userTier = $user->getCurrentTier() ?? 'Free';
 
             // Determine which levels to show based on user's tier
             $visibleLevels = [];
             switch (strtolower($userTier)) {
                 case 'platinum':
-                    $visibleLevels = ['Bronze', 'Silver', 'Gold', 'Platinum'];
+                    $visibleLevels = ['Free', 'Bronze', 'Silver', 'Gold', 'Platinum'];
                     break;
                 case 'gold':
-                    $visibleLevels = ['Bronze', 'Silver', 'Gold'];
+                    $visibleLevels = ['Free', 'Bronze', 'Silver', 'Gold'];
                     break;
-                case 'silver':
-                    $visibleLevels = ['Bronze', 'Silver'];
-                    break;
-                default: // Bronze or no subscription
-                    $visibleLevels = ['Bronze'];
+                default: // Free or no subscription - authenticated users see Free picks
+                    $visibleLevels = ['Free', 'Bronze', 'Silver'];
                     break;
             }
 

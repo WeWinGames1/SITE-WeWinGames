@@ -22,7 +22,7 @@
                     <strong>Wager Name:</strong> Detailed description of the bet (e.g., "Chicago Cubs (S Imanaga) ML," "Ilia Topuria to win by KO")
                 </li>
                 <li><strong>odds:</strong> American odds (e.g., -120, +150)</li>
-                <li><strong>membership:</strong> Membership tier (Bronze, Silver, Gold, Platinum)</li>
+                <li><strong>membership:</strong> Membership tier (Free, Gold, Platinum)</li>
                 <li><strong>code:</strong> Unique/internal code for tracking bet source, system, or capper (e.g., BB, TPP, Golf Brad)</li>
                 <li><strong>Status:</strong> Outcome of the bet ("Won", "Lost", "Placed", "Pending")</li>
                 <li><strong>ROI(net):</strong> Net Return on Investment as % of the stake</li>

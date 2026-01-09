@@ -237,7 +237,7 @@ class CustomerController extends Controller
             }
         }
 
-        // Tier filter (Free, Silver, Gold, Platinum)
+        // Tier filter (Free, Gold, Platinum)
         if ($tier = $request->get('tier')) {
             \Log::info('Applying tier filter', ['tier' => $tier]);
 
@@ -271,7 +271,7 @@ class CustomerController extends Controller
 
                 // Add legacy hardcoded price IDs that might be in the database
                 $legacyPriceIds = [
-                    'Silver' => ['price_silver_monthly', 'price_silver_weekly', 'price_silver_daily'],
+                    'Free' => ['price_free_monthly', 'price_free_weekly', 'price_free_daily'],
                     'Gold' => ['price_gold_monthly', 'price_gold_weekly', 'price_gold_daily'],
                     'Platinum' => ['price_platinum_monthly', 'price_platinum_weekly', 'price_platinum_daily'],
                 ];

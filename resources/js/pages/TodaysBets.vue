@@ -108,23 +108,29 @@ const userSubscriptionType = getUserSubscriptionType();
 const isAdmin = auth?.isAdmin || false;
 
 // Determine which bets can be viewed based on subscription
+// New tier structure: Free (formerly Bronze/Silver), Gold, Platinum
 const canViewBet = (bet) => {
     if (isAdmin) return true;
 
     // Check both 'level' and 'membership' fields for compatibility
-    const betLevel = (bet.level || bet.membership || 'bronze').toLowerCase();
+    const betLevel = (bet.level || bet.membership || 'free').toLowerCase();
+
+    // Free tier includes legacy Bronze and Silver
+    const isFreeLevel = betLevel === 'free' || betLevel === 'bronze' || betLevel === 'silver';
 
     switch (userSubscriptionType) {
         case 'free':
-            return betLevel === 'bronze';
-        case 'silver':
-            return betLevel === 'bronze' || betLevel === 'silver';
+            // Free users can only view Free tier picks (and legacy Bronze/Silver)
+            return isFreeLevel;
         case 'gold':
-            return betLevel === 'bronze' || betLevel === 'silver' || betLevel === 'gold';
+            // Gold users can view Free and Gold picks
+            return isFreeLevel || betLevel === 'gold';
         case 'platinum':
-            return true; // Can view all bets
+            // Platinum users can view all picks
+            return true;
         default:
-            return betLevel === 'bronze';
+            // Default to Free tier access
+            return isFreeLevel;
     }
 };
 
@@ -141,28 +147,34 @@ const getSportPriority = (sport) => {
 let viewableBets = bets.filter((bet) => canViewBet(bet)).map((bet) => ({ ...bet, isCovered: false }));
 let teaserCount = 0;
 
-// For guests/free users, limit bronze picks and calculate teaser count
-if (userSubscriptionType === 'free' || isGuest) {
-    const bronzeBets = viewableBets.filter((bet) => (bet.membership?.toLowerCase() || 'bronze') === 'bronze');
+// Helper to check if bet is Free tier (including legacy Bronze/Silver)
+const isFreeTier = (bet) => {
+    const level = (bet.membership?.toLowerCase() || 'free');
+    return level === 'free' || level === 'bronze' || level === 'silver';
+};
 
-    // Sort bronze bets by sport preferences
-    const sortedBronzeBets = bronzeBets.sort((a, b) => {
+// For guests/free users, limit Free tier picks and calculate teaser count
+if (userSubscriptionType === 'free' || isGuest) {
+    const freeBets = viewableBets.filter((bet) => isFreeTier(bet));
+
+    // Sort free bets by sport preferences
+    const sortedFreeBets = freeBets.sort((a, b) => {
         const priorityA = getSportPriority(a.sports);
         const priorityB = getSportPriority(b.sports);
         return priorityA - priorityB;
     });
 
     // Determine the limit based on user status
-    const bronzeLimit = isGuest ? 2 : 4;
+    const freeLimit = isGuest ? 2 : 4;
 
-    // Take only the limited bronze picks
-    const limitedBronzeBets = sortedBronzeBets.slice(0, bronzeLimit);
+    // Take only the limited free picks
+    const limitedFreeBets = sortedFreeBets.slice(0, freeLimit);
 
-    // Calculate how many bronze picks are being hidden
-    teaserCount = Math.max(0, sortedBronzeBets.length - bronzeLimit);
+    // Calculate how many free picks are being hidden
+    teaserCount = Math.max(0, sortedFreeBets.length - freeLimit);
 
-    // Keep non-bronze bets (if any) and add limited bronze bets
-    viewableBets = [...viewableBets.filter((bet) => (bet.membership?.toLowerCase() || 'bronze') !== 'bronze'), ...limitedBronzeBets];
+    // Keep non-free bets (if any) and add limited free bets
+    viewableBets = [...viewableBets.filter((bet) => !isFreeTier(bet)), ...limitedFreeBets];
 }
 
 const coveredBets = bets.filter((bet) => !canViewBet(bet)).map((bet) => ({ ...bet, isCovered: true }));
@@ -282,10 +294,10 @@ const allGroupedBets = computed(() => {
             return catA.priority - catB.priority;
         }
 
-        // Then by membership level (bronze first for free picks)
-        const membershipOrder = { bronze: 1, silver: 2, gold: 3, platinum: 4 };
-        const memA = membershipOrder[a.membership?.toLowerCase()] || 5;
-        const memB = membershipOrder[b.membership?.toLowerCase()] || 5;
+        // Then by membership level (Free first, then Gold, then Platinum)
+        const membershipOrder = { free: 1, bronze: 1, silver: 1, gold: 2, platinum: 3 };
+        const memA = membershipOrder[a.membership?.toLowerCase()] || 4;
+        const memB = membershipOrder[b.membership?.toLowerCase()] || 4;
 
         return memA - memB;
     });
@@ -314,8 +326,8 @@ const allGroupedBets = computed(() => {
             const teaserCards = createTeaserCards(sport, visibleCount, remainingCount);
 
             // Insert teaser card at the appropriate position
-            const bronzeLimit = isGuest ? 2 : 4;
-            const insertPosition = Math.min(bronzeLimit, visibleBetsForSport.length);
+            const freeLimit = isGuest ? 2 : 4;
+            const insertPosition = Math.min(freeLimit, visibleBetsForSport.length);
 
             grouped[sport] = [
                 ...visibleBetsForSport.slice(0, insertPosition),
@@ -385,14 +397,16 @@ const formatFilterDate = (dateString: string) => {
 
 const getMembershipBadgeStyle = (membership: string) => {
     switch (membership.toLowerCase()) {
+        case 'free':
+        case 'bronze':
         case 'silver':
-            return 'bg-secondary text-white';
+            return 'bg-success text-white';
         case 'gold':
             return 'bg-warning text-dark';
         case 'platinum':
-            return 'bg-info text-dark';
+            return 'bg-purple text-white';
         default:
-            return 'bg-secondary text-white';
+            return 'bg-success text-white';
     }
 };
 </script>

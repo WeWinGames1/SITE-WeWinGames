@@ -12,133 +12,104 @@ class StripeProductSeeder extends Seeder
      */
     public function run(): void
     {
-        $products = [
-            // Silver Plans
-            [
-                'name' => 'Silver Monthly',
-                'tier' => 'Silver',
-                'billing_period' => 'monthly',
-                'price' => 90.00,
-                'features' => [
-                    'Access to basic picks',
-                    'Email notifications',
-                    'Basic analytics',
-                    'Community access',
-                ],
-                'sort_order' => 1,
-            ],
-            [
-                'name' => 'Silver Weekly',
-                'tier' => 'Silver',
-                'billing_period' => 'weekly',
-                'price' => 40.00,
-                'features' => [
-                    'Access to basic picks',
-                    'Email notifications',
-                    'Basic analytics',
-                    'Community access',
-                ],
-                'sort_order' => 1,
-            ],
-            [
-                'name' => 'Silver Daily',
-                'tier' => 'Silver',
-                'billing_period' => 'daily',
-                'price' => 10.00,
-                'features' => [
-                    'Access to basic picks',
-                    'Email notifications',
-                    'Basic analytics',
-                ],
-                'sort_order' => 1,
-            ],
+        // Deactivate all Silver tier products (no longer offered)
+        \App\Models\StripeProduct::where('tier', 'Silver')->update(['is_active' => false]);
 
-            // Gold Plans
+        $products = [
+            // Gold Plans - $45/month
             [
                 'name' => 'Gold Monthly',
                 'tier' => 'Gold',
                 'billing_period' => 'monthly',
-                'price' => 130.00,
+                'price' => 45.00,
                 'features' => [
-                    'Access to all picks',
+                    'All Free picks included',
+                    'Access to Gold-tier premium picks',
                     'Priority email notifications',
                     'Advanced analytics',
                     'Early access to picks',
                     'Monthly performance reports',
                 ],
-                'badge_text' => 'Best Value',
-                'sort_order' => 2,
+                'badge_text' => 'Most Popular',
+                'sort_order' => 1,
+                'is_active' => true,
             ],
             [
                 'name' => 'Gold Weekly',
                 'tier' => 'Gold',
                 'billing_period' => 'weekly',
-                'price' => 60.00,
+                'price' => 15.00,
                 'features' => [
-                    'Access to all picks',
+                    'All Free picks included',
+                    'Access to Gold-tier premium picks',
                     'Priority email notifications',
                     'Advanced analytics',
-                    'Early access to picks',
                 ],
-                'badge_text' => 'Popular',
-                'sort_order' => 2,
+                'sort_order' => 1,
+                'is_active' => true,
             ],
             [
                 'name' => 'Gold Daily',
                 'tier' => 'Gold',
                 'billing_period' => 'daily',
-                'price' => 12.00,
+                'price' => 5.00,
                 'features' => [
-                    'Access to all picks',
+                    'All Free picks included',
+                    'Access to Gold-tier premium picks',
                     'Priority email notifications',
-                    'Advanced analytics',
                 ],
-                'sort_order' => 2,
+                'sort_order' => 1,
+                'is_active' => true,
             ],
 
-            // Platinum Plans
+            // Platinum Plans - $90/month
             [
                 'name' => 'Platinum Monthly',
                 'tier' => 'Platinum',
                 'billing_period' => 'monthly',
-                'price' => 160.00,
+                'price' => 90.00,
                 'features' => [
-                    'Access to all picks',
+                    'All Free and Gold picks included',
+                    'Access to ALL premium picks',
                     'Instant notifications',
-                    'Premium analytics',
+                    'Premium analytics dashboard',
                     'VIP support',
                     'Exclusive insider tips',
                     'Personal betting consultant',
                     'Custom betting strategies',
                 ],
-                'sort_order' => 3,
+                'badge_text' => 'Best Value',
+                'sort_order' => 2,
+                'is_active' => true,
             ],
             [
                 'name' => 'Platinum Weekly',
                 'tier' => 'Platinum',
                 'billing_period' => 'weekly',
-                'price' => 90.00,
+                'price' => 30.00,
                 'features' => [
-                    'Access to all picks',
+                    'All Free and Gold picks included',
+                    'Access to ALL premium picks',
                     'Instant notifications',
                     'Premium analytics',
                     'VIP support',
-                    'Exclusive insider tips',
                 ],
-                'sort_order' => 3,
+                'sort_order' => 2,
+                'is_active' => true,
             ],
             [
                 'name' => 'Platinum Daily',
                 'tier' => 'Platinum',
                 'billing_period' => 'daily',
-                'price' => 20.00,
+                'price' => 10.00,
                 'features' => [
-                    'Access to all picks',
+                    'All Free and Gold picks included',
+                    'Access to ALL premium picks',
                     'Instant notifications',
-                    'Premium analytics',
                     'VIP support',
                 ],
-                'sort_order' => 3,
+                'sort_order' => 2,
+                'is_active' => true,
             ],
         ];
 

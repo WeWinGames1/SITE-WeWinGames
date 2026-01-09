@@ -1002,7 +1002,7 @@ class CsvImportService
                 'betting_market' => 'Market type (e.g., Moneyline, Spread, Total, Prop)',
                 'wager_name' => 'Specific bet description (e.g., "Atalanta to win", "Over 2.5 goals")',
                 'odds' => 'American odds (e.g., -120, +150, 111)',
-                'membership' => 'Membership tier (Bronze, Silver, Gold, Platinum)',
+                'membership' => 'Membership tier (Free, Gold, Platinum)',
                 'code' => 'Referrer code or source (e.g., Footy, BB, Golf Brad)',
                 'status' => 'Bet outcome (win, loss, push, pending)',
                 'wager' => 'Amount wagered (e.g., $30, $50)',

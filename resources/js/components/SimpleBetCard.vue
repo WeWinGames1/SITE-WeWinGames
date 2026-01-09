@@ -39,7 +39,7 @@
         <div class="d-flex flex-column flex-md-column align-items-center justify-content-center gap-2 mb-3">
             <div class="d-flex align-items-center justify-content-center gap-3">
                 <span class="badge text-uppercase" :style="{ backgroundColor: levelBgColor, color: levelTextColor }">
-                    Game Level: {{ bet.membership }}
+                    Game Level: {{ membershipDisplayName }}
                 </span>
                 <a
                     v-if="bet.place_bet_url"
@@ -150,23 +150,33 @@ const formatOddsDisplay = (odds: any) => {
 };
 
 const cardBgColor = computed(() => {
-    const level = props.bet.membership?.toLowerCase();
+    const level = props.bet.membership?.toLowerCase() || 'free';
     if (level === 'platinum') return '#2a2a2a';
     if (level === 'gold') return '#1a1a1a';
-    return '#1e3a5f';
+    return '#1e3a5f'; // Free/Bronze/Silver all use the same color
 });
 
 const levelBgColor = computed(() => {
-    const level = props.bet.membership?.toLowerCase();
+    const level = props.bet.membership?.toLowerCase() || 'free';
     if (level === 'platinum') return '#e3e3e3';
     if (level === 'gold') return '#ffc107';
-    return '#6c757d';
+    return '#28a745'; // Green for Free tier
 });
 
 const levelTextColor = computed(() => {
-    const level = props.bet.membership?.toLowerCase();
+    const level = props.bet.membership?.toLowerCase() || 'free';
     if (level === 'gold') return '#000';
+    if (level === 'free' || level === 'bronze' || level === 'silver') return '#fff';
     return '#000';
+});
+
+// Get display name for membership (convert legacy Bronze/Silver to Free)
+const membershipDisplayName = computed(() => {
+    const level = props.bet.membership?.toUpperCase() || 'FREE';
+    if (level === 'BRONZE' || level === 'SILVER') {
+        return 'FREE';
+    }
+    return level;
 });
 </script>
 

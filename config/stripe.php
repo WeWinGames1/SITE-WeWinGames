@@ -13,24 +13,15 @@ return [
     */
 
     'products' => [
-        'silver' => [
-            'name' => 'Silver',
-            'monthly' => env('SILVER_MONTHLY'),
-            'weekly' => env('SILVER_WEEKLY'),
-            'daily' => env('SILVER_DAILY'),
-            'features' => [
-                'Access to basic picks',
-                'Email notifications',
-                'Basic analytics',
-            ],
-        ],
+        // Note: Silver tier has been retired. Bronze/Silver picks are now "Free" tier.
         'gold' => [
             'name' => 'Gold',
             'monthly' => env('GOLD_MONTHLY'),
             'weekly' => env('GOLD_WEEKLY'),
             'daily' => env('GOLD_DAILY'),
             'features' => [
-                'Access to all picks',
+                'All Free picks included',
+                'Access to Gold-tier premium picks',
                 'Priority email notifications',
                 'Advanced analytics',
                 'Early access to picks',
@@ -42,7 +33,8 @@ return [
             'weekly' => env('PLATINUM_WEEKLY'),
             'daily' => env('PLATINUM_DAILY'),
             'features' => [
-                'Access to all picks',
+                'All Free and Gold picks included',
+                'Access to ALL premium picks',
                 'Instant notifications',
                 'Premium analytics',
                 'VIP support',
@@ -62,6 +54,7 @@ return [
     */
 
     'price_to_tier' => [
+        // Note: Silver tier mappings kept for backward compatibility with existing subscriptions
         env('SILVER_MONTHLY') => ['tier' => 'Silver', 'period' => 'monthly'],
         env('SILVER_WEEKLY') => ['tier' => 'Silver', 'period' => 'weekly'],
         env('SILVER_DAILY') => ['tier' => 'Silver', 'period' => 'daily'],

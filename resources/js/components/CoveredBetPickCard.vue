@@ -49,7 +49,7 @@
             <div class="d-flex flex-column flex-md-column align-items-center justify-content-center gap-2 mb-4">
                 <div class="d-flex align-items-center justify-content-center gap-3">
                     <span class="badge px-4 py-2 opacity-50" :class="getMembershipBadgeClass()" style="font-size: 14px; border-radius: 20px">
-                        Game Level: {{ bet.membership.toUpperCase() }}
+                        Game Level: {{ getMembershipDisplayName() }}
                     </span>
                     <a
                         v-if="bet.place_bet_url"
@@ -80,7 +80,7 @@
             <div class="text-center py-4">
                 <i class="bi bi-lock-fill text-white display-4 mb-3"></i>
                 <h5 class="text-white fw-bold mb-3">Premium Pick</h5>
-                <p class="text-gray-light mb-4">Unlock this {{ bet.membership }} pick and get access to:</p>
+                <p class="text-gray-light mb-4">Unlock this {{ getMembershipDisplayName() }} pick and get access to:</p>
                 <ul class="list-unstyled text-gray-light mb-4">
                     <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Expert Analysis</li>
                     <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Betting Recommendations</li>
@@ -118,19 +118,28 @@ const formatDate = (date: string) => {
 };
 
 const getMembershipBadgeClass = () => {
-    const membership = props.bet.membership.toUpperCase();
+    const membership = props.bet.membership?.toUpperCase() || 'FREE';
     switch (membership) {
+        case 'FREE':
         case 'BRONZE':
-            return 'bg-danger';
         case 'SILVER':
-            return 'bg-secondary';
+            return 'bg-success';
         case 'GOLD':
             return 'bg-warning text-dark';
         case 'PLATINUM':
             return 'bg-purple';
         default:
-            return 'bg-dark';
+            return 'bg-success';
     }
+};
+
+// Get display name for membership (convert legacy Bronze/Silver to Free)
+const getMembershipDisplayName = () => {
+    const membership = props.bet.membership?.toUpperCase() || 'FREE';
+    if (membership === 'BRONZE' || membership === 'SILVER') {
+        return 'FREE';
+    }
+    return membership;
 };
 </script>
 

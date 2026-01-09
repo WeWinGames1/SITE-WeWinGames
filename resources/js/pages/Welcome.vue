@@ -53,11 +53,16 @@ const isAdmin = auth?.isAdmin || false;
 
 // Legacy variables for backward compatibility
 const isGold = userSubscriptionType === 'gold';
-const isSilver = userSubscriptionType === 'silver';
 const isPlatinum = userSubscriptionType === 'platinum';
 const isDefault = userSubscriptionType === 'free';
 
-const bronzeBets = bets.filter((bet) => bet.membership === 'bronze');
+// Helper to check if bet is Free tier (including legacy Bronze/Silver)
+const isFreeTierBet = (bet) => {
+    const level = (bet.membership?.toLowerCase() || 'free');
+    return level === 'free' || level === 'bronze' || level === 'silver';
+};
+
+const freeBets = bets.filter((bet) => isFreeTierBet(bet));
 
 // Sports filter
 const selectedSport = ref('all');
@@ -93,19 +98,25 @@ const getFeatures = (tier: string, billingPeriod: string = 'monthly') => {
 // Default features as fallback
 const getDefaultFeatures = (tier: string) => {
     switch (tier.toLowerCase()) {
-        case 'silver':
-            return ['Over 5 picks a day', 'Straight bets', 'Favorite picks', 'Avg odds -120', '24/7 support'];
+        case 'free':
+            return ['Access to Free picks daily', 'Basic straight bets', 'Email notifications', 'Community access', '24/7 support'];
         case 'gold':
-            return ['All Silver features +', '> 5 gold picks daily', 'Best Value Bets', 'Avg odds > +100', 'Cancel anytime', '24/7 support'];
+            return [
+                'All Free picks included',
+                'Access to Gold-tier premium picks',
+                'Priority email notifications',
+                'Advanced analytics',
+                'Early access to picks',
+                'Cancel anytime',
+            ];
         case 'platinum':
             return [
-                'All Silver & Gold features +',
-                '5 platinum picks daily',
-                'Parlay & prop bets',
-                'Highest Value',
-                'Avg odds > +170',
-                'Cancel anytime',
-                '24/7 support',
+                'All Free & Gold picks included',
+                'Access to ALL premium picks',
+                'Instant notifications',
+                'Premium analytics dashboard',
+                'VIP support',
+                'Personal betting consultant',
             ];
         default:
             return [];
@@ -125,37 +136,20 @@ const getPrice = (tier: string, billingPeriod: string = 'monthly') => {
 
 // Default prices as fallback
 const getDefaultPrice = (tier: string, billingPeriod: string) => {
-    const defaults = {
-        silver: { monthly: '$45', weekly: '17', daily: '5' },
-        gold: { monthly: '$65', weekly: '29', daily: '8' },
-        platinum: { monthly: '$80', weekly: '49', daily: '12' },
+    const defaults: Record<string, Record<string, string>> = {
+        gold: { monthly: '$45', weekly: '15', daily: '5' },
+        platinum: { monthly: '$90', weekly: '30', daily: '10' },
     };
     return defaults[tier.toLowerCase()]?.[billingPeriod] || '$0';
 };
 
 const plans = computed(() => [
     {
-        name: 'Silver',
-        price: getPrice('silver', 'monthly'),
-        monthlyPrice: getPrice('silver', 'monthly'),
-        duration: '30 days',
-        features: getFeatures('silver', 'monthly'), // Using monthly features as default display
-        monthlyFeatures: getFeatures('silver', 'monthly'),
-        weeklyFeatures: getFeatures('silver', 'weekly'),
-        dailyFeatures: getFeatures('silver', 'daily'),
-        monthlyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: stripePrices.silver_monthly }),
-        weeklyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: stripePrices.silver_weekly }),
-        dailyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: stripePrices.silver_daily }),
-        weeklyPrice: getPrice('silver', 'weekly'),
-        dailyPrice: getPrice('silver', 'daily'),
-        highlight: false,
-    },
-    {
         name: 'Gold',
         price: getPrice('gold', 'monthly'),
         monthlyPrice: getPrice('gold', 'monthly'),
         duration: '30 days',
-        features: getFeatures('gold', 'monthly'), // Using monthly features as default display
+        features: getFeatures('gold', 'monthly'),
         monthlyFeatures: getFeatures('gold', 'monthly'),
         weeklyFeatures: getFeatures('gold', 'weekly'),
         dailyFeatures: getFeatures('gold', 'daily'),
@@ -171,7 +165,7 @@ const plans = computed(() => [
         price: getPrice('platinum', 'monthly'),
         monthlyPrice: getPrice('platinum', 'monthly'),
         duration: '30 days',
-        features: getFeatures('platinum', 'monthly'), // Using monthly features as default display
+        features: getFeatures('platinum', 'monthly'),
         monthlyFeatures: getFeatures('platinum', 'monthly'),
         weeklyFeatures: getFeatures('platinum', 'weekly'),
         dailyFeatures: getFeatures('platinum', 'daily'),
@@ -184,26 +178,30 @@ const plans = computed(() => [
     },
 ]);
 
-const silverBets = bets.filter((bet) => bet.membership === 'silver');
-
 // Determine which bets can be viewed based on subscription
+// New tier structure: Free (formerly Bronze/Silver), Gold, Platinum
 const canViewBet = (bet) => {
     if (isAdmin) return true;
 
     // Check both 'level' and 'membership' fields for compatibility
-    const betLevel = (bet.level || bet.membership || 'bronze').toLowerCase();
+    const betLevel = (bet.level || bet.membership || 'free').toLowerCase();
+
+    // Free tier includes legacy Bronze and Silver
+    const isFreeLevel = betLevel === 'free' || betLevel === 'bronze' || betLevel === 'silver';
 
     switch (userSubscriptionType) {
         case 'free':
-            return betLevel === 'bronze';
-        case 'silver':
-            return betLevel === 'bronze' || betLevel === 'silver';
+            // Free users can only view Free tier picks (and legacy Bronze/Silver)
+            return isFreeLevel;
         case 'gold':
-            return betLevel === 'bronze' || betLevel === 'silver' || betLevel === 'gold';
+            // Gold users can view Free and Gold picks
+            return isFreeLevel || betLevel === 'gold';
         case 'platinum':
-            return true; // Can view all bets
+            // Platinum users can view all picks
+            return true;
         default:
-            return betLevel === 'bronze';
+            // Default to Free tier access
+            return isFreeLevel;
     }
 };
 
@@ -291,10 +289,10 @@ const allGroupedBets = computed(() => {
             return catA.priority - catB.priority;
         }
 
-        // Then by membership level (bronze first for free picks)
-        const membershipOrder = { bronze: 1, silver: 2, gold: 3, platinum: 4 };
-        const memA = membershipOrder[a.membership?.toLowerCase()] || 5;
-        const memB = membershipOrder[b.membership?.toLowerCase()] || 5;
+        // Then by membership level (Free first, then Gold, then Platinum)
+        const membershipOrder = { free: 1, bronze: 1, silver: 1, gold: 2, platinum: 3 };
+        const memA = membershipOrder[a.membership?.toLowerCase()] || 4;
+        const memB = membershipOrder[b.membership?.toLowerCase()] || 4;
 
         return memA - memB;
     });

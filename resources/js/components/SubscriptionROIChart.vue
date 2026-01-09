@@ -23,11 +23,9 @@ onMounted(() => {
         const ctx = roiChart.value.getContext('2d');
 
         if (ctx) {
-            // Sort the data in the correct order
-            // If Bronze is not in the data, it's Last Year data (Silver, Gold, Platinum only)
+            // Sort the data in the correct order: Free, Gold, Platinum
             const dataKeys = Object.keys(props.roiData);
-            const hasBronze = dataKeys.includes('Bronze');
-            const levelOrder = hasBronze ? ['Bronze', 'Silver', 'Gold', 'Platinum'] : ['Silver', 'Gold', 'Platinum'];
+            const levelOrder = ['Free', 'Gold', 'Platinum'];
 
             const sortedKeys = dataKeys.sort((a, b) => {
                 return levelOrder.indexOf(a) - levelOrder.indexOf(b);

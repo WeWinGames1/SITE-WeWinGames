@@ -118,19 +118,16 @@ onMounted(async () => {
         await initializeCardElement();
     }
 
-    // Check for automatic discounts
+    // Check for discount codes passed via URL
     const urlParams = new URLSearchParams(window.location.search);
     const discountCode = urlParams.get('discountCode');
 
     if (discountCode) {
         form.coupon = discountCode;
         await validateCoupon();
-    } else if (props.plan.period === 'monthly') {
-        // Auto-apply 50% off first month discount for all monthly plans
-        form.coupon = 'FIRSTMONTH50';
-        autoAppliedDiscount.value = true;
-        await validateCoupon();
     }
+    // Note: Auto-applied FIRSTMONTH50 discount has been removed.
+    // Customers can manually enter discount codes if provided.
 
     // Check if we need to handle 3D Secure authentication
     if (page.props.flash.requires_action && page.props.flash.payment_intent_client_secret) {

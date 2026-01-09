@@ -228,16 +228,16 @@ function sendTestNotification() {
                         <div class="card-body">
                             <h6 class="text-muted mb-2">By Tier</h6>
                             <div class="small">
-                                <div v-if="stats.subscribers_by_tier?.silver">
-                                    <span class="badge bg-secondary me-1">Silver</span>
-                                    {{ stats.subscribers_by_tier.silver }}
+                                <div v-if="stats.subscribers_by_tier?.free">
+                                    <span class="badge bg-success me-1">Free</span>
+                                    {{ stats.subscribers_by_tier.free }}
                                 </div>
                                 <div v-if="stats.subscribers_by_tier?.gold">
                                     <span class="badge bg-warning text-dark me-1">Gold</span>
                                     {{ stats.subscribers_by_tier.gold }}
                                 </div>
                                 <div v-if="stats.subscribers_by_tier?.platinum">
-                                    <span class="badge bg-dark me-1">Platinum</span>
+                                    <span class="badge bg-purple me-1">Platinum</span>
                                     {{ stats.subscribers_by_tier.platinum }}
                                 </div>
                             </div>
@@ -385,7 +385,7 @@ function sendTestNotification() {
                                         <div v-if="sendForm.recipients === 'tier'" class="mb-3">
                                             <label class="form-label">Select Tier</label>
                                             <select v-model="sendForm.tier" class="form-select">
-                                                <option value="silver">Silver</option>
+                                                <option value="free">Free</option>
                                                 <option value="gold">Gold</option>
                                                 <option value="platinum">Platinum</option>
                                             </select>

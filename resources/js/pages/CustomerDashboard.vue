@@ -25,10 +25,8 @@ const subscriptionBadge = computed(() => {
             return { text: 'Platinum', class: 'bg-purple' };
         case 'gold':
             return { text: 'Gold', class: 'bg-warning text-dark' };
-        case 'silver':
-            return { text: 'Silver', class: 'bg-secondary' };
         default:
-            return { text: 'Free', class: 'bg-dark border' };
+            return { text: 'Free', class: 'bg-success' };
     }
 });
 </script>

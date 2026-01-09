@@ -118,7 +118,7 @@ class SubscriptionDashboardController extends Controller
             'customers' => $customers,
             'filters' => $filters,
             'stats' => $stats,
-            'tiers' => ['Bronze', 'Silver', 'Gold', 'Platinum'],
+            'tiers' => ['Free', 'Gold', 'Platinum'],
         ]);
     }
 
@@ -189,7 +189,7 @@ class SubscriptionDashboardController extends Controller
     {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
-            'tier' => 'required|in:Bronze,Silver,Gold,Platinum',
+            'tier' => 'required|in:Free,Gold,Platinum',
             'duration_days' => 'required|integer|min:1',
             'reason' => 'nullable|string',
         ]);

@@ -90,25 +90,25 @@ class BetImportService
     private function normalizeMembership(?string $membership): string
     {
         if (! $membership) {
-            return 'bronze';
+            return 'free';
         }
 
         $membership = strtolower(trim($membership));
 
         // Map variations to standard names
         $membershipMap = [
-            'bronze' => 'bronze',
-            'silver' => 'silver',
+            'bronze' => 'free',
+            'silver' => 'free',
             'gold' => 'gold',
             'platinum' => 'platinum',
             'plat' => 'platinum',
-            'free' => 'bronze',
-            'basic' => 'bronze',
+            'free' => 'free',
+            'basic' => 'free',
             'premium' => 'gold',
             'pro' => 'platinum',
         ];
 
-        return $membershipMap[$membership] ?? 'bronze';
+        return $membershipMap[$membership] ?? 'free';
     }
 
     /**

@@ -52,7 +52,7 @@
             <div class="d-flex flex-column flex-md-column align-items-center justify-content-center gap-2 mb-4">
                 <div class="d-flex align-items-center justify-content-center gap-3">
                     <span class="badge px-4 py-2" :class="getMembershipBadgeClass()" style="font-size: 14px; border-radius: 20px">
-                        Game Level: {{ bet.membership.toUpperCase() }}
+                        Game Level: {{ getMembershipDisplayName() }}
                     </span>
                     <a
                         v-if="bet.place_bet_url"
@@ -224,19 +224,28 @@ const formatDate = (date: string) => {
 };
 
 const getMembershipBadgeClass = () => {
-    const membership = props.bet.membership.toUpperCase();
+    const membership = props.bet.membership?.toUpperCase() || 'FREE';
     switch (membership) {
+        case 'FREE':
         case 'BRONZE':
-            return 'bg-danger';
         case 'SILVER':
-            return 'bg-secondary';
+            return 'bg-success';
         case 'GOLD':
             return 'bg-warning text-dark';
         case 'PLATINUM':
             return 'bg-purple';
         default:
-            return 'bg-dark';
+            return 'bg-success';
     }
+};
+
+// Get display name for membership (convert legacy Bronze/Silver to Free)
+const getMembershipDisplayName = () => {
+    const membership = props.bet.membership?.toUpperCase() || 'FREE';
+    if (membership === 'BRONZE' || membership === 'SILVER') {
+        return 'FREE';
+    }
+    return membership;
 };
 
 const getStatusBadgeClass = () => {

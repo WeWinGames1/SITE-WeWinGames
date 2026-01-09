@@ -1527,10 +1527,9 @@ declare global {
                                     required
                                 >
                                     <option value="">Select membership...</option>
-                                    <option value="bronze">Bronze</option>
-                                    <option value="silver">Silver</option>
-                                    <option value="gold">Gold</option>
-                                    <option value="platinum">Platinum</option>
+                                    <option value="Free">Free</option>
+                                    <option value="Gold">Gold</option>
+                                    <option value="Platinum">Platinum</option>
                                 </select>
                                 <div v-if="form.errors.membership" class="invalid-feedback">
                                     {{ form.errors.membership }}

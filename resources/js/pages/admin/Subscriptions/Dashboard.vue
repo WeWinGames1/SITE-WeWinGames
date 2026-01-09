@@ -72,7 +72,7 @@ const filterForm = useForm({
 
 const grantForm = useForm({
     user_id: null as number | null,
-    tier: 'Silver',
+    tier: 'Gold',
     duration_days: 30,
     reason: '',
 });
@@ -169,15 +169,16 @@ function getStatusColor(status: string): string {
 }
 
 function getTierColor(tier: string | null): string {
-    if (!tier) return 'badge bg-secondary';
+    if (!tier) return 'badge bg-success';
 
     const colors: Record<string, string> = {
-        Bronze: 'badge bg-warning',
-        Silver: 'badge bg-secondary',
+        Free: 'badge bg-success',
+        Bronze: 'badge bg-success',
+        Silver: 'badge bg-success',
         Gold: 'badge bg-warning',
         Platinum: 'badge bg-purple',
     };
-    return colors[tier] || 'badge bg-secondary';
+    return colors[tier] || 'badge bg-success';
 }
 
 // Auto-submit search after delay

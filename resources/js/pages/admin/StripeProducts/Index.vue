@@ -60,7 +60,7 @@ const selectedStripePriceId = ref('');
 // Forms
 const createForm = useForm({
     name: '',
-    tier: 'Silver',
+    tier: 'Gold',
     billing_period: 'monthly',
     price: 0,
     features: [''],
@@ -91,7 +91,7 @@ const groupedProducts = computed(() => {
         grouped[period] = props.products
             .filter((p) => p.billing_period === period)
             .sort((a, b) => {
-                const tierOrder = ['Bronze', 'Silver', 'Gold', 'Platinum'];
+                const tierOrder = ['Free', 'Gold', 'Platinum'];
                 return tierOrder.indexOf(a.tier) - tierOrder.indexOf(b.tier);
             });
     });
@@ -274,16 +274,16 @@ async function disconnectFromStripe(product: StripeProduct) {
 // Get tier badge class
 function getTierBadgeClass(tier: string) {
     switch (tier) {
+        case 'Free':
         case 'Bronze':
-            return 'bg-warning';
         case 'Silver':
-            return 'bg-secondary';
+            return 'bg-success';
         case 'Gold':
             return 'bg-warning';
         case 'Platinum':
             return 'bg-purple';
         default:
-            return 'bg-secondary';
+            return 'bg-success';
     }
 }
 </script>
@@ -338,7 +338,7 @@ function getTierBadgeClass(tier: string) {
                         <div class="col-md-6">
                             <h6 class="fw-bold mb-3">⚡ Important Notes</h6>
                             <ul class="small text-dark">
-                                <li>Product names are auto-generated from Tier + Billing Period (e.g., "Silver Monthly", "Gold Weekly")</li>
+                                <li>Product names are auto-generated from Tier + Billing Period (e.g., "Gold Monthly", "Platinum Weekly")</li>
                                 <li>Products must be connected to Stripe to be used for subscriptions</li>
                                 <li>Prices can be updated anytime (affects new subscriptions only)</li>
                                 <li>Connected products cannot be deleted (disconnect first)</li>
@@ -347,7 +347,7 @@ function getTierBadgeClass(tier: string) {
                             </ul>
 
                             <div class="alert alert-warning small p-2 mt-3">
-                                <strong>Purpose:</strong> This system links your website's subscription tiers (Bronze, Silver, Gold, Platinum) with
+                                <strong>Purpose:</strong> This system links your website's subscription tiers (Gold, Platinum) with
                                 corresponding Stripe products for proper billing integration. Names are auto-generated to ensure consistency.
                             </div>
                         </div>

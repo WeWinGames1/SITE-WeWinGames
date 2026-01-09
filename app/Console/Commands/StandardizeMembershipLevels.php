@@ -29,13 +29,17 @@ class StandardizeMembershipLevels extends Command
         );
 
         // Define the mapping for standardization
+        // Note: Bronze and Silver have been retired and now map to Free tier
         $standardMappings = [
-            'bronze' => 'Bronze',
-            'Bronze' => 'Bronze',
-            'BRONZE' => 'Bronze',
-            'silver' => 'Silver',
-            'Silver' => 'Silver',
-            'SILVER' => 'Silver',
+            'bronze' => 'Free',
+            'Bronze' => 'Free',
+            'BRONZE' => 'Free',
+            'silver' => 'Free',
+            'Silver' => 'Free',
+            'SILVER' => 'Free',
+            'free' => 'Free',
+            'Free' => 'Free',
+            'FREE' => 'Free',
             'gold' => 'Gold',
             'Gold' => 'Gold',
             'GOLD' => 'Gold',

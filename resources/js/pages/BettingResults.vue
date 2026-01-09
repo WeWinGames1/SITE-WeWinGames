@@ -37,17 +37,17 @@ const props = defineProps<{
     roiDataLastYear?: Record<string, number>;
 }>();
 
-// Sort levels in the order: Bronze, Silver, Gold, Platinum
+// Sort levels in the order: Free, Gold, Platinum
 const sortedLevelProfitRoiData = computed(() => {
-    const levelOrder = ['Bronze', 'Silver', 'Gold', 'Platinum'];
+    const levelOrder = ['Free', 'Gold', 'Platinum'];
     return [...(props.levelProfitRoiData || [])].sort((a, b) => {
         return levelOrder.indexOf(a.level) - levelOrder.indexOf(b.level);
     });
 });
 
-// Sort levels for last year in the order: Silver, Gold, Platinum (no Bronze)
+// Sort levels for last year in the order: Free, Gold, Platinum
 const sortedLevelProfitRoiDataLastYear = computed(() => {
-    const levelOrder = ['Silver', 'Gold', 'Platinum'];
+    const levelOrder = ['Free', 'Gold', 'Platinum'];
     return [...(props.levelProfitRoiDataLastYear || [])].sort((a: any, b: any) => {
         return levelOrder.indexOf(a.level) - levelOrder.indexOf(b.level);
     });

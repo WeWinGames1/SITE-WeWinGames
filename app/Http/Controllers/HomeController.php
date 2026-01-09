@@ -57,7 +57,7 @@ class HomeController extends Controller
             return $bet->sports ?? $bet->sport ?? 'Football';
         })->map->count();
 
-        // For unauthenticated users, limit bronze bets to 2 from preferred sports
+        // For unauthenticated users, limit free bets to 2 from preferred sports (teaser)
         $user = auth()->user();
         if (! $user) {
             // Get sport preferences
@@ -66,25 +66,27 @@ class HomeController extends Controller
                 ->pluck('sport_name')
                 ->toArray();
 
-            // Filter and limit bronze bets
-            $bronzeBets = $allBets->filter(function ($bet) {
-                return strtolower($bet->membership ?? $bet->level ?? '') === 'bronze';
+            // Filter and limit free/bronze/silver bets
+            $freeTierBets = $allBets->filter(function ($bet) {
+                $tier = strtolower($bet->membership ?? $bet->level ?? '');
+                return in_array($tier, ['free', 'bronze', 'silver']);
             });
 
             // Sort by sport preference and limit to 2
-            $limitedBets = $bronzeBets->sortBy(function ($bet) use ($sportPreferences) {
+            $limitedBets = $freeTierBets->sortBy(function ($bet) use ($sportPreferences) {
                 $sport = $bet->sports ?? $bet->sport ?? '';
                 $index = array_search($sport, $sportPreferences);
 
                 return $index === false ? 999 : $index;
             })->take(2);
 
-            // Include non-bronze bets for display (they'll be covered)
-            $nonBronzeBets = $allBets->filter(function ($bet) {
-                return strtolower($bet->membership ?? $bet->level ?? '') !== 'bronze';
+            // Include premium bets for display (they'll be covered)
+            $premiumBets = $allBets->filter(function ($bet) {
+                $tier = strtolower($bet->membership ?? $bet->level ?? '');
+                return in_array($tier, ['gold', 'platinum']);
             });
 
-            $freeBets = $limitedBets->merge($nonBronzeBets);
+            $freeBets = $limitedBets->merge($premiumBets);
         } else {
             $freeBets = $allBets;
         }

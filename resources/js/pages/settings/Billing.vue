@@ -62,13 +62,11 @@ const getFeatures = (tier: string, billingPeriod: string = 'monthly') => {
 // Default features as fallback
 const getDefaultFeatures = (tier: string) => {
     switch (tier.toLowerCase()) {
-        case 'silver':
-            return ['Over 5 picks a day', 'Straight bets', 'Favorite picks', 'Avg odds -120', '24/7 support'];
         case 'gold':
-            return ['All Silver features +', '> 5 gold picks daily', 'Best Value Bets', 'Avg odds > +100', 'Cancel anytime', '24/7 support'];
+            return ['All Free picks +', '> 5 gold picks daily', 'Best Value Bets', 'Avg odds > +100', 'Cancel anytime', '24/7 support'];
         case 'platinum':
             return [
-                'All Silver & Gold features +',
+                'All Free & Gold picks +',
                 '5 platinum picks daily',
                 'Parlay & prop bets',
                 'Best tipsters & ROI',
@@ -94,9 +92,8 @@ const getPrice = (tier: string, billingPeriod: string = 'monthly') => {
 // Default prices as fallback
 const getDefaultPrice = (tier: string, billingPeriod: string) => {
     const defaults = {
-        silver: { monthly: '$45', weekly: '17', daily: '5' },
-        gold: { monthly: '$65', weekly: '29', daily: '8' },
-        platinum: { monthly: '$80', weekly: '49', daily: '12' },
+        gold: { monthly: '$45', weekly: '17', daily: '5' },
+        platinum: { monthly: '$90', weekly: '35', daily: '10' },
     };
     return defaults[tier.toLowerCase()]?.[billingPeriod] || '$0';
 };
@@ -108,23 +105,6 @@ const isPlanActive = (planName: string, planPeriod: string) => {
 };
 
 const plans = computed(() => [
-    {
-        name: 'Silver',
-        price: getPrice('silver', 'monthly'),
-        monthlyPrice: getPrice('silver', 'monthly'),
-        duration: '30 days',
-        features: getFeatures('silver', 'monthly'), // Using monthly features as default display
-        monthlyFeatures: getFeatures('silver', 'monthly'),
-        weeklyFeatures: getFeatures('silver', 'weekly'),
-        dailyFeatures: getFeatures('silver', 'daily'),
-        monthlyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: stripePrices.silver_monthly }),
-        weeklyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: stripePrices.silver_weekly }),
-        dailyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: stripePrices.silver_daily }),
-        weeklyPrice: getPrice('silver', 'weekly'),
-        dailyPrice: getPrice('silver', 'daily'),
-        highlight: false,
-        isCurrentPlan: isPlanActive('Silver', 'monthly'),
-    },
     {
         name: 'Gold',
         price: getPrice('gold', 'monthly'),

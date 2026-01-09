@@ -25,18 +25,25 @@ const getFeatures = (tier: string, billingPeriod: string = 'monthly') => {
 // Default features as fallback
 const getDefaultFeatures = (tier: string) => {
     switch (tier.toLowerCase()) {
-        case 'silver':
-            return ['Over 5 picks a day', 'Straight bets', 'Favorite picks', 'Avg odds -120', '24/7 support'];
+        case 'free':
+            return ['Access to Free picks daily', 'Basic straight bets', 'Email notifications', 'Community access', '24/7 support'];
         case 'gold':
-            return ['All Silver features +', '> 5 gold picks daily', 'Best Value Bets', 'Avg odds > +100', 'Cancel anytime', '24/7 support'];
+            return [
+                'All Free picks included',
+                'Access to Gold-tier premium picks',
+                'Priority email notifications',
+                'Advanced analytics',
+                'Early access to picks',
+                'Cancel anytime',
+            ];
         case 'platinum':
             return [
-                'All Silver & Gold features +',
-                '5 platinum picks daily',
-                'Parlay & prop bets',
-                'Best tipsters & ROI',
-                'Cancel anytime',
-                '24/7 support',
+                'All Free & Gold picks included',
+                'Access to ALL premium picks',
+                'Instant notifications',
+                'Premium analytics dashboard',
+                'VIP support',
+                'Personal betting consultant',
             ];
         default:
             return [];
@@ -56,37 +63,20 @@ const getPrice = (tier: string, billingPeriod: string = 'monthly') => {
 
 // Default prices as fallback
 const getDefaultPrice = (tier: string, billingPeriod: string) => {
-    const defaults = {
-        silver: { monthly: '$45', weekly: '17', daily: '5' },
-        gold: { monthly: '$65', weekly: '29', daily: '8' },
-        platinum: { monthly: '$80', weekly: '49', daily: '12' },
+    const defaults: Record<string, Record<string, string>> = {
+        gold: { monthly: '$45', weekly: '15', daily: '5' },
+        platinum: { monthly: '$90', weekly: '30', daily: '10' },
     };
     return defaults[tier.toLowerCase()]?.[billingPeriod] || '$0';
 };
 
 const plans = computed(() => [
     {
-        name: 'Silver',
-        price: getPrice('silver', 'monthly'),
-        monthlyPrice: getPrice('silver', 'monthly'),
-        duration: '30 days',
-        features: getFeatures('silver', 'monthly'), // Using monthly features as default display
-        monthlyFeatures: getFeatures('silver', 'monthly'),
-        weeklyFeatures: getFeatures('silver', 'weekly'),
-        dailyFeatures: getFeatures('silver', 'daily'),
-        monthlyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: stripePrices.silver_monthly }),
-        weeklyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: stripePrices.silver_weekly }),
-        dailyLink: route('subscription.checkout', { subscription_name: 'silver', subscription_price_id: stripePrices.silver_daily }),
-        weeklyPrice: getPrice('silver', 'weekly'),
-        dailyPrice: getPrice('silver', 'daily'),
-        highlight: false,
-    },
-    {
         name: 'Gold',
         price: getPrice('gold', 'monthly'),
         monthlyPrice: getPrice('gold', 'monthly'),
         duration: '30 days',
-        features: getFeatures('gold', 'monthly'), // Using monthly features as default display
+        features: getFeatures('gold', 'monthly'),
         monthlyFeatures: getFeatures('gold', 'monthly'),
         weeklyFeatures: getFeatures('gold', 'weekly'),
         dailyFeatures: getFeatures('gold', 'daily'),
@@ -102,7 +92,7 @@ const plans = computed(() => [
         price: getPrice('platinum', 'monthly'),
         monthlyPrice: getPrice('platinum', 'monthly'),
         duration: '30 days',
-        features: getFeatures('platinum', 'monthly'), // Using monthly features as default display
+        features: getFeatures('platinum', 'monthly'),
         monthlyFeatures: getFeatures('platinum', 'monthly'),
         weeklyFeatures: getFeatures('platinum', 'weekly'),
         dailyFeatures: getFeatures('platinum', 'daily'),
@@ -128,6 +118,51 @@ const plans = computed(() => [
                         enjoy your experience. What better way than with our profitable free betting tips. We have set up WeWinGames to help you avail
                         of this opportunity.
                     </p>
+                </div>
+
+                <!-- Free Tier Section -->
+                <div class="row justify-content-center mb-5">
+                    <div class="col-lg-8">
+                        <div class="card bg-dark border-success border-2">
+                            <div class="card-body p-4">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <span class="badge bg-success me-2 px-3 py-2">Free Access</span>
+                                            <h3 class="h4 fw-bold mb-0 text-white">Start With Free Picks</h3>
+                                        </div>
+                                        <p class="text-gray-light mb-3">
+                                            Create a free account and get instant access to our Free picks. No credit card required.
+                                        </p>
+                                        <ul class="list-unstyled mb-0">
+                                            <li v-for="feature in getDefaultFeatures('free')" :key="feature" class="mb-1 d-flex align-items-start">
+                                                <i class="bi bi-check-circle-fill text-success me-2 flex-shrink-0 small" style="margin-top: 2px"></i>
+                                                <span class="small text-white">{{ feature }}</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-4 text-center text-md-end mt-3 mt-md-0">
+                                        <div class="display-5 fw-bold text-success mb-2">$0</div>
+                                        <p class="text-muted small mb-3">Forever free</p>
+                                        <a v-if="!user" :href="route('register')" class="btn btn-success px-4">
+                                            <i class="bi bi-person-plus me-2"></i>
+                                            Sign Up Free
+                                        </a>
+                                        <a v-else :href="route('todays-bets')" class="btn btn-outline-success px-4">
+                                            <i class="bi bi-eye me-2"></i>
+                                            View Free Picks
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Premium Plans Header -->
+                <div class="text-center mb-4">
+                    <h2 class="h3 fw-bold text-white mb-2">Upgrade to Premium</h2>
+                    <p class="text-gray-light">Get access to more picks and exclusive features</p>
                 </div>
 
                 <!-- Pricing Cards -->

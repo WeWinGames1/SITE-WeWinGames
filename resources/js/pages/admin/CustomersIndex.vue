@@ -560,7 +560,6 @@ function getCustomerBadgeClass(status: string) {
                             <select v-model="filters.tier" class="form-select">
                                 <option value="">All Tiers</option>
                                 <option value="free">Free</option>
-                                <option value="silver">Silver</option>
                                 <option value="gold">Gold</option>
                                 <option value="platinum">Platinum</option>
                             </select>
