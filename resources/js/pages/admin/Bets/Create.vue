@@ -73,7 +73,7 @@ const form = useForm({
     betting_date: new Date().toISOString().slice(0, 16),
     game_date: new Date().toISOString().slice(0, 16),
     wager_odds: '',
-    membership: 'bronze',
+    membership: 'Free',
     level: '',
     code: '',
     roi: 0,
