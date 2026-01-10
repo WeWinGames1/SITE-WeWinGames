@@ -38,11 +38,22 @@ interface Product {
     stripe_product_id: string | null;
 }
 
+interface PaginationLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+
 interface Props {
     discountCodes: {
         data: DiscountCode[];
-        links: any[];
-        meta: any;
+        links: PaginationLink[];
+        current_page: number;
+        from: number | null;
+        to: number | null;
+        total: number;
+        last_page: number;
+        per_page: number;
     };
     filters: {
         status?: string;
@@ -159,7 +170,7 @@ function editCode(code: DiscountCode) {
     editForm.code = code.code;
     editForm.description = code.description || '';
     editForm.discount_type = code.discount_type;
-    editForm.discount_amount = parseFloat(code.discount_amount);
+    editForm.discount_amount = Number(code.discount_amount) || 0;
     editForm.apply_to = code.apply_to;
     editForm.months_count = code.months_count;
     editForm.max_uses = code.max_uses;
@@ -279,7 +290,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                     class="form-control"
                                     placeholder="Search codes..."
                                     :value="filterForm.search"
-                                    @input="debouncedSearch($event.target.value)"
+                                    @input="debouncedSearch(($event.target as HTMLInputElement).value)"
                                 />
                             </div>
                         </div>
@@ -385,10 +396,10 @@ function getStatusBadgeClass(code: DiscountCode): string {
                 </div>
 
                 <!-- Pagination -->
-                <div v-if="discountCodes.links.length > 3" class="card-footer">
+                <div v-if="discountCodes.links && discountCodes.links.length > 3" class="card-footer">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="text-muted">
-                            Showing {{ discountCodes.meta.from }} to {{ discountCodes.meta.to }} of {{ discountCodes.meta.total }} results
+                            Showing {{ discountCodes.from }} to {{ discountCodes.to }} of {{ discountCodes.total }} results
                         </div>
                         <nav>
                             <ul class="pagination pagination-sm mb-0">
@@ -434,7 +445,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                                 class="form-control text-uppercase font-monospace bg-white text-dark"
                                                 :class="{ 'is-invalid': createForm.errors.code }"
                                                 placeholder="e.g., SAVE20"
-                                                @input="(e) => (createForm.code = e.target.value.toUpperCase())"
+                                                @input="(e) => (createForm.code = (e.target as HTMLInputElement).value.toUpperCase())"
                                             />
                                             <div class="form-text text-muted">Enter a unique code or leave blank to auto-generate</div>
                                             <div v-if="createForm.errors.code" class="invalid-feedback">{{ createForm.errors.code }}</div>
@@ -484,7 +495,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                                     type="number"
                                                     step="0.01"
                                                     min="0"
-                                                    :max="createForm.discount_type === 'percentage' ? 100 : null"
+                                                    :max="createForm.discount_type === 'percentage' ? 100 : undefined"
                                                     class="form-control bg-white text-dark"
                                                     :class="{ 'is-invalid': createForm.errors.discount_amount }"
                                                     required
@@ -823,7 +834,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                                 type="text"
                                                 class="form-control text-uppercase font-monospace bg-white text-dark"
                                                 :class="{ 'is-invalid': editForm.errors.code }"
-                                                @input="(e) => (editForm.code = e.target.value.toUpperCase())"
+                                                @input="(e) => (editForm.code = (e.target as HTMLInputElement).value.toUpperCase())"
                                             />
                                             <div v-if="editForm.errors.code" class="invalid-feedback">{{ editForm.errors.code }}</div>
                                         </div>
@@ -870,7 +881,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                                     type="number"
                                                     step="0.01"
                                                     min="0"
-                                                    :max="editForm.discount_type === 'percentage' ? 100 : null"
+                                                    :max="editForm.discount_type === 'percentage' ? 100 : undefined"
                                                     class="form-control bg-white text-dark"
                                                     :class="{ 'is-invalid': editForm.errors.discount_amount }"
                                                     required
