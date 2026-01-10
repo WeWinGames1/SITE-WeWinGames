@@ -17,6 +17,11 @@ class AdminSecurityHeaders
     {
         $response = $next($request);
 
+        // Prevent caching of admin pages (important for Inertia.js with Cloudflare)
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+
         // Set security headers for admin routes
         $response->headers->set('X-Frame-Options', 'DENY');
         $response->headers->set('X-Content-Type-Options', 'nosniff');

@@ -57,39 +57,73 @@ class DiscountCodeController extends Controller
 
         // Transform for frontend
         $discountCodes->through(function ($code) {
-            // Convert Stripe product IDs back to database IDs for the frontend
-            $applicableProductIds = [];
-            if (! empty($code->applicable_products) && is_array($code->applicable_products)) {
-                $applicableProductIds = StripeProduct::whereIn('stripe_product_id', $code->applicable_products)
-                    ->pluck('id')
-                    ->toArray();
-            }
+            try {
+                // Convert Stripe product IDs back to database IDs for the frontend
+                // Handle case where applicable_products may reference deleted products
+                $applicableProductIds = [];
+                $rawProducts = $code->applicable_products;
 
-            return [
-                'id' => $code->id,
-                'code' => $code->code,
-                'description' => $code->description,
-                'discount_type' => $code->discount_type,
-                'discount_amount' => $code->discount_amount,
-                'formatted_discount' => $code->formatted_discount,
-                'apply_to' => $code->apply_to,
-                'months_count' => $code->months_count,
-                'max_uses' => $code->max_uses,
-                'max_uses_per_customer' => $code->max_uses_per_customer,
-                'times_used' => $code->times_used,
-                'valid_from' => $code->valid_from,
-                'valid_until' => $code->valid_until,
-                'applicable_products' => $applicableProductIds,
-                'minimum_amount' => $code->minimum_amount,
-                'is_active' => $code->is_active,
-                'is_valid' => $code->isValid(),
-                'redemptions_count' => $code->redemptions->count(),
-                'created_at' => $code->created_at,
-                'creator' => $code->creator ? [
-                    'id' => $code->creator->id,
-                    'name' => $code->creator->name,
-                ] : null,
-            ];
+                if (! empty($rawProducts) && is_array($rawProducts)) {
+                    $applicableProductIds = StripeProduct::whereIn('stripe_product_id', $rawProducts)
+                        ->pluck('id')
+                        ->toArray();
+                }
+
+                return [
+                    'id' => $code->id,
+                    'code' => $code->code,
+                    'description' => $code->description,
+                    'discount_type' => $code->discount_type,
+                    'discount_amount' => (float) ($code->discount_amount ?? 0),
+                    'formatted_discount' => $code->formatted_discount ?? '0%',
+                    'apply_to' => $code->apply_to ?? 'first_payment',
+                    'months_count' => $code->months_count,
+                    'max_uses' => $code->max_uses,
+                    'max_uses_per_customer' => $code->max_uses_per_customer ?? 1,
+                    'times_used' => $code->times_used ?? 0,
+                    'valid_from' => $code->valid_from,
+                    'valid_until' => $code->valid_until,
+                    'applicable_products' => $applicableProductIds,
+                    'minimum_amount' => $code->minimum_amount,
+                    'is_active' => (bool) $code->is_active,
+                    'is_valid' => $code->isValid(),
+                    'redemptions_count' => $code->redemptions->count(),
+                    'created_at' => $code->created_at,
+                    'creator' => $code->creator ? [
+                        'id' => $code->creator->id,
+                        'name' => $code->creator->name,
+                    ] : null,
+                ];
+            } catch (\Exception $e) {
+                // Log the error and return minimal data to prevent page crash
+                \Log::error('Error transforming discount code', [
+                    'code_id' => $code->id ?? 'unknown',
+                    'error' => $e->getMessage(),
+                ]);
+
+                return [
+                    'id' => $code->id ?? 0,
+                    'code' => $code->code ?? 'ERROR',
+                    'description' => 'Error loading this discount code',
+                    'discount_type' => 'percentage',
+                    'discount_amount' => 0,
+                    'formatted_discount' => '0%',
+                    'apply_to' => 'first_payment',
+                    'months_count' => null,
+                    'max_uses' => null,
+                    'max_uses_per_customer' => 1,
+                    'times_used' => 0,
+                    'valid_from' => null,
+                    'valid_until' => null,
+                    'applicable_products' => [],
+                    'minimum_amount' => null,
+                    'is_active' => false,
+                    'is_valid' => false,
+                    'redemptions_count' => 0,
+                    'created_at' => $code->created_at ?? now(),
+                    'creator' => null,
+                ];
+            }
         });
 
         $products = StripeProduct::active()->ordered()->get(['id', 'name', 'tier', 'billing_period', 'stripe_product_id']);

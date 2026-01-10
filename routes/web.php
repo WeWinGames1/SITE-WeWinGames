@@ -313,7 +313,7 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
 // Subscription Dashboard Routes - Merged into Customers
 
 // Discount Code Management Routes
-Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/discounts')->name('admin.discounts.')->group(function () {
+Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin/discounts')->name('admin.discounts.')->group(function () {
     Route::get('/', [DiscountCodeController::class, 'index'])->name('index');
     Route::post('/', [DiscountCodeController::class, 'store'])->name('store');
     Route::get('/{discountCode}', [DiscountCodeController::class, 'show'])->name('show');
