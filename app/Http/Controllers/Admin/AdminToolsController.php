@@ -27,7 +27,7 @@ class AdminToolsController extends Controller
             'body' => 'required|string|max:1000',
             'target_type' => 'required|in:all,tiers,users',
             'tiers' => 'required_if:target_type,tiers|array',
-            'tiers.*' => 'in:Bronze,Silver,Gold,Platinum',
+            'tiers.*' => 'in:Free,Gold,Platinum,Bronze,Silver',
             'user_ids' => 'required_if:target_type,users|array',
             'user_ids.*' => 'exists:users,id',
         ]);

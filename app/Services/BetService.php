@@ -592,10 +592,8 @@ class BetService
 
             // Use membership column (with case-insensitive comparison)
             $query->whereIn(DB::raw('LOWER(membership)'), $visibleLevels);
-        } else {
-            // Non-authenticated users cannot see any picks - they must login
-            $query->whereRaw('1 = 0');
         }
+        // Non-authenticated users: return all bets - controller will filter for teaser display
 
         return $query->orderBy('game_date', 'asc')
             ->orderBy('betting_date', 'asc')
@@ -642,10 +640,8 @@ class BetService
             }
 
             $query->whereIn(DB::raw('LOWER(membership)'), $visibleLevels);
-        } else {
-            // Non-authenticated users cannot see any picks - they must login
-            $query->whereRaw('1 = 0');
         }
+        // Non-authenticated users: return all bets - controller will filter for teaser display
 
         return $query->orderBy('game_date', 'asc')
             ->orderBy('betting_date', 'asc')
@@ -684,10 +680,8 @@ class BetService
             }
 
             $query->whereIn(DB::raw('LOWER(membership)'), $visibleLevels);
-        } else {
-            // Non-authenticated users cannot see any picks - they must login
-            $query->whereRaw('1 = 0');
         }
+        // Non-authenticated users: return all dates - let frontend handle display
 
         // Get all game dates
         $gameDates = $query->distinct()

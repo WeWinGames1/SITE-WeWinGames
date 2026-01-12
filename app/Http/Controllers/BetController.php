@@ -160,8 +160,10 @@ class BetController extends Controller
             return $bet->sports ?? $bet->sport ?? 'Football';
         })->map->count();
 
-        // For unauthenticated users, apply same filtering as home page (teaser)
+        // For unauthenticated users, show limited free picks + teaser count
         $user = auth()->user();
+        $premiumPicksCount = 0;
+
         if (! $user) {
             // Get sport preferences
             $sportPreferences = \App\Models\SportPreference::active()
@@ -169,27 +171,25 @@ class BetController extends Controller
                 ->pluck('sport_name')
                 ->toArray();
 
-            // Filter and limit free/bronze/silver bets
+            // Filter free/bronze/silver bets
             $freeTierBets = $allBets->filter(function ($bet) {
                 $tier = strtolower($bet->membership ?? $bet->level ?? '');
                 return in_array($tier, ['free', 'bronze', 'silver']);
             });
 
             // Sort by sport preference and limit to 2
-            $limitedBets = $freeTierBets->sortBy(function ($bet) use ($sportPreferences) {
+            $freeBets = $freeTierBets->sortBy(function ($bet) use ($sportPreferences) {
                 $sport = $bet->sports ?? $bet->sport ?? '';
                 $index = array_search($sport, $sportPreferences);
 
                 return $index === false ? 999 : $index;
-            })->take(2);
+            })->take(2)->values();
 
-            // Include premium bets for display (they'll be covered)
-            $premiumBets = $allBets->filter(function ($bet) {
+            // Count premium picks for teaser card (don't send the actual bets)
+            $premiumPicksCount = $allBets->filter(function ($bet) {
                 $tier = strtolower($bet->membership ?? $bet->level ?? '');
                 return in_array($tier, ['gold', 'platinum']);
-            });
-
-            $freeBets = $limitedBets->merge($premiumBets);
+            })->count();
         } else {
             $freeBets = $allBets;
         }
@@ -200,6 +200,7 @@ class BetController extends Controller
             'totalBetsPerSport' => $totalBetsPerSport,
             'sportPreferences' => \App\Models\SportPreference::active()->get(),
             'availableGameDates' => $this->betService->getAvailableGameDates(),
+            'premiumPicksCount' => $premiumPicksCount,
         ]);
     }
 

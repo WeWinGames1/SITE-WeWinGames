@@ -18,7 +18,7 @@ class CreateTestUser extends Command
                             {email : The email address for the test user}
                             {--name= : The name of the test user (optional)}
                             {--password= : The password for the test user (optional, will be generated if not provided)}
-                            {--tier= : The subscription tier (bronze|silver|gold|platinum)}
+                            {--tier= : The subscription tier (free|gold|platinum)}
                             {--days= : Number of days until override expires (optional)}
                             {--ambassador : Mark as ambassador account}
                             {--gifted : Mark as gifted account}';
@@ -64,7 +64,7 @@ class CreateTestUser extends Command
 
         // Apply tier override if specified
         if ($tier) {
-            $validTiers = ['bronze', 'silver', 'gold', 'platinum'];
+            $validTiers = ['free', 'gold', 'platinum', 'bronze', 'silver']; // bronze/silver for legacy support
             if (!in_array(strtolower($tier), $validTiers)) {
                 $this->error("Invalid tier. Must be one of: " . implode(', ', $validTiers));
                 $user->delete();

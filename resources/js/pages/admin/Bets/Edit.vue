@@ -117,6 +117,24 @@ const extractBaseTeamName = (teamString: string): string => {
     return baseTeam;
 };
 
+// Helper function to normalize membership tier (handles legacy Bronze/Silver → Free)
+const normalizeMembership = (membership: string | undefined | null): string => {
+    if (!membership) return 'Free';
+    const lower = membership.toLowerCase();
+    // Map legacy tiers to new structure
+    if (lower === 'bronze' || lower === 'silver' || lower === 'free') {
+        return 'Free';
+    }
+    if (lower === 'gold') {
+        return 'Gold';
+    }
+    if (lower === 'platinum') {
+        return 'Platinum';
+    }
+    // Return capitalized version as fallback
+    return membership.charAt(0).toUpperCase() + membership.slice(1).toLowerCase();
+};
+
 // Modal state
 const showLogoModal = ref(false);
 const logoModalTeam = ref<'one' | 'two'>('one');
@@ -154,7 +172,7 @@ const form = useForm({
     betting_date: props.bet.betting_date ? new Date(props.bet.betting_date).toISOString().slice(0, 16) : '',
     game_date: props.bet.game_date ? new Date(props.bet.game_date).toISOString().slice(0, 16) : '',
     wager_odds: props.bet.wager_odds || '',
-    membership: String(props.bet.membership || 'bronze').toLowerCase(),
+    membership: normalizeMembership(props.bet.membership),
     level: props.bet.level || '',
     code: props.bet.code || '',
     roi: props.bet.roi || 0,
@@ -731,7 +749,7 @@ function validateForm(): boolean {
     if (!form.membership) {
         errors.membership = 'The membership field is required.';
         isValid = false;
-    } else if (!['bronze', 'silver', 'gold', 'platinum'].includes(form.membership)) {
+    } else if (!['free', 'Free', 'gold', 'Gold', 'platinum', 'Platinum', 'bronze', 'silver', 'Bronze', 'Silver'].includes(form.membership)) {
         errors.membership = 'The selected membership is invalid.';
         isValid = false;
     }
