@@ -231,6 +231,29 @@ class DiscountCodeController extends Controller
             return back()->withErrors(['max_uses' => 'Cannot set max uses below current usage count.']);
         }
 
+        // Check if discount-affecting fields changed - if so, clear stripe_coupon_id
+        // so it gets recreated with fresh values on next checkout
+        // (Stripe coupons are immutable - cannot be updated, only recreated)
+        $discountFieldsChanged =
+            $discountCode->discount_type !== $validated['discount_type'] ||
+            (float) $discountCode->discount_amount !== (float) $validated['discount_amount'] ||
+            $discountCode->apply_to !== $validated['apply_to'] ||
+            $discountCode->months_count !== ($validated['months_count'] ?? null);
+
+        if ($discountFieldsChanged && $discountCode->stripe_coupon_id) {
+            \Log::info('Discount code updated - clearing Stripe coupon ID for recreation', [
+                'code' => $discountCode->code,
+                'old_stripe_coupon_id' => $discountCode->stripe_coupon_id,
+                'changes' => [
+                    'discount_type' => [$discountCode->discount_type, $validated['discount_type']],
+                    'discount_amount' => [$discountCode->discount_amount, $validated['discount_amount']],
+                    'apply_to' => [$discountCode->apply_to, $validated['apply_to']],
+                    'months_count' => [$discountCode->months_count, $validated['months_count'] ?? null],
+                ],
+            ]);
+            $validated['stripe_coupon_id'] = null;
+        }
+
         // Convert product IDs to Stripe product IDs
         if (isset($validated['applicable_products'])) {
             if (! empty($validated['applicable_products'])) {
@@ -247,6 +270,21 @@ class DiscountCodeController extends Controller
 
         $discountCode->update($validated);
 
+        // Auto-sync to Stripe if discount-affecting fields changed
+        if ($discountFieldsChanged && $this->stripeService) {
+            try {
+                $this->syncDiscountToStripe($discountCode);
+            } catch (\Exception $e) {
+                \Log::error('Failed to auto-sync discount code to Stripe after update', [
+                    'code' => $discountCode->code,
+                    'error' => $e->getMessage(),
+                ]);
+
+                return redirect()->route('admin.discounts.index')
+                    ->with('warning', 'Discount code updated, but failed to sync to Stripe: '.$e->getMessage());
+            }
+        }
+
         return redirect()->route('admin.discounts.index')
             ->with('success', 'Discount code updated successfully.');
     }
@@ -262,6 +300,132 @@ class DiscountCodeController extends Controller
             'success' => true,
             'message' => 'Discount code deactivated.',
         ]);
+    }
+
+    /**
+     * Sync discount code to Stripe (API endpoint)
+     */
+    public function syncToStripe(DiscountCode $discountCode)
+    {
+        if (! $this->stripeService) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Stripe is not configured. Please set STRIPE_SECRET in your .env file.',
+            ], 500);
+        }
+
+        try {
+            $stripeCouponId = $this->syncDiscountToStripe($discountCode);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Discount code synced to Stripe successfully.',
+                'stripe_coupon_id' => $stripeCouponId,
+            ]);
+
+        } catch (\Stripe\Exception\InvalidRequestException $e) {
+            \Log::error('Failed to sync discount code to Stripe', [
+                'code' => $discountCode->code,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to sync to Stripe: '.$e->getMessage(),
+            ], 400);
+
+        } catch (\Exception $e) {
+            \Log::error('Unexpected error syncing discount code to Stripe', [
+                'code' => $discountCode->code,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Unexpected error: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Internal method to sync discount code to Stripe
+     * Since Stripe coupons are immutable, this deletes the old one and creates a new one
+     *
+     * @return string The new Stripe coupon ID
+     *
+     * @throws \Exception
+     */
+    private function syncDiscountToStripe(DiscountCode $discountCode): string
+    {
+        $stripe = new \Stripe\StripeClient(config('cashier.secret'));
+
+        // Delete old coupon if it exists
+        if ($discountCode->stripe_coupon_id) {
+            try {
+                $stripe->coupons->delete($discountCode->stripe_coupon_id);
+                \Log::info('Deleted old Stripe coupon', [
+                    'code' => $discountCode->code,
+                    'old_stripe_coupon_id' => $discountCode->stripe_coupon_id,
+                ]);
+            } catch (\Stripe\Exception\InvalidRequestException $e) {
+                // Coupon doesn't exist in Stripe - that's fine, continue
+                \Log::info('Old Stripe coupon not found (already deleted or never existed)', [
+                    'code' => $discountCode->code,
+                    'stripe_coupon_id' => $discountCode->stripe_coupon_id,
+                ]);
+            }
+        }
+
+        // Create new coupon with current database values
+        $couponData = [
+            'id' => $discountCode->code,
+            'metadata' => [
+                'synced_at' => now()->toIso8601String(),
+                'synced_by' => auth()->user()->email,
+            ],
+        ];
+
+        // Set discount type
+        if ($discountCode->discount_type === 'percentage') {
+            $couponData['percent_off'] = (float) $discountCode->discount_amount;
+        } else {
+            $couponData['amount_off'] = (int) ($discountCode->discount_amount * 100); // Convert to cents
+            $couponData['currency'] = 'usd';
+        }
+
+        // Set duration based on apply_to field
+        if ($discountCode->apply_to === 'first_payment') {
+            $couponData['duration'] = 'once';
+        } elseif ($discountCode->apply_to === 'forever') {
+            $couponData['duration'] = 'forever';
+        } else {
+            $couponData['duration'] = 'repeating';
+            $couponData['duration_in_months'] = $discountCode->months_count;
+        }
+
+        // Set redemption limit
+        if ($discountCode->max_uses) {
+            $couponData['max_redemptions'] = $discountCode->max_uses;
+        }
+
+        // Set validity period
+        if ($discountCode->valid_until) {
+            $couponData['redeem_by'] = Carbon::parse($discountCode->valid_until)->timestamp;
+        }
+
+        $stripeCoupon = $stripe->coupons->create($couponData);
+
+        // Update the database with the new Stripe coupon ID
+        $discountCode->update(['stripe_coupon_id' => $stripeCoupon->id]);
+
+        \Log::info('Synced discount code to Stripe', [
+            'code' => $discountCode->code,
+            'stripe_coupon_id' => $stripeCoupon->id,
+            'discount_type' => $discountCode->discount_type,
+            'discount_amount' => $discountCode->discount_amount,
+        ]);
+
+        return $stripeCoupon->id;
     }
 
     /**

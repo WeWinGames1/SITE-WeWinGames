@@ -71,6 +71,8 @@ const showEditModal = ref(false);
 const selectedCode = ref<DiscountCode | null>(null);
 const codeDetails = ref<any>(null);
 const copiedCode = ref<string | null>(null);
+const syncingCodeId = ref<number | null>(null);
+const syncMessage = ref<{ type: 'success' | 'error'; text: string } | null>(null);
 
 // Forms
 const filterForm = useForm({
@@ -217,6 +219,42 @@ function copyToClipboard(code: string) {
     }, 2000);
 }
 
+async function syncToStripe(code: DiscountCode) {
+    if (syncingCodeId.value) return;
+
+    syncingCodeId.value = code.id;
+    syncMessage.value = null;
+
+    try {
+        const response = await fetch(route('admin.discounts.sync-to-stripe', code.id), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            },
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            syncMessage.value = { type: 'success', text: `${code.code} synced to Stripe successfully!` };
+            // Refresh the page to show updated data
+            router.reload({ only: ['discountCodes'] });
+        } else {
+            syncMessage.value = { type: 'error', text: data.message || 'Failed to sync to Stripe' };
+        }
+    } catch (error) {
+        console.error('Failed to sync to Stripe:', error);
+        syncMessage.value = { type: 'error', text: 'Failed to sync to Stripe. Please try again.' };
+    } finally {
+        syncingCodeId.value = null;
+        // Clear message after 5 seconds
+        setTimeout(() => {
+            syncMessage.value = null;
+        }, 5000);
+    }
+}
+
 function getApplyToLabel(applyTo: string, months?: number | null): string {
     switch (applyTo) {
         case 'first_payment':
@@ -275,6 +313,13 @@ function getStatusBadgeClass(code: DiscountCode): string {
                 </button>
             </div>
 
+            <!-- Sync Message Alert -->
+            <div v-if="syncMessage" class="alert" :class="syncMessage.type === 'success' ? 'alert-success' : 'alert-danger'" role="alert">
+                <i :class="syncMessage.type === 'success' ? 'bi bi-check-circle' : 'bi bi-exclamation-circle'" class="me-2"></i>
+                {{ syncMessage.text }}
+                <button type="button" class="btn-close float-end" @click="syncMessage = null"></button>
+            </div>
+
             <!-- Filters -->
             <div class="card mb-4">
                 <div class="card-body">
@@ -324,7 +369,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                 <th>Usage</th>
                                 <th>Valid Until</th>
                                 <th>Status</th>
-                                <th width="120">Actions</th>
+                                <th width="160">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -371,6 +416,15 @@ function getStatusBadgeClass(code: DiscountCode): string {
                                         </button>
                                         <button @click="editCode(code)" class="btn btn-outline-secondary" title="Edit">
                                             <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button
+                                            @click="syncToStripe(code)"
+                                            class="btn btn-outline-info"
+                                            title="Sync to Stripe"
+                                            :disabled="syncingCodeId === code.id"
+                                        >
+                                            <span v-if="syncingCodeId === code.id" class="spinner-border spinner-border-sm"></span>
+                                            <i v-else class="bi bi-cloud-upload"></i>
                                         </button>
                                         <button v-if="code.is_active" @click="deactivateCode(code)" class="btn btn-outline-danger" title="Deactivate">
                                             <i class="bi bi-x-circle"></i>

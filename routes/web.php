@@ -319,6 +319,7 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
     Route::get('/{discountCode}', [DiscountCodeController::class, 'show'])->name('show');
     Route::put('/{discountCode}', [DiscountCodeController::class, 'update'])->name('update');
     Route::post('/{discountCode}/deactivate', [DiscountCodeController::class, 'deactivate'])->name('deactivate');
+    Route::post('/{discountCode}/sync-to-stripe', [DiscountCodeController::class, 'syncToStripe'])->name('sync-to-stripe');
     Route::post('/validate', [DiscountCodeController::class, 'validate'])->name('validate');
 });
 
