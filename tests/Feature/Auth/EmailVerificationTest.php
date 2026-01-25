@@ -55,4 +55,29 @@ class EmailVerificationTest extends TestCase
 
         $this->assertFalse($user->fresh()->hasVerifiedEmail());
     }
+
+    public function test_email_can_be_verified_without_authentication()
+    {
+        // Simulates clicking verification link from in-app email browser
+        // (Gmail, iOS Mail, etc.) which doesn't share session cookies
+        $user = User::factory()->unverified()->create();
+
+        Event::fake();
+
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            ['id' => $user->id, 'hash' => sha1($user->email)]
+        );
+
+        // Not using actingAs() - simulating unauthenticated request
+        $response = $this->get($verificationUrl);
+
+        Event::assertDispatched(Verified::class);
+        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+        $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
+
+        // User should be logged in after verification
+        $this->assertAuthenticatedAs($user);
+    }
 }
