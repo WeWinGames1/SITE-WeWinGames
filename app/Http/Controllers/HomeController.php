@@ -24,8 +24,8 @@ class HomeController extends Controller
         $profitByYear = $this->betService->getProfitByYear();
         $roiByYear = $this->betService->getROIByYear();
 
-        // Get golf statistics for 2025 (only settled bets for ROI calculation)
-        $golf2025Bets = \App\Models\Bet::whereYear('game_date', 2025)
+        // Get golf statistics for 2026 (only settled bets for ROI calculation)
+        $golf2026Bets = \App\Models\Bet::whereYear('game_date', 2026)
             ->where(function ($query) {
                 $query->where('sports', 'LIKE', '%golf%')
                     ->orWhere('sport', 'LIKE', '%golf%');
@@ -33,12 +33,12 @@ class HomeController extends Controller
             ->whereIn('status', ['won', 'lost', 'push', 'void', 'placed']) // Only settled bets
             ->get();
 
-        $golfWinners2025 = $golf2025Bets->where('status', 'won')->count();
+        $golfWinners2026 = $golf2026Bets->where('status', 'won')->count();
 
-        // Calculate golf ROI for 2025 (only from settled bets)
-        $totalWager = $golf2025Bets->sum('wager_amount');
-        $totalProfit = $golf2025Bets->sum('profit_amount');
-        $golfROI2025 = $totalWager > 0 ? round(($totalProfit / $totalWager) * 100) : 0;
+        // Calculate golf ROI for 2026 (only from settled bets)
+        $totalWager = $golf2026Bets->sum('wager_amount');
+        $totalProfit = $golf2026Bets->sum('profit_amount');
+        $golfROI2026 = $totalWager > 0 ? round(($totalProfit / $totalWager) * 100) : 0;
 
         // Get active bets (betting_date <= now, game_date >= now)
         $allBets = $this->betService->getTodaysBets()->map(function ($bet) {
@@ -49,6 +49,7 @@ class HomeController extends Controller
             if (empty($bet->team_two_logo) && $bet->teamTwo && $bet->teamTwo->logo_url) {
                 $bet->team_two_logo = \Storage::url($bet->teamTwo->logo_url);
             }
+
             return $bet;
         });
 
@@ -69,6 +70,7 @@ class HomeController extends Controller
             // Filter and limit free/bronze/silver bets
             $freeTierBets = $allBets->filter(function ($bet) {
                 $tier = strtolower($bet->membership ?? $bet->level ?? '');
+
                 return in_array($tier, ['free', 'bronze', 'silver']);
             });
 
@@ -83,6 +85,7 @@ class HomeController extends Controller
             // Include premium bets for display (they'll be covered)
             $premiumBets = $allBets->filter(function ($bet) {
                 $tier = strtolower($bet->membership ?? $bet->level ?? '');
+
                 return in_array($tier, ['gold', 'platinum']);
             });
 
@@ -114,8 +117,8 @@ class HomeController extends Controller
             'lastMonthROI' => $this->betService->getROIByMonth($lastMonthYear, $lastMonthNum),
             'lastMonthWinLoss' => $this->betService->getWinLossRatioByMonth($lastMonthYear, $lastMonthNum)['win_rate'] ?? 0,
             'monthlyProfit' => $this->betService->getAverageMonthlyProfit(),
-            'golfWinners2025' => $golfWinners2025,
-            'golfROI2025' => $golfROI2025,
+            'golfWinners2026' => $golfWinners2026,
+            'golfROI2026' => $golfROI2026,
             'testimonials' => SimpleCacheService::rememberQuery(
                 SimpleCacheService::KEY_TESTIMONIALS,
                 SimpleCacheService::TTL_LONG,

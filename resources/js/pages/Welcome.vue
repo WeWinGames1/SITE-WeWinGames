@@ -32,8 +32,8 @@ const props = defineProps<{
     lastMonthWinLoss?: number;
     lastMonthROI?: number;
     thisMonthWinLoss?: number;
-    golfWinners2025?: number;
-    golfROI2025?: number;
+    golfWinners2026?: number;
+    golfROI2026?: number;
     testimonials?: any[];
 }>(); // Get ROI data by subscription level
 // Get user's subscription type from auth.currentTier
@@ -422,7 +422,7 @@ const allGroupedBets = computed(() => {
                         <div class="col-lg-4">
                             <div class="card bg-dark text-white h-100 shadow">
                                 <div class="card-body">
-                                    <h3 class="h5 fw-bold text-center mb-4">Our 4 Year Record</h3>
+                                    <h3 class="h5 fw-bold text-center mb-4">Our 5 Year Record</h3>
                                     <table class="table table-dark table-sm">
                                         <thead>
                                             <tr>
@@ -448,7 +448,12 @@ const allGroupedBets = computed(() => {
                                                 <td>15%</td>
                                             </tr>
                                             <tr>
-                                                <td>{{ props.thisYear || 2025 }} to date</td>
+                                                <td>2025</td>
+                                                <td>$58,559</td>
+                                                <td>52%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>{{ props.thisYear || 2026 }} to date</td>
                                                 <td>${{ formatMoney(props.thisYearProfit) }}</td>
                                                 <td>{{ Math.round(props.thisYearROI ?? 0) }}%</td>
                                             </tr>
@@ -461,7 +466,7 @@ const allGroupedBets = computed(() => {
                         <div class="col-lg-4">
                             <div class="card bg-dark text-white h-100 shadow">
                                 <div class="card-body">
-                                    <h3 class="h5 fw-bold text-center mb-4">Our 4 Year Golf Record</h3>
+                                    <h3 class="h5 fw-bold text-center mb-4">Our 5 Year Golf Record</h3>
                                     <table class="table table-dark table-sm">
                                         <thead>
                                             <tr>
@@ -487,9 +492,14 @@ const allGroupedBets = computed(() => {
                                                 <td>69%</td>
                                             </tr>
                                             <tr>
-                                                <td>2025 to date</td>
-                                                <td>{{ props.golfWinners2025 || 0 }}</td>
-                                                <td>{{ props.golfROI2025 || 0 }}%</td>
+                                                <td>2025</td>
+                                                <td>23</td>
+                                                <td>810%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2026 to date</td>
+                                                <td>{{ props.golfWinners2026 || 0 }}</td>
+                                                <td>{{ props.golfROI2026 || 0 }}%</td>
                                             </tr>
                                         </tbody>
                                     </table>

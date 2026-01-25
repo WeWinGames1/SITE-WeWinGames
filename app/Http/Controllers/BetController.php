@@ -174,6 +174,7 @@ class BetController extends Controller
             // Filter free/bronze/silver bets
             $freeTierBets = $allBets->filter(function ($bet) {
                 $tier = strtolower($bet->membership ?? $bet->level ?? '');
+
                 return in_array($tier, ['free', 'bronze', 'silver']);
             });
 
@@ -188,6 +189,7 @@ class BetController extends Controller
             // Count premium picks for teaser card (don't send the actual bets)
             $premiumPicksCount = $allBets->filter(function ($bet) {
                 $tier = strtolower($bet->membership ?? $bet->level ?? '');
+
                 return in_array($tier, ['gold', 'platinum']);
             })->count();
         } else {
@@ -223,10 +225,12 @@ class BetController extends Controller
         // Get profit by year data from service
         $profitByYearData = $this->betService->getProfitAndROIByYear();
 
-        // Add static values for 2022 and 2023
+        // Add static values for 2022, 2023, 2024, and 2025
         $staticData = [
             2022 => ['profit' => 15769, 'roi' => 19],
             2023 => ['profit' => 21678, 'roi' => 16],
+            2024 => ['profit' => 13509, 'roi' => 15],
+            2025 => ['profit' => 58559, 'roi' => 52],
         ];
 
         // Merge static values with calculated data
