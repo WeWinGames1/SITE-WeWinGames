@@ -3,11 +3,14 @@
 namespace App\Providers;
 
 use App\Listeners\BindAffiliateOnSubscription;
+use App\Listeners\SyncDiscordRolesOnSubscriptionChange;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
 use Laravel\Cashier\Events\WebhookReceived;
+use SocialiteProviders\Discord\DiscordExtendSocialite;
+use SocialiteProviders\Manager\SocialiteWasCalled;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -22,6 +25,10 @@ class EventServiceProvider extends ServiceProvider
         ],
         WebhookReceived::class => [
             BindAffiliateOnSubscription::class,
+            SyncDiscordRolesOnSubscriptionChange::class,
+        ],
+        SocialiteWasCalled::class => [
+            DiscordExtendSocialite::class.'@handle',
         ],
     ];
 

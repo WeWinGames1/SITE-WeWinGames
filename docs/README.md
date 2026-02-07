@@ -11,6 +11,11 @@ Welcome to the WeWinGames documentation. This directory contains all technical d
 - [Production Checklist](deployment/production.md) - Production deployment guide
 - [Stripe Integration](deployment/stripe.md) - Stripe setup and configuration
 
+### Integrations
+- [Discord Setup](DISCORD_SETUP.md) - Discord OAuth and role management integration
+- [SendGrid Setup](SENDGRID_SETUP.md) - Email service configuration
+- [Bet Import Guide](BET_IMPORT_GUIDE.md) - CSV bet import process
+
 ### Architecture
 - [Admin Portal Structure](architecture/admin-portal.md) - Admin panel architecture
 - [Platform Improvements](architecture/platform.md) - Platform enhancement documentation

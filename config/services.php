@@ -67,4 +67,22 @@ return [
         'conversion_token' => env('REDDIT_CONVERSION_TOKEN'),
     ],
 
+    'discord' => [
+        'client_id' => env('DISCORD_CLIENT_ID'),
+        'client_secret' => env('DISCORD_CLIENT_SECRET'),
+        'redirect' => env('DISCORD_REDIRECT_URI'),
+
+        // Bot configuration
+        'bot_token' => env('DISCORD_BOT_TOKEN'),
+        'guild_id' => env('DISCORD_GUILD_ID'),
+        'invite_url' => env('DISCORD_INVITE_URL'),
+
+        // Role IDs mapped to subscription tiers
+        'roles' => [
+            'free' => env('DISCORD_ROLE_FREE'),
+            'gold' => env('DISCORD_ROLE_GOLD'),
+            'platinum' => env('DISCORD_ROLE_PLATINUM'),
+        ],
+    ],
+
 ];

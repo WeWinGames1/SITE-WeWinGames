@@ -40,6 +40,14 @@ class User extends Authenticatable implements MustVerifyEmail
         'override_tier',
         'affiliate_id',
         'discord_username',
+        'discord_id',
+        'discord_discriminator',
+        'discord_avatar',
+        'discord_access_token',
+        'discord_refresh_token',
+        'discord_connected_at',
+        'discord_token_expires_at',
+        'discord_roles_synced',
         'affiliate_bound_at',
         'affiliate_bound_plan',
         'favorite_team',
@@ -58,6 +66,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'registration_ip',
         'registration_user_agent',
         'last_login_ip',
+        'discord_access_token',
+        'discord_refresh_token',
     ];
 
     /**
@@ -77,7 +87,32 @@ class User extends Authenticatable implements MustVerifyEmail
             'admin_override' => 'boolean',
             'override_expiry' => 'date',
             'affiliate_bound_at' => 'datetime',
+            'discord_connected_at' => 'datetime',
+            'discord_token_expires_at' => 'datetime',
+            'discord_roles_synced' => 'array',
         ];
+    }
+
+    /**
+     * Check if Discord account is connected
+     */
+    public function hasDiscordConnected(): bool
+    {
+        return ! empty($this->discord_id);
+    }
+
+    /**
+     * Get the Discord avatar URL
+     */
+    public function getDiscordAvatarUrlAttribute(): ?string
+    {
+        if (! $this->discord_id || ! $this->discord_avatar) {
+            return null;
+        }
+
+        $extension = str_starts_with($this->discord_avatar, 'a_') ? 'gif' : 'png';
+
+        return "https://cdn.discordapp.com/avatars/{$this->discord_id}/{$this->discord_avatar}.{$extension}";
     }
 
     /**

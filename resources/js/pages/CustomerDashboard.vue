@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import CustomerLayout from '@/layouts/CustomerLayout.vue';
-import { Head, Link, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 const page = usePage();
 const props = defineProps<{
@@ -14,9 +14,20 @@ const props = defineProps<{
         profitPercentage: number;
     };
     hasActiveSubscription: boolean;
+    discord?: {
+        connected: boolean;
+        username: string | null;
+        avatarUrl: string | null;
+        connectedAt: string | null;
+        rolesSynced: string[];
+        inviteUrl: string | null;
+        isConfigured: boolean;
+    };
 }>();
 
 const user = page.props.auth.user.data;
+const isSyncingRoles = ref(false);
+const isDisconnecting = ref(false);
 
 // Get subscription badge info
 const subscriptionBadge = computed(() => {
@@ -29,6 +40,59 @@ const subscriptionBadge = computed(() => {
             return { text: 'Free', class: 'bg-success' };
     }
 });
+
+// Get Discord role display based on subscription tier
+const discordRoleDisplay = computed(() => {
+    const roles = [];
+    roles.push({ name: 'Free', class: 'bg-success' });
+
+    if (props.subscriptionTier === 'gold' || props.subscriptionTier === 'platinum') {
+        roles.push({ name: 'Gold', class: 'bg-warning text-dark' });
+    }
+
+    if (props.subscriptionTier === 'platinum') {
+        roles.push({ name: 'Platinum', class: 'bg-purple' });
+    }
+
+    return roles;
+});
+
+// Connect Discord
+const connectDiscord = () => {
+    window.location.href = route('discord.redirect');
+};
+
+// Disconnect Discord
+const disconnectDiscord = () => {
+    if (!confirm('Are you sure you want to disconnect your Discord account? Your roles will be removed from the server.')) {
+        return;
+    }
+
+    isDisconnecting.value = true;
+    router.post(
+        route('discord.disconnect'),
+        {},
+        {
+            onFinish: () => {
+                isDisconnecting.value = false;
+            },
+        },
+    );
+};
+
+// Sync Discord roles
+const syncDiscordRoles = () => {
+    isSyncingRoles.value = true;
+    router.post(
+        route('discord.sync-roles'),
+        {},
+        {
+            onFinish: () => {
+                isSyncingRoles.value = false;
+            },
+        },
+    );
+};
 </script>
 
 <template>
@@ -188,6 +252,148 @@ const subscriptionBadge = computed(() => {
                         </div>
                     </div>
 
+                    <!-- Discord Community Section -->
+                    <div class="row g-4 mb-5">
+                        <div class="col-12">
+                            <h2 class="h4 fw-bold text-white mb-4">
+                                <i class="bi bi-discord me-2" style="color: #5865f2"></i>
+                                Discord Community
+                            </h2>
+                        </div>
+                        <div class="col-12">
+                            <div class="card" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)">
+                                <div class="card-body p-4">
+                                    <div v-if="!props.discord?.connected" class="text-center py-4">
+                                        <!-- Not Connected State -->
+                                        <div class="mb-4">
+                                            <i class="bi bi-discord display-1" style="color: #5865f2"></i>
+                                        </div>
+                                        <h5 class="text-white mb-3">Connect Your Discord Account</h5>
+                                        <p class="text-gray-light mb-4" style="max-width: 500px; margin: 0 auto">
+                                            Join our exclusive Discord community! Connect your account to get roles based on your subscription tier and access
+                                            member-only channels.
+                                        </p>
+                                        <button @click="connectDiscord" class="btn btn-lg px-5" style="background-color: #5865f2; color: white">
+                                            <i class="bi bi-discord me-2"></i>
+                                            Connect Discord
+                                        </button>
+                                    </div>
+
+                                    <div v-else>
+                                        <!-- No Subscription Warning -->
+                                        <div v-if="!props.hasActiveSubscription" class="alert alert-warning mb-4">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+                                                <div>
+                                                    <strong>No Active Subscription</strong>
+                                                    <p class="mb-0 small">
+                                                        Your Discord roles have been removed because you don't have an active subscription.
+                                                        <Link href="/buy-our-picks" class="alert-link">Subscribe now</Link> to regain access to exclusive channels.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row align-items-center">
+                                            <!-- Connected State -->
+                                            <div class="col-md-6">
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <div class="position-relative">
+                                                        <img
+                                                            v-if="props.discord.avatarUrl"
+                                                            :src="props.discord.avatarUrl"
+                                                            alt="Discord Avatar"
+                                                            class="rounded-circle"
+                                                            style="width: 64px; height: 64px"
+                                                        />
+                                                        <div
+                                                            v-else
+                                                            class="rounded-circle d-flex align-items-center justify-content-center"
+                                                            style="width: 64px; height: 64px; background-color: #5865f2"
+                                                        >
+                                                            <i class="bi bi-discord text-white fs-3"></i>
+                                                        </div>
+                                                        <span
+                                                            class="position-absolute bottom-0 end-0 rounded-circle"
+                                                            :class="props.hasActiveSubscription ? 'bg-success' : 'bg-warning'"
+                                                            style="width: 16px; height: 16px; border: 2px solid var(--bs-card-bg)"
+                                                        ></span>
+                                                    </div>
+                                                    <div>
+                                                        <h5 class="text-white mb-1">{{ props.discord.username }}</h5>
+                                                        <span class="badge bg-success me-2">
+                                                            <i class="bi bi-check-circle me-1"></i>
+                                                            Connected
+                                                        </span>
+                                                        <small class="text-gray-light">
+                                                            since
+                                                            {{
+                                                                props.discord.connectedAt
+                                                                    ? new Date(props.discord.connectedAt).toLocaleDateString()
+                                                                    : 'recently'
+                                                            }}
+                                                        </small>
+                                                    </div>
+                                                </div>
+
+                                                <div class="mt-3">
+                                                    <span class="text-gray-light small me-2">Your Roles:</span>
+                                                    <template v-if="props.hasActiveSubscription">
+                                                        <span
+                                                            v-for="role in discordRoleDisplay"
+                                                            :key="role.name"
+                                                            :class="role.class"
+                                                            class="badge me-1"
+                                                        >
+                                                            {{ role.name }}
+                                                        </span>
+                                                    </template>
+                                                    <span v-else class="badge bg-secondary">
+                                                        <i class="bi bi-x-circle me-1"></i>
+                                                        No roles (inactive subscription)
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                        <div class="col-md-6 text-md-end mt-4 mt-md-0">
+                                            <div class="d-flex flex-column flex-md-row gap-2 justify-content-md-end">
+                                                <a
+                                                    v-if="props.discord.inviteUrl"
+                                                    :href="props.discord.inviteUrl"
+                                                    target="_blank"
+                                                    rel="noopener"
+                                                    class="btn btn-lg"
+                                                    style="background-color: #5865f2; color: white"
+                                                >
+                                                    <i class="bi bi-box-arrow-up-right me-2"></i>
+                                                    Join Discord Server
+                                                </a>
+                                                <button
+                                                    @click="syncDiscordRoles"
+                                                    :disabled="isSyncingRoles"
+                                                    class="btn btn-outline-light"
+                                                >
+                                                    <i v-if="isSyncingRoles" class="bi bi-arrow-repeat spin me-2"></i>
+                                                    <i v-else class="bi bi-arrow-repeat me-2"></i>
+                                                    {{ isSyncingRoles ? 'Syncing...' : 'Sync Roles' }}
+                                                </button>
+                                                <button
+                                                    @click="disconnectDiscord"
+                                                    :disabled="isDisconnecting"
+                                                    class="btn btn-outline-danger"
+                                                >
+                                                    <i class="bi bi-x-circle me-2"></i>
+                                                    Disconnect
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Recent Wins -->
                     <div v-if="props.recentWins.length > 0" class="row g-4 mb-5">
                         <div class="col-12">
@@ -259,5 +465,24 @@ const subscriptionBadge = computed(() => {
 a.card:hover {
     transform: translateY(-5px);
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Discord button hover */
+.btn[style*='background-color: #5865f2']:hover {
+    background-color: #4752c4 !important;
+}
+
+/* Spin animation for sync button */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spin {
+    animation: spin 1s linear infinite;
 }
 </style>

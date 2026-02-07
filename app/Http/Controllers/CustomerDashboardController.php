@@ -3,13 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Services\BetService;
+use App\Services\DiscordService;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class CustomerDashboardController extends Controller
 {
     public function __construct(
-        private BetService $betService
+        private BetService $betService,
+        private DiscordService $discordService
     ) {}
 
     public function index()
@@ -31,6 +33,17 @@ class CustomerDashboardController extends Controller
         $subscriptionTier = $user->getCurrentTier() ?? 'free';
         $hasActiveSubscription = $user->hasActiveSubscription();
 
+        // Discord integration data
+        $discordData = [
+            'connected' => $user->hasDiscordConnected(),
+            'username' => $user->discord_username,
+            'avatarUrl' => $user->discord_avatar_url,
+            'connectedAt' => $user->discord_connected_at?->toISOString(),
+            'rolesSynced' => $user->discord_roles_synced ?? [],
+            'inviteUrl' => $this->discordService->getInviteUrl(),
+            'isConfigured' => $this->discordService->isConfigured(),
+        ];
+
         return Inertia::render('CustomerDashboard', [
             'subscriptionTier' => strtolower($subscriptionTier),
             'todaysBetsCount' => count($todaysBets),
@@ -41,6 +54,7 @@ class CustomerDashboardController extends Controller
                 'profitPercentage' => 18.5,
             ],
             'hasActiveSubscription' => $hasActiveSubscription,
+            'discord' => $discordData,
         ]);
     }
 }

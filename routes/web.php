@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\UnderConstructionController;
 use App\Http\Controllers\BetController;
 use App\Http\Controllers\BettingEducationController;
 use App\Http\Controllers\CustomerDashboardController;
+use App\Http\Controllers\DiscordController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PageShowController;
 use App\Http\Controllers\StaticPageController;
@@ -79,6 +80,13 @@ Route::middleware(['auth', 'verified'])->prefix('subscription')->name('subscript
     Route::post('/cancel', [\App\Http\Controllers\SubscriptionController::class, 'cancel'])->name('cancel');
     Route::post('/resume', [\App\Http\Controllers\SubscriptionController::class, 'resume'])->name('resume');
 });
+
+// Discord OAuth Routes
+Route::get('/auth/discord', [DiscordController::class, 'redirect'])->middleware(['auth', 'verified'])->name('discord.redirect');
+Route::get('/auth/discord/callback', [DiscordController::class, 'callback'])->middleware(['auth', 'verified'])->name('discord.callback');
+Route::post('/auth/discord/disconnect', [DiscordController::class, 'disconnect'])->middleware(['auth', 'verified'])->name('discord.disconnect');
+Route::post('/auth/discord/sync-roles', [DiscordController::class, 'syncRoles'])->middleware(['auth', 'verified'])->name('discord.sync-roles');
+Route::get('/api/discord/status', [DiscordController::class, 'status'])->middleware(['auth', 'verified'])->name('discord.status');
 
 // Public Support Route (for both guests and authenticated users)
 Route::get('/support', [SupportTicketController::class, 'publicCreate'])->name('support.public');
