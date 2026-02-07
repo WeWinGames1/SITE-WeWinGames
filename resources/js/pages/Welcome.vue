@@ -268,13 +268,43 @@ const categorizeBet = (bet) => {
     }
 };
 
+// Helper function to create teaser cards for a sport
+const createTeaserCards = (sport, visibleBetsCount, coveredBetsCount = null) => {
+    // Calculate the actual number of covered/premium bets
+    let remainingCount = 0;
+
+    if (coveredBetsCount !== null) {
+        // Use the provided covered bets count
+        remainingCount = coveredBetsCount;
+    } else {
+        // Use the total count from backend minus visible bets
+        const totalBetsForSport = totalBetsPerSport[sport] || 0;
+        remainingCount = totalBetsForSport - visibleBetsCount;
+    }
+
+    // Create teaser card for guests and free users
+    return [
+        {
+            id: `teaser-${sport}`,
+            isTeaser: true,
+            sport: sport,
+            sports: sport,
+            remainingCount: remainingCount,
+            isGuest: !auth?.user,
+        },
+    ];
+};
+
 const allGroupedBets = computed(() => {
+    const isGuest = !auth?.user;
+
     // Combine viewable and covered bets with proper marking
     const viewableWithFlag = viewableBets.value.map((bet) => ({ ...bet, isCovered: false }));
     const coveredWithFlag = coveredBets.value.map((bet) => ({ ...bet, isCovered: true }));
 
-    // Merge all bets
-    const all = [...viewableWithFlag, ...coveredWithFlag];
+    // For guests: only use viewable bets (no covered cards shown)
+    // For logged-in users: merge all bets
+    const all = isGuest ? viewableWithFlag : [...viewableWithFlag, ...coveredWithFlag];
 
     // Filter by selected sport
     const filtered = selectedSport.value === 'all' ? all : all.filter((bet) => (bet.sports || bet.sport) === selectedSport.value);
@@ -306,41 +336,57 @@ const allGroupedBets = computed(() => {
     }, {});
 
     // Add teaser cards for guest/free users
-    if (!auth?.user || isDefault) {
-        // Add teaser card to each sport group
-        Object.keys(grouped).forEach((sport) => {
-            const visibleCount = grouped[sport].filter((bet) => !bet.isCovered).length;
-            const totalCount = totalBetsPerSport[sport] || 0;
-            // For the teaser card, show the TOTAL number of picks, not remaining
-            const remainingCount = totalCount;
+    if (isGuest || isDefault) {
+        if (isGuest) {
+            // Guest users: Show limited free picks + one teaser card PER SPORT with premium picks
+            // Don't show individual covered cards
 
-            // Always add exactly one teaser card per sport for guests/free users
-            grouped[sport].push({
-                id: `teaser-${sport}`,
-                isTeaser: true,
-                sport: sport,
-                sports: sport,
-                remainingCount: remainingCount,
-                isGuest: !auth?.user,
+            // For each sport with visible bets, add teaser card if there are premium picks
+            Object.keys(grouped).forEach((sport) => {
+                const sportBets = grouped[sport];
+                const visibleBetsForSport = sportBets.filter((bet) => !bet.isCovered);
+                const totalForSport = totalBetsPerSport[sport] || 0;
+                const premiumCountForSport = Math.max(0, totalForSport - visibleBetsForSport.length);
+
+                // Create teaser card if there are premium picks for this sport
+                const teaserCards = premiumCountForSport > 0 ? createTeaserCards(sport, visibleBetsForSport.length, premiumCountForSport) : [];
+
+                // Show visible bets + teaser card (no covered cards)
+                grouped[sport] = [...visibleBetsForSport, ...teaserCards];
             });
-        });
 
-        // Also check if any sports have bets but aren't shown due to filtering
-        Object.keys(totalBetsPerSport).forEach((sport) => {
-            if (!grouped[sport] && totalBetsPerSport[sport] > 0) {
-                // This sport has bets but none are visible, create a group with just a teaser
-                grouped[sport] = [
-                    {
-                        id: `teaser-${sport}`,
-                        isTeaser: true,
-                        sport: sport,
-                        sports: sport,
-                        remainingCount: totalBetsPerSport[sport],
-                        isGuest: !auth?.user,
-                    },
-                ];
-            }
-        });
+            // Also add teaser cards for sports that have picks but no visible free bets
+            Object.keys(totalBetsPerSport).forEach((sport) => {
+                if (!grouped[sport] && totalBetsPerSport[sport] > 0) {
+                    // This sport has only premium picks (no free picks visible)
+                    if (selectedSport.value === 'all' || selectedSport.value === sport) {
+                        grouped[sport] = createTeaserCards(sport, 0, totalBetsPerSport[sport]);
+                    }
+                }
+            });
+        } else {
+            // Free users (logged in): Show free picks + covered cards with teasers
+            Object.keys(grouped).forEach((sport) => {
+                const sportBets = grouped[sport];
+                const visibleBetsForSport = sportBets.filter((bet) => !bet.isCovered);
+                const coveredBetsForSport = sportBets.filter((bet) => bet.isCovered);
+                const totalForSport = totalBetsPerSport[sport] || 0;
+                const remainingCount = totalForSport;
+
+                const teaserCards = createTeaserCards(sport, visibleBetsForSport.length, remainingCount);
+
+                grouped[sport] = [...visibleBetsForSport, ...teaserCards, ...coveredBetsForSport];
+            });
+
+            // Also check if any sports have bets but aren't shown due to filtering
+            Object.keys(totalBetsPerSport).forEach((sport) => {
+                if (!grouped[sport] && totalBetsPerSport[sport] > 0) {
+                    if (selectedSport.value === 'all' || selectedSport.value === sport) {
+                        grouped[sport] = createTeaserCards(sport, 0, totalBetsPerSport[sport]);
+                    }
+                }
+            });
+        }
     }
 
     return grouped;
