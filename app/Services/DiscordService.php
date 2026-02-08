@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Log;
 
 class DiscordService
 {
-    private string $botToken;
+    private ?string $botToken;
 
-    private string $guildId;
+    private ?string $guildId;
 
     private array $roles;
 
@@ -20,7 +20,7 @@ class DiscordService
     {
         $this->botToken = config('services.discord.bot_token');
         $this->guildId = config('services.discord.guild_id');
-        $this->roles = config('services.discord.roles');
+        $this->roles = config('services.discord.roles') ?? [];
     }
 
     /**

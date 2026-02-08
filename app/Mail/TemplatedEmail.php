@@ -5,6 +5,7 @@ namespace App\Mail;
 use App\Models\EmailTemplate;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Mail\Mailables\Headers;
@@ -39,7 +40,7 @@ class TemplatedEmail extends Mailable
 
         $envelope = new Envelope(
             subject: $rendered['subject'],
-            from: [$rendered['from_email'] => $rendered['from_name']],
+            from: new Address($rendered['from_email'], $rendered['from_name']),
         );
 
         // Add reply-to if different from from_email
@@ -58,8 +59,7 @@ class TemplatedEmail extends Mailable
         $rendered = $this->template->render($this->data);
 
         return new Content(
-            html: $rendered['body_html'],
-            text: $rendered['body_text'],
+            htmlString: $rendered['body_html'],
         );
     }
 

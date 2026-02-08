@@ -58,7 +58,7 @@ const isDefault = userSubscriptionType === 'free';
 
 // Helper to check if bet is Free tier (including legacy Bronze/Silver)
 const isFreeTierBet = (bet) => {
-    const level = (bet.membership?.toLowerCase() || 'free');
+    const level = bet.membership?.toLowerCase() || 'free';
     return level === 'free' || level === 'bronze' || level === 'silver';
 };
 

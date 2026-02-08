@@ -113,9 +113,7 @@ const selectedPeriod = ref<'monthly' | 'weekly' | 'daily'>('monthly');
                                 >
                             </div>
                             <div class="text-center text-muted small">
-                                <span v-if="selectedPeriod === 'monthly'">
-                                    Billed monthly • Cancel anytime
-                                </span>
+                                <span v-if="selectedPeriod === 'monthly'"> Billed monthly • Cancel anytime </span>
                                 <span v-else-if="selectedPeriod === 'weekly'">
                                     ${{ (parseFloat(plan.weeklyPrice) * 4.33).toFixed(0) }}/month • ${{
                                         (parseFloat(plan.weeklyPrice) / 7).toFixed(2)

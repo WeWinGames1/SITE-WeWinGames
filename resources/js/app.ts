@@ -9,8 +9,8 @@ import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
 import { initializeTheme } from './composables/useAppearance';
-import { useGoogleAnalytics } from './composables/useGoogleAnalytics';
 import { useCsrf } from './composables/useCsrf';
+import { useGoogleAnalytics } from './composables/useGoogleAnalytics';
 
 // Make Bootstrap available globally
 window.bootstrap = bootstrap;
@@ -30,7 +30,7 @@ if (typeof window !== 'undefined') {
 
     // Add global error interceptor for debugging
     const { refreshCsrfToken } = useCsrf();
-    
+
     axios.interceptors.response.use(
         (response) => response,
         async (error) => {
@@ -62,7 +62,7 @@ if (typeof window !== 'undefined') {
                 // Try to get a fresh CSRF token
                 try {
                     const newToken = await refreshCsrfToken();
-                    
+
                     // Update the failed request with new token
                     if (newToken) {
                         error.config.headers['X-CSRF-TOKEN'] = newToken;
@@ -144,38 +144,40 @@ router.on('error', (event) => {
     if (status === 419) {
         // CSRF token mismatch
         console.warn('Inertia 419 error - attempting to refresh CSRF token');
-        
+
         // Prevent the default error modal
         event.preventDefault();
-        
+
         // Try to refresh the token and retry
         const { refreshCsrfToken } = useCsrf();
-        refreshCsrfToken().then(() => {
-            // Show a message to the user
-            const message = 'Your session was refreshed. Please try your action again.';
-            
-            // Create a Bootstrap toast or alert
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
-            alertDiv.style.zIndex = '9999';
-            alertDiv.innerHTML = `
+        refreshCsrfToken()
+            .then(() => {
+                // Show a message to the user
+                const message = 'Your session was refreshed. Please try your action again.';
+
+                // Create a Bootstrap toast or alert
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
+                alertDiv.style.zIndex = '9999';
+                alertDiv.innerHTML = `
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
-            document.body.appendChild(alertDiv);
-            
-            // Auto-dismiss after 5 seconds
-            setTimeout(() => {
-                alertDiv.remove();
-            }, 5000);
-        }).catch(() => {
-            // If refresh fails, reload the page
-            alert('Your session has expired. The page will refresh to restore your session.');
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-        });
+                document.body.appendChild(alertDiv);
+
+                // Auto-dismiss after 5 seconds
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 5000);
+            })
+            .catch(() => {
+                // If refresh fails, reload the page
+                alert('Your session has expired. The page will refresh to restore your session.');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            });
     } else if (status === 429) {
         // Rate limit error
         const data = event.detail.response?.data;
@@ -204,12 +206,10 @@ if ('serviceWorker' in navigator) {
         try {
             // Check if a service worker is already registered
             const registrations = await navigator.serviceWorker.getRegistrations();
-            
+
             // Look for our service worker
-            const existingRegistration = registrations.find(reg => 
-                reg.active && reg.active.scriptURL.includes('/sw.js')
-            );
-            
+            const existingRegistration = registrations.find((reg) => reg.active && reg.active.scriptURL.includes('/sw.js'));
+
             if (!existingRegistration) {
                 // Only register if not already registered
                 console.log('Registering service worker...');

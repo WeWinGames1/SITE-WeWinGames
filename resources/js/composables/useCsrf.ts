@@ -15,22 +15,22 @@ export function useCsrf() {
             try {
                 // First try to get a new CSRF cookie from Laravel Sanctum
                 await axios.get('/sanctum/csrf-cookie');
-                
+
                 // Then get the new token
                 const response = await axios.get('/csrf-token');
                 const newToken = response.data.token;
-                
+
                 // Update axios default headers
                 if (newToken) {
                     axios.defaults.headers.common['X-CSRF-TOKEN'] = newToken;
-                    
+
                     // Update meta tag
                     const metaTag = document.querySelector('meta[name="csrf-token"]');
                     if (metaTag) {
                         metaTag.setAttribute('content', newToken);
                     }
                 }
-                
+
                 return newToken;
             } catch (error) {
                 console.error('Failed to refresh CSRF token:', error);
@@ -50,9 +50,9 @@ export function useCsrf() {
         if (metaTag) {
             return metaTag.getAttribute('content') || '';
         }
-        
+
         // Fallback to axios headers
-        return axios.defaults.headers.common['X-CSRF-TOKEN'] as string || '';
+        return (axios.defaults.headers.common['X-CSRF-TOKEN'] as string) || '';
     };
 
     return {

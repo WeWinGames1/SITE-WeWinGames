@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { useElfsight } from '@/composables/useElfsight';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import { Head } from '@inertiajs/vue3';
-import { useElfsight } from '@/composables/useElfsight';
 
 const props = defineProps<{ page: any }>();
 

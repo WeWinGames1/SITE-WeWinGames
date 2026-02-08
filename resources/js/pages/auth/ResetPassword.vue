@@ -52,7 +52,7 @@ const submit = () => {
                                             :class="{ 'is-invalid': form.errors.email }"
                                             v-model="form.email"
                                             readonly
-                                            style="background-color: rgba(255, 255, 255, 0.02); cursor: not-allowed;"
+                                            style="background-color: rgba(255, 255, 255, 0.02); cursor: not-allowed"
                                         />
                                         <div v-if="form.errors.email" class="invalid-feedback">
                                             {{ form.errors.email }}

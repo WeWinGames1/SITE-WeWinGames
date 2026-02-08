@@ -375,7 +375,9 @@ function formatCustomerDuration(days: number): string {
                         <div class="card-body">
                             <h6 class="card-subtitle mb-2 text-muted">Lifetime Value</h6>
                             <div class="h4 mb-0">{{ formatCurrency(stats.total_spent * 100) }}</div>
-                            <div class="small text-muted">{{ stats.subscription_count }} {{ stats.subscription_count === 1 ? 'subscription' : 'subscriptions' }}</div>
+                            <div class="small text-muted">
+                                {{ stats.subscription_count }} {{ stats.subscription_count === 1 ? 'subscription' : 'subscriptions' }}
+                            </div>
                             <div class="small text-muted">{{ formatCustomerDuration(stats.days_as_customer) }} as customer</div>
                         </div>
                     </div>

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import AdminLayout from '@/layouts/AdminLayout.vue';
 import BetCalculator from '@/components/BetCalculator.vue';
-import { Head, Link } from '@inertiajs/vue3';
 import { useForm, usePeriodicCsrfRefresh } from '@/composables/useInertiaForm';
 import { useSessionKeepAlive } from '@/composables/useSessionKeepAlive';
+import AdminLayout from '@/layouts/AdminLayout.vue';
+import { Head, Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 
@@ -1326,7 +1326,8 @@ declare global {
                                     placeholder="https://example.com/bet"
                                 />
                                 <div class="form-text">
-                                    Optional: Add a link to an external betting site where users can place this bet. The button will only show if this URL is provided.
+                                    Optional: Add a link to an external betting site where users can place this bet. The button will only show if this
+                                    URL is provided.
                                 </div>
                                 <div v-if="form.errors.place_bet_url" class="invalid-feedback">
                                     {{ form.errors.place_bet_url }}

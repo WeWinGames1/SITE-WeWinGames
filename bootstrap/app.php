@@ -89,13 +89,18 @@ return Application::configure(basePath: dirname(__DIR__))
                 return null; // Let Laravel handle JSON responses
             }
 
-            // For server errors, render custom view with exception
-            if (! $e instanceof \Symfony\Component\HttpKernel\Exception\HttpException) {
-                return response()->view('errors.500', [
-                    'exception' => $e,
-                ], 500);
+            // Let Laravel handle these exceptions normally (validation errors, auth, etc.)
+            if ($e instanceof \Illuminate\Validation\ValidationException
+                || $e instanceof \Illuminate\Auth\AuthenticationException
+                || $e instanceof \Illuminate\Session\TokenMismatchException
+                || $e instanceof \Symfony\Component\HttpKernel\Exception\HttpException
+            ) {
+                return null;
             }
 
-            return null; // Let Laravel handle other HTTP exceptions normally
+            // For unexpected server errors, render custom view with exception
+            return response()->view('errors.500', [
+                'exception' => $e,
+            ], 500);
         });
     })->create();

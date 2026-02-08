@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
+use App\Services\DiscordService;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,14 +14,32 @@ use Inertia\Response;
 
 class ProfileController extends Controller
 {
+    public function __construct(
+        private DiscordService $discordService
+    ) {}
+
     /**
      * Show the user's profile settings page.
      */
     public function edit(Request $request): Response
     {
+        $user = $request->user();
+
+        // Discord integration data
+        $discordData = [
+            'connected' => $user->hasDiscordConnected(),
+            'username' => $user->discord_username,
+            'avatarUrl' => $user->discord_avatar_url,
+            'connectedAt' => $user->discord_connected_at?->toISOString(),
+            'rolesSynced' => $user->discord_roles_synced ?? [],
+            'inviteUrl' => $this->discordService->getInviteUrl(),
+            'isConfigured' => $this->discordService->isConfigured(),
+        ];
+
         return Inertia::render('settings/Profile', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
+            'discord' => $discordData,
         ]);
     }
 

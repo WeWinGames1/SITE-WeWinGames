@@ -6,175 +6,184 @@
             @mouseenter="showDetails = true"
             @mouseleave="showDetails = false"
         >
-        <!-- Header -->
-        <div class="px-4 py-3" style="background-color: #0a1628; border-bottom: 1px solid #2a3441">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px">
-                        <i class="bi bi-trophy text-white" style="font-size: 16px"></i>
+            <!-- Header -->
+            <div class="px-4 py-3" style="background-color: #0a1628; border-bottom: 1px solid #2a3441">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div
+                            class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-2"
+                            style="width: 32px; height: 32px"
+                        >
+                            <i class="bi bi-trophy text-white" style="font-size: 16px"></i>
+                        </div>
+                        <h6 class="text-white mb-0 fw-bold">{{ bet.sport || 'Football' }}</h6>
                     </div>
-                    <h6 class="text-white mb-0 fw-bold">{{ bet.sport || 'Football' }}</h6>
-                </div>
-                <div class="text-end">
-                    <p class="text-white small mb-0">{{ bet.league || 'Premier League' }}</p>
-                    <p class="text-gray-light small mb-0">Date: {{ formatDate(bet.game_date || bet.betting_date) }}</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="card-body p-4">
-            <!-- Teams Section -->
-            <div class="text-center mb-4">
-                <div class="d-flex align-items-center justify-content-center gap-4">
-                    <div class="text-center">
-                        <img
-                            :src="bet.team_one_logo || '/images/team-placeholder.svg'"
-                            :alt="bet.team_one"
-                            class="mb-2"
-                            style="width: 64px; height: 64px; object-fit: contain"
-                        />
-                        <p class="fw-bold text-white mb-0">{{ bet.team_one }}</p>
-                    </div>
-                    <div class="text-white fs-4 fw-bold">VS</div>
-                    <div class="text-center">
-                        <img
-                            :src="bet.team_two_logo || '/images/team-placeholder.svg'"
-                            :alt="bet.team_two"
-                            class="mb-2"
-                            style="width: 64px; height: 64px; object-fit: contain"
-                        />
-                        <p class="fw-bold text-white mb-0">{{ bet.team_two }}</p>
+                    <div class="text-end">
+                        <p class="text-white small mb-0">{{ bet.league || 'Premier League' }}</p>
+                        <p class="text-gray-light small mb-0">Date: {{ formatDate(bet.game_date || bet.betting_date) }}</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Game Level Badge & Place Bet Button (inline on mobile, stacked on desktop) -->
-            <div class="d-flex flex-column flex-md-column align-items-center justify-content-center gap-2 mb-4">
-                <div class="d-flex align-items-center justify-content-center gap-3">
-                    <span class="badge px-4 py-2" :class="getMembershipBadgeClass()" style="font-size: 14px; border-radius: 20px">
-                        Game Level: {{ getMembershipDisplayName() }}
-                    </span>
+            <div class="card-body p-4">
+                <!-- Teams Section -->
+                <div class="text-center mb-4">
+                    <div class="d-flex align-items-center justify-content-center gap-4">
+                        <div class="text-center">
+                            <img
+                                :src="bet.team_one_logo || '/images/team-placeholder.svg'"
+                                :alt="bet.team_one"
+                                class="mb-2"
+                                style="width: 64px; height: 64px; object-fit: contain"
+                            />
+                            <p class="fw-bold text-white mb-0">{{ bet.team_one }}</p>
+                        </div>
+                        <div class="text-white fs-4 fw-bold">VS</div>
+                        <div class="text-center">
+                            <img
+                                :src="bet.team_two_logo || '/images/team-placeholder.svg'"
+                                :alt="bet.team_two"
+                                class="mb-2"
+                                style="width: 64px; height: 64px; object-fit: contain"
+                            />
+                            <p class="fw-bold text-white mb-0">{{ bet.team_two }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game Level Badge & Place Bet Button (inline on mobile, stacked on desktop) -->
+                <div class="d-flex flex-column flex-md-column align-items-center justify-content-center gap-2 mb-4">
+                    <div class="d-flex align-items-center justify-content-center gap-3">
+                        <span class="badge px-4 py-2" :class="getMembershipBadgeClass()" style="font-size: 14px; border-radius: 20px">
+                            Game Level: {{ getMembershipDisplayName() }}
+                        </span>
+                        <a
+                            v-if="bet.place_bet_url"
+                            :href="bet.place_bet_url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="btn btn-sm btn-primary d-md-none"
+                            style="border-radius: 20px; padding: 4px 12px; text-decoration: none; font-size: 13px; white-space: nowrap"
+                        >
+                            <i class="bi bi-box-arrow-up-right me-1"></i>
+                            Place a Bet
+                        </a>
+                    </div>
                     <a
                         v-if="bet.place_bet_url"
                         :href="bet.place_bet_url"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="btn btn-sm btn-primary d-md-none"
-                        style="border-radius: 20px; padding: 4px 12px; text-decoration: none; font-size: 13px; white-space: nowrap"
+                        class="btn btn-sm btn-primary d-none d-md-inline-block"
+                        style="border-radius: 20px; padding: 4px 12px; text-decoration: none; font-size: 13px"
                     >
                         <i class="bi bi-box-arrow-up-right me-1"></i>
                         Place a Bet
                     </a>
                 </div>
-                <a
-                    v-if="bet.place_bet_url"
-                    :href="bet.place_bet_url"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="btn btn-sm btn-primary d-none d-md-inline-block"
-                    style="border-radius: 20px; padding: 4px 12px; text-decoration: none; font-size: 13px"
-                >
-                    <i class="bi bi-box-arrow-up-right me-1"></i>
-                    Place a Bet
-                </a>
-            </div>
 
-            <!-- Betting Button -->
-            <div class="text-center">
-                <button class="btn btn-warning btn-lg w-100 fw-bold text-dark" style="border-radius: 8px; padding: 12px">
-                    {{ bet.tips || 'Ohio Moneyline' }} - {{ bet.wager_odds || '110' }}
-                </button>
-                <!-- Each Way Indicator -->
-                <div v-if="bet.is_each_way" class="mt-2">
-                    <span class="badge bg-success">
-                        <i class="bi bi-check2-circle me-1"></i>
-                        Each Way
-                    </span>
-                    <small v-if="bet.place_fraction" class="text-muted ms-2"> ({{ formatPlaceFraction(bet.place_fraction) }} odds for place) </small>
-                </div>
-            </div>
-
-            <!-- Premium Notes Section -->
-            <div v-if="bet.premium_notes_enabled && bet.premium_notes" class="premium-notes-container mt-4">
-                <div class="premium-notes-header d-flex align-items-center mb-2">
-                    <i class="bi bi-star-fill text-warning me-2"></i>
-                    <span class="fw-bold text-white">{{ bet.premium_notes_heading || 'Premium Analysis' }}</span>
-                </div>
-                <div class="premium-notes-content">
-                    <p class="text-white-50 small mb-0">{{ bet.premium_notes }}</p>
-                </div>
-            </div>
-
-            <!-- Additional Info (hidden by default, shown on hover) -->
-            <div
-                class="position-absolute bottom-0 start-0 end-0 p-3 bg-dark"
-                style="background-color: rgba(10, 22, 40, 0.95) !important; transform: translateY(100%); transition: transform 0.3s ease"
-                :style="showDetails ? 'transform: translateY(0);' : ''"
-            >
-                <div class="small">
-                    <div class="d-flex justify-content-between mb-1">
-                        <span class="text-gray-light">Market:</span>
-                        <span class="text-white">{{ bet.markets || 'Moneyline' }}</span>
-                    </div>
-                    <div v-if="bet.place_fraction" class="d-flex justify-content-between">
-                        <span class="text-gray-light">Place Fraction:</span>
-                        <span class="text-info">{{ formatPlaceFraction(bet.place_fraction) }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Result Badge (if applicable) -->
-            <div v-if="bet.status && bet.status !== 'Pending'" class="text-center">
-                <span class="badge" :class="getStatusBadgeClass()">
-                    <i :class="getStatusIcon()" class="me-1"></i>
-                    {{ bet.status }}
-                </span>
-            </div>
-
-            <!-- Admin Actions -->
-            <div v-if="isAdmin" class="mt-4 pt-3 border-top" style="border-color: var(--bs-gray-medium) !important">
-                <h6 class="text-white mb-3">Admin Controls</h6>
-
-                <div class="row g-3">
-                    <div class="col-6">
-                        <label class="form-label text-gray-light small">Status</label>
-                        <select v-model="updatedStatus" class="form-select form-select-sm">
-                            <option value="Pending">Pending</option>
-                            <option value="Won">Win</option>
-                            <option v-if="bet.is_each_way" value="Placed">Placed</option>
-                            <option value="Lost">Loss</option>
-                            <option value="Push">Push</option>
-                        </select>
-                    </div>
-
-                    <div class="col-6">
-                        <label class="form-label text-gray-light small">Date</label>
-                        <input type="date" v-model="updatedDate" class="form-control form-control-sm" />
-                    </div>
-
-                    <div class="col-12">
-                        <label class="form-label text-gray-light small">Referrer</label>
-                        <input type="text" v-model="updatedReferrer" class="form-control form-control-sm" placeholder="Optional" />
-                    </div>
-
-                    <div class="col-12">
-                        <label class="form-label text-gray-light small">Place Fraction</label>
-                        <input type="number" v-model="updatedPlaceFraction" class="form-control form-control-sm" step="0.01" min="0" max="1" />
-                    </div>
-                </div>
-
-                <div class="d-flex gap-2 mt-3">
-                    <button @click="updateBet" class="btn btn-primary btn-sm flex-fill"><i class="bi bi-check-circle me-1"></i> Update</button>
-                    <button @click="deleteBet" class="btn btn-danger btn-sm">
-                        <i class="bi bi-trash"></i>
+                <!-- Betting Button -->
+                <div class="text-center">
+                    <button class="btn btn-warning btn-lg w-100 fw-bold text-dark" style="border-radius: 8px; padding: 12px">
+                        {{ bet.tips || 'Ohio Moneyline' }} - {{ bet.wager_odds || '110' }}
                     </button>
+                    <!-- Each Way Indicator -->
+                    <div v-if="bet.is_each_way" class="mt-2">
+                        <span class="badge bg-success">
+                            <i class="bi bi-check2-circle me-1"></i>
+                            Each Way
+                        </span>
+                        <small v-if="bet.place_fraction" class="text-muted ms-2">
+                            ({{ formatPlaceFraction(bet.place_fraction) }} odds for place)
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Premium Notes Section -->
+                <div v-if="bet.premium_notes_enabled && bet.premium_notes" class="premium-notes-container mt-4">
+                    <div class="premium-notes-header d-flex align-items-center mb-2">
+                        <i class="bi bi-star-fill text-warning me-2"></i>
+                        <span class="fw-bold text-white">{{ bet.premium_notes_heading || 'Premium Analysis' }}</span>
+                    </div>
+                    <div class="premium-notes-content">
+                        <p class="text-white-50 small mb-0">{{ bet.premium_notes }}</p>
+                    </div>
+                </div>
+
+                <!-- Additional Info (hidden by default, shown on hover) -->
+                <div
+                    class="position-absolute bottom-0 start-0 end-0 p-3 bg-dark"
+                    style="background-color: rgba(10, 22, 40, 0.95) !important; transform: translateY(100%); transition: transform 0.3s ease"
+                    :style="showDetails ? 'transform: translateY(0);' : ''"
+                >
+                    <div class="small">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-gray-light">Market:</span>
+                            <span class="text-white">{{ bet.markets || 'Moneyline' }}</span>
+                        </div>
+                        <div v-if="bet.place_fraction" class="d-flex justify-content-between">
+                            <span class="text-gray-light">Place Fraction:</span>
+                            <span class="text-info">{{ formatPlaceFraction(bet.place_fraction) }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Result Badge (if applicable) -->
+                <div v-if="bet.status && bet.status !== 'Pending'" class="text-center">
+                    <span class="badge" :class="getStatusBadgeClass()">
+                        <i :class="getStatusIcon()" class="me-1"></i>
+                        {{ bet.status }}
+                    </span>
+                </div>
+
+                <!-- Admin Actions -->
+                <div v-if="isAdmin" class="mt-4 pt-3 border-top" style="border-color: var(--bs-gray-medium) !important">
+                    <h6 class="text-white mb-3">Admin Controls</h6>
+
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label text-gray-light small">Status</label>
+                            <select v-model="updatedStatus" class="form-select form-select-sm">
+                                <option value="Pending">Pending</option>
+                                <option value="Won">Win</option>
+                                <option v-if="bet.is_each_way" value="Placed">Placed</option>
+                                <option value="Lost">Loss</option>
+                                <option value="Push">Push</option>
+                            </select>
+                        </div>
+
+                        <div class="col-6">
+                            <label class="form-label text-gray-light small">Date</label>
+                            <input type="date" v-model="updatedDate" class="form-control form-control-sm" />
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label text-gray-light small">Referrer</label>
+                            <input type="text" v-model="updatedReferrer" class="form-control form-control-sm" placeholder="Optional" />
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label text-gray-light small">Place Fraction</label>
+                            <input type="number" v-model="updatedPlaceFraction" class="form-control form-control-sm" step="0.01" min="0" max="1" />
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-3">
+                        <button @click="updateBet" class="btn btn-primary btn-sm flex-fill"><i class="bi bi-check-circle me-1"></i> Update</button>
+                        <button @click="deleteBet" class="btn btn-danger btn-sm">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
         </div>
 
         <!-- MetaBet Game Tile - Below the card -->
-        <div v-if="bet.metabet_query_id" :class="`metabet-gametile metabet-query-${bet.metabet_query_id} metabet-size-320x50`" style="margin-top: -2px;"></div>
+        <div
+            v-if="bet.metabet_query_id"
+            :class="`metabet-gametile metabet-query-${bet.metabet_query_id} metabet-size-320x50`"
+            style="margin-top: -2px"
+        ></div>
     </div>
 </template>
 

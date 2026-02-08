@@ -270,8 +270,8 @@ const syncDiscordRoles = () => {
                                         </div>
                                         <h5 class="text-white mb-3">Connect Your Discord Account</h5>
                                         <p class="text-gray-light mb-4" style="max-width: 500px; margin: 0 auto">
-                                            Join our exclusive Discord community! Connect your account to get roles based on your subscription tier and access
-                                            member-only channels.
+                                            Join our exclusive Discord community! Connect your account to get roles based on your subscription tier
+                                            and access member-only channels.
                                         </p>
                                         <button @click="connectDiscord" class="btn btn-lg px-5" style="background-color: #5865f2; color: white">
                                             <i class="bi bi-discord me-2"></i>
@@ -288,7 +288,8 @@ const syncDiscordRoles = () => {
                                                     <strong>No Active Subscription</strong>
                                                     <p class="mb-0 small">
                                                         Your Discord roles have been removed because you don't have an active subscription.
-                                                        <Link href="/buy-our-picks" class="alert-link">Subscribe now</Link> to regain access to exclusive channels.
+                                                        <Link href="/buy-our-picks" class="alert-link">Subscribe now</Link> to regain access to
+                                                        exclusive channels.
                                                     </p>
                                                 </div>
                                             </div>
@@ -355,39 +356,40 @@ const syncDiscordRoles = () => {
                                                 </div>
                                             </div>
 
-                                        <div class="col-md-6 text-md-end mt-4 mt-md-0">
-                                            <div class="d-flex flex-column flex-md-row gap-2 justify-content-md-end">
-                                                <a
-                                                    v-if="props.discord.inviteUrl"
-                                                    :href="props.discord.inviteUrl"
-                                                    target="_blank"
-                                                    rel="noopener"
-                                                    class="btn btn-lg"
-                                                    style="background-color: #5865f2; color: white"
-                                                >
-                                                    <i class="bi bi-box-arrow-up-right me-2"></i>
-                                                    Join Discord Server
-                                                </a>
-                                                <button
-                                                    @click="syncDiscordRoles"
-                                                    :disabled="isSyncingRoles"
-                                                    class="btn btn-outline-light"
-                                                >
-                                                    <i v-if="isSyncingRoles" class="bi bi-arrow-repeat spin me-2"></i>
-                                                    <i v-else class="bi bi-arrow-repeat me-2"></i>
-                                                    {{ isSyncingRoles ? 'Syncing...' : 'Sync Roles' }}
-                                                </button>
-                                                <button
-                                                    @click="disconnectDiscord"
-                                                    :disabled="isDisconnecting"
-                                                    class="btn btn-outline-danger"
-                                                >
-                                                    <i class="bi bi-x-circle me-2"></i>
-                                                    Disconnect
-                                                </button>
+                                            <!-- Next Steps Info -->
+                                            <div class="col-12 mt-3">
+                                                <div class="alert mb-0" style="background-color: rgba(88, 101, 242, 0.15); border-color: #5865f2">
+                                                    <i class="bi bi-arrow-right-circle me-2" style="color: #5865f2"></i>
+                                                    <strong>Next:</strong> Click <strong>"Join Discord Server"</strong> to join our community, then
+                                                    <strong>"Sync Roles"</strong> to get your subscription-based roles.
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6 text-md-end mt-4 mt-md-0">
+                                                <div class="d-flex flex-column flex-md-row gap-2 justify-content-md-end">
+                                                    <a
+                                                        v-if="props.discord.inviteUrl"
+                                                        :href="props.discord.inviteUrl"
+                                                        target="_blank"
+                                                        rel="noopener"
+                                                        class="btn btn-lg"
+                                                        style="background-color: #5865f2; color: white"
+                                                    >
+                                                        <i class="bi bi-box-arrow-up-right me-2"></i>
+                                                        Join Discord Server
+                                                    </a>
+                                                    <button @click="syncDiscordRoles" :disabled="isSyncingRoles" class="btn btn-outline-light">
+                                                        <i v-if="isSyncingRoles" class="bi bi-arrow-repeat spin me-2"></i>
+                                                        <i v-else class="bi bi-arrow-repeat me-2"></i>
+                                                        {{ isSyncingRoles ? 'Syncing...' : 'Sync Roles' }}
+                                                    </button>
+                                                    <button @click="disconnectDiscord" :disabled="isDisconnecting" class="btn btn-outline-danger">
+                                                        <i class="bi bi-x-circle me-2"></i>
+                                                        Disconnect
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
                                     </div>
                                 </div>
                             </div>

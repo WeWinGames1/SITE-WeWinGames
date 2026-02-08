@@ -768,7 +768,7 @@ function formatCurrency(amount: number | null | undefined): string {
                                                     :class="{
                                                         'text-success': bet.status === 'won' || bet.status === 'placed',
                                                         'text-danger': bet.status === 'loss',
-                                                        'text-muted': bet.status === 'pending' || bet.status === 'push' || bet.status === 'void'
+                                                        'text-muted': bet.status === 'pending' || bet.status === 'push' || bet.status === 'void',
                                                     }"
                                                 >
                                                     <template v-if="bet.status === 'won' || bet.status === 'placed'">
@@ -780,9 +780,7 @@ function formatCurrency(amount: number | null | undefined): string {
                                                     <template v-else-if="bet.status === 'push' || bet.status === 'void'">
                                                         Refund: {{ formatCurrency(bet.wager_amount) }}
                                                     </template>
-                                                    <template v-else>
-                                                        Potential: {{ formatCurrency(bet.winning_amount || 0) }}
-                                                    </template>
+                                                    <template v-else> Potential: {{ formatCurrency(bet.winning_amount || 0) }} </template>
                                                 </div>
                                                 <div
                                                     v-if="bet.status !== 'pending'"
@@ -790,7 +788,7 @@ function formatCurrency(amount: number | null | undefined): string {
                                                     :class="{
                                                         'text-success': (bet.profit_amount || 0) > 0,
                                                         'text-danger': (bet.profit_amount || 0) < 0,
-                                                        'text-muted': (bet.profit_amount || 0) === 0
+                                                        'text-muted': (bet.profit_amount || 0) === 0,
                                                     }"
                                                 >
                                                     Profit: {{ (bet.profit_amount || 0) >= 0 ? '+' : '' }}{{ formatCurrency(bet.profit_amount) }}

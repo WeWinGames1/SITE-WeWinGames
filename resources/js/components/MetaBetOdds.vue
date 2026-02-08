@@ -40,9 +40,7 @@ const shouldShow = computed(() => !!props.queryId);
     <div v-if="shouldShow" class="metabet-odds-wrapper" :class="className">
         <div class="d-flex align-items-center gap-2">
             <span v-if="showLabel" class="text-muted small">Live Odds:</span>
-            <span :class="metabetClasses" class="fw-bold">
-                Loading...
-            </span>
+            <span :class="metabetClasses" class="fw-bold"> Loading... </span>
         </div>
     </div>
 </template>

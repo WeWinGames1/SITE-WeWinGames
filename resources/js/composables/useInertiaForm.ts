@@ -4,13 +4,13 @@ import { useCsrf } from './useCsrf';
 export function useForm<T extends Record<string, any>>(data: T) {
     const form = useInertiaForm(data);
     const { refreshCsrfToken } = useCsrf();
-    
+
     // Store the original methods
     const originalPost = form.post.bind(form);
     const originalPut = form.put.bind(form);
     const originalPatch = form.patch.bind(form);
     const originalDelete = form.delete.bind(form);
-    
+
     // Override methods to refresh CSRF token before submission
     form.post = async (url: string, options?: any) => {
         try {
@@ -20,7 +20,7 @@ export function useForm<T extends Record<string, any>>(data: T) {
         }
         return originalPost(url, options);
     };
-    
+
     form.put = async (url: string, options?: any) => {
         try {
             await refreshCsrfToken();
@@ -29,7 +29,7 @@ export function useForm<T extends Record<string, any>>(data: T) {
         }
         return originalPut(url, options);
     };
-    
+
     form.patch = async (url: string, options?: any) => {
         try {
             await refreshCsrfToken();
@@ -38,7 +38,7 @@ export function useForm<T extends Record<string, any>>(data: T) {
         }
         return originalPatch(url, options);
     };
-    
+
     form.delete = async (url: string, options?: any) => {
         try {
             await refreshCsrfToken();
@@ -47,7 +47,7 @@ export function useForm<T extends Record<string, any>>(data: T) {
         }
         return originalDelete(url, options);
     };
-    
+
     return form;
 }
 
@@ -55,28 +55,31 @@ export function useForm<T extends Record<string, any>>(data: T) {
 export function usePeriodicCsrfRefresh(intervalMinutes: number = 15) {
     const { refreshCsrfToken } = useCsrf();
     let intervalId: NodeJS.Timeout | null = null;
-    
+
     const start = () => {
         // Initial refresh
         refreshCsrfToken().catch(console.error);
-        
+
         // Set up periodic refresh
-        intervalId = setInterval(() => {
-            refreshCsrfToken().catch(console.error);
-        }, intervalMinutes * 60 * 1000);
+        intervalId = setInterval(
+            () => {
+                refreshCsrfToken().catch(console.error);
+            },
+            intervalMinutes * 60 * 1000,
+        );
     };
-    
+
     const stop = () => {
         if (intervalId) {
             clearInterval(intervalId);
             intervalId = null;
         }
     };
-    
+
     // Auto cleanup on page navigation
     router.on('before', () => {
         stop();
     });
-    
+
     return { start, stop };
 }

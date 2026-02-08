@@ -452,9 +452,7 @@ function getStatusBadgeClass(code: DiscountCode): string {
                 <!-- Pagination -->
                 <div v-if="discountCodes.links && discountCodes.links.length > 3" class="card-footer">
                     <div class="d-flex justify-content-between align-items-center">
-                        <div class="text-muted">
-                            Showing {{ discountCodes.from }} to {{ discountCodes.to }} of {{ discountCodes.total }} results
-                        </div>
+                        <div class="text-muted">Showing {{ discountCodes.from }} to {{ discountCodes.to }} of {{ discountCodes.total }} results</div>
                         <nav>
                             <ul class="pagination pagination-sm mb-0">
                                 <li

@@ -35,18 +35,12 @@ const submit = () => {
                 <div class="col-12">
                     <h2 class="mb-3">Settings</h2>
                     <nav class="nav nav-pills">
-                        <Link :href="route('profile.edit')" class="nav-link">
-                            <i class="bi bi-person me-2"></i>Profile
-                        </Link>
+                        <Link :href="route('profile.edit')" class="nav-link"> <i class="bi bi-person me-2"></i>Profile </Link>
                         <Link :href="route('betting-preferences.edit')" class="nav-link active">
                             <i class="bi bi-graph-up me-2"></i>Betting Preferences
                         </Link>
-                        <Link :href="route('billing.edit')" class="nav-link">
-                            <i class="bi bi-credit-card me-2"></i>Billing
-                        </Link>
-                        <Link :href="route('password.edit')" class="nav-link">
-                            <i class="bi bi-shield-lock me-2"></i>Security
-                        </Link>
+                        <Link :href="route('billing.edit')" class="nav-link"> <i class="bi bi-credit-card me-2"></i>Billing </Link>
+                        <Link :href="route('password.edit')" class="nav-link"> <i class="bi bi-shield-lock me-2"></i>Security </Link>
                     </nav>
                 </div>
             </div>
@@ -74,9 +68,7 @@ const submit = () => {
                                         autocomplete="off"
                                         placeholder="e.g. Los Angeles Lakers"
                                     />
-                                    <div class="form-text text-white">
-                                        Tell us your favorite team to help us personalize your experience
-                                    </div>
+                                    <div class="form-text text-white">Tell us your favorite team to help us personalize your experience</div>
                                     <InputError class="mt-2" :message="form.errors.favorite_team" />
                                 </div>
 
@@ -99,9 +91,7 @@ const submit = () => {
                                         <option value="tennis">Tennis</option>
                                         <option value="other">Other</option>
                                     </select>
-                                    <div class="form-text text-white">
-                                        We'll prioritize showing you picks for your favorite sports
-                                    </div>
+                                    <div class="form-text text-white">We'll prioritize showing you picks for your favorite sports</div>
                                     <InputError class="mt-2" :message="form.errors.favorite_sport" />
                                 </div>
 
@@ -127,17 +117,15 @@ const submit = () => {
                                         <option value="unibet">Unibet</option>
                                         <option value="other">Other</option>
                                     </select>
-                                    <div class="form-text text-white">
-                                        Know which app you use most? We can tailor our recommendations
-                                    </div>
+                                    <div class="form-text text-white">Know which app you use most? We can tailor our recommendations</div>
                                     <InputError class="mt-2" :message="form.errors.primary_betting_app" />
                                 </div>
 
                                 <!-- Info Alert -->
                                 <div class="alert alert-info">
                                     <i class="bi bi-info-circle me-2"></i>
-                                    <strong>Why we ask:</strong> Your preferences help us personalize your dashboard,
-                                    show you relevant picks, and improve your overall betting experience.
+                                    <strong>Why we ask:</strong> Your preferences help us personalize your dashboard, show you relevant picks, and
+                                    improve your overall betting experience.
                                 </div>
 
                                 <!-- Save Button -->

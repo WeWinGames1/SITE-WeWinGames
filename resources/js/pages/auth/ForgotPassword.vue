@@ -57,7 +57,9 @@ const submit = () => {
                                         <div v-if="form.errors.email" class="invalid-feedback">
                                             {{ form.errors.email }}
                                         </div>
-                                        <p class="text-gray-light small mt-2">Enter the email associated with your account and we'll send you a password reset link.</p>
+                                        <p class="text-gray-light small mt-2">
+                                            Enter the email associated with your account and we'll send you a password reset link.
+                                        </p>
                                     </div>
 
                                     <div class="d-grid mb-4">
@@ -90,7 +92,7 @@ const submit = () => {
 
                                 <div class="text-center mt-3">
                                     <p class="text-gray-light small mb-0">
-                                        Don't have an account? 
+                                        Don't have an account?
                                         <a :href="registerUrl" class="text-warning text-decoration-none">Create one</a>
                                     </p>
                                 </div>

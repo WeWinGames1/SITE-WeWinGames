@@ -150,7 +150,7 @@ let teaserCount = 0;
 
 // Helper to check if bet is Free tier (including legacy Bronze/Silver)
 const isFreeTier = (bet) => {
-    const level = (bet.membership?.toLowerCase() || 'free');
+    const level = bet.membership?.toLowerCase() || 'free';
     return level === 'free' || level === 'bronze' || level === 'silver';
 };
 
@@ -330,10 +330,7 @@ const allGroupedBets = computed(() => {
                 const teaserCards = premiumCountForSport > 0 ? createTeaserCards(sport, visibleBetsForSport.length, premiumCountForSport) : [];
 
                 // Show visible bets + teaser card (no covered cards)
-                grouped[sport] = [
-                    ...visibleBetsForSport,
-                    ...teaserCards,
-                ];
+                grouped[sport] = [...visibleBetsForSport, ...teaserCards];
             });
 
             // Also add teaser cards for sports that have picks but no visible free bets

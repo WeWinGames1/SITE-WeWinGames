@@ -1,20 +1,68 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import CustomerLayout from '@/layouts/CustomerLayout.vue';
-import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { onMounted, ref, watch } from 'vue';
 
 interface Props {
     mustVerifyEmail: boolean;
     status?: string;
+    discord?: {
+        connected: boolean;
+        username: string | null;
+        avatarUrl: string | null;
+        connectedAt: string | null;
+        rolesSynced: string[];
+        inviteUrl: string | null;
+        isConfigured: boolean;
+    };
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const page = usePage();
 const user = page.props.auth.user.data;
 const vapid_key = page.props.env?.VAPID_PUBLIC_KEY;
+
+// Discord state
+const isSyncingRoles = ref(false);
+const isDisconnecting = ref(false);
+
+// Discord functions
+const connectDiscord = () => {
+    window.location.href = route('discord.redirect');
+};
+
+const disconnectDiscord = () => {
+    if (!confirm('Are you sure you want to disconnect your Discord account? Your roles will be removed from the server.')) {
+        return;
+    }
+
+    isDisconnecting.value = true;
+    router.post(
+        route('discord.disconnect'),
+        {},
+        {
+            onFinish: () => {
+                isDisconnecting.value = false;
+            },
+        },
+    );
+};
+
+const syncDiscordRoles = () => {
+    isSyncingRoles.value = true;
+    router.post(
+        route('discord.sync-roles'),
+        {},
+        {
+            onFinish: () => {
+                isSyncingRoles.value = false;
+            },
+        },
+    );
+};
 
 const form = useForm({
     name: user.name,
@@ -96,7 +144,9 @@ watch(
                     <h2 class="mb-3">Settings</h2>
                     <nav class="nav nav-pills">
                         <Link :href="route('profile.edit')" class="nav-link active"> <i class="bi bi-person me-2"></i>Profile </Link>
-                        <Link :href="route('betting-preferences.edit')" class="nav-link"> <i class="bi bi-graph-up me-2"></i>Betting Preferences </Link>
+                        <Link :href="route('betting-preferences.edit')" class="nav-link">
+                            <i class="bi bi-graph-up me-2"></i>Betting Preferences
+                        </Link>
                         <Link :href="route('billing.edit')" class="nav-link"> <i class="bi bi-credit-card me-2"></i>Billing </Link>
                         <Link :href="route('password.edit')" class="nav-link"> <i class="bi bi-shield-lock me-2"></i>Security </Link>
                     </nav>
@@ -190,12 +240,12 @@ watch(
                                         </div>
                                     </div>
                                     <!-- SMS Opt-in Agreement Text -->
-                                    <div v-if="form.notification_preferences.sms" class="alert alert-info mt-3 mb-0" style="font-size: 0.875rem;">
+                                    <div v-if="form.notification_preferences.sms" class="alert alert-info mt-3 mb-0" style="font-size: 0.875rem">
                                         <i class="bi bi-info-circle me-2"></i>
                                         <strong>SMS Agreement:</strong> You agree to receive recurring promotional messages. You also agree to our
                                         <a href="/terms-of-service" target="_blank" class="alert-link">Terms of Service</a> and
-                                        <a href="/privacy-policy" target="_blank" class="alert-link">Privacy Policy</a>.
-                                        Msg freq. varies. Msg & Data rates may apply. Reply STOP to end or HELP for help.
+                                        <a href="/privacy-policy" target="_blank" class="alert-link">Privacy Policy</a>. Msg freq. varies. Msg & Data
+                                        rates may apply. Reply STOP to end or HELP for help.
                                     </div>
                                     <InputError class="mt-2" :message="form.errors.notification_preferences" />
                                 </div>
@@ -241,6 +291,93 @@ watch(
                                     </Transition>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+
+                    <!-- Discord Community Section -->
+                    <div v-if="props.discord?.isConfigured" class="card mt-4" style="border-color: #5865f2">
+                        <div class="card-header" style="background-color: rgba(88, 101, 242, 0.1)">
+                            <h5 class="mb-0" style="color: #5865f2"><i class="bi bi-discord me-2"></i>Discord Community</h5>
+                            <p class="mb-0 small text-muted">Connect your Discord account to access exclusive member channels</p>
+                        </div>
+                        <div class="card-body">
+                            <!-- Not Connected State -->
+                            <div v-if="!props.discord?.connected" class="text-center py-3">
+                                <i class="bi bi-discord display-4 mb-3" style="color: #5865f2"></i>
+                                <p class="mb-3">
+                                    Join our exclusive Discord community! Connect your account to get roles based on your subscription tier and access
+                                    member-only channels.
+                                </p>
+                                <button @click="connectDiscord" class="btn btn-lg" style="background-color: #5865f2; color: white">
+                                    <i class="bi bi-discord me-2"></i>
+                                    Connect Discord
+                                </button>
+
+                                <!-- Always show invite link -->
+                                <div v-if="props.discord?.inviteUrl" class="mt-4 pt-3 border-top">
+                                    <p class="text-muted small mb-2">Or join our server directly:</p>
+                                    <a :href="props.discord.inviteUrl" target="_blank" class="btn btn-outline-secondary">
+                                        <i class="bi bi-box-arrow-up-right me-2"></i>
+                                        Join Discord Server
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Connected State -->
+                            <div v-else>
+                                <div class="d-flex align-items-center mb-4">
+                                    <img
+                                        v-if="props.discord?.avatarUrl"
+                                        :src="props.discord.avatarUrl"
+                                        alt="Discord Avatar"
+                                        class="rounded-circle me-3"
+                                        style="width: 64px; height: 64px"
+                                    />
+                                    <div
+                                        v-else
+                                        class="rounded-circle me-3 d-flex align-items-center justify-content-center"
+                                        style="width: 64px; height: 64px; background-color: #5865f2"
+                                    >
+                                        <i class="bi bi-discord text-white fs-3"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">{{ props.discord?.username || 'Discord User' }}</h6>
+                                        <span class="badge bg-success"> <i class="bi bi-check-circle me-1"></i>Connected </span>
+                                    </div>
+                                </div>
+
+                                <!-- Next Steps Alert -->
+                                <div v-if="props.discord?.inviteUrl" class="alert alert-info mb-4">
+                                    <h6 class="alert-heading mb-2"><i class="bi bi-info-circle me-2"></i>Next Steps</h6>
+                                    <ol class="mb-0 ps-3">
+                                        <li>Click <strong>"Join Discord Server"</strong> below to join our community</li>
+                                        <li>Once you've joined, click <strong>"Sync Roles"</strong> to get your subscription-based roles</li>
+                                    </ol>
+                                </div>
+
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a
+                                        v-if="props.discord?.inviteUrl"
+                                        :href="props.discord.inviteUrl"
+                                        target="_blank"
+                                        class="btn"
+                                        style="background-color: #5865f2; color: white"
+                                    >
+                                        <i class="bi bi-box-arrow-up-right me-2"></i>
+                                        Join Discord Server
+                                    </a>
+                                    <button @click="syncDiscordRoles" :disabled="isSyncingRoles" class="btn btn-outline-secondary">
+                                        <span v-if="isSyncingRoles" class="spinner-border spinner-border-sm me-2"></span>
+                                        <i v-else class="bi bi-arrow-repeat me-2"></i>
+                                        {{ isSyncingRoles ? 'Syncing...' : 'Sync Roles' }}
+                                    </button>
+                                    <button @click="disconnectDiscord" :disabled="isDisconnecting" class="btn btn-outline-danger">
+                                        <span v-if="isDisconnecting" class="spinner-border spinner-border-sm me-2"></span>
+                                        <i v-else class="bi bi-x-circle me-2"></i>
+                                        {{ isDisconnecting ? 'Disconnecting...' : 'Disconnect' }}
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

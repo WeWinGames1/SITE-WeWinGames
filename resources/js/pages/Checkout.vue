@@ -265,19 +265,19 @@ const submit = async () => {
                     // Reddit Pixel - Advanced Matching for Purchase (Subscription)
                     // Cast to any to access dynamic env property
                     const pixelId = (page.props as any).env?.REDDIT_PIXEL_ID;
-                    
+
                     if ((window as any).rdt && pixelId) {
                         const user = page.props.auth.user;
                         if (user) {
                             (window as any).rdt('init', pixelId, {
                                 email: user.email,
-                                phoneNumber: user.phone
+                                phoneNumber: user.phone,
                             });
                         }
                         // Track Purchase with value
                         (window as any).rdt('track', 'Purchase', {
                             currency: 'USD',
-                            value: total.value
+                            value: total.value,
                         });
                     }
                 }

@@ -1,8 +1,7 @@
 <script setup lang="ts">
+import { useForm } from '@/composables/useInertiaForm';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import { Head, usePage } from '@inertiajs/vue3';
-import { useForm } from '@/composables/useInertiaForm';
-import { useSessionKeepAlive } from '@/composables/useSessionKeepAlive';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 const page = usePage();
@@ -165,55 +164,73 @@ const validatePasswordConfirmation = (value: string, password: string): string =
 };
 
 // Watchers for real-time validation
-watch(() => form.name, (value) => {
-    if (value) {
-        clientErrors.value.name = validateName(value);
-    } else {
-        clientErrors.value.name = '';
-    }
-});
-
-watch(() => form.email, (value) => {
-    if (value) {
-        clientErrors.value.email = validateEmail(value);
-        // Clear the "email already exists" error when user modifies email
-        emailAlreadyExists.value = false;
-    } else {
-        clientErrors.value.email = '';
-    }
-});
-
-watch(() => form.phone, (value) => {
-    if (value) {
-        clientErrors.value.phone = validatePhone(value);
-    } else {
-        clientErrors.value.phone = '';
-    }
-});
-
-watch(() => form.discord_username, (value) => {
-    clientErrors.value.discord_username = validateDiscordUsername(value);
-});
-
-watch(() => form.password, (value) => {
-    if (value) {
-        clientErrors.value.password = validatePassword(value);
-        // Re-validate password confirmation if it has a value
-        if (form.password_confirmation) {
-            clientErrors.value.password_confirmation = validatePasswordConfirmation(form.password_confirmation, value);
+watch(
+    () => form.name,
+    (value) => {
+        if (value) {
+            clientErrors.value.name = validateName(value);
+        } else {
+            clientErrors.value.name = '';
         }
-    } else {
-        clientErrors.value.password = '';
-    }
-});
+    },
+);
 
-watch(() => form.password_confirmation, (value) => {
-    if (value) {
-        clientErrors.value.password_confirmation = validatePasswordConfirmation(value, form.password);
-    } else {
-        clientErrors.value.password_confirmation = '';
-    }
-});
+watch(
+    () => form.email,
+    (value) => {
+        if (value) {
+            clientErrors.value.email = validateEmail(value);
+            // Clear the "email already exists" error when user modifies email
+            emailAlreadyExists.value = false;
+        } else {
+            clientErrors.value.email = '';
+        }
+    },
+);
+
+watch(
+    () => form.phone,
+    (value) => {
+        if (value) {
+            clientErrors.value.phone = validatePhone(value);
+        } else {
+            clientErrors.value.phone = '';
+        }
+    },
+);
+
+watch(
+    () => form.discord_username,
+    (value) => {
+        clientErrors.value.discord_username = validateDiscordUsername(value);
+    },
+);
+
+watch(
+    () => form.password,
+    (value) => {
+        if (value) {
+            clientErrors.value.password = validatePassword(value);
+            // Re-validate password confirmation if it has a value
+            if (form.password_confirmation) {
+                clientErrors.value.password_confirmation = validatePasswordConfirmation(form.password_confirmation, value);
+            }
+        } else {
+            clientErrors.value.password = '';
+        }
+    },
+);
+
+watch(
+    () => form.password_confirmation,
+    (value) => {
+        if (value) {
+            clientErrors.value.password_confirmation = validatePasswordConfirmation(value, form.password);
+        } else {
+            clientErrors.value.password_confirmation = '';
+        }
+    },
+);
 
 // Function to render Turnstile widget
 const renderTurnstile = (container: HTMLElement) => {
@@ -437,11 +454,12 @@ const submit = () => {
             console.error('Registration errors:', errors);
 
             // Check if email already exists error
-            if (errors.email && (
-                errors.email.toString().toLowerCase().includes('already been taken') ||
-                errors.email.toString().toLowerCase().includes('email has already been taken') ||
-                errors.email.toString().toLowerCase().includes('unique')
-            )) {
+            if (
+                errors.email &&
+                (errors.email.toString().toLowerCase().includes('already been taken') ||
+                    errors.email.toString().toLowerCase().includes('email has already been taken') ||
+                    errors.email.toString().toLowerCase().includes('unique'))
+            ) {
                 emailAlreadyExists.value = true;
             } else {
                 emailAlreadyExists.value = false;
@@ -454,7 +472,7 @@ const submit = () => {
                     // Format field names to be more user-friendly
                     const fieldName = field
                         .replace(/_/g, ' ')
-                        .replace(/\b\w/g, l => l.toUpperCase())
+                        .replace(/\b\w/g, (l) => l.toUpperCase())
                         .replace('Cf Turnstile Response', 'Security verification');
                     return `${fieldName}: ${message}`;
                 })
@@ -475,11 +493,11 @@ const submit = () => {
             // Reddit Pixel - Advanced Matching for Sign Up
             // Cast to any to avoid TS errors with dynamic env property
             const pixelId = (page.props as any).env?.REDDIT_PIXEL_ID;
-            
+
             if ((window as any).rdt && pixelId) {
                 (window as any).rdt('init', pixelId, {
                     email: form.email,
-                    phoneNumber: form.phone
+                    phoneNumber: form.phone,
                 });
                 (window as any).rdt('track', 'SignUp');
             }
@@ -525,7 +543,9 @@ const submit = () => {
                                         <i class="bi bi-exclamation-triangle-fill me-3 fs-5"></i>
                                         <div class="flex-grow-1">
                                             <h5 class="alert-heading mb-2">Account Already Exists</h5>
-                                            <p class="mb-3">This email address is already registered. If this is your account, please sign in instead.</p>
+                                            <p class="mb-3">
+                                                This email address is already registered. If this is your account, please sign in instead.
+                                            </p>
                                             <a :href="loginUrlWithEmail" class="btn btn-warning btn-sm">
                                                 <i class="bi bi-box-arrow-in-right me-2"></i>
                                                 Go to Login
@@ -609,7 +629,9 @@ const submit = () => {
                                         <div v-if="form.errors.discord_username || clientErrors.discord_username" class="invalid-feedback d-block">
                                             {{ form.errors.discord_username || clientErrors.discord_username }}
                                         </div>
-                                        <div v-else class="form-text text-gray-light small">Enter your Discord username (new or legacy format with #1234) for exclusive community access</div>
+                                        <div v-else class="form-text text-gray-light small">
+                                            Enter your Discord username (new or legacy format with #1234) for exclusive community access
+                                        </div>
                                     </div>
 
                                     <div class="mb-4">
@@ -697,8 +719,11 @@ const submit = () => {
                                                 id="password"
                                                 :type="showPassword ? 'text' : 'password'"
                                                 class="form-control form-control-lg"
-                                                :class="{ 'is-invalid': form.errors.password || clientErrors.password, 'pe-5': !(form.errors.password || clientErrors.password) }"
-                                                :style="(form.errors.password || clientErrors.password) ? 'padding-right: 4rem !important;' : ''"
+                                                :class="{
+                                                    'is-invalid': form.errors.password || clientErrors.password,
+                                                    'pe-5': !(form.errors.password || clientErrors.password),
+                                                }"
+                                                :style="form.errors.password || clientErrors.password ? 'padding-right: 4rem !important;' : ''"
                                                 required
                                                 autocomplete="new-password"
                                                 v-model="form.password"
@@ -707,9 +732,9 @@ const submit = () => {
                                             <button
                                                 type="button"
                                                 class="btn btn-link position-absolute top-50 translate-middle-y text-gray-light p-0"
-                                                :style="(form.errors.password || clientErrors.password) ? 'right: 2.5rem;' : 'right: 0.75rem;'"
+                                                :style="form.errors.password || clientErrors.password ? 'right: 2.5rem;' : 'right: 0.75rem;'"
                                                 @click="showPassword = !showPassword"
-                                                style="text-decoration: none;"
+                                                style="text-decoration: none"
                                             >
                                                 <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'" class="fs-5"></i>
                                             </button>
@@ -729,8 +754,15 @@ const submit = () => {
                                                 id="password_confirmation"
                                                 :type="showPasswordConfirmation ? 'text' : 'password'"
                                                 class="form-control form-control-lg"
-                                                :class="{ 'is-invalid': form.errors.password_confirmation || clientErrors.password_confirmation, 'pe-5': !(form.errors.password_confirmation || clientErrors.password_confirmation) }"
-                                                :style="(form.errors.password_confirmation || clientErrors.password_confirmation) ? 'padding-right: 4rem !important;' : ''"
+                                                :class="{
+                                                    'is-invalid': form.errors.password_confirmation || clientErrors.password_confirmation,
+                                                    'pe-5': !(form.errors.password_confirmation || clientErrors.password_confirmation),
+                                                }"
+                                                :style="
+                                                    form.errors.password_confirmation || clientErrors.password_confirmation
+                                                        ? 'padding-right: 4rem !important;'
+                                                        : ''
+                                                "
                                                 required
                                                 autocomplete="new-password"
                                                 v-model="form.password_confirmation"
@@ -739,14 +771,21 @@ const submit = () => {
                                             <button
                                                 type="button"
                                                 class="btn btn-link position-absolute top-50 translate-middle-y text-gray-light p-0"
-                                                :style="(form.errors.password_confirmation || clientErrors.password_confirmation) ? 'right: 2.5rem;' : 'right: 0.75rem;'"
+                                                :style="
+                                                    form.errors.password_confirmation || clientErrors.password_confirmation
+                                                        ? 'right: 2.5rem;'
+                                                        : 'right: 0.75rem;'
+                                                "
                                                 @click="showPasswordConfirmation = !showPasswordConfirmation"
-                                                style="text-decoration: none;"
+                                                style="text-decoration: none"
                                             >
                                                 <i :class="showPasswordConfirmation ? 'bi bi-eye-slash' : 'bi bi-eye'" class="fs-5"></i>
                                             </button>
                                         </div>
-                                        <div v-if="form.errors.password_confirmation || clientErrors.password_confirmation" class="invalid-feedback d-block">
+                                        <div
+                                            v-if="form.errors.password_confirmation || clientErrors.password_confirmation"
+                                            class="invalid-feedback d-block"
+                                        >
                                             {{ form.errors.password_confirmation || clientErrors.password_confirmation }}
                                         </div>
                                     </div>

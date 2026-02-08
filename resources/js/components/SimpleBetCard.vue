@@ -1,88 +1,92 @@
 <template>
     <div class="bet-card-with-tile">
         <div class="bet-card position-relative" :style="{ backgroundColor: cardBgColor }">
-        <!-- Odds Ribbon -->
-        <div class="odds-ribbon">
-            {{ getOdds(bet) }}
-        </div>
-
-        <!-- Header -->
-        <div class="bet-header d-flex align-items-center gap-2 mb-2">
-            <i class="bi bi-trophy-fill text-white"></i>
-            <span class="text-white fw-semibold">{{ bet.sport || bet.sports || 'Football' }}</span>
-            <div class="ms-auto me-5">
-                <span class="text-white small">{{ bet.league || 'Premier League' }}</span>
+            <!-- Odds Ribbon -->
+            <div class="odds-ribbon">
+                {{ getOdds(bet) }}
             </div>
-        </div>
 
-        <!-- Date -->
-        <div class="text-white small mb-3">Date: {{ formatDate(bet.game_date || bet.betting_date) }}</div>
-
-        <!-- Teams - Side by Side -->
-        <div class="teams-section mb-3">
-            <div class="d-flex align-items-center justify-content-between">
-                <div class="team-box text-center">
-                    <img :src="bet.team_one_logo || '/images/team-placeholder.svg'" :alt="bet.team_one" class="team-logo mb-2" />
-                    <div class="text-white small">{{ bet.team_one }}</div>
-                </div>
-
-                <div class="text-white fw-bold">VS</div>
-
-                <div class="team-box text-center">
-                    <img :src="bet.team_two_logo || '/images/team-placeholder.svg'" :alt="bet.team_two" class="team-logo mb-2" />
-                    <div class="text-white small">{{ bet.team_two }}</div>
+            <!-- Header -->
+            <div class="bet-header d-flex align-items-center gap-2 mb-2">
+                <i class="bi bi-trophy-fill text-white"></i>
+                <span class="text-white fw-semibold">{{ bet.sport || bet.sports || 'Football' }}</span>
+                <div class="ms-auto me-5">
+                    <span class="text-white small">{{ bet.league || 'Premier League' }}</span>
                 </div>
             </div>
-        </div>
 
-        <!-- Game Level & Place Bet Button (inline on mobile, stacked on desktop) -->
-        <div class="d-flex flex-column flex-md-column align-items-center justify-content-center gap-2 mb-3">
-            <div class="d-flex align-items-center justify-content-center gap-3">
-                <span class="badge text-uppercase" :style="{ backgroundColor: levelBgColor, color: levelTextColor }">
-                    Game Level: {{ membershipDisplayName }}
-                </span>
+            <!-- Date -->
+            <div class="text-white small mb-3">Date: {{ formatDate(bet.game_date || bet.betting_date) }}</div>
+
+            <!-- Teams - Side by Side -->
+            <div class="teams-section mb-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="team-box text-center">
+                        <img :src="bet.team_one_logo || '/images/team-placeholder.svg'" :alt="bet.team_one" class="team-logo mb-2" />
+                        <div class="text-white small">{{ bet.team_one }}</div>
+                    </div>
+
+                    <div class="text-white fw-bold">VS</div>
+
+                    <div class="team-box text-center">
+                        <img :src="bet.team_two_logo || '/images/team-placeholder.svg'" :alt="bet.team_two" class="team-logo mb-2" />
+                        <div class="text-white small">{{ bet.team_two }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Level & Place Bet Button (inline on mobile, stacked on desktop) -->
+            <div class="d-flex flex-column flex-md-column align-items-center justify-content-center gap-2 mb-3">
+                <div class="d-flex align-items-center justify-content-center gap-3">
+                    <span class="badge text-uppercase" :style="{ backgroundColor: levelBgColor, color: levelTextColor }">
+                        Game Level: {{ membershipDisplayName }}
+                    </span>
+                    <a
+                        v-if="bet.place_bet_url"
+                        :href="bet.place_bet_url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="btn btn-sm btn-primary d-md-none"
+                        style="border-radius: 20px; padding: 4px 12px; text-decoration: none; font-size: 13px; white-space: nowrap"
+                    >
+                        <i class="bi bi-box-arrow-up-right me-1"></i>
+                        Place this Bet
+                    </a>
+                </div>
                 <a
                     v-if="bet.place_bet_url"
                     :href="bet.place_bet_url"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="btn btn-sm btn-primary d-md-none"
-                    style="border-radius: 20px; padding: 4px 12px; text-decoration: none; font-size: 13px; white-space: nowrap"
+                    class="btn btn-sm btn-primary d-none d-md-inline-block"
+                    style="border-radius: 20px; padding: 4px 12px; text-decoration: none; font-size: 13px"
                 >
                     <i class="bi bi-box-arrow-up-right me-1"></i>
                     Place this Bet
                 </a>
             </div>
-            <a
-                v-if="bet.place_bet_url"
-                :href="bet.place_bet_url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn btn-sm btn-primary d-none d-md-inline-block"
-                style="border-radius: 20px; padding: 4px 12px; text-decoration: none; font-size: 13px"
-            >
-                <i class="bi bi-box-arrow-up-right me-1"></i>
-                Place this Bet
-            </a>
-        </div>
 
-        <!-- Betting Pick -->
-        <button class="btn w-100 fw-bold" :style="{ backgroundColor: '#ffc107', color: '#000' }">
-            {{ formatBetTip(bet) }}
-        </button>
+            <!-- Betting Pick -->
+            <button class="btn w-100 fw-bold" :style="{ backgroundColor: '#ffc107', color: '#000' }">
+                {{ formatBetTip(bet) }}
+            </button>
 
-        <!-- Premium Notes Section -->
-        <div v-if="bet.premium_notes_enabled && bet.premium_notes" class="premium-notes-section mt-3 p-3">
-            <div class="d-flex align-items-center mb-2">
-                <i class="bi bi-star-fill text-warning me-2"></i>
-                <span class="fw-semibold text-white">{{ bet.premium_notes_heading || 'Premium Analysis' }}</span>
+            <!-- Premium Notes Section -->
+            <div v-if="bet.premium_notes_enabled && bet.premium_notes" class="premium-notes-section mt-3 p-3">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-star-fill text-warning me-2"></i>
+                    <span class="fw-semibold text-white">{{ bet.premium_notes_heading || 'Premium Analysis' }}</span>
+                </div>
+                <p class="text-white small mb-0">{{ bet.premium_notes }}</p>
             </div>
-            <p class="text-white small mb-0">{{ bet.premium_notes }}</p>
-        </div>
         </div>
 
         <!-- MetaBet Game Tile - Below the card -->
-        <div v-if="bet.metabet_query_id" :class="`metabet-gametile metabet-query-${bet.metabet_query_id} metabet-size-320x50`" style="margin-top: -2px;"></div>
+        <div
+            v-if="bet.metabet_query_id"
+            :class="`metabet-gametile metabet-query-${bet.metabet_query_id} metabet-size-320x50`"
+            style="margin-top: -2px"
+        ></div>
     </div>
 </template>
 

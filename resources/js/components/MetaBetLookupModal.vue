@@ -99,12 +99,7 @@ function handleUnlink() {
                             <li>Optionally, add a descriptive game name for reference</li>
                         </ol>
                         <div class="mt-3">
-                            <a
-                                :href="metabetUrl"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="btn btn-primary btn-sm"
-                            >
+                            <a :href="metabetUrl" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">
                                 <i class="bi bi-box-arrow-up-right me-1"></i>
                                 Open MetaBet in New Tab
                             </a>
@@ -140,7 +135,7 @@ function handleUnlink() {
                                         <small class="text-muted">URL-friendly format with dashes</small>
                                     </div>
                                 </div>
-                                <hr class="my-3">
+                                <hr class="my-3" />
                                 <div class="alert alert-warning mb-0">
                                     <small>
                                         <strong>Tip:</strong> In the MetaBet page, look for attributes like:
@@ -161,9 +156,7 @@ function handleUnlink() {
                         <div class="card-body">
                             <div class="row g-3">
                                 <div class="col-12">
-                                    <label for="queryId" class="form-label">
-                                        MetaBet Query ID <span class="text-danger">*</span>
-                                    </label>
+                                    <label for="queryId" class="form-label"> MetaBet Query ID <span class="text-danger">*</span> </label>
                                     <input
                                         id="queryId"
                                         v-model="queryId"
@@ -172,15 +165,11 @@ function handleUnlink() {
                                         placeholder="e.g., 594584, nba-lakers-celtics, or game-123456"
                                         required
                                     />
-                                    <div class="form-text">
-                                        The unique identifier found in MetaBet's HTML (inspect element to find it)
-                                    </div>
+                                    <div class="form-text">The unique identifier found in MetaBet's HTML (inspect element to find it)</div>
                                 </div>
 
                                 <div class="col-12">
-                                    <label for="gameName" class="form-label">
-                                        Game Name (Optional)
-                                    </label>
+                                    <label for="gameName" class="form-label"> Game Name (Optional) </label>
                                     <input
                                         id="gameName"
                                         v-model="gameName"
@@ -188,9 +177,7 @@ function handleUnlink() {
                                         class="form-control"
                                         placeholder="e.g., Lakers vs Celtics - Jan 15, 2025"
                                     />
-                                    <div class="form-text">
-                                        A descriptive name for your reference in the admin panel
-                                    </div>
+                                    <div class="form-text">A descriptive name for your reference in the admin panel</div>
                                 </div>
 
                                 <div class="col-12">
@@ -199,10 +186,14 @@ function handleUnlink() {
                                             <i class="bi bi-code-square me-1"></i>
                                             Preview: How Odds Will Be Embedded
                                         </h6>
-                                        <p class="mb-2 text-muted small">When you save this link, MetaBet will automatically populate live odds using this HTML:</p>
+                                        <p class="mb-2 text-muted small">
+                                            When you save this link, MetaBet will automatically populate live odds using this HTML:
+                                        </p>
                                         <code class="d-block p-2 bg-white border rounded">
-                                            &lt;span class="metabet-odds metabet-market-moneyLine-home metabet-query-{{ queryId || 'XXXXX' }}"&gt;<br>
-                                            &nbsp;&nbsp;<!-- MetaBet fills this automatically --><br>
+                                            &lt;span class="metabet-odds metabet-market-moneyLine-home metabet-query-{{
+                                                queryId || 'XXXXX'
+                                            }}"&gt;<br />
+                                            &nbsp;&nbsp;<!-- MetaBet fills this automatically --><br />
                                             &lt;/span&gt;
                                         </code>
                                         <small class="text-muted d-block mt-2">
@@ -217,24 +208,12 @@ function handleUnlink() {
                 </div>
 
                 <div class="modal-footer">
-                    <button
-                        v-if="currentQueryId"
-                        type="button"
-                        class="btn btn-outline-danger me-auto"
-                        @click="handleUnlink"
-                    >
+                    <button v-if="currentQueryId" type="button" class="btn btn-outline-danger me-auto" @click="handleUnlink">
                         <i class="bi bi-x-circle me-1"></i>
                         Unlink MetaBet
                     </button>
-                    <button type="button" class="btn btn-secondary" @click="handleClose">
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        class="btn btn-primary"
-                        :disabled="!queryId.trim() || isProcessing"
-                        @click="handleLink"
-                    >
+                    <button type="button" class="btn btn-secondary" @click="handleClose">Cancel</button>
+                    <button type="button" class="btn btn-primary" :disabled="!queryId.trim() || isProcessing" @click="handleLink">
                         <span v-if="isProcessing" class="spinner-border spinner-border-sm me-2"></span>
                         <i v-else class="bi bi-link-45deg me-1"></i>
                         {{ currentQueryId ? 'Update Link' : 'Link MetaBet' }}

@@ -347,8 +347,8 @@ function getTierBadgeClass(tier: string) {
                             </ul>
 
                             <div class="alert alert-warning small p-2 mt-3">
-                                <strong>Purpose:</strong> This system links your website's subscription tiers (Gold, Platinum) with
-                                corresponding Stripe products for proper billing integration. Names are auto-generated to ensure consistency.
+                                <strong>Purpose:</strong> This system links your website's subscription tiers (Gold, Platinum) with corresponding
+                                Stripe products for proper billing integration. Names are auto-generated to ensure consistency.
                             </div>
                         </div>
                     </div>

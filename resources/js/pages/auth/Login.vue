@@ -135,7 +135,7 @@ function fillCredentials(email: string, password: string) {
                                                 type="button"
                                                 class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-gray-light p-0 me-3"
                                                 @click="showPassword = !showPassword"
-                                                style="text-decoration: none;"
+                                                style="text-decoration: none"
                                             >
                                                 <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'" class="fs-5"></i>
                                             </button>

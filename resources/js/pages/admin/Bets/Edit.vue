@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import AdminLayout from '@/layouts/AdminLayout.vue';
 import BetCalculator from '@/components/BetCalculator.vue';
 import MetaBetLookupModal from '@/components/MetaBetLookupModal.vue';
+import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
@@ -1629,7 +1629,9 @@ declare global {
                                             <strong>MetaBet Linked</strong>
                                             <div class="mt-1">
                                                 <small class="d-block"><strong>Query ID:</strong> {{ form.metabet_query_id }}</small>
-                                                <small v-if="form.metabet_game_name" class="d-block"><strong>Game:</strong> {{ form.metabet_game_name }}</small>
+                                                <small v-if="form.metabet_game_name" class="d-block"
+                                                    ><strong>Game:</strong> {{ form.metabet_game_name }}</small
+                                                >
                                                 <small v-if="bet.metabet_linked_at" class="d-block text-muted">
                                                     <strong>Linked:</strong> {{ new Date(bet.metabet_linked_at).toLocaleString() }}
                                                 </small>
@@ -1644,11 +1646,7 @@ declare global {
                                 </div>
 
                                 <!-- Action Button -->
-                                <button
-                                    type="button"
-                                    class="btn btn-info"
-                                    @click="openMetaBetModal"
-                                >
+                                <button type="button" class="btn btn-info" @click="openMetaBetModal">
                                     <i class="bi bi-link-45deg me-1"></i>
                                     {{ form.metabet_query_id ? 'Update MetaBet Link' : 'Link to MetaBet' }}
                                 </button>
@@ -1741,7 +1739,8 @@ declare global {
                                     placeholder="https://example.com/bet"
                                 />
                                 <div class="form-text">
-                                    Optional: Add a link to an external betting site where users can place this bet. The button will only show if this URL is provided.
+                                    Optional: Add a link to an external betting site where users can place this bet. The button will only show if this
+                                    URL is provided.
                                 </div>
                                 <div v-if="form.errors.place_bet_url" class="invalid-feedback">
                                     {{ form.errors.place_bet_url }}
