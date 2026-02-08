@@ -346,10 +346,14 @@ watch(
                                     </div>
                                 </div>
 
-                                <!-- Next Steps Alert -->
-                                <div v-if="props.discord?.inviteUrl" class="alert alert-info mb-4">
-                                    <h6 class="alert-heading mb-2"><i class="bi bi-info-circle me-2"></i>Next Steps</h6>
-                                    <ol class="mb-0 ps-3">
+                                <!-- Next Steps Alert - Only show if not yet synced roles -->
+                                <div
+                                    v-if="props.discord?.inviteUrl && (!props.discord?.rolesSynced || props.discord.rolesSynced.length === 0)"
+                                    class="alert mb-4"
+                                    style="background-color: #cff4fc; border-color: #9eeaf9; color: #055160"
+                                >
+                                    <h6 class="alert-heading mb-2" style="color: #055160"><i class="bi bi-info-circle me-2"></i>Next Steps</h6>
+                                    <ol class="mb-0 ps-3" style="color: #055160">
                                         <li>Click <strong>"Join Discord Server"</strong> below to join our community</li>
                                         <li>Once you've joined, click <strong>"Sync Roles"</strong> to get your subscription-based roles</li>
                                     </ol>

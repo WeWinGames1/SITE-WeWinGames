@@ -356,9 +356,12 @@ const syncDiscordRoles = () => {
                                                 </div>
                                             </div>
 
-                                            <!-- Next Steps Info -->
-                                            <div class="col-12 mt-3">
-                                                <div class="alert mb-0" style="background-color: rgba(88, 101, 242, 0.15); border-color: #5865f2">
+                                            <!-- Next Steps Info - Only show if not yet synced roles -->
+                                            <div v-if="!props.discord.rolesSynced || props.discord.rolesSynced.length === 0" class="col-12 mt-3">
+                                                <div
+                                                    class="alert mb-0"
+                                                    style="background-color: rgba(88, 101, 242, 0.15); border-color: #5865f2; color: #fff"
+                                                >
                                                     <i class="bi bi-arrow-right-circle me-2" style="color: #5865f2"></i>
                                                     <strong>Next:</strong> Click <strong>"Join Discord Server"</strong> to join our community, then
                                                     <strong>"Sync Roles"</strong> to get your subscription-based roles.
