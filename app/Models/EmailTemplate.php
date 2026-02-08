@@ -50,6 +50,8 @@ class EmailTemplate extends Model
 
     const CAREER_APPLICATION = 'career_application';
 
+    const DISCORD_ANNOUNCEMENT = 'discord_announcement';
+
     /**
      * Get default templates
      */
@@ -90,6 +92,13 @@ class EmailTemplate extends Model
                 'subject' => 'Payment Failed - Action Required',
                 'body_html' => '<h2>Payment Failed</h2><p>Hi {{user_name}},</p><p>We were unable to process your payment for your {{plan_name}} subscription.</p><p>Please update your payment method to avoid service interruption:</p><p><a href="{{update_payment_url}}" style="background-color: #f44336; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Update Payment Method</a></p><p>If you need assistance, please contact our support team.</p><p>Best regards,<br>The {{app_name}} Team</p>',
                 'available_variables' => ['user_name', 'plan_name', 'update_payment_url', 'app_name'],
+            ],
+            self::DISCORD_ANNOUNCEMENT => [
+                'name' => 'Discord Community Announcement',
+                'description' => 'Sent to subscribers to invite them to join the Discord community',
+                'subject' => 'Join Our Exclusive Discord Community!',
+                'body_html' => '<h2>You\'re Invited to Our Discord Community!</h2><p>Hi {{user_name}},</p><p>Great news! As a valued {{app_name}} subscriber, you now have access to our exclusive Discord community.</p><p><strong>What you\'ll get:</strong></p><ul><li>Direct access to our betting experts</li><li>Real-time pick alerts and discussions</li><li>Exclusive member-only channels based on your subscription tier</li><li>Connect with fellow bettors</li></ul><p><strong>Getting started is easy:</strong></p><ol><li>Log in to your <a href="{{dashboard_url}}">dashboard</a></li><li>Click "Connect Discord" in the Discord Community section</li><li>Join our server using the invite link</li><li>Your roles will be automatically assigned based on your subscription!</li></ol><p style="text-align: center; margin: 30px 0;"><a href="{{dashboard_url}}" style="background-color: #5865f2; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">Connect Discord Now</a></p><p>See you in the community!</p><p>Best regards,<br>The {{app_name}} Team</p>',
+                'available_variables' => ['user_name', 'user_email', 'dashboard_url', 'discord_invite_url', 'app_name'],
             ],
         ];
     }

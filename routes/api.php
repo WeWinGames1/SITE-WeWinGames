@@ -7,7 +7,6 @@ use App\Http\Controllers\Api\V1\PushNotificationController as V1PushNotification
 use App\Http\Controllers\Api\V1\UserApiController;
 use App\Http\Controllers\BetController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,6 +43,8 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:api'])->group(functio
 // Ticker endpoint - no auth required
 Route::get('/ticker-bets', [BetController::class, 'getTickerBets']);
 
+// Discord Interactions Webhook (public endpoint for Discord to POST to)
+Route::post('/discord/interactions', [\App\Http\Controllers\DiscordController::class, 'interactions']);
 
 /*
 |--------------------------------------------------------------------------

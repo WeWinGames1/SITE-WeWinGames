@@ -71,7 +71,8 @@
       "mcp__laravel-boost__browser-logs",
       "WebFetch(domain:nightwatch.laravel.com)",
       "mcp__laravel-boost__list-available-env-vars",
-      "Bash(vendor/bin/pint:*)"
+      "Bash(vendor/bin/pint:*)",
+      "mcp__herd__get_site_information"
     ],
     "deny": []
   },

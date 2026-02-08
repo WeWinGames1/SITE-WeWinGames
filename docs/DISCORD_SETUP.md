@@ -108,9 +108,10 @@ The Discord integration allows:
 Add the following to your `.env` file:
 
 ```env
-# Discord OAuth (from Discord Developer Portal)
+# Discord OAuth (from Discord Developer Portal → OAuth2)
 DISCORD_CLIENT_ID=your_client_id_here
 DISCORD_CLIENT_SECRET=your_client_secret_here
+DISCORD_PUBLIC_KEY=your_public_key_here
 DISCORD_REDIRECT_URI=https://wewingames.com/auth/discord/callback
 
 # Discord Bot
@@ -125,6 +126,27 @@ DISCORD_ROLE_PLATINUM=your_platinum_role_id
 # Discord Invite Link
 DISCORD_INVITE_URL=https://discord.gg/your-invite-code
 ```
+
+**Where to find these values:**
+- **CLIENT_ID** (Application ID): Discord Developer Portal → Your App → General Information
+- **CLIENT_SECRET**: Discord Developer Portal → Your App → OAuth2 → Client Secret
+- **PUBLIC_KEY**: Discord Developer Portal → Your App → General Information → Public Key
+
+---
+
+## Step 5b: Configure Discord Interactions Endpoint (Optional)
+
+If you want to use slash commands, buttons, or other Discord interactions:
+
+1. Go to Discord Developer Portal → Your App → **General Information**
+2. Set **Interactions Endpoint URL** to:
+   ```
+   https://wewingames.com/api/discord/interactions
+   ```
+3. Discord will verify the endpoint by sending a PING request
+4. If verification succeeds, save your changes
+
+**Note:** The `DISCORD_PUBLIC_KEY` must be configured in your `.env` for signature verification to work.
 
 ---
 
@@ -202,6 +224,7 @@ Users can manually sync their roles from the dashboard:
 | `/auth/discord/disconnect` | POST | Disconnect Discord account |
 | `/auth/discord/sync-roles` | POST | Manually sync roles |
 | `/api/discord/status` | GET | Get connection status (API) |
+| `/api/discord/interactions` | POST | Discord interactions webhook (slash commands, buttons) |
 
 ---
 

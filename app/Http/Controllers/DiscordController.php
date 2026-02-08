@@ -14,6 +14,138 @@ class DiscordController extends Controller
     ) {}
 
     /**
+     * Handle Discord interactions webhook (slash commands, buttons, etc.)
+     * This endpoint must verify the request signature and respond to PING.
+     */
+    public function interactions(Request $request)
+    {
+        $signature = $request->header('X-Signature-Ed25519');
+        $timestamp = $request->header('X-Signature-Timestamp');
+        $body = $request->getContent();
+
+        // Verify the request signature
+        if (! $this->verifyDiscordSignature($signature, $timestamp, $body)) {
+            Log::warning('Discord interaction signature verification failed');
+
+            return response()->json(['error' => 'Invalid signature'], 401);
+        }
+
+        $payload = $request->all();
+        $type = $payload['type'] ?? null;
+
+        // Handle PING (type 1) - required for Discord to verify the endpoint
+        if ($type === 1) {
+            return response()->json(['type' => 1]);
+        }
+
+        // Handle APPLICATION_COMMAND (type 2) - slash commands
+        if ($type === 2) {
+            return $this->handleSlashCommand($payload);
+        }
+
+        // Handle MESSAGE_COMPONENT (type 3) - buttons, select menus
+        if ($type === 3) {
+            return $this->handleMessageComponent($payload);
+        }
+
+        // Handle MODAL_SUBMIT (type 5)
+        if ($type === 5) {
+            return $this->handleModalSubmit($payload);
+        }
+
+        Log::info('Unhandled Discord interaction type', ['type' => $type]);
+
+        return response()->json(['type' => 1]);
+    }
+
+    /**
+     * Verify Discord request signature using Ed25519
+     */
+    private function verifyDiscordSignature(?string $signature, ?string $timestamp, string $body): bool
+    {
+        if (! $signature || ! $timestamp) {
+            return false;
+        }
+
+        $publicKey = config('services.discord.public_key');
+
+        if (! $publicKey) {
+            Log::error('Discord public key not configured');
+
+            return false;
+        }
+
+        try {
+            $message = $timestamp.$body;
+            $signatureBinary = sodium_hex2bin($signature);
+            $publicKeyBinary = sodium_hex2bin($publicKey);
+
+            return sodium_crypto_sign_verify_detached($signatureBinary, $message, $publicKeyBinary);
+        } catch (\Exception $e) {
+            Log::error('Discord signature verification error', ['error' => $e->getMessage()]);
+
+            return false;
+        }
+    }
+
+    /**
+     * Handle slash commands
+     */
+    private function handleSlashCommand(array $payload)
+    {
+        $commandName = $payload['data']['name'] ?? '';
+
+        Log::info('Discord slash command received', ['command' => $commandName]);
+
+        // Add your slash command handlers here
+        // Example: /status, /subscription, etc.
+
+        return response()->json([
+            'type' => 4, // CHANNEL_MESSAGE_WITH_SOURCE
+            'data' => [
+                'content' => 'Command received! This feature is coming soon.',
+                'flags' => 64, // EPHEMERAL - only visible to the user
+            ],
+        ]);
+    }
+
+    /**
+     * Handle message components (buttons, select menus)
+     */
+    private function handleMessageComponent(array $payload)
+    {
+        $customId = $payload['data']['custom_id'] ?? '';
+
+        Log::info('Discord message component interaction', ['custom_id' => $customId]);
+
+        return response()->json([
+            'type' => 4,
+            'data' => [
+                'content' => 'Interaction received!',
+                'flags' => 64,
+            ],
+        ]);
+    }
+
+    /**
+     * Handle modal submissions
+     */
+    private function handleModalSubmit(array $payload)
+    {
+        $customId = $payload['data']['custom_id'] ?? '';
+
+        Log::info('Discord modal submit', ['custom_id' => $customId]);
+
+        return response()->json([
+            'type' => 4,
+            'data' => [
+                'content' => 'Form submitted!',
+                'flags' => 64,
+            ],
+        ]);
+    }
+
+    /**
      * Redirect to Discord OAuth
      */
     public function redirect()
