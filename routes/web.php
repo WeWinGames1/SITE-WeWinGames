@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\Notifications\EmailLogController;
 use App\Http\Controllers\Admin\Notifications\EmailTemplateController;
 use App\Http\Controllers\Admin\Notifications\PushNotificationController;
 use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\SiteSettingsController;
 use App\Http\Controllers\Admin\SportController;
 use App\Http\Controllers\Admin\StripeProductController;
 use App\Http\Controllers\Admin\TeamController;
@@ -184,6 +185,10 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
     // Under Construction Settings
     Route::get('under-construction', [UnderConstructionController::class, 'index'])->name('under-construction.index');
     Route::post('under-construction', [UnderConstructionController::class, 'update'])->name('under-construction.update');
+
+    // Site Settings
+    Route::get('site-settings', [SiteSettingsController::class, 'index'])->name('site-settings.index');
+    Route::post('site-settings', [SiteSettingsController::class, 'update'])->name('site-settings.update');
 
     // Testimonial Management
     Route::resource('testimonials', \App\Http\Controllers\Admin\TestimonialController::class);

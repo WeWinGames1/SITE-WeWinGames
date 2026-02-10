@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SiteSetting;
 use App\Models\Testimonial;
 use App\Services\BetService;
 use App\Services\SimpleCacheService;
@@ -126,6 +127,7 @@ class HomeController extends Controller
             ),
             'sportPreferences' => \App\Models\SportPreference::active()->get(),
             'availableGameDates' => $this->betService->getAvailableGameDates(),
+            'enableDraftkingsCta' => SiteSetting::get('enable_draftkings_cta', true),
         ]);
     }
 }

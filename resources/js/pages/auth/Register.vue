@@ -879,8 +879,8 @@ const submit = () => {
                             <p class="text-gray-light small mb-0">Secure & Safe</p>
                         </div>
                         <div class="col-4">
-                            <i class="bi bi-clock-history text-purple fs-2 mb-2"></i>
-                            <p class="text-gray-light small mb-0">7-Day Free Trial</p>
+                            <i class="bi bi-calendar-event text-purple fs-2 mb-2"></i>
+                            <p class="text-gray-light small mb-0">Daily Picks</p>
                         </div>
                         <div class="col-4">
                             <i class="bi bi-trophy text-purple fs-2 mb-2"></i>

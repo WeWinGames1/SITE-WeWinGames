@@ -167,9 +167,9 @@ const navigation: NavItem[] = [
         href: '#',
         icon: 'bi-gear',
         children: [
+            { name: 'Site Settings', href: '/admin/site-settings', icon: 'bi-sliders' },
             { name: 'Under Construction', href: '/admin/under-construction', icon: 'bi-cone-striped' },
-            { name: 'Knowledgebase', href: '/admin/knowledgebase', icon: 'bi-book' },
-            // { name: 'General Settings', href: '#', icon: 'bi-sliders' }, // TODO: Implement
+            { name: 'Knowledgebase', href: '/admin/knowledgebase', icon: 'bi-book' }
         ],
     },
 ];

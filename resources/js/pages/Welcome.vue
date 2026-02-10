@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import GroupedBetCards from '@/components/GroupedBetCards.vue';
+import SimpleBetCard from '@/components/SimpleBetCard.vue';
+import TeaserBetCard from '@/components/TeaserBetCard.vue';
 import TestimonialsCarousel from '@/components/TestimonialsCarousel.vue';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import { Head, Link, usePage } from '@inertiajs/vue3';
@@ -35,6 +36,7 @@ const props = defineProps<{
     golfWinners2026?: number;
     golfROI2026?: number;
     testimonials?: any[];
+    enableDraftkingsCta?: boolean;
 }>(); // Get ROI data by subscription level
 // Get user's subscription type from auth.currentTier
 const getUserSubscriptionType = () => {
@@ -294,6 +296,32 @@ const createTeaserCards = (sport, visibleBetsCount, coveredBetsCount = null) => 
         },
     ];
 };
+
+// Simplified home page picks: 2 picks + 1 teaser card (no sport headers)
+const homePagePicks = computed(() => {
+    const isGuest = !auth?.user;
+
+    // Get the first 2 viewable bets (regardless of sport)
+    const firstTwoPicks = viewableBets.value.slice(0, 2);
+
+    // Calculate total premium picks count
+    const totalPremiumCount = Object.values(totalBetsPerSport).reduce((sum: number, count: number) => sum + count, 0) - viewableBets.value.length;
+
+    // Create a teaser card for the remaining picks
+    const teaserCard = {
+        id: 'home-teaser',
+        isTeaser: true,
+        sport: 'Premium',
+        sports: 'Premium',
+        remainingCount: Math.max(0, totalPremiumCount),
+        isGuest: isGuest,
+    };
+
+    return {
+        picks: firstTwoPicks,
+        teaser: teaserCard,
+    };
+});
 
 const allGroupedBets = computed(() => {
     const isGuest = !auth?.user;
@@ -675,25 +703,18 @@ const allGroupedBets = computed(() => {
                         <p class="fs-5 text-gray-light mb-5">Get a taste of our expert analysis - no credit card required</p>
                     </div>
 
-                    <!-- Sports Filter Bar -->
-                    <div class="sports-filter-bar mb-4 p-3 rounded" style="background: linear-gradient(90deg, #2e4057 0%, #1a2332 50%, #2e4057 100%)">
-                        <div class="d-flex align-items-center gap-3 overflow-auto pb-2" style="scrollbar-width: thin">
-                            <button
-                                v-for="sport in availableSports"
-                                :key="sport"
-                                @click="selectedSport = sport"
-                                class="btn btn-sm px-4 py-2 text-nowrap d-flex align-items-center gap-2"
-                                :class="selectedSport === sport ? 'btn-warning text-dark' : 'btn-outline-light'"
-                            >
-                                <i :class="sportIcons[sport] || 'bi-star'"></i>
-                                {{ sport === 'all' ? 'All Sports' : sport }}
-                            </button>
+                    <!-- Simplified 3-card display: 2 picks + 1 teaser -->
+                    <div class="row g-3 justify-content-center">
+                        <!-- First 2 picks -->
+                        <div v-for="(bet, index) in homePagePicks.picks" :key="bet.id || `pick-${index}`" class="col-12 col-md-6 col-lg-4">
+                            <SimpleBetCard :bet="bet" />
+                        </div>
+                        <!-- Teaser card for premium picks -->
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <TeaserBetCard :bet="homePagePicks.teaser" />
                         </div>
                     </div>
 
-                    <div class="mt-4">
-                        <GroupedBetCards :grouped-bets="allGroupedBets" :total-bets-per-sport="totalBetsPerSport" />
-                    </div>
                     <div class="text-center mt-5">
                         <Link href="/todays-bets" class="btn btn-primary btn-lg px-5 py-3">
                             <i class="bi bi-arrow-right me-2"></i>
@@ -713,8 +734,8 @@ const allGroupedBets = computed(() => {
 
                     <PricingCards :plans="plans" />
 
-                    <!-- Subscription Plans Section -->
-                    <div class="mt-5">
+                    <!-- DraftKings CTA Section -->
+                    <div v-if="props.enableDraftkingsCta !== false" class="mt-5">
                         <h3 class="h4 fw-bold text-white text-center mb-4">Subscription Plans</h3>
                         <div class="row justify-content-center">
                             <div class="col-lg-8">
