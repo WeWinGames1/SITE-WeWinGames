@@ -112,4 +112,18 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Email Verification Bypass Code
+    |--------------------------------------------------------------------------
+    |
+    | If set, users can enter this code to verify their email address instead
+    | of clicking the verification link. Useful for support scenarios where
+    | users don't receive the verification email. Set to null or false to
+    | disable this feature. The code is case-insensitive.
+    |
+    */
+
+    'email_verification_bypass_code' => env('EMAIL_VERIFICATION_BYPASS_CODE'),
+
 ];
