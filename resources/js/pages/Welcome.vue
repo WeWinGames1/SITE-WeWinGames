@@ -160,7 +160,7 @@ const plans = computed(() => [
         dailyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: stripePrices.gold_daily }),
         weeklyPrice: getPrice('gold', 'weekly'),
         dailyPrice: getPrice('gold', 'daily'),
-        highlight: true,
+        highlight: false,
     },
     {
         name: 'Platinum',
@@ -176,7 +176,7 @@ const plans = computed(() => [
         dailyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: stripePrices.platinum_daily }),
         weeklyPrice: getPrice('platinum', 'weekly'),
         dailyPrice: getPrice('platinum', 'daily'),
-        highlight: false,
+        highlight: true,
     },
 ]);
 
@@ -675,16 +675,23 @@ const allGroupedBets = computed(() => {
                                     </svg>
                                     <span class="text-secondary">
                                         <span class="fw-bold text-white">Transparent Results:</span> We analyze hundreds of betting sources to give
-                                        you the best picks. See your
-                                        <a
-                                            href="https://docs.google.com/spreadsheets/d/1dNj41tUxP2sdnMLWJ_Oz_K9zrn8kT6Kd1AeuSraC7xw/edit?gid=569762228#gid=569762228"
-                                            class="text-primary"
-                                            >Google Sheet</a
-                                        >
-                                        with 12000+ picks!
+                                        you the best picks.
                                     </span>
                                 </li>
                             </ul>
+                            <!-- Prominent Google Sheet CTA -->
+                            <div class="mt-4">
+                                <a
+                                    href="https://docs.google.com/spreadsheets/d/1dNj41tUxP2sdnMLWJ_Oz_K9zrn8kT6Kd1AeuSraC7xw/edit?gid=569762228#gid=569762228"
+                                    target="_blank"
+                                    rel="noopener"
+                                    class="btn btn-warning btn-lg px-4 py-3 fw-bold"
+                                >
+                                    <i class="bi bi-file-earmark-spreadsheet me-2"></i>
+                                    View Our Full Picks Record (12,000+ Picks)
+                                    <i class="bi bi-box-arrow-up-right ms-2"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -80,7 +80,10 @@ const toggleChangeEmail = () => {
                                     <h2 class="h4 fw-bold text-white mb-3">Check Your Email</h2>
 
                                     <!-- Display user's email -->
-                                    <div class="alert mb-4" style="background-color: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3)">
+                                    <div
+                                        class="alert mb-4"
+                                        style="background-color: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3)"
+                                    >
                                         <p class="mb-1 text-gray-light small">Verification email sent to:</p>
                                         <p class="mb-0 text-warning fw-bold">{{ email }}</p>
                                     </div>
@@ -89,7 +92,22 @@ const toggleChangeEmail = () => {
                                         Please verify your email address by clicking on the link we just emailed to you.
                                     </p>
 
-                                    <p class="text-gray-light mb-4">If you didn't receive the email, check your spam folder or click below to resend.</p>
+                                    <!-- Prominent Spam Folder Notice -->
+                                    <div
+                                        class="alert mb-4"
+                                        style="background-color: rgba(255, 193, 7, 0.15); border: 1px solid rgba(255, 193, 7, 0.4)"
+                                    >
+                                        <div class="d-flex align-items-start">
+                                            <i class="bi bi-exclamation-triangle-fill text-warning me-3 fs-4"></i>
+                                            <div>
+                                                <p class="mb-1 text-white fw-bold">Not seeing the email?</p>
+                                                <p class="mb-0 text-gray-light small">
+                                                    Check your <strong class="text-warning">spam or junk folder</strong>. Sometimes verification
+                                                    emails get filtered there. If you still can't find it, click the button below to resend.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
 
                                     <!-- Status Messages -->
                                     <div v-if="status === 'verification-link-sent'" class="alert alert-success mb-4">
@@ -104,7 +122,11 @@ const toggleChangeEmail = () => {
 
                                     <!-- Resend Button -->
                                     <form @submit.prevent="submitResend" class="mb-4">
-                                        <button type="submit" class="btn btn-warning btn-lg w-100 py-3 text-dark fw-bold" :disabled="resendForm.processing">
+                                        <button
+                                            type="submit"
+                                            class="btn btn-warning btn-lg w-100 py-3 text-dark fw-bold"
+                                            :disabled="resendForm.processing"
+                                        >
                                             <span v-if="resendForm.processing" class="spinner-border spinner-border-sm me-2" role="status">
                                                 <span class="visually-hidden">Loading...</span>
                                             </span>

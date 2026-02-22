@@ -79,11 +79,11 @@ const selectedPeriod = ref<'monthly' | 'weekly' | 'daily'>('monthly');
                         <span class="badge bg-success px-3 py-2">Current Plan</span>
                     </div>
 
-                    <!-- Most Popular Badge for Gold -->
+                    <!-- Best ROI Badge for Platinum -->
                     <div v-else-if="plan.highlight" class="position-absolute top-0 start-50 translate-middle">
                         <span class="badge bg-primary px-3 py-2">
-                            <i class="bi bi-star-fill me-1"></i>
-                            Most Popular
+                            <i class="bi bi-trophy-fill me-1"></i>
+                            Best ROI
                         </span>
                     </div>
 
@@ -92,7 +92,7 @@ const selectedPeriod = ref<'monthly' | 'weekly' | 'daily'>('monthly');
                         <div class="mb-3 text-center">
                             <h3 class="h4 fw-bold mb-1">{{ plan.name }}</h3>
                             <p class="text-muted mb-0 small">
-                                {{ plan.name === 'Gold' ? 'Most popular choice' : plan.name === 'Platinum' ? 'Maximum value - All access' : '' }}
+                                {{ plan.name === 'Gold' ? 'Great value picks' : plan.name === 'Platinum' ? 'Best ROI - Maximum value' : '' }}
                             </p>
                         </div>
 
@@ -153,7 +153,7 @@ const selectedPeriod = ref<'monthly' | 'weekly' | 'daily'>('monthly');
                                 class="btn w-100 py-2 mb-2"
                                 :class="plan.highlight ? 'btn-primary' : 'btn-outline-primary'"
                             >
-                                <span class="fw-semibold">{{ currentPlan ? 'Switch to ' + plan.name : 'Get Started' }}</span>
+                                <span class="fw-semibold">{{ currentPlan ? 'Switch to ' + plan.name : 'Start Winning Today' }}</span>
                                 <i class="bi bi-arrow-right ms-2"></i>
                             </a>
                             <div v-else class="btn btn-success w-100 py-2 mb-2 disabled">

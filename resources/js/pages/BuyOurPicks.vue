@@ -85,7 +85,7 @@ const plans = computed(() => [
         dailyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: stripePrices.gold_daily }),
         weeklyPrice: getPrice('gold', 'weekly'),
         dailyPrice: getPrice('gold', 'daily'),
-        highlight: true,
+        highlight: false,
     },
     {
         name: 'Platinum',
@@ -101,7 +101,7 @@ const plans = computed(() => [
         dailyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: stripePrices.platinum_daily }),
         weeklyPrice: getPrice('platinum', 'weekly'),
         dailyPrice: getPrice('platinum', 'daily'),
-        highlight: false,
+        highlight: true,
     },
 ]);
 </script>
@@ -120,35 +120,35 @@ const plans = computed(() => [
                     </p>
                 </div>
 
-                <!-- Free Tier Section -->
+                <!-- Free Tier Section (De-emphasized) -->
                 <div class="row justify-content-center mb-5">
                     <div class="col-lg-8">
-                        <div class="card bg-dark border-success border-2">
+                        <div class="card bg-dark border-secondary">
                             <div class="card-body p-4">
                                 <div class="row align-items-center">
                                     <div class="col-md-8">
                                         <div class="d-flex align-items-center mb-2">
-                                            <span class="badge bg-success me-2 px-3 py-2">Free Access</span>
-                                            <h3 class="h4 fw-bold mb-0 text-white">Start With Free Picks</h3>
+                                            <span class="badge bg-secondary me-2 px-3 py-2">Free Access</span>
+                                            <h3 class="h5 fw-bold mb-0 text-gray-light">Start With Free Picks</h3>
                                         </div>
-                                        <p class="text-gray-light mb-3">
+                                        <p class="text-muted mb-3 small">
                                             Create a free account and get instant access to our Free picks. No credit card required.
                                         </p>
                                         <ul class="list-unstyled mb-0">
                                             <li v-for="feature in getDefaultFeatures('free')" :key="feature" class="mb-1 d-flex align-items-start">
-                                                <i class="bi bi-check-circle-fill text-success me-2 flex-shrink-0 small" style="margin-top: 2px"></i>
-                                                <span class="small text-white">{{ feature }}</span>
+                                                <i class="bi bi-check-circle text-muted me-2 flex-shrink-0 small" style="margin-top: 2px"></i>
+                                                <span class="small text-muted">{{ feature }}</span>
                                             </li>
                                         </ul>
                                     </div>
                                     <div class="col-md-4 text-center text-md-end mt-3 mt-md-0">
-                                        <div class="display-5 fw-bold text-success mb-2">$0</div>
+                                        <div class="h3 fw-bold text-muted mb-2">$0</div>
                                         <p class="text-muted small mb-3">Forever free</p>
-                                        <a v-if="!user" :href="route('register')" class="btn btn-success px-4">
+                                        <a v-if="!user" :href="route('register')" class="btn btn-outline-secondary btn-sm px-4">
                                             <i class="bi bi-person-plus me-2"></i>
                                             Sign Up Free
                                         </a>
-                                        <a v-else :href="route('todays-bets')" class="btn btn-outline-success px-4">
+                                        <a v-else :href="route('todays-bets')" class="btn btn-outline-secondary btn-sm px-4">
                                             <i class="bi bi-eye me-2"></i>
                                             View Free Picks
                                         </a>
