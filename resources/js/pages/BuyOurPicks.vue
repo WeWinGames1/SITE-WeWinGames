@@ -120,8 +120,17 @@ const plans = computed(() => [
                     </p>
                 </div>
 
+                <!-- Premium Plans Header -->
+                <div class="text-center mb-4">
+                    <h2 class="h3 fw-bold text-white mb-2">Upgrade to Premium</h2>
+                    <p class="text-gray-light">Get access to more picks and exclusive features</p>
+                </div>
+
+                <!-- Pricing Cards -->
+                <PricingCards :plans="plans" />
+
                 <!-- Free Tier Section (De-emphasized) -->
-                <div class="row justify-content-center mb-5">
+                <div class="row justify-content-center mt-5">
                     <div class="col-lg-8">
                         <div class="card bg-dark border-secondary">
                             <div class="card-body p-4">
@@ -158,15 +167,6 @@ const plans = computed(() => [
                         </div>
                     </div>
                 </div>
-
-                <!-- Premium Plans Header -->
-                <div class="text-center mb-4">
-                    <h2 class="h3 fw-bold text-white mb-2">Upgrade to Premium</h2>
-                    <p class="text-gray-light">Get access to more picks and exclusive features</p>
-                </div>
-
-                <!-- Pricing Cards -->
-                <PricingCards :plans="plans" />
             </div>
         </div>
     </WelcomeLayout>
