@@ -67,6 +67,17 @@ const stripeMode = computed(() => {
     return stripeKey.includes('pk_test_') ? 'test' : 'live';
 });
 
+// Filter out null/undefined prices from stripePrices
+const validStripePrices = computed(() => {
+    const result: Record<string, string> = {};
+    for (const [key, price] of Object.entries(stripePrices)) {
+        if (price) {
+            result[key] = price as string;
+        }
+    }
+    return result;
+});
+
 // Filter state
 const filters = ref({
     search: props.filters.search || '',
@@ -231,17 +242,34 @@ function openGrantModal(customer: Customer) {
 }
 
 function grantSubscription() {
-    if (!selectedCustomer.value) return;
+    if (!selectedCustomer.value) {
+        console.error('No customer selected');
+        return;
+    }
+
+    console.log('Submitting subscription update:', {
+        customerId: selectedCustomer.value.id,
+        formData: {
+            subscription_price: grantForm.subscription_price,
+            action_type: grantForm.action_type,
+            trial_days: grantForm.trial_days,
+        },
+    });
 
     grantForm.put(route('admin.customers.update', selectedCustomer.value.id), {
         preserveScroll: true,
-        onSuccess: () => {
+        onSuccess: (page) => {
+            console.log('Subscription update success', page);
             showGrantModal.value = false;
             grantForm.reset();
             grantForm.clearErrors();
         },
         onError: (errors) => {
             console.error('Subscription update errors:', errors);
+            // Keep modal open on error
+        },
+        onFinish: () => {
+            console.log('Subscription update finished');
         },
     });
 }
@@ -914,6 +942,16 @@ function getCustomerBadgeClass(status: string) {
                                 they can be automatically billed.
                             </div>
 
+                            <!-- General Errors -->
+                            <div v-if="grantForm.errors.error" class="alert alert-danger mb-4">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                {{ grantForm.errors.error }}
+                            </div>
+                            <div v-if="grantForm.errors.subscription" class="alert alert-danger mb-4">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                {{ grantForm.errors.subscription }}
+                            </div>
+
                             <!-- New Subscription Settings -->
                             <h6 class="mb-3">New Subscription Settings</h6>
 
@@ -926,7 +964,7 @@ function getCustomerBadgeClass(status: string) {
                                     @change="updatePlanPreview"
                                 >
                                     <option value="">-- Select Plan --</option>
-                                    <option v-for="(price, key) in stripePrices" :key="key" :value="price">
+                                    <option v-for="(price, key) in validStripePrices" :key="key" :value="price">
                                         {{ key.replace('_', ' ').toUpperCase() }}
                                     </option>
                                 </select>

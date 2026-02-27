@@ -125,17 +125,16 @@ class User extends Authenticatable implements MustVerifyEmail
             return false;
         }
 
-        // Check for admin override first
+        // Check for admin override first (ambassador, gifted, or manual override)
         if ($this->is_ambassador || $this->is_gifted || $this->admin_override) {
-            // If there's an expiry date, check if it's still valid
-            if ($this->override_expiry && $this->override_expiry->isPast()) {
-                return false;
+            // If there's no expiry date, or the expiry is in the future, override is valid
+            if (! $this->override_expiry || ! $this->override_expiry->isPast()) {
+                return true;
             }
-
-            return true;
+            // Override has expired - fall through to check Stripe subscription
         }
 
-        // Then check Stripe subscription
+        // Check Stripe subscription as fallback
         return $this->subscribed();
     }
 

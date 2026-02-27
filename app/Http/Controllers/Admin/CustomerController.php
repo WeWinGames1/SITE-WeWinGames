@@ -432,6 +432,11 @@ class CustomerController extends Controller
 
     public function update(Request $request, User $user)
     {
+        \Log::info('CustomerController@update called', [
+            'user_id' => $user->id,
+            'request_data' => $request->all(),
+        ]);
+
         $data = $request->validate([
             'action_type' => 'nullable|in:create,update,cancel,manual',
             'subscription_price' => 'nullable|string',
@@ -487,7 +492,12 @@ class CustomerController extends Controller
                     // Cancel any existing subscription (including manual ones)
                     $existingSubscriptions = $user->subscriptions()->whereNull('ends_at')->get();
                     foreach ($existingSubscriptions as $subscription) {
-                        $subscription->cancelNow();
+                        // For manual subscriptions, just mark as canceled locally
+                        if (str_starts_with($subscription->stripe_id, 'manual_')) {
+                            $subscription->markAsCanceled();
+                        } else {
+                            $subscription->cancelNow();
+                        }
                     }
 
                     // Clear any admin override fields
@@ -533,8 +543,8 @@ class CustomerController extends Controller
 
                     // Check if it's a manual subscription
                     if (str_starts_with($subscription->stripe_id, 'manual_')) {
-                        // For manual subscriptions, we need to cancel and create a new one
-                        $subscription->cancelNow();
+                        // For manual subscriptions, just mark as canceled locally (no Stripe API call)
+                        $subscription->markAsCanceled();
 
                         // Create new subscription
                         $builder = $user->newSubscription('default', $data['subscription_price']);
@@ -578,36 +588,87 @@ class CustomerController extends Controller
                         $subscription->ends_at->format('F j, Y'));
 
                 case 'manual':
+                    \Log::info('Processing manual subscription override', [
+                        'user_id' => $user->id,
+                        'subscription_price' => $data['subscription_price'] ?? 'NOT SET',
+                    ]);
+
                     if (! $data['subscription_price']) {
+                        \Log::warning('Manual override failed: No subscription price');
+
                         return back()->withErrors(['subscription_price' => 'Plan is required for manual override']);
                     }
 
+                    // Parse price to get tier information BEFORE the transaction
+                    $tier = null;
+                    $billingPeriod = 'monthly'; // default
+
+                    // Try to get from StripeProduct table first
+                    $stripeProduct = \App\Models\StripeProduct::where('stripe_price_id', $data['subscription_price'])
+                        ->first();
+
+                    \Log::info('StripeProduct lookup', [
+                        'price_id' => $data['subscription_price'],
+                        'found' => $stripeProduct ? 'yes' : 'no',
+                        'tier' => $stripeProduct?->tier,
+                    ]);
+
+                    if ($stripeProduct) {
+                        $tier = $stripeProduct->tier;
+                        $billingPeriod = $stripeProduct->billing_period;
+                    } else {
+                        // Fallback to config
+                        $priceToTier = config('stripe.price_to_tier');
+                        if (isset($priceToTier[$data['subscription_price']])) {
+                            $tier = $priceToTier[$data['subscription_price']]['tier'];
+                            $billingPeriod = $priceToTier[$data['subscription_price']]['period'];
+                        }
+                    }
+
+                    // If tier still not found, try to match against ENV variables
+                    if (! $tier) {
+                        $envMappings = [
+                            'PLATINUM_MONTHLY' => ['tier' => 'Platinum', 'period' => 'monthly'],
+                            'PLATINUM_WEEKLY' => ['tier' => 'Platinum', 'period' => 'weekly'],
+                            'PLATINUM_DAILY' => ['tier' => 'Platinum', 'period' => 'daily'],
+                            'GOLD_MONTHLY' => ['tier' => 'Gold', 'period' => 'monthly'],
+                            'GOLD_WEEKLY' => ['tier' => 'Gold', 'period' => 'weekly'],
+                            'GOLD_DAILY' => ['tier' => 'Gold', 'period' => 'daily'],
+                            'SILVER_MONTHLY' => ['tier' => 'Silver', 'period' => 'monthly'],
+                            'SILVER_WEEKLY' => ['tier' => 'Silver', 'period' => 'weekly'],
+                            'SILVER_DAILY' => ['tier' => 'Silver', 'period' => 'daily'],
+                        ];
+
+                        foreach ($envMappings as $envKey => $mapping) {
+                            if (env($envKey) === $data['subscription_price']) {
+                                $tier = $mapping['tier'];
+                                $billingPeriod = $mapping['period'];
+                                break;
+                            }
+                        }
+                    }
+
+                    // If we still can't determine the tier, return an error
+                    if (! $tier) {
+                        \Log::warning('Manual subscription: Could not determine tier for price', [
+                            'price_id' => $data['subscription_price'],
+                            'user_id' => $user->id,
+                        ]);
+
+                        return back()->withErrors(['subscription_price' => 'Unable to determine tier for this price. Please check that the Stripe product is configured correctly.']);
+                    }
+
                     // Wrap in database transaction for data integrity
-                    \DB::transaction(function () use ($user, $data) {
+                    \DB::transaction(function () use ($user, $data, $tier, $billingPeriod) {
                         // Cancel any existing subscriptions (including manual ones)
                         $existingSubscriptions = $user->subscriptions()->whereNull('ends_at')->get();
                         foreach ($existingSubscriptions as $subscription) {
-                            $subscription->cancelNow();
-                        }
-
-                        // Parse price to get tier information
-                        $tier = null;
-                        $billingPeriod = 'monthly'; // default
-
-                        // Try to get from StripeProduct table first
-                        $stripeProduct = \App\Models\StripeProduct::where('stripe_price_id', $data['subscription_price'])
-                            ->where('is_active', true)
-                            ->first();
-
-                        if ($stripeProduct) {
-                            $tier = $stripeProduct->tier;
-                            $billingPeriod = $stripeProduct->billing_period;
-                        } else {
-                            // Fallback to config
-                            $priceToTier = config('stripe.price_to_tier');
-                            if (isset($priceToTier[$data['subscription_price']])) {
-                                $tier = $priceToTier[$data['subscription_price']]['tier'];
-                                $billingPeriod = $priceToTier[$data['subscription_price']]['period'];
+                            // For manual subscriptions, just mark as canceled locally
+                            // Don't call Stripe API since there's no actual Stripe subscription
+                            if (str_starts_with($subscription->stripe_id, 'manual_')) {
+                                $subscription->markAsCanceled();
+                            } else {
+                                $subscription->cancelNow();
                             }
                         }
 
@@ -641,17 +702,23 @@ class CustomerController extends Controller
                             'ends_at' => null,
                         ]);
 
-                        // Update user override fields
-                        if ($tier) {
-                            $user->update([
-                                'admin_override' => true,
-                                'override_tier' => $tier,
-                                'override_expiry' => $periodEnd->toDateString(),
-                            ]);
-                        }
+                        // Always update user override fields for manual subscriptions
+                        $user->update([
+                            'admin_override' => true,
+                            'override_tier' => $tier,
+                            'override_expiry' => $periodEnd->toDateString(),
+                        ]);
+
+                        \Log::info('Manual subscription created successfully', [
+                            'user_id' => $user->id,
+                            'tier' => $tier,
+                            'expires' => $periodEnd->toDateString(),
+                        ]);
                     });
 
-                    return back()->with('success', 'Manual subscription override applied! No automatic billing will occur.');
+                    \Log::info('Returning success response for manual subscription');
+
+                    return back()->with('success', "Manual {$tier} subscription override applied! No automatic billing will occur.");
             }
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Failed to update subscription: '.$e->getMessage()]);
@@ -854,8 +921,15 @@ class CustomerController extends Controller
         }
 
         try {
+            $isManual = str_starts_with($subscription->stripe_id, 'manual_');
+
             if ($immediately) {
-                $subscription->cancelNow();
+                // For manual subscriptions, just mark as canceled locally
+                if ($isManual) {
+                    $subscription->markAsCanceled();
+                } else {
+                    $subscription->cancelNow();
+                }
 
                 // Clear any admin override fields when cancelling immediately
                 $user->update([
@@ -866,7 +940,14 @@ class CustomerController extends Controller
 
                 $message = 'Subscription cancelled immediately.';
             } else {
-                $subscription->cancel();
+                // For manual subscriptions, cancel at end of period means marking with ends_at
+                if ($isManual) {
+                    $subscription->fill([
+                        'ends_at' => $subscription->current_period_end ?? now(),
+                    ])->save();
+                } else {
+                    $subscription->cancel();
+                }
                 $message = 'Subscription will be cancelled at the end of the billing period.';
             }
 
