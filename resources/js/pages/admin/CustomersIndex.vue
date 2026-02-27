@@ -242,34 +242,17 @@ function openGrantModal(customer: Customer) {
 }
 
 function grantSubscription() {
-    if (!selectedCustomer.value) {
-        console.error('No customer selected');
-        return;
-    }
-
-    console.log('Submitting subscription update:', {
-        customerId: selectedCustomer.value.id,
-        formData: {
-            subscription_price: grantForm.subscription_price,
-            action_type: grantForm.action_type,
-            trial_days: grantForm.trial_days,
-        },
-    });
+    if (!selectedCustomer.value) return;
 
     grantForm.put(route('admin.customers.update', selectedCustomer.value.id), {
         preserveScroll: true,
-        onSuccess: (page) => {
-            console.log('Subscription update success', page);
+        onSuccess: () => {
             showGrantModal.value = false;
             grantForm.reset();
             grantForm.clearErrors();
         },
         onError: (errors) => {
             console.error('Subscription update errors:', errors);
-            // Keep modal open on error
-        },
-        onFinish: () => {
-            console.log('Subscription update finished');
         },
     });
 }

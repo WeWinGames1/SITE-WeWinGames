@@ -4,7 +4,7 @@ import MetaBetLookupModal from '@/components/MetaBetLookupModal.vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 
 interface User {
     id: number;
@@ -894,6 +894,12 @@ function handleMetaBetLinked(payload: { queryId: string; gameName: string }) {
         alert('MetaBet link removed successfully!');
     }
 }
+
+// MetaBet - check if any ID is configured
+const hasAnyMetabetId = computed(() => {
+    return form.metabet_query_id || form.metabet_prop_query_id || form.metabet_parlay_query_id;
+});
+
 
 function submit() {
     if (!validateForm()) {
@@ -1817,6 +1823,14 @@ declare global {
                                     </a>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Query ID Format Note -->
+                        <div v-if="hasAnyMetabetId" class="mt-4 alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Note:</strong> Query IDs must be <strong>numeric</strong> (e.g., 615429).
+                            Get them from <a href="https://www.metabet.io/products/prop-tiles?siteID=wewingames" target="_blank">MetaBet.io</a>.
+                            Test on the frontend after saving.
                         </div>
                     </div>
                 </div>

@@ -244,24 +244,15 @@
 
     {{-- MetaBet.io Live Odds Integration (non-admin pages only) --}}
     @if(!request()->is('admin*'))
-        <script src="https://go.metabet.io/js/global.js?siteID=wewingames" async></script>
+        <script defer src="https://go.metabet.io/js/global.js?siteID=wewingames"></script>
         <script>
-            // Trigger MetaBet to scan for game tiles after page load and after Inertia navigations
-            document.addEventListener('DOMContentLoaded', function () {
-                setTimeout(function () {
-                    if (window.mb_initializeProducts) {
-                        window.mb_initializeProducts();
-                    }
-                }, 1000);
-            });
-
-            // Re-initialize on Inertia page visits
+            // Re-initialize MetaBet on Inertia page visits (for SPA navigation)
             document.addEventListener('inertia:success', function () {
                 setTimeout(function () {
                     if (window.mb_initializeProducts) {
                         window.mb_initializeProducts();
                     }
-                }, 500);
+                }, 300);
             });
         </script>
     @endif

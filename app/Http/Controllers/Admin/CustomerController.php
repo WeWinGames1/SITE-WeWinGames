@@ -432,11 +432,6 @@ class CustomerController extends Controller
 
     public function update(Request $request, User $user)
     {
-        \Log::info('CustomerController@update called', [
-            'user_id' => $user->id,
-            'request_data' => $request->all(),
-        ]);
-
         $data = $request->validate([
             'action_type' => 'nullable|in:create,update,cancel,manual',
             'subscription_price' => 'nullable|string',
@@ -588,14 +583,7 @@ class CustomerController extends Controller
                         $subscription->ends_at->format('F j, Y'));
 
                 case 'manual':
-                    \Log::info('Processing manual subscription override', [
-                        'user_id' => $user->id,
-                        'subscription_price' => $data['subscription_price'] ?? 'NOT SET',
-                    ]);
-
                     if (! $data['subscription_price']) {
-                        \Log::warning('Manual override failed: No subscription price');
-
                         return back()->withErrors(['subscription_price' => 'Plan is required for manual override']);
                     }
 
@@ -606,12 +594,6 @@ class CustomerController extends Controller
                     // Try to get from StripeProduct table first
                     $stripeProduct = \App\Models\StripeProduct::where('stripe_price_id', $data['subscription_price'])
                         ->first();
-
-                    \Log::info('StripeProduct lookup', [
-                        'price_id' => $data['subscription_price'],
-                        'found' => $stripeProduct ? 'yes' : 'no',
-                        'tier' => $stripeProduct?->tier,
-                    ]);
 
                     if ($stripeProduct) {
                         $tier = $stripeProduct->tier;
@@ -708,15 +690,7 @@ class CustomerController extends Controller
                             'override_tier' => $tier,
                             'override_expiry' => $periodEnd->toDateString(),
                         ]);
-
-                        \Log::info('Manual subscription created successfully', [
-                            'user_id' => $user->id,
-                            'tier' => $tier,
-                            'expires' => $periodEnd->toDateString(),
-                        ]);
                     });
-
-                    \Log::info('Returning success response for manual subscription');
 
                     return back()->with('success', "Manual {$tier} subscription override applied! No automatic billing will occur.");
             }
