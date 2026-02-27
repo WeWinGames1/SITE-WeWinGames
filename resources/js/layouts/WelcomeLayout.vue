@@ -58,9 +58,11 @@ const openKnowledgebase = () => {
                                 ><i class="bi bi-instagram"></i
                             ></a>
                             <a :href="socialMediaLinks.twitter" target="_blank" rel="noopener" class="text-white opacity-75"
-                                ><i class="bi bi-twitter"></i
+                                ><i class="bi bi-twitter-x"></i
                             ></a>
-                            <a href="#" class="text-white opacity-75"><i class="bi bi-telegram"></i></a>
+                            <a :href="socialMediaLinks.reddit" target="_blank" rel="noopener" class="text-white opacity-75"
+                                ><i class="bi bi-reddit"></i
+                            ></a>
                         </div>
                     </div>
                     <!-- Ticker in the center -->
@@ -315,7 +317,10 @@ const openKnowledgebase = () => {
                                     ><i class="bi bi-instagram"></i
                                 ></a>
                                 <a :href="socialMediaLinks.twitter" target="_blank" rel="noopener" class="text-secondary"
-                                    ><i class="bi bi-twitter"></i
+                                    ><i class="bi bi-twitter-x"></i
+                                ></a>
+                                <a :href="socialMediaLinks.reddit" target="_blank" rel="noopener" class="text-secondary"
+                                    ><i class="bi bi-reddit"></i
                                 ></a>
                             </div>
                         </div>

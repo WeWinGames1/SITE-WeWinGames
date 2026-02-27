@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\BlogCategoryController;
 use App\Http\Controllers\Admin\BlogPostController;
 use App\Http\Controllers\Admin\CacheController;
 use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\CustomerValueReportController;
 use App\Http\Controllers\Admin\DiscountCodeController;
 use App\Http\Controllers\Admin\KnowledgebaseController;
 use App\Http\Controllers\Admin\LandingPageController;
@@ -276,6 +277,11 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
     Route::post('/{user}/password-reset', [CustomerController::class, 'sendPasswordReset'])->name('password-reset');
     Route::post('/{user}/cancel-subscription', [CustomerController::class, 'cancelSubscription'])->name('cancel-subscription');
     Route::get('/export', [CustomerController::class, 'export'])->name('export')->middleware('admin.rate_limit:export');
+});
+
+// Customer Value Reports
+Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin/reports')->name('admin.reports.')->group(function () {
+    Route::get('/customer-value', [CustomerValueReportController::class, 'index'])->name('customer-value');
 });
 
 // Admin API routes

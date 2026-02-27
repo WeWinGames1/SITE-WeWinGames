@@ -65,6 +65,16 @@ class Bet extends Model
         'metabet_query_id',
         'metabet_game_name',
         'metabet_linked_at',
+        // MetaBet Prop Tile fields
+        'metabet_prop_query_id',
+        'metabet_prop_name',
+        'metabet_prop_size',
+        // MetaBet Parlay Tile fields
+        'metabet_parlay_query_id',
+        'metabet_parlay_name',
+        'metabet_parlay_size',
+        // Widget type preference
+        'metabet_widget_type',
         // External betting link
         'place_bet_url',
     ];

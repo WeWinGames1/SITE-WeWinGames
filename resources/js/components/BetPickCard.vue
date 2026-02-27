@@ -178,12 +178,31 @@
             </div>
         </div>
 
-        <!-- MetaBet Game Tile - Below the card -->
-        <div
-            v-if="bet.metabet_query_id"
-            :class="`metabet-gametile metabet-query-${bet.metabet_query_id} metabet-size-320x50`"
-            style="margin-top: -2px"
-        ></div>
+        <!-- MetaBet Widgets Section - Below the card -->
+        <div class="metabet-widgets-container" v-if="hasMetabetWidgets">
+            <!-- Game Tile -->
+            <div
+                v-if="showGameTile"
+                :class="`metabet-gametile metabet-query-${bet.metabet_query_id} metabet-size-320x50`"
+                style="margin-top: -2px"
+            ></div>
+
+            <!-- Prop Tile -->
+            <div
+                v-if="showPropTile"
+                :class="`metabet-proptile metabet-query-${bet.metabet_prop_query_id} metabet-size-${bet.metabet_prop_size || '320x50'}`"
+                style="margin-top: 4px"
+            ></div>
+
+            <!-- Parlay Tile -->
+            <div
+                v-if="showParlayTile"
+                :class="`metabet-parlaytile metabet-query-${bet.metabet_parlay_query_id} metabet-size-${bet.metabet_parlay_size || '350x350'}`"
+                style="margin-top: 4px"
+            >
+                <div v-if="bet.metabet_parlay_name" class="metabet-parlaytile-title">{{ bet.metabet_parlay_name }}</div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -191,7 +210,7 @@
 import { formatPlaceFraction } from '@/utils/betting';
 import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
-import { defineEmits, ref } from 'vue';
+import { computed, defineEmits, ref } from 'vue';
 
 const props = defineProps({
     bet: {
@@ -207,6 +226,31 @@ const emit = defineEmits<{
 const { props: pageProps } = usePage();
 // Only show admin controls if user is logged in AND has admin role
 const isAdmin = pageProps.auth?.user && pageProps.auth?.isAdmin === true;
+
+// MetaBet widget display conditions
+const widgetType = computed(() => props.bet.metabet_widget_type || 'game');
+
+const hasMetabetWidgets = computed(() => {
+    return props.bet.metabet_query_id || props.bet.metabet_prop_query_id || props.bet.metabet_parlay_query_id;
+});
+
+const showGameTile = computed(() => {
+    if (!props.bet.metabet_query_id) return false;
+    const type = widgetType.value;
+    return type === 'game' || type === 'game_prop' || type === 'game_parlay' || type === 'all';
+});
+
+const showPropTile = computed(() => {
+    if (!props.bet.metabet_prop_query_id) return false;
+    const type = widgetType.value;
+    return type === 'prop' || type === 'game_prop' || type === 'all';
+});
+
+const showParlayTile = computed(() => {
+    if (!props.bet.metabet_parlay_query_id) return false;
+    const type = widgetType.value;
+    return type === 'parlay' || type === 'game_parlay' || type === 'all';
+});
 
 // Debug log - remove in production
 if (typeof window !== 'undefined') {

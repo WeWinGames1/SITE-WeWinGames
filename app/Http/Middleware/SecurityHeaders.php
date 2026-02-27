@@ -110,6 +110,9 @@ class SecurityHeaders
                 'https://api.stripe.com',
                 'https://www.google-analytics.com',
                 'https://region1.google-analytics.com',
+                'https://www.googletagmanager.com',
+                'https://analytics.google.com',
+                'https://stats.g.doubleclick.net',
                 'https://onesignal.com',
                 'https://api.onesignal.com',
                 'https://cdn.onesignal.com',
@@ -126,16 +129,16 @@ class SecurityHeaders
                 'https://apps.elfsight.com',
             ];
 
-            $csp[] = 'script-src ' . implode(' ', $scriptSrc);
-            $csp[] = 'style-src ' . implode(' ', $styleSrc);
-            $csp[] = 'connect-src ' . implode(' ', $connectSrc);
+            $csp[] = 'script-src '.implode(' ', $scriptSrc);
+            $csp[] = 'style-src '.implode(' ', $styleSrc);
+            $csp[] = 'connect-src '.implode(' ', $connectSrc);
         }
 
         // Common CSP directives - skip font-src if already set in local
         $commonCsp = [
-            !app()->environment('local') ? "font-src 'self' https://fonts.gstatic.com https://fonts.bunny.net https://cdnjs.cloudflare.com https://rsms.me data:" : null,
-            "img-src 'self' data: https: blob:",
-            "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://challenges.cloudflare.com https://apps.elfsight.com",
+            ! app()->environment('local') ? "font-src 'self' https://fonts.gstatic.com https://fonts.bunny.net https://cdnjs.cloudflare.com https://rsms.me data:" : null,
+            "img-src 'self' data: https: blob: https://www.google-analytics.com https://www.googletagmanager.com https://ssl.gstatic.com https://www.gstatic.com",
+            "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://challenges.cloudflare.com https://apps.elfsight.com https://www.googletagmanager.com",
             "object-src 'none'",
             "base-uri 'self'",
             "form-action 'self'",
@@ -146,7 +149,7 @@ class SecurityHeaders
         $csp = array_merge($csp, array_filter($commonCsp));
 
         // Only add these in production
-        if (!app()->environment('local')) {
+        if (! app()->environment('local')) {
             $csp[] = 'block-all-mixed-content';
             $csp[] = 'upgrade-insecure-requests';
         }

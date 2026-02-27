@@ -87,6 +87,16 @@ interface Bet {
     metabet_query_id?: string | null;
     metabet_game_name?: string | null;
     metabet_linked_at?: string | null;
+    // MetaBet Prop Tile
+    metabet_prop_query_id?: string | null;
+    metabet_prop_name?: string | null;
+    metabet_prop_size?: string | null;
+    // MetaBet Parlay Tile
+    metabet_parlay_query_id?: string | null;
+    metabet_parlay_name?: string | null;
+    metabet_parlay_size?: string | null;
+    // Widget type preference
+    metabet_widget_type?: string | null;
 }
 
 interface Props {
@@ -185,8 +195,19 @@ const form = useForm({
     user_id: props.bet.user_id || null,
     golf_place: props.bet.golf_place || false,
     golf_place_fraction: props.bet.golf_place_fraction || null,
+    // MetaBet Game Tile
     metabet_query_id: props.bet.metabet_query_id || null,
     metabet_game_name: props.bet.metabet_game_name || null,
+    // MetaBet Prop Tile
+    metabet_prop_query_id: props.bet.metabet_prop_query_id || null,
+    metabet_prop_name: props.bet.metabet_prop_name || null,
+    metabet_prop_size: props.bet.metabet_prop_size || '320x50',
+    // MetaBet Parlay Tile
+    metabet_parlay_query_id: props.bet.metabet_parlay_query_id || null,
+    metabet_parlay_name: props.bet.metabet_parlay_name || null,
+    metabet_parlay_size: props.bet.metabet_parlay_size || '350x350',
+    // MetaBet Widget Type
+    metabet_widget_type: props.bet.metabet_widget_type || 'game',
     place_bet_url: props.bet.place_bet_url || '',
 });
 
@@ -1615,41 +1636,186 @@ declare global {
                         </h5>
                     </div>
                     <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <p class="text-muted mb-3">
-                                    Link this bet to MetaBet.io to display live, real-time odds from major sportsbooks on your bet pages.
-                                </p>
+                        <p class="text-muted mb-4">
+                            Link this bet to MetaBet.io widgets to display live, real-time odds from major sportsbooks. Choose which widget types to display.
+                        </p>
 
-                                <!-- Current Status -->
-                                <div v-if="form.metabet_query_id" class="alert alert-success mb-3">
-                                    <div class="d-flex align-items-start">
-                                        <i class="bi bi-check-circle-fill me-2 mt-1"></i>
-                                        <div class="flex-grow-1">
-                                            <strong>MetaBet Linked</strong>
-                                            <div class="mt-1">
-                                                <small class="d-block"><strong>Query ID:</strong> {{ form.metabet_query_id }}</small>
-                                                <small v-if="form.metabet_game_name" class="d-block"
-                                                    ><strong>Game:</strong> {{ form.metabet_game_name }}</small
-                                                >
-                                                <small v-if="bet.metabet_linked_at" class="d-block text-muted">
-                                                    <strong>Linked:</strong> {{ new Date(bet.metabet_linked_at).toLocaleString() }}
-                                                </small>
-                                            </div>
+                        <!-- Widget Type Selection -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Display Widget Type</label>
+                            <div class="btn-group d-flex flex-wrap gap-2" role="group">
+                                <input type="radio" class="btn-check" id="widget_game" v-model="form.metabet_widget_type" value="game" />
+                                <label class="btn btn-outline-primary" for="widget_game">
+                                    <i class="bi bi-grid-3x3-gap me-1"></i> Game Tile
+                                </label>
+
+                                <input type="radio" class="btn-check" id="widget_prop" v-model="form.metabet_widget_type" value="prop" />
+                                <label class="btn btn-outline-success" for="widget_prop">
+                                    <i class="bi bi-person-badge me-1"></i> Prop Tile
+                                </label>
+
+                                <input type="radio" class="btn-check" id="widget_parlay" v-model="form.metabet_widget_type" value="parlay" />
+                                <label class="btn btn-outline-warning" for="widget_parlay">
+                                    <i class="bi bi-layers me-1"></i> Parlay Tile
+                                </label>
+
+                                <input type="radio" class="btn-check" id="widget_game_prop" v-model="form.metabet_widget_type" value="game_prop" />
+                                <label class="btn btn-outline-info" for="widget_game_prop">
+                                    <i class="bi bi-collection me-1"></i> Game + Prop
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="row g-4">
+                            <!-- Game Tile Section -->
+                            <div class="col-lg-4" v-if="form.metabet_widget_type === 'game' || form.metabet_widget_type === 'game_prop' || form.metabet_widget_type === 'all'">
+                                <div class="card h-100 border-primary">
+                                    <div class="card-header bg-primary bg-opacity-10">
+                                        <h6 class="mb-0">
+                                            <i class="bi bi-grid-3x3-gap text-primary me-2"></i>
+                                            Game Tile
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Query ID</label>
+                                            <input
+                                                v-model="form.metabet_query_id"
+                                                type="text"
+                                                class="form-control form-control-sm"
+                                                placeholder="e.g., 594584"
+                                            />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Game Name (Optional)</label>
+                                            <input
+                                                v-model="form.metabet_game_name"
+                                                type="text"
+                                                class="form-control form-control-sm"
+                                                placeholder="e.g., Lakers vs Celtics"
+                                            />
+                                        </div>
+                                        <div v-if="form.metabet_query_id" class="alert alert-success py-2 mb-0">
+                                            <small><i class="bi bi-check-circle me-1"></i> Linked</small>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-primary w-100" @click="openMetaBetModal">
+                                            <i class="bi bi-search me-1"></i>
+                                            {{ form.metabet_query_id ? 'Update' : 'Find Game' }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Prop Tile Section -->
+                            <div class="col-lg-4" v-if="form.metabet_widget_type === 'prop' || form.metabet_widget_type === 'game_prop' || form.metabet_widget_type === 'all'">
+                                <div class="card h-100 border-success">
+                                    <div class="card-header bg-success bg-opacity-10">
+                                        <h6 class="mb-0">
+                                            <i class="bi bi-person-badge text-success me-2"></i>
+                                            Prop Tile
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Prop Query ID</label>
+                                            <input
+                                                v-model="form.metabet_prop_query_id"
+                                                type="text"
+                                                class="form-control form-control-sm"
+                                                placeholder="e.g., nba/lebron_james or player ID"
+                                            />
+                                            <small class="text-muted">Format: league/player_name or numeric ID</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Prop Name (Optional)</label>
+                                            <input
+                                                v-model="form.metabet_prop_name"
+                                                type="text"
+                                                class="form-control form-control-sm"
+                                                placeholder="e.g., LeBron Points O/U"
+                                            />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Size</label>
+                                            <select v-model="form.metabet_prop_size" class="form-select form-select-sm">
+                                                <option value="320x50">320x50 (Banner)</option>
+                                                <option value="300x250">300x250 (Medium Rectangle)</option>
+                                                <option value="336x280">336x280 (Large Rectangle)</option>
+                                                <option value="100%x100">100% Width x 100px</option>
+                                            </select>
+                                        </div>
+                                        <div v-if="form.metabet_prop_query_id" class="alert alert-success py-2 mb-0">
+                                            <small><i class="bi bi-check-circle me-1"></i> Linked</small>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div v-else class="alert alert-warning mb-3">
-                                    <i class="bi bi-exclamation-triangle me-2"></i>
-                                    Not linked to MetaBet. Live odds will not be displayed.
+                            <!-- Parlay Tile Section -->
+                            <div class="col-lg-4" v-if="form.metabet_widget_type === 'parlay' || form.metabet_widget_type === 'all'">
+                                <div class="card h-100 border-warning">
+                                    <div class="card-header bg-warning bg-opacity-10">
+                                        <h6 class="mb-0">
+                                            <i class="bi bi-layers text-warning me-2"></i>
+                                            Parlay Tile
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Parlay Hash/Query ID</label>
+                                            <input
+                                                v-model="form.metabet_parlay_query_id"
+                                                type="text"
+                                                class="form-control form-control-sm"
+                                                placeholder="e.g., 23f4290n2346385n2181034n"
+                                            />
+                                            <small class="text-muted">Use hash from Bet Hunter or comma-separated IDs</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Parlay Name (Optional)</label>
+                                            <input
+                                                v-model="form.metabet_parlay_name"
+                                                type="text"
+                                                class="form-control form-control-sm"
+                                                placeholder="e.g., 3-Leg NFL Parlay"
+                                            />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Size</label>
+                                            <select v-model="form.metabet_parlay_size" class="form-select form-select-sm">
+                                                <option value="350x350">350x350 (Square)</option>
+                                                <option value="300x400">300x400 (Portrait)</option>
+                                                <option value="400x300">400x300 (Landscape)</option>
+                                                <option value="100%x400">100% Width x 400px</option>
+                                            </select>
+                                        </div>
+                                        <div v-if="form.metabet_parlay_query_id" class="alert alert-success py-2 mb-0">
+                                            <small><i class="bi bi-check-circle me-1"></i> Linked</small>
+                                        </div>
+                                    </div>
                                 </div>
+                            </div>
+                        </div>
 
-                                <!-- Action Button -->
-                                <button type="button" class="btn btn-info" @click="openMetaBetModal">
-                                    <i class="bi bi-link-45deg me-1"></i>
-                                    {{ form.metabet_query_id ? 'Update MetaBet Link' : 'Link to MetaBet' }}
-                                </button>
+                        <!-- Help Section -->
+                        <div class="mt-4 p-3 bg-light rounded">
+                            <h6 class="mb-2"><i class="bi bi-info-circle me-1"></i> MetaBet Documentation</h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <a href="https://www.metabet.io/products/prop-tiles?siteID=wewingames" target="_blank" class="btn btn-sm btn-outline-success w-100 mb-2">
+                                        <i class="bi bi-box-arrow-up-right me-1"></i> Prop Tiles Guide
+                                    </a>
+                                </div>
+                                <div class="col-md-4">
+                                    <a href="https://www.metabet.io/products/parlay-tiles?siteID=wewingames" target="_blank" class="btn btn-sm btn-outline-warning w-100 mb-2">
+                                        <i class="bi bi-box-arrow-up-right me-1"></i> Parlay Tiles Guide
+                                    </a>
+                                </div>
+                                <div class="col-md-4">
+                                    <a href="https://www.metabet.io/documentation" target="_blank" class="btn btn-sm btn-outline-info w-100 mb-2">
+                                        <i class="bi bi-book me-1"></i> Full Documentation
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>

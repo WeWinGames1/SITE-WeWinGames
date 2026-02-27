@@ -317,6 +317,16 @@ class BetManagementController extends Controller
             // MetaBet integration
             'metabet_query_id' => 'nullable|string|max:255',
             'metabet_game_name' => 'nullable|string|max:255',
+            // MetaBet Prop Tile
+            'metabet_prop_query_id' => 'nullable|string|max:255',
+            'metabet_prop_name' => 'nullable|string|max:255',
+            'metabet_prop_size' => 'nullable|string|max:50',
+            // MetaBet Parlay Tile
+            'metabet_parlay_query_id' => 'nullable|string|max:255',
+            'metabet_parlay_name' => 'nullable|string|max:255',
+            'metabet_parlay_size' => 'nullable|string|max:50',
+            // MetaBet Widget Type
+            'metabet_widget_type' => 'nullable|string|in:game,prop,parlay,game_prop,game_parlay,all',
             // Place Bet URL
             'place_bet_url' => 'nullable|url|max:1000',
         ]);
@@ -324,10 +334,14 @@ class BetManagementController extends Controller
         // Set the user_id to the authenticated admin
         $validated['user_id'] = Auth::id();
 
-        // Set metabet_linked_at timestamp if query_id is being set
-        if (isset($validated['metabet_query_id']) && ! empty($validated['metabet_query_id'])) {
+        // Set metabet_linked_at timestamp if any query_id is being set
+        $hasMetabetLink = ! empty($validated['metabet_query_id'])
+            || ! empty($validated['metabet_prop_query_id'])
+            || ! empty($validated['metabet_parlay_query_id']);
+
+        if ($hasMetabetLink) {
             $validated['metabet_linked_at'] = now();
-        } elseif (isset($validated['metabet_query_id']) && empty($validated['metabet_query_id'])) {
+        } else {
             $validated['metabet_linked_at'] = null;
         }
 
@@ -636,14 +650,28 @@ class BetManagementController extends Controller
             // MetaBet integration
             'metabet_query_id' => 'nullable|string|max:255',
             'metabet_game_name' => 'nullable|string|max:255',
+            // MetaBet Prop Tile
+            'metabet_prop_query_id' => 'nullable|string|max:255',
+            'metabet_prop_name' => 'nullable|string|max:255',
+            'metabet_prop_size' => 'nullable|string|max:50',
+            // MetaBet Parlay Tile
+            'metabet_parlay_query_id' => 'nullable|string|max:255',
+            'metabet_parlay_name' => 'nullable|string|max:255',
+            'metabet_parlay_size' => 'nullable|string|max:50',
+            // MetaBet Widget Type
+            'metabet_widget_type' => 'nullable|string|in:game,prop,parlay,game_prop,game_parlay,all',
             // Place Bet URL
             'place_bet_url' => 'nullable|url|max:1000',
         ]);
 
-        // Set metabet_linked_at timestamp if query_id is being set/updated
-        if (isset($validated['metabet_query_id']) && ! empty($validated['metabet_query_id'])) {
+        // Set metabet_linked_at timestamp if any query_id is being set/updated
+        $hasMetabetLink = ! empty($validated['metabet_query_id'])
+            || ! empty($validated['metabet_prop_query_id'])
+            || ! empty($validated['metabet_parlay_query_id']);
+
+        if ($hasMetabetLink) {
             $validated['metabet_linked_at'] = now();
-        } elseif (isset($validated['metabet_query_id']) && empty($validated['metabet_query_id'])) {
+        } else {
             $validated['metabet_linked_at'] = null;
         }
 

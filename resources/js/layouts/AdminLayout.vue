@@ -120,6 +120,12 @@ const navigation: NavItem[] = [
         ],
     },
     {
+        name: 'Reports',
+        href: '#',
+        icon: 'bi-graph-up-arrow',
+        children: [{ name: 'Customer Value', href: '/admin/reports/customer-value', icon: 'bi-bar-chart-line' }],
+    },
+    {
         name: 'Content Management',
         href: '#',
         icon: 'bi-file-text',
