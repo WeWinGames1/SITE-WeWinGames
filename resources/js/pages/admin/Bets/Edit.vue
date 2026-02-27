@@ -4,7 +4,7 @@ import MetaBetLookupModal from '@/components/MetaBetLookupModal.vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 interface User {
     id: number;
