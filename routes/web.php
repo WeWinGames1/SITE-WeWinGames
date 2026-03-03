@@ -271,12 +271,12 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
     Route::get('/', [CustomerController::class, 'index'])->name('index');
     Route::get('/create', [CustomerController::class, 'showCreateForm'])->name('create');
     Route::post('/create', [CustomerController::class, 'create'])->name('store');
+    Route::get('/export', [CustomerController::class, 'export'])->name('export')->middleware('admin.rate_limit:export');
     Route::get('/{user}', [CustomerController::class, 'show'])->name('show');
     Route::put('/{user}', [CustomerController::class, 'update'])->name('update');
     Route::post('/{user}/impersonate', [\App\Http\Controllers\Admin\ImpersonationController::class, 'start'])->name('impersonate');
     Route::post('/{user}/password-reset', [CustomerController::class, 'sendPasswordReset'])->name('password-reset');
     Route::post('/{user}/cancel-subscription', [CustomerController::class, 'cancelSubscription'])->name('cancel-subscription');
-    Route::get('/export', [CustomerController::class, 'export'])->name('export')->middleware('admin.rate_limit:export');
 });
 
 // Customer Value Reports

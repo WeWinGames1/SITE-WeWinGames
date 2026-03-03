@@ -739,7 +739,7 @@ const allGroupedBets = computed(() => {
                         <p class="fs-6 text-gray-light mb-4">Start with a free trial, upgrade anytime</p>
                     </div>
 
-                    <PricingCards :plans="plans" />
+                    <PricingCards :plans="plans" default-period="daily" />
 
                     <!-- DraftKings CTA Section -->
                     <div v-if="props.enableDraftkingsCta !== false" class="mt-5">

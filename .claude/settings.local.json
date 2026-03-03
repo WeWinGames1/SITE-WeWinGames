@@ -73,7 +73,12 @@
       "mcp__laravel-boost__list-available-env-vars",
       "Bash(vendor/bin/pint:*)",
       "mcp__herd__get_site_information",
-      "WebFetch(domain:icons.getbootstrap.com)"
+      "WebFetch(domain:icons.getbootstrap.com)",
+      "mcp__playwright__browser_type",
+      "mcp__playwright__browser_wait_for",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "mcp__playwright__browser_close"
     ],
     "deny": []
   },

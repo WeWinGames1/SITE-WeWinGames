@@ -308,7 +308,17 @@ function sendPasswordReset(user: Customer) {
 }
 
 function exportCustomers() {
-    const params = new URLSearchParams(filters.value as any);
+    const params = new URLSearchParams({
+        search: filters.value.search || '',
+        status: filters.value.status || '',
+        subscription_status: filters.value.subscription_status || '',
+        tier: filters.value.tier || '',
+        start_date: filters.value.start_date || '',
+        end_date: filters.value.end_date || '',
+        sort: String(filters.value.sort || 'created_at'),
+        direction: filters.value.direction || 'desc',
+        per_page: String(filters.value.per_page || 25),
+    });
     window.location.href = route('admin.customers.export') + '?' + params.toString();
 }
 

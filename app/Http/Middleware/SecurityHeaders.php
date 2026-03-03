@@ -127,6 +127,8 @@ class SecurityHeaders
                 'https://cloudflareinsights.com',
                 'https://core.service.elfsight.com',
                 'https://apps.elfsight.com',
+                'https://discord.com',
+                'https://cdn.discordapp.com',
             ];
 
             $csp[] = 'script-src '.implode(' ', $scriptSrc);
@@ -141,7 +143,7 @@ class SecurityHeaders
             "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://challenges.cloudflare.com https://apps.elfsight.com https://www.googletagmanager.com",
             "object-src 'none'",
             "base-uri 'self'",
-            "form-action 'self'",
+            "form-action 'self' https://discord.com",
             "frame-ancestors 'self'",
         ];
 

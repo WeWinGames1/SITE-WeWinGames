@@ -25,12 +25,18 @@ interface Plan {
     isCurrentPlan?: boolean;
 }
 
-defineProps<{
-    plans: Array<Plan>;
-    currentPlan?: CurrentPlan | null;
-}>();
+const props = withDefaults(
+    defineProps<{
+        plans: Array<Plan>;
+        currentPlan?: CurrentPlan | null;
+        defaultPeriod?: 'monthly' | 'weekly' | 'daily';
+    }>(),
+    {
+        defaultPeriod: 'monthly',
+    },
+);
 
-const selectedPeriod = ref<'monthly' | 'weekly' | 'daily'>('monthly');
+const selectedPeriod = ref<'monthly' | 'weekly' | 'daily'>(props.defaultPeriod);
 </script>
 
 <template>
