@@ -688,7 +688,7 @@ const allGroupedBets = computed(() => {
                                     class="btn btn-warning btn-lg px-4 py-3 fw-bold"
                                 >
                                     <i class="bi bi-file-earmark-spreadsheet me-2"></i>
-                                    View Our Full Picks Record (12,000+ Picks)
+                                    View Our Full Picks Record (20,000+ Picks)
                                     <i class="bi bi-box-arrow-up-right ms-2"></i>
                                 </a>
                             </div>

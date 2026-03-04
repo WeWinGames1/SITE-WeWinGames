@@ -900,7 +900,6 @@ const hasAnyMetabetId = computed(() => {
     return form.metabet_query_id || form.metabet_prop_query_id || form.metabet_parlay_query_id;
 });
 
-
 function submit() {
     if (!validateForm()) {
         return;
@@ -1643,7 +1642,8 @@ declare global {
                     </div>
                     <div class="card-body">
                         <p class="text-muted mb-4">
-                            Link this bet to MetaBet.io widgets to display live, real-time odds from major sportsbooks. Choose which widget types to display.
+                            Link this bet to MetaBet.io widgets to display live, real-time odds from major sportsbooks. Choose which widget types to
+                            display.
                         </p>
 
                         <!-- Widget Type Selection -->
@@ -1651,30 +1651,29 @@ declare global {
                             <label class="form-label fw-bold">Display Widget Type</label>
                             <div class="btn-group d-flex flex-wrap gap-2" role="group">
                                 <input type="radio" class="btn-check" id="widget_game" v-model="form.metabet_widget_type" value="game" />
-                                <label class="btn btn-outline-primary" for="widget_game">
-                                    <i class="bi bi-grid-3x3-gap me-1"></i> Game Tile
-                                </label>
+                                <label class="btn btn-outline-primary" for="widget_game"> <i class="bi bi-grid-3x3-gap me-1"></i> Game Tile </label>
 
                                 <input type="radio" class="btn-check" id="widget_prop" v-model="form.metabet_widget_type" value="prop" />
-                                <label class="btn btn-outline-success" for="widget_prop">
-                                    <i class="bi bi-person-badge me-1"></i> Prop Tile
-                                </label>
+                                <label class="btn btn-outline-success" for="widget_prop"> <i class="bi bi-person-badge me-1"></i> Prop Tile </label>
 
                                 <input type="radio" class="btn-check" id="widget_parlay" v-model="form.metabet_widget_type" value="parlay" />
-                                <label class="btn btn-outline-warning" for="widget_parlay">
-                                    <i class="bi bi-layers me-1"></i> Parlay Tile
-                                </label>
+                                <label class="btn btn-outline-warning" for="widget_parlay"> <i class="bi bi-layers me-1"></i> Parlay Tile </label>
 
                                 <input type="radio" class="btn-check" id="widget_game_prop" v-model="form.metabet_widget_type" value="game_prop" />
-                                <label class="btn btn-outline-info" for="widget_game_prop">
-                                    <i class="bi bi-collection me-1"></i> Game + Prop
-                                </label>
+                                <label class="btn btn-outline-info" for="widget_game_prop"> <i class="bi bi-collection me-1"></i> Game + Prop </label>
                             </div>
                         </div>
 
                         <div class="row g-4">
                             <!-- Game Tile Section -->
-                            <div class="col-lg-4" v-if="form.metabet_widget_type === 'game' || form.metabet_widget_type === 'game_prop' || form.metabet_widget_type === 'all'">
+                            <div
+                                class="col-lg-4"
+                                v-if="
+                                    form.metabet_widget_type === 'game' ||
+                                    form.metabet_widget_type === 'game_prop' ||
+                                    form.metabet_widget_type === 'all'
+                                "
+                            >
                                 <div class="card h-100 border-primary">
                                     <div class="card-header bg-primary bg-opacity-10">
                                         <h6 class="mb-0">
@@ -1713,7 +1712,14 @@ declare global {
                             </div>
 
                             <!-- Prop Tile Section -->
-                            <div class="col-lg-4" v-if="form.metabet_widget_type === 'prop' || form.metabet_widget_type === 'game_prop' || form.metabet_widget_type === 'all'">
+                            <div
+                                class="col-lg-4"
+                                v-if="
+                                    form.metabet_widget_type === 'prop' ||
+                                    form.metabet_widget_type === 'game_prop' ||
+                                    form.metabet_widget_type === 'all'
+                                "
+                            >
                                 <div class="card h-100 border-success">
                                     <div class="card-header bg-success bg-opacity-10">
                                         <h6 class="mb-0">
@@ -1808,12 +1814,20 @@ declare global {
                             <h6 class="mb-2"><i class="bi bi-info-circle me-1"></i> MetaBet Documentation</h6>
                             <div class="row">
                                 <div class="col-md-4">
-                                    <a href="https://www.metabet.io/products/prop-tiles?siteID=wewingames" target="_blank" class="btn btn-sm btn-outline-success w-100 mb-2">
+                                    <a
+                                        href="https://www.metabet.io/products/prop-tiles?siteID=wewingames"
+                                        target="_blank"
+                                        class="btn btn-sm btn-outline-success w-100 mb-2"
+                                    >
                                         <i class="bi bi-box-arrow-up-right me-1"></i> Prop Tiles Guide
                                     </a>
                                 </div>
                                 <div class="col-md-4">
-                                    <a href="https://www.metabet.io/products/parlay-tiles?siteID=wewingames" target="_blank" class="btn btn-sm btn-outline-warning w-100 mb-2">
+                                    <a
+                                        href="https://www.metabet.io/products/parlay-tiles?siteID=wewingames"
+                                        target="_blank"
+                                        class="btn btn-sm btn-outline-warning w-100 mb-2"
+                                    >
                                         <i class="bi bi-box-arrow-up-right me-1"></i> Parlay Tiles Guide
                                     </a>
                                 </div>
@@ -1828,9 +1842,9 @@ declare global {
                         <!-- Query ID Format Note -->
                         <div v-if="hasAnyMetabetId" class="mt-4 alert alert-info">
                             <i class="bi bi-info-circle me-2"></i>
-                            <strong>Note:</strong> Query IDs must be <strong>numeric</strong> (e.g., 615429).
-                            Get them from <a href="https://www.metabet.io/products/prop-tiles?siteID=wewingames" target="_blank">MetaBet.io</a>.
-                            Test on the frontend after saving.
+                            <strong>Note:</strong> Query IDs must be <strong>numeric</strong> (e.g., 615429). Get them from
+                            <a href="https://www.metabet.io/products/prop-tiles?siteID=wewingames" target="_blank">MetaBet.io</a>. Test on the
+                            frontend after saving.
                         </div>
                     </div>
                 </div>

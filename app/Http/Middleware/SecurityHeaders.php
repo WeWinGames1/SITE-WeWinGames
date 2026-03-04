@@ -90,6 +90,7 @@ class SecurityHeaders
                 'https://static.cloudflareinsights.com',
                 'https://static.elfsight.com',
                 'https://apps.elfsight.com',
+                'https://connect.facebook.net',
             ];
 
             $styleSrc = [
@@ -129,6 +130,8 @@ class SecurityHeaders
                 'https://apps.elfsight.com',
                 'https://discord.com',
                 'https://cdn.discordapp.com',
+                'https://connect.facebook.net',
+                'https://www.facebook.com',
             ];
 
             $csp[] = 'script-src '.implode(' ', $scriptSrc);
@@ -140,7 +143,7 @@ class SecurityHeaders
         $commonCsp = [
             ! app()->environment('local') ? "font-src 'self' https://fonts.gstatic.com https://fonts.bunny.net https://cdnjs.cloudflare.com https://rsms.me data:" : null,
             "img-src 'self' data: https: blob: https://www.google-analytics.com https://www.googletagmanager.com https://ssl.gstatic.com https://www.gstatic.com",
-            "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://challenges.cloudflare.com https://apps.elfsight.com https://www.googletagmanager.com",
+            "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://challenges.cloudflare.com https://apps.elfsight.com https://www.googletagmanager.com https://www.facebook.com",
             "object-src 'none'",
             "base-uri 'self'",
             "form-action 'self' https://discord.com",

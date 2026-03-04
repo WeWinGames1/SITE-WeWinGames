@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useGoogleTagManager } from '@/composables/useGoogleTagManager';
 import CustomerLayout from '@/layouts/CustomerLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { loadStripe } from '@stripe/stripe-js';
@@ -30,6 +31,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const page = usePage();
+const { trackEcommerce } = useGoogleTagManager();
 
 const form = useForm({
     payment_method: '',
@@ -262,6 +264,18 @@ const submit = async () => {
                 if (page.props.flash.requires_action) {
                     handle3DSecure();
                 } else {
+                    // Google Tag Manager - Purchase Event
+                    trackEcommerce('purchase', {
+                        value: total.value,
+                        currency: 'USD',
+                        items: [
+                            {
+                                item_name: props.plan.name,
+                                price: total.value,
+                            },
+                        ],
+                    });
+
                     // Reddit Pixel - Advanced Matching for Purchase (Subscription)
                     // Cast to any to access dynamic env property
                     const pixelId = (page.props as any).env?.REDDIT_PIXEL_ID;

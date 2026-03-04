@@ -100,7 +100,7 @@ const applyFilters = () => {
             onFinish: () => {
                 isLoading.value = false;
             },
-        }
+        },
     );
 };
 
@@ -468,7 +468,10 @@ const getRateClass = (rate: number, isGood: boolean = false): string => {
                                                 <strong>{{ code.code }}</strong>
                                                 <br />
                                                 <small class="text-muted">
-                                                    {{ code.discount_type === 'percentage' ? `${code.discount_amount}%` : `$${code.discount_amount}` }} off
+                                                    {{
+                                                        code.discount_type === 'percentage' ? `${code.discount_amount}%` : `$${code.discount_amount}`
+                                                    }}
+                                                    off
                                                 </small>
                                             </td>
                                             <td class="text-center">{{ code.total_redemptions }}</td>
