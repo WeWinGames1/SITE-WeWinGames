@@ -78,7 +78,7 @@ return [
         'guild_id' => env('DISCORD_GUILD_ID'),
         'invite_url' => env('DISCORD_INVITE_URL'),
 
-        // Role IDs mapped to subscription tiers
+        // Role IDs mapped to subscription tiers (hierarchical: higher tiers include lower tier roles)
         'roles' => [
             'free' => env('DISCORD_ROLE_FREE'),
             'gold' => env('DISCORD_ROLE_GOLD'),

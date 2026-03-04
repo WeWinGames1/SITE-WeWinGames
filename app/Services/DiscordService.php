@@ -43,6 +43,7 @@ class DiscordService
 
     /**
      * Get roles that should be assigned based on subscription tier
+     * Higher tiers include all lower tier roles (hierarchical)
      * Returns empty array if user has no active subscription (all roles will be removed)
      */
     public function getRolesForTier(?string $tier, bool $hasActiveSubscription = true): array
@@ -59,15 +60,17 @@ class DiscordService
             $roles[] = $this->roles['free'];
         }
 
-        // Add tier-specific roles
-        if ($tier === 'gold' && ! empty($this->roles['gold'])) {
-            $roles[] = $this->roles['gold'];
-        }
+        // Tier hierarchy: gold < platinum
+        // Each tier includes all lower tier roles
+        $tier = strtolower($tier ?? '');
 
-        if ($tier === 'platinum') {
+        if ($tier === 'gold' || $tier === 'platinum') {
             if (! empty($this->roles['gold'])) {
                 $roles[] = $this->roles['gold'];
             }
+        }
+
+        if ($tier === 'platinum') {
             if (! empty($this->roles['platinum'])) {
                 $roles[] = $this->roles['platinum'];
             }
@@ -106,9 +109,9 @@ class DiscordService
             'target_roles' => $targetRoles,
         ]);
         $allManagedRoles = array_filter([
-            $this->roles['free'],
-            $this->roles['gold'],
-            $this->roles['platinum'],
+            $this->roles['free'] ?? null,
+            $this->roles['gold'] ?? null,
+            $this->roles['platinum'] ?? null,
         ]);
 
         // Get current member roles
@@ -250,9 +253,9 @@ class DiscordService
         }
 
         $allManagedRoles = array_filter([
-            $this->roles['free'],
-            $this->roles['gold'],
-            $this->roles['platinum'],
+            $this->roles['free'] ?? null,
+            $this->roles['gold'] ?? null,
+            $this->roles['platinum'] ?? null,
         ]);
 
         $success = true;
