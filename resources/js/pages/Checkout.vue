@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import { useGoogleTagManager } from '@/composables/useGoogleTagManager';
 import CustomerLayout from '@/layouts/CustomerLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { loadStripe } from '@stripe/stripe-js';
 import axios from 'axios';
 import { computed, onMounted, ref, watch } from 'vue';
+
+declare global {
+    interface Window {
+        dataLayer: Record<string, any>[];
+    }
+}
 
 interface PaymentMethod {
     id: string;
@@ -31,8 +36,6 @@ interface Props {
 
 const props = defineProps<Props>();
 const page = usePage();
-const { trackEcommerce } = useGoogleTagManager();
-
 const form = useForm({
     payment_method: '',
     coupon: '',
@@ -265,15 +268,20 @@ const submit = async () => {
                     handle3DSecure();
                 } else {
                     // Google Tag Manager - Purchase Event
-                    trackEcommerce('purchase', {
-                        value: total.value,
-                        currency: 'USD',
-                        items: [
-                            {
-                                item_name: props.plan.name,
-                                price: total.value,
-                            },
-                        ],
+                    window.dataLayer = window.dataLayer || [];
+                    window.dataLayer.push({ ecommerce: null });
+                    window.dataLayer.push({
+                        event: 'purchase',
+                        ecommerce: {
+                            value: total.value,
+                            currency: 'USD',
+                            items: [
+                                {
+                                    item_name: props.plan.name,
+                                    price: total.value,
+                                },
+                            ],
+                        },
                     });
 
                     // Reddit Pixel - Advanced Matching for Purchase (Subscription)
