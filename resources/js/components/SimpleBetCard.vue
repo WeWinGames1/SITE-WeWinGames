@@ -90,27 +90,25 @@
                 style="margin-top: -2px"
             ></div>
 
-            <!-- Prop Tile -->
-            <div
-                v-if="showPropTile"
-                :class="`metabet-proptile metabet-query-${bet.metabet_prop_query_id} metabet-size-${bet.metabet_prop_size || '320x50'}`"
-                style="margin-top: 4px"
-            ></div>
+            <!-- Prop Tile (Side Odds Tile) -->
+            <div v-if="showPropTile" :class="`metabet-sideoddstile metabet-query-${bet.metabet_prop_query_id}`" style="margin-top: 4px"></div>
 
-            <!-- Parlay Tile -->
+            <!-- Parlay Tile (Game Tile with parlay query) -->
             <div
                 v-if="showParlayTile"
-                :class="`metabet-parlaytile metabet-query-${bet.metabet_parlay_query_id} metabet-size-${bet.metabet_parlay_size || '350x350'}`"
+                :class="`metabet-gametile metabet-query-${bet.metabet_parlay_query_id} metabet-size-${bet.metabet_parlay_size || '336x280'}`"
                 style="margin-top: 4px"
-            >
-                <div v-if="bet.metabet_parlay_name" class="metabet-parlaytile-title">{{ bet.metabet_parlay_name }}</div>
-            </div>
+            ></div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
+import { useMetaBet } from '@/composables/useMetaBet';
 import { computed } from 'vue';
+
+// Initialize MetaBet widgets when component mounts/updates
+useMetaBet();
 
 const props = defineProps({
     bet: {

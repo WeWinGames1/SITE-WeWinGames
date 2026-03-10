@@ -1,33 +1,45 @@
 <script setup lang="ts">
+import { useMetaBet } from '@/composables/useMetaBet';
 import { computed } from 'vue';
 
 interface Props {
     queryId: string | null | undefined;
-    market?: 'moneyLine' | 'spread' | 'total' | 'futures';
-    team?: 'home' | 'away';
-    style?: 'classic' | 'modern' | 'decimal';
+    size?: '320x50' | '336x280' | '728x90' | '300x250';
+    style?: 'classic' | 'modern';
     showLabel?: boolean;
     className?: string;
+    type?: 'game' | 'prop';
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    market: 'moneyLine',
-    team: 'home',
+    size: '320x50',
     style: 'modern',
     showLabel: true,
     className: '',
+    type: 'game',
 });
+
+// Initialize MetaBet widgets
+useMetaBet();
 
 // Construct the MetaBet CSS classes based on props
 const metabetClasses = computed(() => {
     if (!props.queryId) return '';
 
-    const classes = [
-        'metabet-odds',
-        `metabet-market-${props.market}-${props.team}`,
-        `metabet-query-${props.queryId}`,
-        `metabet-style-${props.style}`,
-    ];
+    // Use correct MetaBet class names per documentation
+    const baseClass = props.type === 'prop' ? 'metabet-sideoddstile' : 'metabet-gametile';
+
+    const classes = [baseClass, `metabet-query-${props.queryId}`];
+
+    // Only add size for game tiles
+    if (props.type === 'game') {
+        classes.push(`metabet-size-${props.size}`);
+    }
+
+    // Add style modifier if not default
+    if (props.style !== 'classic') {
+        classes.push(`metabet-style-${props.style}`);
+    }
 
     return classes.join(' ');
 });
@@ -38,10 +50,8 @@ const shouldShow = computed(() => !!props.queryId);
 
 <template>
     <div v-if="shouldShow" class="metabet-odds-wrapper" :class="className">
-        <div class="d-flex align-items-center gap-2">
-            <span v-if="showLabel" class="text-muted small">Live Odds:</span>
-            <span :class="metabetClasses" class="fw-bold"> Loading... </span>
-        </div>
+        <div v-if="showLabel" class="text-muted small mb-1">Live Odds:</div>
+        <div :class="metabetClasses"></div>
     </div>
 </template>
 

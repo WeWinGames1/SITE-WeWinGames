@@ -246,14 +246,54 @@
     @if(!request()->is('admin*'))
         <script defer src="https://go.metabet.io/js/global.js?siteID=wewingames"></script>
         <script>
-            // Re-initialize MetaBet on Inertia page visits (for SPA navigation)
-            document.addEventListener('inertia:success', function () {
-                setTimeout(function () {
-                    if (window.mb_initializeProducts) {
+            (function() {
+                // MetaBet initialization helper
+                function initMetaBet() {
+                    if (typeof window.mb_initializeProducts === 'function') {
+                        console.log('[MetaBet] Initializing widgets');
                         window.mb_initializeProducts();
                     }
-                }, 300);
-            });
+                }
+
+                // Re-initialize MetaBet on Inertia page visits (for SPA navigation)
+                document.addEventListener('inertia:success', function () {
+                    // Multiple attempts to catch async component rendering
+                    setTimeout(initMetaBet, 100);
+                    setTimeout(initMetaBet, 500);
+                    setTimeout(initMetaBet, 1000);
+                });
+
+                // Also watch for DOM changes that might add MetaBet widgets
+                if (typeof MutationObserver !== 'undefined') {
+                    var debounceTimer;
+                    var observer = new MutationObserver(function(mutations) {
+                        var hasMetabetElements = mutations.some(function(mutation) {
+                            return Array.from(mutation.addedNodes).some(function(node) {
+                                if (node.nodeType === 1) {
+                                    return node.className && (
+                                        node.className.includes('metabet-gametile') ||
+                                        node.className.includes('metabet-sideoddstile')
+                                    );
+                                }
+                                return false;
+                            });
+                        });
+
+                        if (hasMetabetElements) {
+                            clearTimeout(debounceTimer);
+                            debounceTimer = setTimeout(initMetaBet, 150);
+                        }
+                    });
+
+                    // Start observing once DOM is ready
+                    document.addEventListener('DOMContentLoaded', function() {
+                        observer.observe(document.body, {
+                            childList: true,
+                            subtree: true
+                        });
+                    });
+                }
+            })();
         </script>
     @endif
 
