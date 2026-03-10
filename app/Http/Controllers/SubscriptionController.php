@@ -255,6 +255,28 @@ class SubscriptionController extends Controller
                 ])
                 ->log('subscription_created');
 
+            // Get purchase data for tracking
+            $stripeProduct = StripeProduct::where('stripe_price_id', $priceId)->first();
+            $purchaseValue = $stripeProduct ? $stripeProduct->price : 0;
+
+            // Apply discount to purchase value for tracking
+            if ($request->filled('coupon')) {
+                $discountCode = DiscountCode::where('code', $request->coupon)->active()->first();
+                if ($discountCode) {
+                    if ($discountCode->discount_type === 'percentage') {
+                        $purchaseValue = $purchaseValue * (1 - $discountCode->discount_amount / 100);
+                    } else {
+                        $purchaseValue = max(0, $purchaseValue - $discountCode->discount_amount);
+                    }
+                }
+            }
+
+            $purchaseData = [
+                'plan_name' => $stripeProduct ? ucfirst($stripeProduct->tier).' Plan' : 'Subscription',
+                'plan_price' => $purchaseValue,
+                'billing_period' => $stripeProduct->billing_period ?? 'monthly',
+            ];
+
             // Check if subscription requires additional action (3D Secure)
             if ($createdSubscription->hasIncompletePayment()) {
                 // Get the latest invoice's payment intent
@@ -262,15 +284,20 @@ class SubscriptionController extends Controller
 
                 if ($latestInvoice && $latestInvoice->payment_intent) {
                     // Return the client secret for 3D Secure authentication
+                    // Also include purchase data so frontend can track after 3DS completion
                     return back()->with([
                         'requires_action' => true,
                         'payment_intent_client_secret' => $latestInvoice->payment_intent->client_secret,
                         'subscription_id' => $createdSubscription->id,
+                        'purchase_data' => $purchaseData,
                     ]);
                 }
             }
 
-            return redirect()->route('dashboard')->with('success', 'Subscription activated successfully!');
+            return redirect()->route('dashboard')->with([
+                'success' => 'Subscription activated successfully!',
+                'purchase_data' => $purchaseData,
+            ]);
 
         } catch (\Stripe\Exception\CardException $e) {
             // Card was declined or 3D Secure failed - report to Sentry for visibility
@@ -492,6 +519,16 @@ class SubscriptionController extends Controller
             // Get current subscription
             $subscription = $user->subscription('default');
 
+            // Get product details for tracking
+            $stripeProduct = StripeProduct::where('stripe_price_id', $priceId)->first();
+            $purchaseValue = $stripeProduct ? $stripeProduct->price : 0;
+
+            $purchaseData = [
+                'plan_name' => $stripeProduct ? ucfirst($stripeProduct->tier).' Plan' : 'Subscription',
+                'plan_price' => $purchaseValue,
+                'billing_period' => $stripeProduct->billing_period ?? 'monthly',
+            ];
+
             if (! $subscription) {
                 // No current subscription, create new one
                 $newSubscription = $user->newSubscription('default', $priceId);
@@ -506,8 +543,10 @@ class SubscriptionController extends Controller
 
                 $newSubscription->create();
 
-                return redirect()->route('billing.edit')
-                    ->with('success', 'Successfully subscribed to the new plan!');
+                return redirect()->route('billing.edit')->with([
+                    'success' => 'Successfully subscribed to the new plan!',
+                    'purchase_data' => $purchaseData,
+                ]);
             }
 
             // Switch to new plan with proration
@@ -518,8 +557,10 @@ class SubscriptionController extends Controller
             $stripePrices = config('stripe.price_to_tier', []);
             $planDetails = $stripePrices[$priceId] ?? ['tier' => 'new', 'period' => ''];
 
-            return redirect()->route('billing.edit')
-                ->with('success', "Successfully switched to {$planDetails['tier']} {$planDetails['period']} plan! Your billing has been prorated automatically.");
+            return redirect()->route('billing.edit')->with([
+                'success' => "Successfully switched to {$planDetails['tier']} {$planDetails['period']} plan! Your billing has been prorated automatically.",
+                'purchase_data' => $purchaseData,
+            ]);
 
         } catch (\Exception $e) {
             Log::error('Subscription switch failed', [

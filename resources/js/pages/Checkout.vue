@@ -135,7 +135,8 @@ onMounted(async () => {
     // Customers can manually enter discount codes if provided.
 
     // Check if we need to handle 3D Secure authentication
-    if (page.props.flash.requires_action && page.props.flash.payment_intent_client_secret) {
+    const flash = page.props.flash as any;
+    if (flash?.requires_action && flash?.payment_intent_client_secret) {
         await handle3DSecure();
     }
 });
@@ -214,8 +215,10 @@ const handle3DSecure = async () => {
     processing.value = true;
     cardError.value = 'Completing authentication...';
 
+    const flash = page.props.flash as any;
+
     try {
-        const { error } = await stripe.value.confirmCardPayment(page.props.flash.payment_intent_client_secret);
+        const { error } = await stripe.value.confirmCardPayment(flash?.payment_intent_client_secret);
 
         if (error) {
             cardError.value = error.message || 'Authentication failed. Please try again.';
@@ -223,7 +226,42 @@ const handle3DSecure = async () => {
             logStripeError(error, '3DSecure');
             processing.value = false;
         } else {
-            // Authentication successful, redirect to dashboard
+            // Authentication successful - fire purchase tracking event
+            const purchaseData = flash?.purchase_data;
+            if (purchaseData) {
+                window.dataLayer = window.dataLayer || [];
+                window.dataLayer.push({ ecommerce: null });
+                window.dataLayer.push({
+                    event: 'purchase',
+                    ecommerce: {
+                        value: purchaseData.plan_price,
+                        currency: 'USD',
+                        items: [
+                            {
+                                item_name: purchaseData.plan_name,
+                                price: purchaseData.plan_price,
+                            },
+                        ],
+                    },
+                });
+
+                // Reddit Pixel - Advanced Matching for Purchase
+                const pixelId = (page.props as any).env?.REDDIT_PIXEL_ID;
+                if ((window as any).rdt && pixelId) {
+                    const user = page.props.auth.user;
+                    if (user) {
+                        (window as any).rdt('init', pixelId, {
+                            email: user.email,
+                            phoneNumber: user.phone,
+                        });
+                    }
+                    (window as any).rdt('track', 'Purchase', {
+                        currency: 'USD',
+                        value: purchaseData.plan_price,
+                    });
+                }
+            }
+            // Redirect to dashboard
             window.location.href = route('dashboard');
         }
     } catch (error: any) {
@@ -264,7 +302,8 @@ const submit = async () => {
         form.post(route('subscription.process'), {
             onSuccess: (response) => {
                 // Check if 3D Secure is required
-                if (page.props.flash.requires_action) {
+                const flash = page.props.flash as any;
+                if (flash?.requires_action) {
                     handle3DSecure();
                 } else {
                     // Google Tag Manager - Purchase Event

@@ -20,12 +20,13 @@ class HandleInertiaRequests extends Middleware
     public function handle($request, $next)
     {
         // Force HTML response for non-Inertia requests when no Accept header is present
-        if (!$request->header('X-Inertia') && !$request->header('Accept')) {
+        if (! $request->header('X-Inertia') && ! $request->header('Accept')) {
             $request->headers->set('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8');
         }
 
         return parent::handle($request, $next);
     }
+
     /**
      * The root template that's loaded on the first page visit.
      *
@@ -57,6 +58,16 @@ class HandleInertiaRequests extends Middleware
         $sharedData = [
             ...parent::share($request),
             'name' => config('app.name'),
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+                'warning' => fn () => $request->session()->get('warning'),
+                'info' => fn () => $request->session()->get('info'),
+                'requires_action' => fn () => $request->session()->get('requires_action'),
+                'payment_intent_client_secret' => fn () => $request->session()->get('payment_intent_client_secret'),
+                'subscription_id' => fn () => $request->session()->get('subscription_id'),
+                'purchase_data' => fn () => $request->session()->get('purchase_data'),
+            ],
             'auth' => [
                 'user' => $request->user() ? new UserResource($request->user()) : null,
                 'isSubscribed' => $request->user() ? $request->user()->hasActiveSubscription() : false,
@@ -103,7 +114,7 @@ class HandleInertiaRequests extends Middleware
         $footerFaqs = SimpleCacheService::rememberQuery(
             'footer_faqs',
             SimpleCacheService::TTL_LONG,
-            fn() => Faq::active()
+            fn () => Faq::active()
                 ->ordered()
                 ->limit(4)
                 ->get(['id', 'question', 'answer'])

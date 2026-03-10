@@ -4,6 +4,13 @@ import CustomerLayout from '@/layouts/CustomerLayout.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted } from 'vue';
 
+declare global {
+    interface Window {
+        dataLayer: Record<string, any>[];
+        rdt: any;
+    }
+}
+
 interface PaymentMethod {
     id: string;
     brand: string;
@@ -164,6 +171,44 @@ const setDefaultPaymentMethod = (paymentMethodId: string) => {
 
 // Check if we're returning from Stripe and refresh the page
 onMounted(() => {
+    // Track purchase event for subscription switches/new subscriptions
+    const flash = page.props.flash as any;
+    const purchaseData = flash?.purchase_data;
+    if (purchaseData) {
+        // Google Tag Manager - Purchase Event
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ ecommerce: null });
+        window.dataLayer.push({
+            event: 'purchase',
+            ecommerce: {
+                value: purchaseData.plan_price,
+                currency: 'USD',
+                items: [
+                    {
+                        item_name: purchaseData.plan_name,
+                        price: purchaseData.plan_price,
+                    },
+                ],
+            },
+        });
+
+        // Reddit Pixel - Advanced Matching for Purchase
+        const pixelId = (page.props as any).env?.REDDIT_PIXEL_ID;
+        const user = (page.props as any).auth?.user?.data;
+        if (window.rdt && pixelId) {
+            if (user) {
+                window.rdt('init', pixelId, {
+                    email: user.email,
+                    phoneNumber: user.phone,
+                });
+            }
+            window.rdt('track', 'Purchase', {
+                currency: 'USD',
+                value: purchaseData.plan_price,
+            });
+        }
+    }
+
     // Check if there's a session success parameter or if we're returning from Stripe
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('from') && urlParams.get('from') === 'stripe') {

@@ -4,11 +4,19 @@ import BetsUpload from '@/components/BetsUpload.vue';
 import CustomerLayout from '@/layouts/CustomerLayout.vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import BetPickCard from '../components/BetPickCard.vue';
 import NewBetPickForm from '../components/NewBetPickForm.vue';
 import SportProfitAndROIChart from '../components/SportProfitAndROIChart.vue';
 import SubscriptionROIChart from '../components/SubscriptionROIChart.vue';
+
+declare global {
+    interface Window {
+        dataLayer: Record<string, any>[];
+        rdt: any;
+    }
+}
+
 const page = usePage<SharedData>();
 
 const user = page.props.auth.user.data as User;
@@ -16,6 +24,53 @@ const bets = page.props.bets || [];
 const flash = page.props.flash || {};
 const roiData = page.props.roiData || {};
 const sportProfitRoiData = page.props.sportProfitRoiData || {};
+
+// Track purchase event on dashboard load (for successful subscriptions)
+onMounted(() => {
+    // Get fresh flash data from page props (shared via middleware)
+    const flashData = page.props.flash as any;
+    const purchaseData = flashData?.purchase_data;
+
+    // Debug logging (can be removed after verification)
+    console.log('[GTM Debug] Dashboard mounted, flash data:', flashData);
+    console.log('[GTM Debug] Purchase data:', purchaseData);
+
+    if (purchaseData) {
+        console.log('[GTM Debug] Pushing purchase event to dataLayer');
+
+        // Google Tag Manager - Purchase Event
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ ecommerce: null });
+        window.dataLayer.push({
+            event: 'purchase',
+            ecommerce: {
+                value: purchaseData.plan_price,
+                currency: 'USD',
+                items: [
+                    {
+                        item_name: purchaseData.plan_name,
+                        price: purchaseData.plan_price,
+                    },
+                ],
+            },
+        });
+
+        console.log('[GTM Debug] dataLayer after push:', window.dataLayer);
+
+        // Reddit Pixel - Advanced Matching for Purchase
+        const pixelId = (page.props as any).env?.REDDIT_PIXEL_ID;
+        if (window.rdt && pixelId) {
+            window.rdt('init', pixelId, {
+                email: user.email,
+                phoneNumber: (user as any).phone,
+            });
+            window.rdt('track', 'Purchase', {
+                currency: 'USD',
+                value: purchaseData.plan_price,
+            });
+        }
+    }
+});
 
 // Pagination logic
 const pageSize = 15;
