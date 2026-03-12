@@ -124,75 +124,9 @@ const syncDiscordRoles = () => {
                 </div>
             </section>
 
-            <!-- Stats Cards -->
+            <!-- Dashboard Content -->
             <section class="py-5">
                 <div class="container">
-                    <div class="row g-4 mb-5">
-                        <!-- Win Rate Card -->
-                        <div class="col-12 col-sm-6 col-lg-3">
-                            <div class="card h-100" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)">
-                                <div class="card-body p-4">
-                                    <div class="d-flex align-items-center justify-content-between mb-3">
-                                        <div class="rounded-circle bg-success bg-opacity-10 p-3">
-                                            <i class="bi bi-graph-up-arrow text-success fs-4"></i>
-                                        </div>
-                                        <span class="badge bg-success">This Month</span>
-                                    </div>
-                                    <h3 class="h2 fw-bold text-white mb-1">{{ props.monthlyStats.winRate }}%</h3>
-                                    <p class="text-gray-light mb-0">Win Rate</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Total Picks Card -->
-                        <div class="col-12 col-sm-6 col-lg-3">
-                            <div class="card h-100" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)">
-                                <div class="card-body p-4">
-                                    <div class="d-flex align-items-center justify-content-between mb-3">
-                                        <div class="rounded-circle bg-primary bg-opacity-10 p-3">
-                                            <i class="bi bi-list-check text-primary fs-4"></i>
-                                        </div>
-                                        <span class="badge bg-primary">Total</span>
-                                    </div>
-                                    <h3 class="h2 fw-bold text-white mb-1">{{ props.monthlyStats.totalPicks }}</h3>
-                                    <p class="text-gray-light mb-0">Picks This Month</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Profit Card -->
-                        <div class="col-12 col-sm-6 col-lg-3">
-                            <div class="card h-100" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)">
-                                <div class="card-body p-4">
-                                    <div class="d-flex align-items-center justify-content-between mb-3">
-                                        <div class="rounded-circle bg-warning bg-opacity-10 p-3">
-                                            <i class="bi bi-currency-dollar text-warning fs-4"></i>
-                                        </div>
-                                        <span class="badge bg-warning text-dark">ROI</span>
-                                    </div>
-                                    <h3 class="h2 fw-bold text-white mb-1">+{{ props.monthlyStats.profitPercentage }}%</h3>
-                                    <p class="text-gray-light mb-0">Monthly Profit</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Today's Picks Card -->
-                        <div class="col-12 col-sm-6 col-lg-3">
-                            <div class="card h-100" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)">
-                                <div class="card-body p-4">
-                                    <div class="d-flex align-items-center justify-content-between mb-3">
-                                        <div class="rounded-circle bg-purple bg-opacity-10 p-3">
-                                            <i class="bi bi-lightning-charge text-purple fs-4"></i>
-                                        </div>
-                                        <span class="badge bg-purple">New</span>
-                                    </div>
-                                    <h3 class="h2 fw-bold text-white mb-1">{{ props.todaysBetsCount }}</h3>
-                                    <p class="text-gray-light mb-0">Picks Available Today</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Discord Community Section -->
                     <div class="row g-4 mb-5">
                         <div class="col-12 d-none d-md-block">
@@ -335,6 +269,73 @@ const syncDiscordRoles = () => {
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="row g-4 mb-5">
+                        <!-- Win Rate Card -->
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="card h-100" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)">
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <div class="rounded-circle bg-success bg-opacity-10 p-3">
+                                            <i class="bi bi-graph-up-arrow text-success fs-4"></i>
+                                        </div>
+                                        <span class="badge bg-success">This Month</span>
+                                    </div>
+                                    <h3 class="h2 fw-bold text-white mb-1">{{ props.monthlyStats.winRate }}%</h3>
+                                    <p class="text-gray-light mb-0">Win Rate</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Total Picks Card -->
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="card h-100" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)">
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <div class="rounded-circle bg-primary bg-opacity-10 p-3">
+                                            <i class="bi bi-list-check text-primary fs-4"></i>
+                                        </div>
+                                        <span class="badge bg-primary">Total</span>
+                                    </div>
+                                    <h3 class="h2 fw-bold text-white mb-1">{{ props.monthlyStats.totalPicks }}</h3>
+                                    <p class="text-gray-light mb-0">Picks This Month</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Profit Card -->
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="card h-100" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)">
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <div class="rounded-circle bg-warning bg-opacity-10 p-3">
+                                            <i class="bi bi-currency-dollar text-warning fs-4"></i>
+                                        </div>
+                                        <span class="badge bg-warning text-dark">ROI</span>
+                                    </div>
+                                    <h3 class="h2 fw-bold text-white mb-1">+{{ props.monthlyStats.profitPercentage }}%</h3>
+                                    <p class="text-gray-light mb-0">Monthly Profit</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Today's Picks Card -->
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="card h-100" style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)">
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <div class="rounded-circle bg-purple bg-opacity-10 p-3">
+                                            <i class="bi bi-lightning-charge text-purple fs-4"></i>
+                                        </div>
+                                        <span class="badge bg-purple">New</span>
+                                    </div>
+                                    <h3 class="h2 fw-bold text-white mb-1">{{ props.todaysBetsCount }}</h3>
+                                    <p class="text-gray-light mb-0">Picks Available Today</p>
                                 </div>
                             </div>
                         </div>
