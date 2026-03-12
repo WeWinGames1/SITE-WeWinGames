@@ -247,52 +247,36 @@
         <script defer src="https://go.metabet.io/js/global.js?siteID=wewingames"></script>
         <script>
             (function() {
-                // MetaBet initialization helper
-                function initMetaBet() {
-                    if (typeof window.mb_initializeProducts === 'function') {
-                        console.log('[MetaBet] Initializing widgets');
-                        window.mb_initializeProducts();
+                // Single debounced initialization - clears content first to prevent duplicates
+                // Vue composable useMetaBet.ts handles component-level initialization
+                // This handles Inertia SPA navigation only
+                window.metabetInitPending = null;
+
+                function initMetaBetSafe() {
+                    // Clear any pending call
+                    if (window.metabetInitPending) {
+                        clearTimeout(window.metabetInitPending);
                     }
+
+                    // Debounce: wait 500ms after last call
+                    window.metabetInitPending = setTimeout(function() {
+                        if (typeof window.mb_initializeProducts === 'function') {
+                            // Clear existing widget content first (MetaBet appends, so we must clear)
+                            var widgets = document.querySelectorAll('[class*="metabet-sideoddstile"], [class*="metabet-gametile"]');
+                            widgets.forEach(function(widget) {
+                                widget.innerHTML = '';
+                            });
+                            console.log('[MetaBet] Page initialization');
+                            window.mb_initializeProducts();
+                        }
+                        window.metabetInitPending = null;
+                    }, 500);
                 }
 
                 // Re-initialize MetaBet on Inertia page visits (for SPA navigation)
-                document.addEventListener('inertia:success', function () {
-                    // Multiple attempts to catch async component rendering
-                    setTimeout(initMetaBet, 100);
-                    setTimeout(initMetaBet, 500);
-                    setTimeout(initMetaBet, 1000);
+                document.addEventListener('inertia:success', function() {
+                    initMetaBetSafe();
                 });
-
-                // Also watch for DOM changes that might add MetaBet widgets
-                if (typeof MutationObserver !== 'undefined') {
-                    var debounceTimer;
-                    var observer = new MutationObserver(function(mutations) {
-                        var hasMetabetElements = mutations.some(function(mutation) {
-                            return Array.from(mutation.addedNodes).some(function(node) {
-                                if (node.nodeType === 1) {
-                                    return node.className && (
-                                        node.className.includes('metabet-gametile') ||
-                                        node.className.includes('metabet-sideoddstile')
-                                    );
-                                }
-                                return false;
-                            });
-                        });
-
-                        if (hasMetabetElements) {
-                            clearTimeout(debounceTimer);
-                            debounceTimer = setTimeout(initMetaBet, 150);
-                        }
-                    });
-
-                    // Start observing once DOM is ready
-                    document.addEventListener('DOMContentLoaded', function() {
-                        observer.observe(document.body, {
-                            childList: true,
-                            subtree: true
-                        });
-                    });
-                }
             })();
         </script>
     @endif

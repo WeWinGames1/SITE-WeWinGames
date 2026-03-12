@@ -193,68 +193,9 @@ const syncDiscordRoles = () => {
                         </div>
                     </div>
 
-                    <!-- Quick Actions -->
-                    <div class="row g-4 mb-5">
-                        <div class="col-12">
-                            <h2 class="h4 fw-bold text-white mb-4">Quick Actions</h2>
-                        </div>
-                        <div class="col-12 col-sm-6 col-lg-3">
-                            <Link
-                                href="/todays-bets"
-                                class="card h-100 text-decoration-none"
-                                style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)"
-                            >
-                                <div class="card-body p-4 text-center">
-                                    <i class="bi bi-lightning-charge text-purple fs-1 mb-3"></i>
-                                    <h5 class="text-white">Today's Picks</h5>
-                                    <p class="text-gray-light small mb-0">View all available picks</p>
-                                </div>
-                            </Link>
-                        </div>
-                        <div class="col-12 col-sm-6 col-lg-3">
-                            <Link
-                                href="/betting-results"
-                                class="card h-100 text-decoration-none"
-                                style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)"
-                            >
-                                <div class="card-body p-4 text-center">
-                                    <i class="bi bi-trophy text-warning fs-1 mb-3"></i>
-                                    <h5 class="text-white">Results</h5>
-                                    <p class="text-gray-light small mb-0">Check past performance</p>
-                                </div>
-                            </Link>
-                        </div>
-                        <div class="col-12 col-sm-6 col-lg-3">
-                            <Link
-                                href="/settings/billing"
-                                class="card h-100 text-decoration-none"
-                                style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)"
-                            >
-                                <div class="card-body p-4 text-center">
-                                    <i class="bi bi-credit-card text-info fs-1 mb-3"></i>
-                                    <h5 class="text-white">Billing</h5>
-                                    <p class="text-gray-light small mb-0">Manage subscription</p>
-                                </div>
-                            </Link>
-                        </div>
-                        <div class="col-12 col-sm-6 col-lg-3">
-                            <Link
-                                href="/support/tickets"
-                                class="card h-100 text-decoration-none"
-                                style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)"
-                            >
-                                <div class="card-body p-4 text-center">
-                                    <i class="bi bi-headset text-success fs-1 mb-3"></i>
-                                    <h5 class="text-white">Support</h5>
-                                    <p class="text-gray-light small mb-0">Get help</p>
-                                </div>
-                            </Link>
-                        </div>
-                    </div>
-
                     <!-- Discord Community Section -->
                     <div class="row g-4 mb-5">
-                        <div class="col-12">
+                        <div class="col-12 d-none d-md-block">
                             <h2 class="h4 fw-bold text-white mb-4">
                                 <i class="bi bi-discord me-2" style="color: #5865f2"></i>
                                 Discord Community
@@ -396,6 +337,65 @@ const syncDiscordRoles = () => {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="row g-4 mb-5">
+                        <div class="col-12">
+                            <h2 class="h4 fw-bold text-white mb-4">Quick Actions</h2>
+                        </div>
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <Link
+                                href="/todays-bets"
+                                class="card h-100 text-decoration-none"
+                                style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)"
+                            >
+                                <div class="card-body p-4 text-center">
+                                    <i class="bi bi-lightning-charge text-purple fs-1 mb-3"></i>
+                                    <h5 class="text-white">Today's Picks</h5>
+                                    <p class="text-gray-light small mb-0">View all available picks</p>
+                                </div>
+                            </Link>
+                        </div>
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <Link
+                                href="/betting-results"
+                                class="card h-100 text-decoration-none"
+                                style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)"
+                            >
+                                <div class="card-body p-4 text-center">
+                                    <i class="bi bi-trophy text-warning fs-1 mb-3"></i>
+                                    <h5 class="text-white">Results</h5>
+                                    <p class="text-gray-light small mb-0">Check past performance</p>
+                                </div>
+                            </Link>
+                        </div>
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <Link
+                                href="/settings/billing"
+                                class="card h-100 text-decoration-none"
+                                style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)"
+                            >
+                                <div class="card-body p-4 text-center">
+                                    <i class="bi bi-credit-card text-info fs-1 mb-3"></i>
+                                    <h5 class="text-white">Billing</h5>
+                                    <p class="text-gray-light small mb-0">Manage subscription</p>
+                                </div>
+                            </Link>
+                        </div>
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <Link
+                                href="/support/tickets"
+                                class="card h-100 text-decoration-none"
+                                style="background-color: var(--bs-card-bg); border: 1px solid var(--bs-card-border)"
+                            >
+                                <div class="card-body p-4 text-center">
+                                    <i class="bi bi-headset text-success fs-1 mb-3"></i>
+                                    <h5 class="text-white">Support</h5>
+                                    <p class="text-gray-light small mb-0">Get help</p>
+                                </div>
+                            </Link>
                         </div>
                     </div>
 

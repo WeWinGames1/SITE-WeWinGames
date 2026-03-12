@@ -1,36 +1,52 @@
-import { nextTick, onMounted, onUpdated } from 'vue';
+import { onMounted } from 'vue';
 
 declare global {
     interface Window {
         mb_initializeProducts?: () => void;
         metabetInitialized?: boolean;
+        metabetInitPending?: number | null;
     }
+}
+
+/**
+ * Clear all MetaBet widget content to prevent duplicates
+ * MetaBet's mb_initializeProducts() appends content, so we must clear first
+ */
+function clearMetaBetWidgets() {
+    const widgets = document.querySelectorAll('[class*="metabet-sideoddstile"], [class*="metabet-gametile"]');
+    widgets.forEach((widget) => {
+        widget.innerHTML = '';
+    });
 }
 
 /**
  * Composable to handle MetaBet widget initialization
  * Call this in components that render MetaBet widgets
+ * Uses debouncing to prevent multiple rapid calls
  */
 export function useMetaBet() {
     const initializeMetaBet = () => {
-        // Wait for next tick to ensure DOM is updated
-        nextTick(() => {
-            // Small delay to ensure MetaBet script is loaded
-            setTimeout(() => {
-                if (typeof window !== 'undefined' && window.mb_initializeProducts) {
-                    console.log('[MetaBet] Re-initializing widgets');
-                    window.mb_initializeProducts();
-                }
-            }, 100);
-        });
+        if (typeof window === 'undefined') return;
+
+        // Clear any pending initialization to debounce
+        if (window.metabetInitPending) {
+            clearTimeout(window.metabetInitPending);
+        }
+
+        // Debounce: wait 300ms after the last call before actually initializing
+        window.metabetInitPending = window.setTimeout(() => {
+            if (window.mb_initializeProducts) {
+                // Clear existing content BEFORE initializing to prevent duplicates
+                clearMetaBetWidgets();
+                console.log('[MetaBet] Initializing widgets');
+                window.mb_initializeProducts();
+            }
+            window.metabetInitPending = null;
+        }, 300);
     };
 
-    // Initialize on mount and update
+    // Initialize only on mount - not on update to prevent duplicate content
     onMounted(() => {
-        initializeMetaBet();
-    });
-
-    onUpdated(() => {
         initializeMetaBet();
     });
 
@@ -41,10 +57,24 @@ export function useMetaBet() {
 
 /**
  * Manual initialization function - can be called directly
+ * Clears existing widget content before re-initializing to prevent duplicates
  */
 export function reinitializeMetaBet() {
-    if (typeof window !== 'undefined' && window.mb_initializeProducts) {
-        console.log('[MetaBet] Manual re-initialization');
-        window.mb_initializeProducts();
+    if (typeof window === 'undefined') return;
+
+    // Clear any pending initialization
+    if (window.metabetInitPending) {
+        clearTimeout(window.metabetInitPending);
     }
+
+    // Debounce the re-initialization
+    window.metabetInitPending = window.setTimeout(() => {
+        if (window.mb_initializeProducts) {
+            // Clear existing content BEFORE initializing to prevent duplicates
+            clearMetaBetWidgets();
+            console.log('[MetaBet] Manual re-initialization');
+            window.mb_initializeProducts();
+        }
+        window.metabetInitPending = null;
+    }, 300);
 }

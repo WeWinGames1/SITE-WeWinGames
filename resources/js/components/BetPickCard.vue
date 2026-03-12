@@ -226,27 +226,32 @@ const { props: pageProps } = usePage();
 const isAdmin = pageProps.auth?.user && pageProps.auth?.isAdmin === true;
 
 // MetaBet widget display conditions
-const widgetType = computed(() => props.bet.metabet_widget_type || 'game');
+const widgetType = computed(() => props.bet.metabet_widget_type || 'none');
 
 const hasMetabetWidgets = computed(() => {
+    // If widget type is 'none', don't show any widgets
+    if (widgetType.value === 'none') return false;
     return props.bet.metabet_query_id || props.bet.metabet_prop_query_id || props.bet.metabet_parlay_query_id;
 });
 
 const showGameTile = computed(() => {
     if (!props.bet.metabet_query_id) return false;
     const type = widgetType.value;
+    if (type === 'none') return false;
     return type === 'game' || type === 'game_prop' || type === 'game_parlay' || type === 'all';
 });
 
 const showPropTile = computed(() => {
     if (!props.bet.metabet_prop_query_id) return false;
     const type = widgetType.value;
+    if (type === 'none') return false;
     return type === 'prop' || type === 'game_prop' || type === 'all';
 });
 
 const showParlayTile = computed(() => {
     if (!props.bet.metabet_parlay_query_id) return false;
     const type = widgetType.value;
+    if (type === 'none') return false;
     return type === 'parlay' || type === 'game_parlay' || type === 'all';
 });
 

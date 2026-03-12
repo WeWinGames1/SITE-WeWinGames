@@ -1650,6 +1650,9 @@ declare global {
                         <div class="mb-4">
                             <label class="form-label fw-bold">Display Widget Type</label>
                             <div class="btn-group d-flex flex-wrap gap-2" role="group">
+                                <input type="radio" class="btn-check" id="widget_none" v-model="form.metabet_widget_type" value="none" />
+                                <label class="btn btn-outline-secondary" for="widget_none"> <i class="bi bi-x-circle me-1"></i> Disabled </label>
+
                                 <input type="radio" class="btn-check" id="widget_game" v-model="form.metabet_widget_type" value="game" />
                                 <label class="btn btn-outline-primary" for="widget_game"> <i class="bi bi-grid-3x3-gap me-1"></i> Game Tile </label>
 
@@ -1662,6 +1665,7 @@ declare global {
                                 <input type="radio" class="btn-check" id="widget_game_prop" v-model="form.metabet_widget_type" value="game_prop" />
                                 <label class="btn btn-outline-info" for="widget_game_prop"> <i class="bi bi-collection me-1"></i> Game + Prop </label>
                             </div>
+                            <small class="text-muted mt-2 d-block">Select which MetaBet widget(s) to display on the frontend. Choose "Disabled" to hide all widgets.</small>
                         </div>
 
                         <div class="row g-4">
