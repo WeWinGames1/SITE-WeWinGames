@@ -144,11 +144,11 @@
                         <div class="col-6">
                             <label class="form-label text-gray-light small">Status</label>
                             <select v-model="updatedStatus" class="form-select form-select-sm">
-                                <option value="Pending">Pending</option>
-                                <option value="Won">Win</option>
-                                <option v-if="bet.is_each_way" value="Placed">Placed</option>
-                                <option value="Lost">Loss</option>
-                                <option value="Push">Push</option>
+                                <option value="pending">Pending</option>
+                                <option value="won">Won</option>
+                                <option v-if="bet.is_each_way" value="placed">Placed</option>
+                                <option value="loss">Loss</option>
+                                <option value="push">Push</option>
                             </select>
                         </div>
 

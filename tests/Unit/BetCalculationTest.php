@@ -240,10 +240,10 @@ class BetCalculationTest extends TestCase
         // T5 with 8 places = placed
         $this->assertEquals('placed', $this->betService->determineEachWayStatus('T5', 8));
 
-        // T9 with 8 places = lost
-        $this->assertEquals('lost', $this->betService->determineEachWayStatus('T9', 8));
+        // T9 with 8 places = loss
+        $this->assertEquals('loss', $this->betService->determineEachWayStatus('T9', 8));
 
-        // MC = lost
-        $this->assertEquals('lost', $this->betService->determineEachWayStatus('MC', 8));
+        // MC = loss
+        $this->assertEquals('loss', $this->betService->determineEachWayStatus('MC', 8));
     }
 }

@@ -1021,7 +1021,6 @@ declare global {
                                     <option v-if="form.wager_type === 'each_way'" value="placed">Placed</option>
                                     <option value="loss">Loss</option>
                                     <option value="push">Push</option>
-                                    <option value="void">Void</option>
                                 </select>
                                 <div v-if="form.errors.status" class="invalid-feedback">
                                     {{ form.errors.status }}

@@ -153,10 +153,10 @@
                         v-model="form.status"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     >
-                        <option value="Pending">Pending</option>
-                        <option value="Won">Win</option>
-                        <option value="Lost">Loss</option>
-                        <option value="Push">Push</option>
+                        <option value="pending">Pending</option>
+                        <option value="won">Won</option>
+                        <option value="loss">Loss</option>
+                        <option value="push">Push</option>
                     </select>
                 </div>
                 <!-- Membership -->
