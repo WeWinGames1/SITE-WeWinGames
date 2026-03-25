@@ -8,6 +8,7 @@ use App\Models\Affiliate;
 use App\Models\User;
 use App\Services\RegistrationSecurityService;
 use App\Services\SendGridService;
+use App\Services\SpringBigService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,7 +35,7 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(RegisterRequest $request, RegistrationSecurityService $securityService, SendGridService $sendGridService): RedirectResponse
+    public function store(RegisterRequest $request, RegistrationSecurityService $securityService, SendGridService $sendGridService, SpringBigService $springBigService): RedirectResponse
     {
         // Debug logging
         \Log::info('Registration attempt', [
@@ -107,6 +108,14 @@ class RegisteredUserController extends Controller
             } catch (\Exception $e) {
                 \Log::error('Failed to sync user to SendGrid: '.$e->getMessage());
                 // Don't fail registration if SendGrid sync fails
+            }
+
+            // Sync to Spring Big
+            try {
+                $springBigService->createMember($user);
+            } catch (\Exception $e) {
+                \Log::error('Failed to sync user to Spring Big: '.$e->getMessage());
+                // Don't fail registration if Spring Big sync fails
             }
 
             // Log successful registration

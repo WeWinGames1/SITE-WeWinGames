@@ -86,4 +86,10 @@ return [
         ],
     ],
 
+    'springbig' => [
+        'enabled' => env('SPRINGBIG_ENABLED', false),
+        'api_key' => env('SPRINGBIG_API_KEY'),
+        'merchant_id' => env('SPRINGBIG_MERCHANT_ID'),
+    ],
+
 ];

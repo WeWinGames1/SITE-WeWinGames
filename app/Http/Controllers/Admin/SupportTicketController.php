@@ -87,7 +87,7 @@ class SupportTicketController extends Controller
 
         $ticket->replies()->create([
             'user_id' => auth()->id(),
-            'content' => $validated['content'],
+            'message' => $validated['content'],
             'is_internal' => $validated['is_internal'] ?? false,
         ]);
 
