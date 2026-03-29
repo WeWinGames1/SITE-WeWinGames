@@ -241,6 +241,25 @@ function toggleUserStatus() {
     }
 }
 
+function syncSpringBig() {
+    if (confirm(`Sync ${props.customer.name} to SpringBig?`)) {
+        isLoading.value = true;
+        router.post(
+            route('admin.customers.sync-springbig', props.customer.id),
+            {},
+            {
+                onFinish: () => {
+                    isLoading.value = false;
+                },
+                onError: (errors) => {
+                    console.error('SpringBig sync failed:', errors);
+                    alert('Failed to sync to SpringBig. Please try again.');
+                },
+            },
+        );
+    }
+}
+
 const stripeMode = computed(() => {
     const stripeKey = (window as any).stripeKey || '';
     return stripeKey.includes('pk_test_') ? 'test' : 'live';
@@ -437,6 +456,9 @@ function formatCustomerDuration(days: number): string {
                                         </button>
                                         <button class="btn btn-outline-primary text-start" @click="sendPasswordReset">
                                             <i class="bi bi-key me-2"></i>Send Password Reset
+                                        </button>
+                                        <button class="btn btn-outline-info text-start" @click="syncSpringBig">
+                                            <i class="bi bi-arrow-repeat me-2"></i>Sync to SpringBig
                                         </button>
                                         <a
                                             v-if="customer.stripe_id"

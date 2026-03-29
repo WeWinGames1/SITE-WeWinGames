@@ -567,8 +567,8 @@ const allGroupedBets = computed(() => {
                                             </tr>
                                             <tr>
                                                 <td>2025</td>
-                                                <td>23</td>
-                                                <td>810%</td>
+                                                <td>16</td>
+                                                <td>134%</td>
                                             </tr>
                                             <tr>
                                                 <td>2026 to date</td>

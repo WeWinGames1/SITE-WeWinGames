@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\SimpleCacheService;
+use App\Services\SpringBigService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -968,5 +969,33 @@ class CustomerController extends Controller
             ->get(['id', 'name', 'email']);
 
         return response()->json(['customers' => $customers]);
+    }
+
+    /**
+     * Sync a customer to SpringBig
+     */
+    public function syncSpringBig(User $user, SpringBigService $springBigService)
+    {
+        if (! $springBigService->isEnabled()) {
+            return back()->with('error', 'SpringBig integration is not enabled. Please configure SPRINGBIG_ENABLED, SPRINGBIG_API_KEY, and SPRINGBIG_AUTH_TOKEN in your environment.');
+        }
+
+        // Log the action
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($user)
+            ->withProperties([
+                'user_email' => $user->email,
+                'admin_email' => auth()->user()->email,
+            ])
+            ->log('Admin synced customer to SpringBig');
+
+        $result = $springBigService->createMember($user);
+
+        if ($result) {
+            return back()->with('success', 'Customer synced to SpringBig successfully!');
+        }
+
+        return back()->with('error', 'Failed to sync customer to SpringBig. Check the logs for more details.');
     }
 }

@@ -277,6 +277,7 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
     Route::post('/{user}/impersonate', [\App\Http\Controllers\Admin\ImpersonationController::class, 'start'])->name('impersonate');
     Route::post('/{user}/password-reset', [CustomerController::class, 'sendPasswordReset'])->name('password-reset');
     Route::post('/{user}/cancel-subscription', [CustomerController::class, 'cancelSubscription'])->name('cancel-subscription');
+    Route::post('/{user}/sync-springbig', [CustomerController::class, 'syncSpringBig'])->name('sync-springbig');
 });
 
 // Customer Value Reports

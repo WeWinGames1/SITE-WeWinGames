@@ -88,8 +88,9 @@ return [
 
     'springbig' => [
         'enabled' => env('SPRINGBIG_ENABLED', false),
+        'base_url' => env('SPRINGBIG_BASE_URL', 'https://gamma.api.springbig.technology/pos/v1'),
         'api_key' => env('SPRINGBIG_API_KEY'),
-        'merchant_id' => env('SPRINGBIG_MERCHANT_ID'),
+        'auth_token' => env('SPRINGBIG_AUTH_TOKEN'),
     ],
 
 ];

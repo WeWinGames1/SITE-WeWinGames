@@ -10,17 +10,18 @@ class SpringBigService
 {
     protected string $apiKey;
 
-    protected string $merchantId;
+    protected string $authToken;
+
+    protected string $baseUrl;
 
     protected bool $enabled;
 
-    protected string $baseUrl = 'https://gamma.api.springbig.technology/pos/v1';
-
     public function __construct()
     {
-        $this->apiKey = config('services.springbig.api_key') ?? '';
-        $this->merchantId = config('services.springbig.merchant_id') ?? '';
         $this->enabled = (bool) config('services.springbig.enabled', false);
+        $this->baseUrl = config('services.springbig.base_url') ?? 'https://gamma.api.springbig.technology/pos/v1';
+        $this->apiKey = config('services.springbig.api_key') ?? '';
+        $this->authToken = config('services.springbig.auth_token') ?? '';
     }
 
     /**
@@ -83,8 +84,8 @@ class SpringBigService
             ];
 
             // Include merchant ID as AUTH-TOKEN if provided
-            if (! empty($this->merchantId)) {
-                $headers['AUTH-TOKEN'] = $this->merchantId;
+            if (! empty($this->authToken)) {
+                $headers['AUTH-TOKEN'] = $this->authToken;
             }
 
             $response = Http::withHeaders($headers)->post($this->baseUrl.'/members', $memberData);
@@ -167,8 +168,8 @@ class SpringBigService
                 'Content-Type' => 'application/json',
             ];
 
-            if (! empty($this->merchantId)) {
-                $headers['AUTH-TOKEN'] = $this->merchantId;
+            if (! empty($this->authToken)) {
+                $headers['AUTH-TOKEN'] = $this->authToken;
             }
 
             $response = Http::withHeaders($headers)->put($this->baseUrl.'/members', $memberData);
