@@ -64,7 +64,7 @@ class AdminDashboardController extends Controller
         $totalBets = Bet::count();
         $betsToday = Bet::whereDate('created_at', $today)->count();
         $activeBets = Bet::where('status', 'pending')->count();
-        $winRate = Bet::where('status', 'won')->count() / max(Bet::whereIn('status', ['won', 'lost'])->count(), 1) * 100;
+        $winRate = Bet::where('status', 'won')->count() / max(Bet::whereIn('status', ['won', 'loss'])->count(), 1) * 100;
 
         // Content statistics
         $totalPosts = Post::count();

@@ -115,7 +115,7 @@ class BetRepository extends BaseRepository implements BetRepositoryInterface
             return [
                 'total_bets' => $this->model->count(),
                 'winning_bets' => $this->model->where('status', 'won')->count(),
-                'losing_bets' => $this->model->where('status', 'lost')->count(),
+                'losing_bets' => $this->model->where('status', 'loss')->count(),
                 'pending_bets' => $this->model->where('status', 'pending')->count(),
                 'total_profit' => $this->calculateTotalProfit(),
                 'average_stake' => $this->model->avg('stake') ?? 0,
@@ -127,7 +127,7 @@ class BetRepository extends BaseRepository implements BetRepositoryInterface
 
     private function calculateWinRate(): float
     {
-        $totalBets = $this->model->whereIn('status', ['won', 'lost'])->count();
+        $totalBets = $this->model->whereIn('status', ['won', 'loss'])->count();
         if ($totalBets === 0) {
             return 0.0;
         }

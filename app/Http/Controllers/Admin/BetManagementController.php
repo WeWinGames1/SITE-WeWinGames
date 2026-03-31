@@ -177,12 +177,12 @@ class BetManagementController extends Controller
             COUNT(*) as total_bets,
             SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as pending_count,
             SUM(CASE WHEN status = "won" THEN 1 ELSE 0 END) as won_count,
-            SUM(CASE WHEN status = "lost" THEN 1 ELSE 0 END) as lost_count,
+            SUM(CASE WHEN status = "loss" THEN 1 ELSE 0 END) as lost_count,
             SUM(CASE WHEN status = "push" THEN 1 ELSE 0 END) as push_count,
             SUM(CASE WHEN status = "void" THEN 1 ELSE 0 END) as void_count,
             COALESCE(SUM(wager_amount), 0) as total_stake,
             COALESCE(SUM(CASE WHEN status = "won" THEN profit_amount ELSE 0 END), 0) as total_profit,
-            COALESCE(SUM(CASE WHEN status = "lost" THEN ABS(profit_amount) ELSE 0 END), 0) as total_loss,
+            COALESCE(SUM(CASE WHEN status = "loss" THEN ABS(profit_amount) ELSE 0 END), 0) as total_loss,
             COALESCE(AVG(wager_odds), 0) as avg_odds
         ')->first();
 
@@ -887,7 +887,7 @@ class BetManagementController extends Controller
     {
         return match ($data['status']) {
             'won' => $data['potential_win'] ?? 0,
-            'lost' => -($data['stake'] ?? 0),
+            'loss' => -($data['stake'] ?? 0),
             'void', 'push' => 0,
             default => 0
         };

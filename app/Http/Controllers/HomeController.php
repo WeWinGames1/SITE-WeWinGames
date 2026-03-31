@@ -31,7 +31,7 @@ class HomeController extends Controller
                 $query->where('sports', 'LIKE', '%golf%')
                     ->orWhere('sport', 'LIKE', '%golf%');
             })
-            ->whereIn('status', ['won', 'lost', 'push', 'void', 'placed']) // Only settled bets
+            ->whereIn('status', ['won', 'loss', 'push', 'void', 'placed']) // Only settled bets
             ->get();
 
         $golfWinners2026 = $golf2026Bets->where('status', 'won')->count();

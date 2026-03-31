@@ -199,13 +199,12 @@ class LegacyBetImportService
         $status = strtolower(trim($status));
 
         return match ($status) {
-            'win' => 'Won',
-            'won' => 'Won',
-            'loss', 'lose', 'lost' => 'Lost',
-            'push' => 'Push',
-            'pending' => 'Pending',
-            'void' => 'Void',
-            default => 'Pending'
+            'win', 'won' => 'won',
+            'loss', 'lose', 'lost' => 'loss',
+            'push' => 'push',
+            'pending' => 'pending',
+            'void' => 'void',
+            default => 'pending'
         };
     }
 
