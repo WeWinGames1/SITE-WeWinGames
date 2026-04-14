@@ -403,21 +403,25 @@ class CustomerController extends Controller
                 $now = now()->toDateTimeString();
 
                 return DB::selectOne('
-                    SELECT 
+                    SELECT
                         COUNT(DISTINCT users.id) as total,
-                        COUNT(DISTINCT CASE 
-                            WHEN subscriptions.stripe_status = "active" 
-                            THEN users.id 
+                        COUNT(DISTINCT CASE
+                            WHEN subscriptions.stripe_status = "active"
+                            THEN users.id
                         END) as active,
-                        COUNT(DISTINCT CASE 
-                            WHEN subscriptions.trial_ends_at IS NOT NULL 
-                            AND subscriptions.trial_ends_at > ? 
-                            THEN users.id 
+                        COUNT(DISTINCT CASE
+                            WHEN subscriptions.trial_ends_at IS NOT NULL
+                            AND subscriptions.trial_ends_at > ?
+                            THEN users.id
                         END) as trialing,
-                        COUNT(DISTINCT CASE 
-                            WHEN subscriptions.id IS NULL 
-                            THEN users.id 
-                        END) as no_subscription
+                        COUNT(DISTINCT CASE
+                            WHEN subscriptions.id IS NULL
+                            THEN users.id
+                        END) as no_subscription,
+                        COUNT(DISTINCT CASE
+                            WHEN users.status = "pending_setup"
+                            THEN users.id
+                        END) as pending_setup
                     FROM users
                     LEFT JOIN subscriptions ON users.id = subscriptions.user_id
                 ', [$now]);
@@ -438,7 +442,7 @@ class CustomerController extends Controller
             'subscription_price' => 'nullable|string',
             'subscription_status' => 'nullable|string',
             'trial_days' => 'nullable|integer|min:0',
-            'status' => 'nullable|in:active,disabled,pending',
+            'status' => 'nullable|in:active,disabled,pending,pending_setup',
         ]);
 
         // Handle user status change

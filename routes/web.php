@@ -32,6 +32,7 @@ use App\Http\Controllers\CustomerDashboardController;
 use App\Http\Controllers\DiscordController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PageShowController;
+use App\Http\Controllers\QuickCheckoutController;
 use App\Http\Controllers\StaticPageController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Middleware\AdminMiddleware;
@@ -51,6 +52,16 @@ Route::get('/careers-jobs', [StaticPageController::class, 'careersJobs'])->name(
 Route::post('/careers/submit-resume', [\App\Http\Controllers\ResumeSubmissionController::class, 'store'])->name('careers.submit-resume');
 Route::get('/about-us', [StaticPageController::class, 'aboutUs'])->name('about-us');
 Route::get('/faq', [\App\Http\Controllers\FaqController::class, 'index'])->name('faq');
+
+// Quick Checkout Routes (Payment-First Registration)
+Route::middleware('guest')->group(function () {
+    Route::get('/quick-checkout', [QuickCheckoutController::class, 'show'])->name('quick-checkout');
+    Route::post('/quick-checkout', [QuickCheckoutController::class, 'process'])->name('quick-checkout.process');
+    Route::post('/quick-checkout/validate-coupon', [QuickCheckoutController::class, 'validateCoupon'])->name('quick-checkout.validate-coupon');
+    Route::get('/complete-registration', [QuickCheckoutController::class, 'showComplete'])->name('complete-registration');
+    Route::post('/complete-registration', [QuickCheckoutController::class, 'complete'])->name('complete-registration.store');
+    Route::post('/complete-registration/resend', [QuickCheckoutController::class, 'resendCompletion'])->name('complete-registration.resend');
+});
 
 // Customer dashboard route
 Route::get('dashboard', [CustomerDashboardController::class, 'index'])

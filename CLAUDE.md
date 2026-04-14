@@ -82,6 +82,7 @@ WeWinGames is a comprehensive sports betting information and picks service built
 - **Discount Codes**: Percentage/fixed with usage limits
 - **Affiliate System**: Track and manage affiliates
 - **Impersonation**: Admin user switching
+- **Quick Checkout**: Payment-first registration flow (feature flagged)
 
 ### 3. Content Management
 - **Blog System**: Full-featured with SEO, categories, view tracking
@@ -121,7 +122,7 @@ Located at `/admin`, provides:
 - **Cache Management**: Clear Laravel & Cloudflare cache
 
 ### 7. Security & Performance
-- **Middleware**: 
+- **Middleware**:
   - Admin security headers
   - Rate limiting
   - IP blacklisting
@@ -129,6 +130,39 @@ Located at `/admin`, provides:
 - **Under Construction Mode**: Site-wide maintenance
 - **Cloudflare Integration**: CDN & cache management
 - **Session Security**: CSRF protection
+
+### 8. Quick Checkout (Payment-First Registration)
+A conversion-optimized registration flow that collects payment before account setup.
+
+**Flow:**
+1. Guest visits `/quick-checkout?plan=gold&period=monthly`
+2. Enters email, name, phone + card via Stripe Elements
+3. Payment processed → User created with `status=pending_setup`
+4. Email sent with completion link → `/complete-registration?token=xxx`
+5. User sets password + optional Discord → `status=active`, logged in
+
+**Key Files:**
+- `app/Services/QuickCheckoutService.php` - Business logic
+- `app/Http/Controllers/QuickCheckoutController.php` - Endpoints
+- `app/Http/Requests/QuickCheckoutRequest.php` - Validation
+- `app/Http/Requests/CompleteRegistrationRequest.php` - Password validation
+- `app/Mail/CompleteYourAccountMail.php` - Completion email
+- `resources/js/pages/QuickCheckout.vue` - Checkout form
+- `resources/js/pages/CompleteRegistration.vue` - Password setup
+
+**Feature Flag:**
+```env
+QUICK_CHECKOUT_ENABLED=true  # Enable payment-first flow
+```
+
+When enabled, pricing CTAs route guests to `/quick-checkout` instead of `/register`.
+
+**User Status Values:**
+- `active` - Normal active user
+- `disabled` - Account disabled
+- `pending_setup` - Quick checkout user awaiting password setup
+
+**Fallback:** Users who don't complete setup can use "Forgot Password" to access their account.
 
 ## Development Commands
 
@@ -223,9 +257,14 @@ php artisan db:seed --class=ProductionSeeder  # Production data only
 ### Public API
 ```
 POST   /login                    - User authentication
-POST   /register                 - User registration  
+POST   /register                 - User registration
 POST   /logout                   - User logout
 POST   /forgot-password          - Password reset
+
+GET    /quick-checkout           - Quick checkout page (payment-first)
+POST   /quick-checkout           - Process quick checkout
+GET    /complete-registration    - Complete account setup
+POST   /complete-registration    - Set password after payment
 
 GET    /api/bets                 - List bets
 POST   /api/bets                 - Create bet
@@ -287,6 +326,9 @@ ADMIN_PASSWORD=YourSecurePassword123!  # For production seeder
 
 ### Optional Services
 ```env
+# Quick Checkout (Payment-First Registration)
+QUICK_CHECKOUT_ENABLED=false  # Set to true to enable
+
 # Push Notifications
 VAPID_PUBLIC_KEY=your_public_key
 VAPID_PRIVATE_KEY=your_private_key
@@ -499,15 +541,16 @@ DB_DATABASE=wewingames_test
    # Test with Stripe CLI
    ```
 
-## Recent Updates (January 2025)
+## Recent Updates (April 2026)
 
 ### New Features
-1. **OneSignal Integration**: Push notifications for non-admin pages
-2. **Enhanced Media Library**: Centralized file management
-3. **Knowledgebase System**: Help articles and categories
-4. **Job Board**: Career opportunities management
-5. **Affiliate System**: Commission tracking
-6. **Activity Logging**: Comprehensive user tracking
+1. **Quick Checkout**: Payment-first registration flow for higher conversion
+2. **OneSignal Integration**: Push notifications for non-admin pages
+3. **Enhanced Media Library**: Centralized file management
+4. **Knowledgebase System**: Help articles and categories
+5. **Job Board**: Career opportunities management
+6. **Affiliate System**: Commission tracking
+7. **Activity Logging**: Comprehensive user tracking
 
 ### Improvements
 1. **Performance**: Reduced query counts with eager loading

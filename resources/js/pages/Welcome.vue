@@ -86,6 +86,27 @@ const sportIcons = {
 // Use the dynamic Stripe prices and products from shared props
 const stripePrices = page.props.stripePrices || {};
 const stripeProducts = page.props.stripeProducts || {};
+const quickCheckoutEnabled =
+    (page.props as any).env?.QUICK_CHECKOUT_ENABLED === true || (page.props as any).env?.QUICK_CHECKOUT_ENABLED === 'true';
+
+// Build checkout URL based on auth state and feature flag
+const buildCheckoutLink = (tier: string, period: string, priceId: string): string => {
+    // Logged in users always go to regular checkout
+    if (auth?.user) {
+        return route('subscription.checkout', {
+            subscription_name: tier,
+            subscription_price_id: priceId,
+        });
+    }
+
+    // Guests with quick checkout enabled go to quick checkout
+    if (quickCheckoutEnabled) {
+        return route('quick-checkout', { plan: tier, period: period });
+    }
+
+    // Guests without quick checkout go to register
+    return route('register');
+};
 
 // Helper function to get features for a specific tier and billing period
 const getFeatures = (tier: string, billingPeriod: string = 'monthly') => {
@@ -155,9 +176,9 @@ const plans = computed(() => [
         monthlyFeatures: getFeatures('gold', 'monthly'),
         weeklyFeatures: getFeatures('gold', 'weekly'),
         dailyFeatures: getFeatures('gold', 'daily'),
-        monthlyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: stripePrices.gold_monthly }),
-        weeklyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: stripePrices.gold_weekly }),
-        dailyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: stripePrices.gold_daily }),
+        monthlyLink: buildCheckoutLink('gold', 'monthly', stripePrices.gold_monthly),
+        weeklyLink: buildCheckoutLink('gold', 'weekly', stripePrices.gold_weekly),
+        dailyLink: buildCheckoutLink('gold', 'daily', stripePrices.gold_daily),
         weeklyPrice: getPrice('gold', 'weekly'),
         dailyPrice: getPrice('gold', 'daily'),
         highlight: false,
@@ -171,9 +192,9 @@ const plans = computed(() => [
         monthlyFeatures: getFeatures('platinum', 'monthly'),
         weeklyFeatures: getFeatures('platinum', 'weekly'),
         dailyFeatures: getFeatures('platinum', 'daily'),
-        monthlyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: stripePrices.platinum_monthly }),
-        weeklyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: stripePrices.platinum_weekly }),
-        dailyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: stripePrices.platinum_daily }),
+        monthlyLink: buildCheckoutLink('platinum', 'monthly', stripePrices.platinum_monthly),
+        weeklyLink: buildCheckoutLink('platinum', 'weekly', stripePrices.platinum_weekly),
+        dailyLink: buildCheckoutLink('platinum', 'daily', stripePrices.platinum_daily),
         weeklyPrice: getPrice('platinum', 'weekly'),
         dailyPrice: getPrice('platinum', 'daily'),
         highlight: true,
@@ -448,7 +469,12 @@ const allGroupedBets = computed(() => {
                                 The most transparent sports betting platform with consistent profits and expert picks.
                             </p>
                             <div class="mb-5">
-                                <Link href="/register" class="btn btn-warning btn-lg px-5 py-3 text-dark fw-bold"> Start Winning Today </Link>
+                                <Link
+                                    :href="quickCheckoutEnabled ? route('quick-checkout', { plan: 'gold', period: 'daily' }) : route('register')"
+                                    class="btn btn-warning btn-lg px-5 py-3 text-dark fw-bold"
+                                >
+                                    Start Winning Today
+                                </Link>
                             </div>
                             <p class="text-white" style="opacity: 0.8; max-width: 500px">
                                 We Make Sports Betting Easy—by doing all the hard work analyzing hundreds of betting sources to give you the best

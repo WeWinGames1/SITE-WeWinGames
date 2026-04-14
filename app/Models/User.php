@@ -53,6 +53,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'favorite_team',
         'favorite_sport',
         'primary_betting_app',
+        'completion_token',
+        'completion_token_expires_at',
+        'registration_type',
     ];
 
     /**
@@ -90,6 +93,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'discord_connected_at' => 'datetime',
             'discord_token_expires_at' => 'datetime',
             'discord_roles_synced' => 'array',
+            'completion_token_expires_at' => 'datetime',
         ];
     }
 
@@ -224,5 +228,53 @@ class User extends Authenticatable implements MustVerifyEmail
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new CustomResetPassword($token));
+    }
+
+    /**
+     * Check if user needs to complete registration (quick checkout flow)
+     */
+    public function needsRegistrationCompletion(): bool
+    {
+        return $this->status === 'pending_setup'
+            && $this->registration_type === 'quick_checkout';
+    }
+
+    /**
+     * Check if completion token is valid
+     */
+    public function hasValidCompletionToken(?string $token = null): bool
+    {
+        if (! $this->completion_token) {
+            return false;
+        }
+
+        if ($token !== null && ! hash_equals($this->completion_token, $token)) {
+            return false;
+        }
+
+        return $this->completion_token_expires_at && $this->completion_token_expires_at->isFuture();
+    }
+
+    /**
+     * Generate a new completion token
+     */
+    public function generateCompletionToken(): string
+    {
+        $token = bin2hex(random_bytes(32));
+        $this->completion_token = $token;
+        $this->completion_token_expires_at = now()->addHours(24);
+        $this->save();
+
+        return $token;
+    }
+
+    /**
+     * Clear the completion token
+     */
+    public function clearCompletionToken(): void
+    {
+        $this->completion_token = null;
+        $this->completion_token_expires_at = null;
+        $this->save();
     }
 }

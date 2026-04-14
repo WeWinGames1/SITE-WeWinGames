@@ -11,6 +11,27 @@ const subscriptions = page.props.subscriptions;
 // Use the dynamic Stripe prices and products from shared props
 const stripePrices = page.props.stripePrices || {};
 const stripeProducts = page.props.stripeProducts || {};
+const quickCheckoutEnabled = (page.props as any).env?.QUICK_CHECKOUT_ENABLED === true ||
+    (page.props as any).env?.QUICK_CHECKOUT_ENABLED === 'true';
+
+// Build checkout URL based on auth state and feature flag
+const buildCheckoutLink = (tier: string, period: string, priceId: string): string => {
+    // Logged in users always go to regular checkout
+    if (user) {
+        return route('subscription.checkout', {
+            subscription_name: tier,
+            subscription_price_id: priceId,
+        });
+    }
+
+    // Guests with quick checkout enabled go to quick checkout
+    if (quickCheckoutEnabled) {
+        return route('quick-checkout', { plan: tier, period: period });
+    }
+
+    // Guests without quick checkout go to register
+    return route('register');
+};
 
 // Helper function to get features for a specific tier and billing period
 const getFeatures = (tier: string, billingPeriod: string = 'monthly') => {
@@ -80,9 +101,9 @@ const plans = computed(() => [
         monthlyFeatures: getFeatures('gold', 'monthly'),
         weeklyFeatures: getFeatures('gold', 'weekly'),
         dailyFeatures: getFeatures('gold', 'daily'),
-        monthlyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: stripePrices.gold_monthly }),
-        weeklyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: stripePrices.gold_weekly }),
-        dailyLink: route('subscription.checkout', { subscription_name: 'gold', subscription_price_id: stripePrices.gold_daily }),
+        monthlyLink: buildCheckoutLink('gold', 'monthly', stripePrices.gold_monthly),
+        weeklyLink: buildCheckoutLink('gold', 'weekly', stripePrices.gold_weekly),
+        dailyLink: buildCheckoutLink('gold', 'daily', stripePrices.gold_daily),
         weeklyPrice: getPrice('gold', 'weekly'),
         dailyPrice: getPrice('gold', 'daily'),
         highlight: false,
@@ -96,9 +117,9 @@ const plans = computed(() => [
         monthlyFeatures: getFeatures('platinum', 'monthly'),
         weeklyFeatures: getFeatures('platinum', 'weekly'),
         dailyFeatures: getFeatures('platinum', 'daily'),
-        monthlyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: stripePrices.platinum_monthly }),
-        weeklyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: stripePrices.platinum_weekly }),
-        dailyLink: route('subscription.checkout', { subscription_name: 'platinum', subscription_price_id: stripePrices.platinum_daily }),
+        monthlyLink: buildCheckoutLink('platinum', 'monthly', stripePrices.platinum_monthly),
+        weeklyLink: buildCheckoutLink('platinum', 'weekly', stripePrices.platinum_weekly),
+        dailyLink: buildCheckoutLink('platinum', 'daily', stripePrices.platinum_daily),
         weeklyPrice: getPrice('platinum', 'weekly'),
         dailyPrice: getPrice('platinum', 'daily'),
         highlight: true,
@@ -153,9 +174,9 @@ const plans = computed(() => [
                                     <div class="col-md-4 text-center text-md-end mt-3 mt-md-0">
                                         <div class="h3 fw-bold text-muted mb-2">$0</div>
                                         <p class="text-muted small mb-3">Forever free</p>
-                                        <a v-if="!user" :href="route('register')" class="btn btn-outline-secondary btn-sm px-4">
+                                        <a v-if="!user" :href="quickCheckoutEnabled ? route('quick-checkout', { plan: 'gold', period: 'monthly' }) : route('register')" class="btn btn-outline-secondary btn-sm px-4">
                                             <i class="bi bi-person-plus me-2"></i>
-                                            Sign Up Free
+                                            {{ quickCheckoutEnabled ? 'Get Started' : 'Sign Up Free' }}
                                         </a>
                                         <a v-else :href="route('todays-bets')" class="btn btn-outline-secondary btn-sm px-4">
                                             <i class="bi bi-eye me-2"></i>

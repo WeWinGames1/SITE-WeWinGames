@@ -2,14 +2,16 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Http\Requests\Traits\ValidatesEmail;
 use App\Models\User;
 use App\Rules\ValidateTurnstile;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rules;
 
 class RegisterRequest extends FormRequest
 {
+    use ValidatesEmail;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -37,20 +39,10 @@ class RegisterRequest extends FormRequest
             'email' => [
                 'required',
                 'string',
-                'email:rfc,dns', // Stricter email validation with DNS check
+                'email:rfc,dns',
                 'max:255',
                 'unique:'.User::class,
-                function ($attribute, $value, $fail) {
-                    // Check against disposable email domains
-                    if ($this->isDisposableEmail($value)) {
-                        $fail('Please use a permanent email address.');
-                    }
-
-                    // Check for suspicious patterns
-                    if ($this->hasSuspiciousEmailPattern($value)) {
-                        $fail('This email address cannot be used for registration.');
-                    }
-                },
+                $this->getEmailValidationClosure(),
             ],
             'phone' => [
                 'required',
@@ -72,7 +64,7 @@ class RegisterRequest extends FormRequest
                         $newFormat = '/^[a-zA-Z0-9._]{2,32}$/';
                         $oldFormat = '/^[a-zA-Z0-9._-]+#[0-9]{4}$/';
 
-                        if (!preg_match($newFormat, $value) && !preg_match($oldFormat, $value)) {
+                        if (! preg_match($newFormat, $value) && ! preg_match($oldFormat, $value)) {
                             $fail('Please enter a valid Discord username (e.g., username or username#1234).');
                         }
                     }
@@ -146,65 +138,6 @@ class RegisterRequest extends FormRequest
                 $this->logSuspiciousActivity('validation_failed');
             }
         });
-    }
-
-    /**
-     * Check if email is from a disposable email service
-     */
-    private function isDisposableEmail(string $email): bool
-    {
-        $domain = substr(strrchr($email, '@'), 1);
-
-        // Common disposable email domains
-        $disposableDomains = [
-            'mailinator.com', 'guerrillamail.com', '10minutemail.com',
-            'tempmail.com', 'throwaway.email', 'yopmail.com',
-            'maildrop.cc', 'mintemail.com', 'temp-mail.org',
-            'fakeinbox.com', 'sharklasers.com', 'guerrillamail.info',
-            'spam4.me', 'grr.la', 'mailnesia.com', 'tempmailaddress.com',
-            'getairmail.com', 'throwawaymail.com', 'tempmail.net',
-        ];
-
-        // Check against cached blacklist
-        $cachedBlacklist = Cache::get('disposable_email_domains', []);
-        $allBlacklisted = array_merge($disposableDomains, $cachedBlacklist);
-
-        return in_array($domain, $allBlacklisted);
-    }
-
-    /**
-     * Check for suspicious email patterns
-     */
-    private function hasSuspiciousEmailPattern(string $email): bool
-    {
-        $localPart = strstr($email, '@', true);
-
-        // Check for excessive numbers in email
-        if (preg_match('/\d{5,}/', $localPart)) {
-            return true;
-        }
-
-        // Check for random character patterns
-        if (preg_match('/^[a-z]{1,2}\d{6,}/', $localPart)) {
-            return true;
-        }
-
-        // Check for known spam patterns
-        $spamPatterns = [
-            '/^test\d+@/',
-            '/^user\d+@/',
-            '/^temp\d+@/',
-            '/^spam/',
-            '/^fake/',
-        ];
-
-        foreach ($spamPatterns as $pattern) {
-            if (preg_match($pattern, $email)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**

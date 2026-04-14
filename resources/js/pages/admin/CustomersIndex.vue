@@ -10,7 +10,7 @@ interface Customer {
     name: string;
     email: string;
     created_at: string;
-    status: 'active' | 'disabled' | 'pending';
+    status: 'active' | 'disabled' | 'pending' | 'pending_setup';
     stripe_id?: string;
     pm_type?: string;
     pm_last_four?: string;
@@ -54,6 +54,7 @@ interface Props {
         active: number;
         trialing: number;
         no_subscription: number;
+        pending_setup: number;
     };
 }
 
@@ -468,6 +469,8 @@ function getCustomerBadgeClass(status: string) {
             return 'bg-danger';
         case 'pending':
             return 'bg-warning';
+        case 'pending_setup':
+            return 'bg-info';
         default:
             return 'bg-secondary';
     }
@@ -489,8 +492,8 @@ function getCustomerBadgeClass(status: string) {
 
             <!-- Stats Cards -->
             <div class="row g-3 mb-4">
-                <div class="col-sm-6 col-md-3">
-                    <div class="card">
+                <div class="col-6 col-lg-2">
+                    <div class="card h-100">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
@@ -502,8 +505,8 @@ function getCustomerBadgeClass(status: string) {
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-6 col-md-3">
-                    <div class="card">
+                <div class="col-6 col-lg-2">
+                    <div class="card h-100">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
@@ -515,8 +518,8 @@ function getCustomerBadgeClass(status: string) {
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-6 col-md-3">
-                    <div class="card">
+                <div class="col-6 col-lg-2">
+                    <div class="card h-100">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
@@ -528,8 +531,8 @@ function getCustomerBadgeClass(status: string) {
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-6 col-md-3">
-                    <div class="card">
+                <div class="col-6 col-lg-2">
+                    <div class="card h-100">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
@@ -537,6 +540,25 @@ function getCustomerBadgeClass(status: string) {
                                     <div class="h4 mb-0">{{ stats.no_subscription }}</div>
                                 </div>
                                 <i class="bi bi-x-circle fs-2 text-secondary opacity-25"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <div
+                        class="card h-100 border-info"
+                        :class="{ 'bg-info bg-opacity-10': stats.pending_setup > 0 }"
+                        role="button"
+                        @click="filters.status = 'pending_setup'"
+                    >
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-muted small">Pending Setup</div>
+                                    <div class="h4 mb-0">{{ stats.pending_setup }}</div>
+                                    <div class="text-muted small">Paid but incomplete</div>
+                                </div>
+                                <i class="bi bi-person-exclamation fs-2 text-info opacity-50"></i>
                             </div>
                         </div>
                     </div>
@@ -563,6 +585,7 @@ function getCustomerBadgeClass(status: string) {
                                 <option value="active">Active</option>
                                 <option value="disabled">Disabled</option>
                                 <option value="pending">Pending</option>
+                                <option value="pending_setup">Pending Setup</option>
                             </select>
                         </div>
                         <div class="col-md-2">

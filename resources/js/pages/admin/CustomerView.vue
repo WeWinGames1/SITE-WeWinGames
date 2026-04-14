@@ -10,7 +10,7 @@ interface Props {
         name: string;
         email: string;
         created_at: string;
-        status: 'active' | 'disabled' | 'pending';
+        status: 'active' | 'disabled' | 'pending' | 'pending_setup';
         stripe_id?: string;
         is_ambassador?: boolean;
         is_gifted?: boolean;
@@ -115,6 +115,8 @@ function getStatusBadgeClass(status: string) {
             return 'bg-danger';
         case 'pending':
             return 'bg-warning';
+        case 'pending_setup':
+            return 'bg-info';
         case 'canceled':
             return 'bg-secondary';
         case 'past_due':

@@ -143,6 +143,7 @@ class HandleInertiaRequests extends Middleware
                 'TURNSTILE_SITE_KEY' => config('services.turnstile.site_key'),
                 'VAPID_PUBLIC_KEY' => config('webpush.vapid.public_key'),
                 'REDDIT_PIXEL_ID' => config('services.reddit.pixel_id'),
+                'QUICK_CHECKOUT_ENABLED' => config('features.quick_checkout_enabled'),
             ],
             'social' => [
                 'links' => config('social.links'),
