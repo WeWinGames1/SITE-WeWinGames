@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rules\Password as PasswordRule;
@@ -179,7 +180,20 @@ class CustomerController extends Controller
         }
 
         return Inertia::render('admin/CustomerView', [
-            'customer' => $user,
+            'customer' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'created_at' => $user->created_at,
+                'status' => $user->status,
+                'stripe_id' => $user->stripe_id,
+                'is_ambassador' => $user->is_ambassador,
+                'is_gifted' => $user->is_gifted,
+                'admin_override' => $user->admin_override,
+                'override_tier' => $user->override_tier,
+                'override_expiry' => $user->override_expiry,
+            ],
             'paymentMethods' => $paymentMethods,
             'activities' => $activities,
             'subscriptionHistory' => $subscriptionHistory,
@@ -523,6 +537,9 @@ class CustomerController extends Controller
                         $builder->createWithoutPaymentMethod();
                     }
 
+                    // Sync to SpringBig with updated custom group
+                    $this->syncSpringBigAfterSubscriptionChange($user);
+
                     return back()->with('success', 'Subscription created successfully!'.
                         (! $user->hasPaymentMethod() ? ' Customer will need to add a payment method to activate billing.' : ''));
 
@@ -561,11 +578,17 @@ class CustomerController extends Controller
                             $builder->createWithoutPaymentMethod();
                         }
 
+                        // Sync to SpringBig with updated custom group
+                        $this->syncSpringBigAfterSubscriptionChange($user);
+
                         return back()->with('success', 'Subscription updated successfully!'.
                             (! $user->hasPaymentMethod() ? ' Customer will need to add a payment method to activate billing.' : ''));
                     } else {
                         // For regular Stripe subscriptions, use swap
                         $subscription->swap($data['subscription_price']);
+
+                        // Sync to SpringBig with updated custom group
+                        $this->syncSpringBigAfterSubscriptionChange($user);
 
                         return back()->with('success', 'Subscription plan updated! Changes will take effect at the next billing cycle.');
                     }
@@ -583,6 +606,9 @@ class CustomerController extends Controller
 
                     // Cancel at period end (graceful cancellation)
                     $subscription->cancel();
+
+                    // Sync to SpringBig with canceled custom group
+                    $this->syncSpringBigAfterSubscriptionChange($user);
 
                     return back()->with('success', 'Subscription cancelled! Access will continue until '.
                         $subscription->ends_at->format('F j, Y'));
@@ -697,6 +723,9 @@ class CustomerController extends Controller
                         ]);
                     });
 
+                    // Sync to SpringBig with updated custom group
+                    $this->syncSpringBigAfterSubscriptionChange($user);
+
                     return back()->with('success', "Manual {$tier} subscription override applied! No automatic billing will occur.");
             }
         } catch (\Exception $e) {
@@ -769,7 +798,7 @@ class CustomerController extends Controller
 
         $customers = $query->get();
 
-        $csv = "ID,Name,Email,Status,Plan,Interval,Next Renewal,Created At\n";
+        $csv = "ID,Name,Email,Phone,Status,Plan,Interval,Next Renewal,Created At\n";
 
         foreach ($customers as $customer) {
             $subscription = $customer->subscriptions->first();
@@ -807,10 +836,11 @@ class CustomerController extends Controller
             }
 
             $csv .= sprintf(
-                "%d,\"%s\",\"%s\",%s,%s,%s,%s,%s\n",
+                "%d,\"%s\",\"%s\",\"%s\",%s,%s,%s,%s,%s\n",
                 $customer->id,
                 str_replace('"', '""', $customer->name),
                 str_replace('"', '""', $customer->email),
+                str_replace('"', '""', $customer->phone ?? ''),
                 $status,
                 $tier,
                 $interval,
@@ -941,6 +971,9 @@ class CustomerController extends Controller
                 ])
                 ->log('Admin cancelled customer subscription');
 
+            // Sync to SpringBig with canceled custom group
+            $this->syncSpringBigAfterSubscriptionChange($user);
+
             return back()->with('success', $message);
 
         } catch (\Exception $e) {
@@ -973,6 +1006,37 @@ class CustomerController extends Controller
             ->get(['id', 'name', 'email']);
 
         return response()->json(['customers' => $customers]);
+    }
+
+    /**
+     * Helper to sync user to SpringBig after subscription changes
+     */
+    protected function syncSpringBigAfterSubscriptionChange(User $user): void
+    {
+        try {
+            $springBigService = app(SpringBigService::class);
+
+            if (! $springBigService->isEnabled()) {
+                return;
+            }
+
+            // Refresh user to get latest subscription data
+            $user->refresh();
+
+            // Update member in SpringBig (will set correct custom group)
+            $springBigService->updateMember($user);
+
+            Log::info('SpringBig sync after subscription change', [
+                'user_id' => $user->id,
+                'custom_group' => $springBigService->getCustomGroupForUser($user),
+            ]);
+        } catch (\Exception $e) {
+            // Non-critical - log but don't fail
+            Log::warning('SpringBig sync failed after subscription change', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

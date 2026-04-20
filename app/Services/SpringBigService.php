@@ -33,6 +33,58 @@ class SpringBigService
     }
 
     /**
+     * Get the custom group name based on user's subscription tier
+     */
+    public function getCustomGroupForUser(User $user): string
+    {
+        // Check for admin override first
+        if ($user->admin_override && $user->override_tier) {
+            return 'custom_group_'.strtolower($user->override_tier);
+        }
+
+        // Get active subscription
+        $subscription = $user->subscriptions()
+            ->whereNull('ends_at')
+            ->whereIn('stripe_status', ['active', 'trialing'])
+            ->first();
+
+        if (! $subscription) {
+            // Check if user ever had a subscription (canceled)
+            $hasHadSubscription = $user->subscriptions()->exists();
+            if ($hasHadSubscription) {
+                return 'custom_group_canceled';
+            }
+
+            return 'custom_group_free';
+        }
+
+        // Get tier from subscription
+        $tier = null;
+        if ($subscription->stripe_price) {
+            $stripeProduct = \App\Models\StripeProduct::where('stripe_price_id', $subscription->stripe_price)
+                ->first();
+
+            if ($stripeProduct) {
+                $tier = strtolower($stripeProduct->tier);
+            } else {
+                // Fallback to config
+                $priceToTier = config('stripe.price_to_tier', []);
+                if (isset($priceToTier[$subscription->stripe_price]['tier'])) {
+                    $tier = strtolower($priceToTier[$subscription->stripe_price]['tier']);
+                }
+            }
+        }
+
+        // Map tier to custom group
+        return match ($tier) {
+            'gold' => 'custom_group_gold',
+            'platinum' => 'custom_group_platinum',
+            'silver' => 'custom_group_silver',
+            default => 'custom_group_free',
+        };
+    }
+
+    /**
      * Create a new member in Spring Big
      */
     public function createMember(User $user): ?array
@@ -51,6 +103,9 @@ class SpringBigService
             $firstName = $nameParts[0] ?? '';
             $lastName = $nameParts[1] ?? '';
 
+            // Determine custom group based on subscription
+            $customGroup = $this->getCustomGroupForUser($user);
+
             // Build member payload
             // pos_type is a label identifying your system to Spring Big
             $memberData = [
@@ -61,6 +116,7 @@ class SpringBigService
                     'last_name' => $lastName,
                     'email' => $user->email,
                     'allowed_email' => true,
+                    $customGroup => true,
                 ],
             ];
 
@@ -144,6 +200,10 @@ class SpringBigService
             $firstName = $nameParts[0] ?? '';
             $lastName = $nameParts[1] ?? '';
 
+            // Determine custom group based on subscription
+            $customGroup = $this->getCustomGroupForUser($user);
+
+            // Reset all custom groups to false, then set the current one to true
             $memberData = [
                 'member' => [
                     'pos_user' => (string) $user->id,
@@ -151,6 +211,11 @@ class SpringBigService
                     'first_name' => $firstName,
                     'last_name' => $lastName,
                     'email' => $user->email,
+                    'custom_group_free' => false,
+                    'custom_group_gold' => false,
+                    'custom_group_platinum' => false,
+                    'custom_group_canceled' => false,
+                    $customGroup => true,
                 ],
             ];
 
