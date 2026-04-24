@@ -26,9 +26,10 @@ class QuickCheckoutController extends Controller
      */
     public function show(Request $request): Response|RedirectResponse
     {
-        // Feature flag check
+        // Feature flag check - redirect to login (not register, since register redirects here)
         if (! config('features.quick_checkout_enabled')) {
-            return redirect()->route('register');
+            return redirect()->route('login')
+                ->with('error', 'Quick checkout is temporarily unavailable. Please log in or contact support.');
         }
 
         $request->validate([
@@ -55,10 +56,10 @@ class QuickCheckoutController extends Controller
                 ->first();
         }
 
-        // If still no product found, redirect to register with error
+        // If still no product found, redirect to login with error
         if (! $product) {
-            return redirect()->route('register')
-                ->with('error', 'No subscription plans are currently available.');
+            return redirect()->route('login')
+                ->with('error', 'No subscription plans are currently available. Please contact support.');
         }
 
         // Get all active products for plan selection
@@ -103,10 +104,10 @@ class QuickCheckoutController extends Controller
      */
     public function process(QuickCheckoutRequest $request): RedirectResponse
     {
-        // Feature flag check
+        // Feature flag check - redirect to login (not register, since register redirects here)
         if (! config('features.quick_checkout_enabled')) {
-            return redirect()->route('register')
-                ->with('error', 'Quick checkout is not available.');
+            return redirect()->route('login')
+                ->with('error', 'Quick checkout is temporarily unavailable.');
         }
 
         $result = $this->checkoutService->processCheckout(

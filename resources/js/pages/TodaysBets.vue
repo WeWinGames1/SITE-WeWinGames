@@ -528,12 +528,12 @@ const getMembershipBadgeStyle = (membership: string) => {
                                 </h5>
                                 <p class="text-light mb-4">
                                     You're viewing {{ viewableBets.length }} of {{ bets.length }} total picks.
-                                    {{ isGuest ? 'Register' : 'Upgrade' }} to unlock all premium betting picks and increase your winning potential.
+                                    {{ isGuest ? 'Subscribe' : 'Upgrade' }} to unlock all premium betting picks and increase your winning potential.
                                 </p>
                                 <div class="d-flex justify-content-center gap-3 flex-wrap">
-                                    <Link v-if="isGuest" href="/register" class="btn btn-warning btn-lg px-4">
+                                    <Link v-if="isGuest" :href="route('quick-checkout', { plan: 'gold', period: 'monthly' })" class="btn btn-warning btn-lg px-4">
                                         <i class="bi bi-person-plus me-2"></i>
-                                        Register for Free
+                                        Get Started
                                     </Link>
                                     <Link v-else href="/buy-our-picks" class="btn btn-warning btn-lg px-4">
                                         <i class="bi bi-arrow-up-circle me-2"></i>

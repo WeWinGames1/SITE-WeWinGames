@@ -6,17 +6,19 @@ use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisteredUserController::class, 'create'])
-        ->name('register')
-        ->middleware(['throttle:10,1']); // 10 requests per minute
+    // Original registration disabled - redirect to quick checkout
+    Route::get('register', function () {
+        return redirect()->route('quick-checkout', ['plan' => 'gold', 'period' => 'monthly']);
+    })->name('register');
 
-    Route::post('register', [RegisteredUserController::class, 'store'])
-        ->middleware(['throttle:10,60']); // 10 attempts per hour
+    // Keep POST route for backwards compatibility (will redirect to quick-checkout page)
+    Route::post('register', function () {
+        return redirect()->route('quick-checkout', ['plan' => 'gold', 'period' => 'monthly']);
+    })->middleware(['throttle:10,60']);
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');

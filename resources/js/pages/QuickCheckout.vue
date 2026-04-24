@@ -65,8 +65,8 @@ const currentPlan = computed(() => {
     return {
         tier: product.tier,
         name: product.tier.charAt(0).toUpperCase() + product.tier.slice(1),
-        price: '$' + product.amount.toFixed(0),
-        priceAmount: product.amount,
+        price: '$' + parseFloat(product.amount).toFixed(0),
+        priceAmount: parseFloat(product.amount),
         period: product.billing_period,
         priceId: product.price_id,
         productId: product.product_id,

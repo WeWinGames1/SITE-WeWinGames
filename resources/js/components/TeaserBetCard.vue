@@ -55,12 +55,12 @@ const props = defineProps<{
                         <template v-else> Unlock Premium Picks </template>
                     </h5>
                     <p class="text-white-50 mb-4 small">
-                        {{ bet.isGuest ? 'Create a free account' : 'Upgrade your membership' }} to access exclusive betting insights and premium picks
+                        {{ bet.isGuest ? 'Subscribe now' : 'Upgrade your membership' }} to access exclusive betting insights and premium picks
                     </p>
                     <div class="d-flex flex-column gap-2">
-                        <Link v-if="bet.isGuest" href="/register" class="btn btn-warning btn-sm">
+                        <Link v-if="bet.isGuest" :href="route('quick-checkout', { plan: 'gold', period: 'monthly' })" class="btn btn-warning btn-sm">
                             <i class="bi bi-person-plus me-2"></i>
-                            Register for Free
+                            Get Started
                         </Link>
                         <Link v-else href="/buy-our-picks" class="btn btn-warning btn-sm">
                             <i class="bi bi-arrow-up-circle me-2"></i>

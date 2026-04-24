@@ -80,7 +80,8 @@
       "Bash(git push:*)",
       "mcp__playwright__browser_close",
       "WebFetch(domain:springbig.readme.io)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(xargs -I{} sh -c 'echo \"\"=== {} ===\"\" && head -20 {}')"
     ],
     "deny": []
   },

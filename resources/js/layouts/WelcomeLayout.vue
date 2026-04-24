@@ -140,7 +140,7 @@ const openKnowledgebase = () => {
                         </li>
                         <li class="nav-item ms-lg-2" v-if="!auth.user">
                             <Link
-                                href="/register"
+                                :href="route('quick-checkout', { plan: 'gold', period: 'monthly' })"
                                 class="btn btn-sm btn-warning text-dark fw-bold px-3 py-2"
                                 style="border-radius: 20px; font-size: 14px"
                                 >Sign Up</Link

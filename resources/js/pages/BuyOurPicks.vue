@@ -11,10 +11,7 @@ const subscriptions = page.props.subscriptions;
 // Use the dynamic Stripe prices and products from shared props
 const stripePrices = page.props.stripePrices || {};
 const stripeProducts = page.props.stripeProducts || {};
-const quickCheckoutEnabled = (page.props as any).env?.QUICK_CHECKOUT_ENABLED === true ||
-    (page.props as any).env?.QUICK_CHECKOUT_ENABLED === 'true';
-
-// Build checkout URL based on auth state and feature flag
+// Build checkout URL based on auth state - guests always go to quick checkout
 const buildCheckoutLink = (tier: string, period: string, priceId: string): string => {
     // Logged in users always go to regular checkout
     if (user) {
@@ -24,13 +21,8 @@ const buildCheckoutLink = (tier: string, period: string, priceId: string): strin
         });
     }
 
-    // Guests with quick checkout enabled go to quick checkout
-    if (quickCheckoutEnabled) {
-        return route('quick-checkout', { plan: tier, period: period });
-    }
-
-    // Guests without quick checkout go to register
-    return route('register');
+    // Guests go to quick checkout (registration disabled)
+    return route('quick-checkout', { plan: tier, period: period });
 };
 
 // Helper function to get features for a specific tier and billing period
@@ -174,9 +166,9 @@ const plans = computed(() => [
                                     <div class="col-md-4 text-center text-md-end mt-3 mt-md-0">
                                         <div class="h3 fw-bold text-muted mb-2">$0</div>
                                         <p class="text-muted small mb-3">Forever free</p>
-                                        <a v-if="!user" :href="quickCheckoutEnabled ? route('quick-checkout', { plan: 'gold', period: 'monthly' }) : route('register')" class="btn btn-outline-secondary btn-sm px-4">
+                                        <a v-if="!user" :href="route('quick-checkout', { plan: 'gold', period: 'monthly' })" class="btn btn-outline-secondary btn-sm px-4">
                                             <i class="bi bi-person-plus me-2"></i>
-                                            {{ quickCheckoutEnabled ? 'Get Started' : 'Sign Up Free' }}
+                                            Get Started
                                         </a>
                                         <a v-else :href="route('todays-bets')" class="btn btn-outline-secondary btn-sm px-4">
                                             <i class="bi bi-eye me-2"></i>

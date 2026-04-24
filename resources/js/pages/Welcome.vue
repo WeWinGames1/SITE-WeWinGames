@@ -86,10 +86,7 @@ const sportIcons = {
 // Use the dynamic Stripe prices and products from shared props
 const stripePrices = page.props.stripePrices || {};
 const stripeProducts = page.props.stripeProducts || {};
-const quickCheckoutEnabled =
-    (page.props as any).env?.QUICK_CHECKOUT_ENABLED === true || (page.props as any).env?.QUICK_CHECKOUT_ENABLED === 'true';
-
-// Build checkout URL based on auth state and feature flag
+// Build checkout URL based on auth state - guests always go to quick checkout
 const buildCheckoutLink = (tier: string, period: string, priceId: string): string => {
     // Logged in users always go to regular checkout
     if (auth?.user) {
@@ -99,13 +96,8 @@ const buildCheckoutLink = (tier: string, period: string, priceId: string): strin
         });
     }
 
-    // Guests with quick checkout enabled go to quick checkout
-    if (quickCheckoutEnabled) {
-        return route('quick-checkout', { plan: tier, period: period });
-    }
-
-    // Guests without quick checkout go to register
-    return route('register');
+    // Guests go to quick checkout (registration disabled)
+    return route('quick-checkout', { plan: tier, period: period });
 };
 
 // Helper function to get features for a specific tier and billing period
@@ -470,7 +462,7 @@ const allGroupedBets = computed(() => {
                             </p>
                             <div class="mb-5">
                                 <Link
-                                    :href="quickCheckoutEnabled ? route('quick-checkout', { plan: 'gold', period: 'daily' }) : route('register')"
+                                    :href="route('quick-checkout', { plan: 'gold', period: 'daily' })"
                                     class="btn btn-warning btn-lg px-5 py-3 text-dark fw-bold"
                                 >
                                     Start Winning Today

@@ -132,6 +132,8 @@ class SecurityHeaders
                 'https://cdn.discordapp.com',
                 'https://connect.facebook.net',
                 'https://www.facebook.com',
+                'https://*.conversionsapigateway.com',
+                'https://*.run.app',
             ];
 
             $csp[] = 'script-src '.implode(' ', $scriptSrc);
