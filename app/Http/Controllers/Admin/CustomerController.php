@@ -80,18 +80,20 @@ class CustomerController extends Controller
             \Log::warning('Failed to fetch activity logs', ['error' => $e->getMessage()]);
         }
 
+        // Preload stripe products for subscription history
+        $stripeProducts = \App\Models\StripeProduct::get()->keyBy('stripe_price_id');
+
         // Get subscription history
         $subscriptionHistory = $user->subscriptions()
             ->orderBy('created_at', 'desc')
             ->get()
-            ->map(function ($subscription) {
+            ->map(function ($subscription) use ($stripeProducts) {
                 $tier = null;
                 $interval = null;
 
                 // Get tier/interval from StripeProduct or config
                 if ($subscription->stripe_price) {
-                    $stripeProduct = \App\Models\StripeProduct::where('stripe_price_id', $subscription->stripe_price)
-                        ->first();
+                    $stripeProduct = $stripeProducts->get($subscription->stripe_price);
 
                     if ($stripeProduct) {
                         $tier = $stripeProduct->tier;
@@ -357,8 +359,13 @@ class CustomerController extends Controller
         $perPage = $request->get('per_page', 25);
         $customers = $query->paginate($perPage)->withQueryString();
 
+        // Preload all active stripe products to avoid N+1 queries
+        $stripeProducts = \App\Models\StripeProduct::where('is_active', true)
+            ->get()
+            ->keyBy('stripe_price_id');
+
         // Add payment method details and subscription info to each customer
-        $customers->getCollection()->transform(function ($customer) {
+        $customers->getCollection()->transform(function ($customer) use ($stripeProducts) {
             $paymentMethod = $customer->defaultPaymentMethod();
             if ($paymentMethod) {
                 $customer->pm_type = $paymentMethod->card->brand;
@@ -388,10 +395,8 @@ class CustomerController extends Controller
                     }
                 }
 
-                // Try to get from StripeProduct table first
-                $stripeProduct = \App\Models\StripeProduct::where('stripe_price_id', $priceId)
-                    ->where('is_active', true)
-                    ->first();
+                // Try to get from preloaded StripeProduct collection
+                $stripeProduct = $stripeProducts->get($priceId);
 
                 if ($stripeProduct) {
                     $customer->tier = $stripeProduct->tier;
@@ -798,6 +803,11 @@ class CustomerController extends Controller
 
         $customers = $query->get();
 
+        // Preload stripe products to avoid N+1
+        $stripeProducts = \App\Models\StripeProduct::where('is_active', true)
+            ->get()
+            ->keyBy('stripe_price_id');
+
         $csv = "ID,Name,Email,Phone,Status,Plan,Interval,Next Renewal,Created At\n";
 
         foreach ($customers as $customer) {
@@ -812,10 +822,8 @@ class CustomerController extends Controller
             if ($subscription && $subscription->stripe_price) {
                 $priceId = $subscription->stripe_price;
 
-                // Try to get from StripeProduct table first
-                $stripeProduct = \App\Models\StripeProduct::where('stripe_price_id', $priceId)
-                    ->where('is_active', true)
-                    ->first();
+                // Try to get from preloaded StripeProduct collection
+                $stripeProduct = $stripeProducts->get($priceId);
 
                 if ($stripeProduct) {
                     $tier = $stripeProduct->tier;
@@ -936,8 +944,16 @@ class CustomerController extends Controller
                 // For manual subscriptions, just mark as canceled locally
                 if ($isManual) {
                     $subscription->markAsCanceled();
+                    \Log::info('Manual subscription cancelled locally', [
+                        'user_id' => $user->id,
+                        'subscription_id' => $subscription->stripe_id,
+                    ]);
                 } else {
                     $subscription->cancelNow();
+                    \Log::info('Stripe subscription cancelled immediately via API', [
+                        'user_id' => $user->id,
+                        'stripe_subscription_id' => $subscription->stripe_id,
+                    ]);
                 }
 
                 // Clear any admin override fields when cancelling immediately
@@ -947,17 +963,31 @@ class CustomerController extends Controller
                     'override_expiry' => null,
                 ]);
 
-                $message = 'Subscription cancelled immediately.';
+                $message = $isManual
+                    ? 'Manual subscription cancelled immediately.'
+                    : 'Stripe subscription cancelled immediately. Billing stopped.';
             } else {
                 // For manual subscriptions, cancel at end of period means marking with ends_at
                 if ($isManual) {
                     $subscription->fill([
                         'ends_at' => $subscription->current_period_end ?? now(),
                     ])->save();
+                    \Log::info('Manual subscription set to cancel at period end', [
+                        'user_id' => $user->id,
+                        'subscription_id' => $subscription->stripe_id,
+                        'ends_at' => $subscription->ends_at,
+                    ]);
                 } else {
                     $subscription->cancel();
+                    \Log::info('Stripe subscription set to cancel at period end via API', [
+                        'user_id' => $user->id,
+                        'stripe_subscription_id' => $subscription->stripe_id,
+                        'ends_at' => $subscription->ends_at,
+                    ]);
                 }
-                $message = 'Subscription will be cancelled at the end of the billing period.';
+                $message = $isManual
+                    ? 'Manual subscription will end at period end.'
+                    : 'Stripe subscription will cancel at period end. No further billing.';
             }
 
             // Log the action
