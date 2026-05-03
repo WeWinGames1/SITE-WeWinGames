@@ -19,7 +19,7 @@ class SpringBigService
     public function __construct()
     {
         $this->enabled = (bool) config('services.springbig.enabled', false);
-        $this->baseUrl = config('services.springbig.base_url') ?? 'https://gamma.api.springbig.technology/pos/v1';
+        $this->baseUrl = config('services.springbig.base_url') ?? 'https://production.api.springbig.technology/pos/v1';
         $this->apiKey = config('services.springbig.api_key') ?? '';
         $this->authToken = config('services.springbig.auth_token') ?? '';
     }

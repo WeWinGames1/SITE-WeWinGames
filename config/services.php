@@ -86,9 +86,12 @@ return [
         ],
     ],
 
+    // SpringBig API
+    // Staging: https://gamma.api.springbig.technology/pos/v1
+    // Production: https://production.api.springbig.technology/pos/v1
     'springbig' => [
         'enabled' => env('SPRINGBIG_ENABLED', false),
-        'base_url' => env('SPRINGBIG_BASE_URL', 'https://gamma.api.springbig.technology/pos/v1'),
+        'base_url' => env('SPRINGBIG_BASE_URL', 'https://production.api.springbig.technology/pos/v1'),
         'api_key' => env('SPRINGBIG_API_KEY'),
         'auth_token' => env('SPRINGBIG_AUTH_TOKEN'),
     ],
