@@ -428,11 +428,41 @@ SPRINGBIG_SEGMENT_CANCELED=460
 - `app/Console/Commands/SyncSpringBigMembers.php` - Bulk sync command
 - `config/services.php` - Configuration
 
+**Sync Command (custom_group_list):**
+```bash
+# Dry run - see what would sync
+php artisan springbig:sync-members --dry-run
+
+# Sync all members (lookup by email/phone, then update or create)
+php artisan springbig:sync-members
+
+# Force create new (skip lookup - use for fresh SpringBig account)
+php artisan springbig:sync-members --create
+
+# Filter by tier
+php artisan springbig:sync-members --tier=gold
+
+# Sync specific user
+php artisan springbig:sync-members --user=123
+
+# Limit batch size
+php artisan springbig:sync-members --limit=100
+```
+
+**Sync Flow:**
+1. `GET /members?email=xxx` - Lookup by email
+2. If not found, `GET /members?phone_number=xxx` - Lookup by phone
+3. If found → `PUT /members/{pos_user}` - Update with tier
+4. If not found → `POST /members` - Create new member
+
 **Service Methods:**
 | Method | Purpose |
 |--------|---------|
+| `getMemberByEmail($email)` | Lookup member by email |
+| `getMemberByPhone($phone)` | Lookup member by phone |
 | `createMember($user)` | Create member with custom_group_list |
-| `updateMember($user)` | Update member tier |
+| `updateMember($user, $posUser)` | Update member by pos_user |
+| `syncMember($user)` | Lookup by email/phone, then update or create |
 | `createExternalGroup($name, $desc)` | Create external group |
 | `createSegments()` | Create tier segments |
 | `addUserToSegment($user, $tier)` | Add user to segment |

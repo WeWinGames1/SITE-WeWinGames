@@ -229,13 +229,103 @@ class SpringBigService
     }
 
     /**
-     * Update an existing member in Spring Big
+     * Get member by email from SpringBig
      */
-    public function updateMember(User $user): ?array
+    public function getMemberByEmail(string $email): ?array
     {
         if (! $this->isEnabled()) {
             return null;
         }
+
+        try {
+            $response = Http::withHeaders($this->buildHeaders())
+                ->get($this->baseUrl.'/members', [
+                    'email' => $email,
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $members = $data['members'] ?? [];
+
+                return $members[0] ?? null;
+            }
+
+            if ($response->status() === 404) {
+                return null; // Member not found
+            }
+
+            Log::warning('SpringBig getMemberByEmail failed', [
+                'email' => $email,
+                'status' => $response->status(),
+                'response' => $response->json(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('SpringBig getMemberByEmail exception', [
+                'email' => $email,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * Get member by phone from SpringBig
+     */
+    public function getMemberByPhone(string $phone): ?array
+    {
+        if (! $this->isEnabled()) {
+            return null;
+        }
+
+        // Format to 10 digits
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+        if (strlen($phone) === 11 && str_starts_with($phone, '1')) {
+            $phone = substr($phone, 1);
+        }
+
+        if (strlen($phone) !== 10) {
+            return null;
+        }
+
+        try {
+            $response = Http::withHeaders($this->buildHeaders())
+                ->get($this->baseUrl.'/members', [
+                    'phone_number' => (int) $phone,
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $members = $data['members'] ?? [];
+
+                return $members[0] ?? null;
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('SpringBig getMemberByPhone exception', [
+                'phone' => $phone,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * Update an existing member in Spring Big by pos_user
+     * PUT /members/{pos_user}
+     */
+    public function updateMember(User $user, ?string $posUser = null): ?array
+    {
+        if (! $this->isEnabled()) {
+            return null;
+        }
+
+        // Default pos_user to user ID
+        $posUser = $posUser ?? (string) $user->id;
 
         try {
             $nameParts = explode(' ', $user->name, 2);
@@ -248,8 +338,6 @@ class SpringBigService
             // Build member payload with custom_group_list
             $memberData = [
                 'member' => [
-                    'pos_user' => (string) $user->id,
-                    'pos_type' => 'wewingames',
                     'first_name' => $firstName,
                     'last_name' => $lastName,
                     'email' => $user->email,
@@ -266,7 +354,9 @@ class SpringBigService
                 }
             }
 
-            $response = Http::withHeaders($this->buildHeaders())->put($this->baseUrl.'/members', $memberData);
+            // PUT /members/{pos_user} - pos_user in URL path
+            $response = Http::withHeaders($this->buildHeaders())
+                ->put($this->baseUrl.'/members/'.$posUser, $memberData);
 
             if ($response->successful()) {
                 Log::info('Spring Big member updated successfully', [
@@ -292,6 +382,55 @@ class SpringBigService
 
             return null;
         }
+    }
+
+    /**
+     * Sync member - finds existing by email/phone, then updates
+     * Returns null if member not found (does NOT create)
+     */
+    public function syncMember(User $user): ?array
+    {
+        if (! $this->isEnabled()) {
+            return null;
+        }
+
+        // Try to find existing member by email first
+        $existingMember = $this->getMemberByEmail($user->email);
+
+        // If not found by email, try phone
+        if (! $existingMember && $user->phone) {
+            $existingMember = $this->getMemberByPhone($user->phone);
+        }
+
+        if (! $existingMember) {
+            Log::warning('SpringBig: Member not found, skipping', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+            ]);
+
+            return null;
+        }
+
+        // Found existing member - update using their pos_user
+        $posUser = $existingMember['pos_user'] ?? null;
+
+        if (! $posUser) {
+            Log::warning('SpringBig: Found member but no pos_user', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'springbig_member' => $existingMember,
+            ]);
+
+            return null;
+        }
+
+        Log::info('SpringBig: Found existing member, updating', [
+            'user_id' => $user->id,
+            'springbig_pos_user' => $posUser,
+            'springbig_id' => $existingMember['id'] ?? null,
+        ]);
+
+        return $this->updateMember($user, $posUser);
     }
 
     // =========================================================================
