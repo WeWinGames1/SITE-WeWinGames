@@ -16,12 +16,27 @@ class SpringBigService
 
     protected bool $enabled;
 
+    // External Group settings
+    protected bool $externalGroupEnabled;
+
+    protected string $externalGroupBaseUrl;
+
+    protected ?string $externalGroupId;
+
+    protected array $segmentIds;
+
     public function __construct()
     {
         $this->enabled = (bool) config('services.springbig.enabled', false);
         $this->baseUrl = config('services.springbig.base_url') ?? 'https://production.api.springbig.technology/pos/v1';
         $this->apiKey = config('services.springbig.api_key') ?? '';
         $this->authToken = config('services.springbig.auth_token') ?? '';
+
+        // External Group config
+        $this->externalGroupEnabled = (bool) config('services.springbig.external_group_enabled', false);
+        $this->externalGroupBaseUrl = config('services.springbig.external_group_base_url') ?? 'https://production.api.springbig.technology/general/v1';
+        $this->externalGroupId = config('services.springbig.external_group_id');
+        $this->segmentIds = config('services.springbig.segment_ids', []);
     }
 
     /**
@@ -33,13 +48,21 @@ class SpringBigService
     }
 
     /**
-     * Get the custom group name based on user's subscription tier
+     * Check if External Group integration is enabled
      */
-    public function getCustomGroupForUser(User $user): string
+    public function isExternalGroupEnabled(): bool
+    {
+        return $this->externalGroupEnabled && ! empty($this->apiKey) && ! empty($this->externalGroupId);
+    }
+
+    /**
+     * Get tier name based on user's subscription
+     */
+    public function getTierForUser(User $user): string
     {
         // Check for admin override first
         if ($user->admin_override && $user->override_tier) {
-            return 'custom_group_'.strtolower($user->override_tier);
+            return strtolower($user->override_tier);
         }
 
         // Get active subscription
@@ -52,10 +75,10 @@ class SpringBigService
             // Check if user ever had a subscription (canceled)
             $hasHadSubscription = $user->subscriptions()->exists();
             if ($hasHadSubscription) {
-                return 'custom_group_canceled';
+                return 'canceled';
             }
 
-            return 'custom_group_free';
+            return 'free';
         }
 
         // Get tier from subscription
@@ -75,13 +98,43 @@ class SpringBigService
             }
         }
 
-        // Map tier to custom group
-        return match ($tier) {
-            'gold' => 'custom_group_gold',
-            'platinum' => 'custom_group_platinum',
-            'silver' => 'custom_group_silver',
-            default => 'custom_group_free',
-        };
+        return $tier ?? 'free';
+    }
+
+    /**
+     * Get the custom group name based on user's subscription tier
+     * Returns comma-separated string for custom_group_list field
+     */
+    public function getCustomGroupForUser(User $user): string
+    {
+        $tier = $this->getTierForUser($user);
+
+        return $tier;
+    }
+
+    /**
+     * Build headers for POS API calls
+     */
+    protected function buildHeaders(): array
+    {
+        $headers = [
+            'x-api-key' => $this->apiKey,
+            'Content-Type' => 'application/json',
+        ];
+
+        if (! empty($this->authToken)) {
+            $headers['AUTH-TOKEN'] = $this->authToken;
+        }
+
+        return $headers;
+    }
+
+    /**
+     * Build headers for External Group API calls
+     */
+    protected function buildExternalGroupHeaders(): array
+    {
+        return $this->buildHeaders();
     }
 
     /**
@@ -103,11 +156,10 @@ class SpringBigService
             $firstName = $nameParts[0] ?? '';
             $lastName = $nameParts[1] ?? '';
 
-            // Determine custom group based on subscription
+            // Determine custom group based on subscription (comma-separated)
             $customGroup = $this->getCustomGroupForUser($user);
 
-            // Build member payload
-            // pos_type is a label identifying your system to Spring Big
+            // Build member payload with custom_group_list as comma-separated string
             $memberData = [
                 'member' => [
                     'pos_user' => (string) $user->id,
@@ -116,7 +168,7 @@ class SpringBigService
                     'last_name' => $lastName,
                     'email' => $user->email,
                     'allowed_email' => true,
-                    $customGroup => true,
+                    'custom_group_list' => $customGroup,
                 ],
             ];
 
@@ -133,18 +185,7 @@ class SpringBigService
                 }
             }
 
-            // Build headers - x-api-key is required, AUTH-TOKEN (merchant ID) may be optional
-            $headers = [
-                'x-api-key' => $this->apiKey,
-                'Content-Type' => 'application/json',
-            ];
-
-            // Include merchant ID as AUTH-TOKEN if provided
-            if (! empty($this->authToken)) {
-                $headers['AUTH-TOKEN'] = $this->authToken;
-            }
-
-            $response = Http::withHeaders($headers)->post($this->baseUrl.'/members', $memberData);
+            $response = Http::withHeaders($this->buildHeaders())->post($this->baseUrl.'/members', $memberData);
 
             if ($response->successful()) {
                 $responseData = $response->json();
@@ -152,6 +193,7 @@ class SpringBigService
                 Log::info('Spring Big member created successfully', [
                     'user_id' => $user->id,
                     'springbig_member_id' => $responseData['members'][0]['id'] ?? null,
+                    'custom_group_list' => $customGroup,
                 ]);
 
                 return $responseData;
@@ -200,10 +242,10 @@ class SpringBigService
             $firstName = $nameParts[0] ?? '';
             $lastName = $nameParts[1] ?? '';
 
-            // Determine custom group based on subscription
+            // Determine custom group based on subscription (comma-separated)
             $customGroup = $this->getCustomGroupForUser($user);
 
-            // Reset all custom groups to false, then set the current one to true
+            // Build member payload with custom_group_list
             $memberData = [
                 'member' => [
                     'pos_user' => (string) $user->id,
@@ -211,11 +253,7 @@ class SpringBigService
                     'first_name' => $firstName,
                     'last_name' => $lastName,
                     'email' => $user->email,
-                    'custom_group_free' => false,
-                    'custom_group_gold' => false,
-                    'custom_group_platinum' => false,
-                    'custom_group_canceled' => false,
-                    $customGroup => true,
+                    'custom_group_list' => $customGroup,
                 ],
             ];
 
@@ -228,20 +266,12 @@ class SpringBigService
                 }
             }
 
-            $headers = [
-                'x-api-key' => $this->apiKey,
-                'Content-Type' => 'application/json',
-            ];
-
-            if (! empty($this->authToken)) {
-                $headers['AUTH-TOKEN'] = $this->authToken;
-            }
-
-            $response = Http::withHeaders($headers)->put($this->baseUrl.'/members', $memberData);
+            $response = Http::withHeaders($this->buildHeaders())->put($this->baseUrl.'/members', $memberData);
 
             if ($response->successful()) {
                 Log::info('Spring Big member updated successfully', [
                     'user_id' => $user->id,
+                    'custom_group_list' => $customGroup,
                 ]);
 
                 return $response->json();
@@ -262,5 +292,360 @@ class SpringBigService
 
             return null;
         }
+    }
+
+    // =========================================================================
+    // External Group API Methods
+    // =========================================================================
+
+    /**
+     * Create an external group (one-time setup)
+     * Returns group ID to store in config
+     */
+    public function createExternalGroup(string $name, string $description = ''): ?array
+    {
+        if (! $this->enabled || empty($this->apiKey)) {
+            Log::debug('Spring Big disabled, skipping external group creation');
+
+            return null;
+        }
+
+        try {
+            $response = Http::withHeaders($this->buildExternalGroupHeaders())
+                ->post($this->externalGroupBaseUrl.'/external_group', [
+                    'group_name' => $name,
+                    'group_description' => $description,
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                Log::info('Spring Big external group created', [
+                    'group_id' => $data['id'] ?? null,
+                    'group_name' => $name,
+                ]);
+
+                return $data;
+            }
+
+            Log::error('Spring Big external group creation failed', [
+                'status' => $response->status(),
+                'response' => $response->json(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Spring Big external group creation exception', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * Get all external groups
+     */
+    public function getExternalGroups(): ?array
+    {
+        if (! $this->enabled || empty($this->apiKey)) {
+            return null;
+        }
+
+        try {
+            $response = Http::withHeaders($this->buildExternalGroupHeaders())
+                ->get($this->externalGroupBaseUrl.'/external_group');
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::error('Spring Big get external groups failed', [
+                'status' => $response->status(),
+                'response' => $response->json(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Spring Big get external groups exception', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * Create segments for all tiers (one-time setup)
+     * Returns array of segment data with IDs to store in config
+     */
+    public function createSegments(): ?array
+    {
+        if (! $this->enabled || empty($this->apiKey)) {
+            return null;
+        }
+
+        $tiers = ['free', 'silver', 'gold', 'platinum', 'canceled'];
+        $segments = [];
+
+        foreach ($tiers as $tier) {
+            $segments[] = [
+                'name' => 'WeWinGames '.ucfirst($tier),
+                'desc' => ucfirst($tier).' tier members from WeWinGames',
+                'recipients' => [
+                    'phone_numbers' => [],
+                    'email' => [],
+                ],
+            ];
+        }
+
+        try {
+            $response = Http::withHeaders($this->buildExternalGroupHeaders())
+                ->post($this->externalGroupBaseUrl.'/external_group_segments', [
+                    'group_segments' => $segments,
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                Log::info('Spring Big segments created', ['response' => $data]);
+
+                return $data;
+            }
+
+            Log::error('Spring Big segments creation failed', [
+                'status' => $response->status(),
+                'response' => $response->json(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Spring Big segments creation exception', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * Get all external group segments
+     */
+    public function getSegments(): ?array
+    {
+        if (! $this->enabled || empty($this->apiKey)) {
+            return null;
+        }
+
+        try {
+            $response = Http::withHeaders($this->buildExternalGroupHeaders())
+                ->get($this->externalGroupBaseUrl.'/external_group_segments');
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::error('Spring Big get segments failed', [
+                'status' => $response->status(),
+                'response' => $response->json(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Spring Big get segments exception', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * Add user to a segment by tier
+     */
+    public function addUserToSegment(User $user, string $tier): ?array
+    {
+        if (! $this->isExternalGroupEnabled()) {
+            Log::debug('Spring Big external group disabled, skipping segment add');
+
+            return null;
+        }
+
+        $segmentId = $this->segmentIds[$tier] ?? null;
+        if (! $segmentId) {
+            Log::warning('Spring Big segment ID not configured for tier', ['tier' => $tier]);
+
+            return null;
+        }
+
+        // Get phone number (10 digits)
+        $phoneNumber = null;
+        if ($user->phone) {
+            $phone = preg_replace('/[^0-9]/', '', $user->phone);
+            if (strlen($phone) === 10) {
+                $phoneNumber = (int) $phone;
+            } elseif (strlen($phone) === 11 && str_starts_with($phone, '1')) {
+                $phoneNumber = (int) substr($phone, 1);
+            }
+        }
+
+        try {
+            $payload = [
+                'group_segment' => [
+                    'add_recipients' => [
+                        'phone_numbers' => $phoneNumber ? [$phoneNumber] : [],
+                        'email' => $user->email ? [$user->email] : [],
+                    ],
+                    'remove_recipients' => [
+                        'phone_numbers' => [],
+                        'email' => [],
+                    ],
+                ],
+            ];
+
+            $response = Http::withHeaders($this->buildExternalGroupHeaders())
+                ->put($this->externalGroupBaseUrl.'/external_group_segments/'.$segmentId, $payload);
+
+            if ($response->successful()) {
+                Log::info('Spring Big user added to segment', [
+                    'user_id' => $user->id,
+                    'tier' => $tier,
+                    'segment_id' => $segmentId,
+                ]);
+
+                return $response->json();
+            }
+
+            Log::error('Spring Big add user to segment failed', [
+                'user_id' => $user->id,
+                'tier' => $tier,
+                'status' => $response->status(),
+                'response' => $response->json(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Spring Big add user to segment exception', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * Remove user from a segment
+     */
+    public function removeUserFromSegment(User $user, string $tier): ?array
+    {
+        if (! $this->isExternalGroupEnabled()) {
+            return null;
+        }
+
+        $segmentId = $this->segmentIds[$tier] ?? null;
+        if (! $segmentId) {
+            Log::warning('Spring Big segment ID not configured for tier', ['tier' => $tier]);
+
+            return null;
+        }
+
+        // Get phone number (10 digits)
+        $phoneNumber = null;
+        if ($user->phone) {
+            $phone = preg_replace('/[^0-9]/', '', $user->phone);
+            if (strlen($phone) === 10) {
+                $phoneNumber = (int) $phone;
+            } elseif (strlen($phone) === 11 && str_starts_with($phone, '1')) {
+                $phoneNumber = (int) substr($phone, 1);
+            }
+        }
+
+        try {
+            $payload = [
+                'group_segment' => [
+                    'add_recipients' => [
+                        'phone_numbers' => [],
+                        'email' => [],
+                    ],
+                    'remove_recipients' => [
+                        'phone_numbers' => $phoneNumber ? [$phoneNumber] : [],
+                        'email' => $user->email ? [$user->email] : [],
+                    ],
+                ],
+            ];
+
+            $response = Http::withHeaders($this->buildExternalGroupHeaders())
+                ->put($this->externalGroupBaseUrl.'/external_group_segments/'.$segmentId, $payload);
+
+            if ($response->successful()) {
+                Log::info('Spring Big user removed from segment', [
+                    'user_id' => $user->id,
+                    'tier' => $tier,
+                    'segment_id' => $segmentId,
+                ]);
+
+                return $response->json();
+            }
+
+            Log::error('Spring Big remove user from segment failed', [
+                'user_id' => $user->id,
+                'tier' => $tier,
+                'status' => $response->status(),
+                'response' => $response->json(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Spring Big remove user from segment exception', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * Update user's segment when subscription changes
+     * Removes from old tier segment, adds to new tier segment
+     */
+    public function updateUserSegment(User $user, ?string $oldTier = null): ?array
+    {
+        if (! $this->isExternalGroupEnabled()) {
+            return null;
+        }
+
+        $newTier = $this->getTierForUser($user);
+
+        // Remove from old tier if provided and different
+        if ($oldTier && $oldTier !== $newTier) {
+            $this->removeUserFromSegment($user, $oldTier);
+        }
+
+        // Add to new tier
+        return $this->addUserToSegment($user, $newTier);
+    }
+
+    /**
+     * Sync user to correct segment based on current subscription
+     * Removes from all other tier segments, adds to current tier
+     */
+    public function syncUserSegment(User $user): ?array
+    {
+        if (! $this->isExternalGroupEnabled()) {
+            return null;
+        }
+
+        $currentTier = $this->getTierForUser($user);
+        $allTiers = ['free', 'silver', 'gold', 'platinum', 'canceled'];
+
+        // Remove from all other tiers
+        foreach ($allTiers as $tier) {
+            if ($tier !== $currentTier && ! empty($this->segmentIds[$tier])) {
+                $this->removeUserFromSegment($user, $tier);
+            }
+        }
+
+        // Add to current tier
+        return $this->addUserToSegment($user, $currentTier);
     }
 }

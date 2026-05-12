@@ -175,6 +175,43 @@ VAPID_PRIVATE_KEY=your_generated_private_key
 VAPID_SUBJECT=mailto:admin@yourdomain.com
 ```
 
+## SpringBig Integration
+
+SpringBig syncs user subscription tiers for marketing automation.
+
+### Basic Setup (Custom Group List)
+```env
+SPRINGBIG_ENABLED=true
+SPRINGBIG_BASE_URL=https://production.api.springbig.technology/pos/v1
+SPRINGBIG_API_KEY=your_api_key
+SPRINGBIG_AUTH_TOKEN=your_merchant_id
+```
+
+### External Group Setup (Optional)
+For segment-based tier management:
+
+```bash
+# Setup external group and segments
+php artisan springbig:setup-external-group --all
+
+# Or step by step:
+php artisan springbig:setup-external-group --list          # View existing
+php artisan springbig:setup-external-group --create-group  # Create group
+php artisan springbig:setup-external-group --create-segments # Create segments
+```
+
+Command outputs env values to copy:
+```env
+SPRINGBIG_EXTERNAL_GROUP_ENABLED=true
+SPRINGBIG_EXTERNAL_GROUP_ID=123
+SPRINGBIG_SEGMENT_FREE=456
+SPRINGBIG_SEGMENT_GOLD=457
+SPRINGBIG_SEGMENT_PLATINUM=458
+# etc.
+```
+
+See CLAUDE.md for detailed API documentation and service methods.
+
 ## Migration Best Practices
 
 When creating new migrations, follow these guidelines to avoid common issues:

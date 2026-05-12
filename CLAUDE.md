@@ -30,6 +30,7 @@ WeWinGames is a comprehensive sports betting information and picks service built
 - **Analytics**: Google Analytics & Tag Manager
 - **Security**: Cloudflare Turnstile
 - **Email**: SendGrid (via LoggedMailChannel)
+- **Marketing**: SpringBig (member sync & tier segments)
 - **Monitoring**: Laravel Telescope
 - **Media**: Spatie Media Library
 - **Permissions**: Spatie Laravel Permission
@@ -354,7 +355,95 @@ SLACK_BOT_USER_OAUTH_TOKEN=xoxb-xxx
 SLACK_BOT_USER_DEFAULT_CHANNEL=#alerts
 POSTMARK_TOKEN=xxx
 RESEND_KEY=xxx
+
+# SpringBig Integration (Member Sync)
+SPRINGBIG_ENABLED=false
+SPRINGBIG_BASE_URL=https://production.api.springbig.technology/pos/v1
+SPRINGBIG_API_KEY=your_api_key
+SPRINGBIG_AUTH_TOKEN=your_auth_token
+
+# SpringBig External Group (Segment-based, disabled by default)
+SPRINGBIG_EXTERNAL_GROUP_ENABLED=false
+SPRINGBIG_EXTERNAL_GROUP_BASE_URL=https://production.api.springbig.technology/general/v1
+SPRINGBIG_EXTERNAL_GROUP_ID=
+SPRINGBIG_SEGMENT_FREE=
+SPRINGBIG_SEGMENT_SILVER=
+SPRINGBIG_SEGMENT_GOLD=
+SPRINGBIG_SEGMENT_PLATINUM=
+SPRINGBIG_SEGMENT_CANCELED=
 ```
+
+## SpringBig Integration
+
+SpringBig syncs user subscription tiers for marketing automation. Two approaches available:
+
+### 1. Custom Group List (Default)
+Uses `custom_group_list` field on member POST/PUT calls. Sends tier as comma-separated string.
+
+**Env:**
+```env
+SPRINGBIG_ENABLED=true
+SPRINGBIG_API_KEY=your_api_key
+SPRINGBIG_AUTH_TOKEN=your_merchant_id
+```
+
+**Usage:** Automatic on user registration/subscription change via `SpringBigService`.
+
+### 2. External Group Segments (Optional)
+Uses separate External Group API with segments for each tier. Members added/removed from segments on subscription changes.
+
+**Setup:**
+```bash
+# 1. List existing groups/segments
+php artisan springbig:setup-external-group --list
+
+# 2. Create external group (one-time)
+php artisan springbig:setup-external-group --create-group
+# Output: SPRINGBIG_EXTERNAL_GROUP_ID=123
+
+# 3. Create tier segments (one-time)
+php artisan springbig:setup-external-group --create-segments
+# Output: SPRINGBIG_SEGMENT_FREE=456
+#         SPRINGBIG_SEGMENT_GOLD=457
+#         etc.
+
+# Or do both at once
+php artisan springbig:setup-external-group --all
+```
+
+**After setup, add to .env:**
+```env
+SPRINGBIG_EXTERNAL_GROUP_ENABLED=true
+SPRINGBIG_EXTERNAL_GROUP_ID=123
+SPRINGBIG_SEGMENT_FREE=456
+SPRINGBIG_SEGMENT_SILVER=457
+SPRINGBIG_SEGMENT_GOLD=458
+SPRINGBIG_SEGMENT_PLATINUM=459
+SPRINGBIG_SEGMENT_CANCELED=460
+```
+
+**Key Files:**
+- `app/Services/SpringBigService.php` - All API methods
+- `app/Console/Commands/SpringBigSetupExternalGroup.php` - Setup command
+- `app/Console/Commands/SyncSpringBigMembers.php` - Bulk sync command
+- `config/services.php` - Configuration
+
+**Service Methods:**
+| Method | Purpose |
+|--------|---------|
+| `createMember($user)` | Create member with custom_group_list |
+| `updateMember($user)` | Update member tier |
+| `createExternalGroup($name, $desc)` | Create external group |
+| `createSegments()` | Create tier segments |
+| `addUserToSegment($user, $tier)` | Add user to segment |
+| `removeUserFromSegment($user, $tier)` | Remove user from segment |
+| `updateUserSegment($user, $oldTier)` | Move user between segments |
+| `syncUserSegment($user)` | Full sync (remove all, add current) |
+
+**API Endpoints Used:**
+- POS API: `POST/PUT /pos/v1/members` (custom_group_list)
+- External Group: `POST/GET /general/v1/external_group`
+- Segments: `POST/GET/PUT /general/v1/external_group_segments`
 
 ## Deployment
 

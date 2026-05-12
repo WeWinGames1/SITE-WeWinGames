@@ -94,6 +94,21 @@ return [
         'base_url' => env('SPRINGBIG_BASE_URL', 'https://production.api.springbig.technology/pos/v1'),
         'api_key' => env('SPRINGBIG_API_KEY'),
         'auth_token' => env('SPRINGBIG_AUTH_TOKEN'),
+
+        // External Group API (different base URL)
+        // Uses segments to manage tier-based recipients
+        'external_group_enabled' => env('SPRINGBIG_EXTERNAL_GROUP_ENABLED', false),
+        'external_group_base_url' => env('SPRINGBIG_EXTERNAL_GROUP_BASE_URL', 'https://production.api.springbig.technology/general/v1'),
+        'external_group_id' => env('SPRINGBIG_EXTERNAL_GROUP_ID'), // Created group ID
+
+        // Segment IDs for each tier (created via createSegments or manually)
+        'segment_ids' => [
+            'free' => env('SPRINGBIG_SEGMENT_FREE'),
+            'silver' => env('SPRINGBIG_SEGMENT_SILVER'),
+            'gold' => env('SPRINGBIG_SEGMENT_GOLD'),
+            'platinum' => env('SPRINGBIG_SEGMENT_PLATINUM'),
+            'canceled' => env('SPRINGBIG_SEGMENT_CANCELED'),
+        ],
     ],
 
 ];
