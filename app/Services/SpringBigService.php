@@ -239,12 +239,21 @@ class SpringBigService
 
         try {
             $response = Http::withHeaders($this->buildHeaders())
+                ->timeout(30)
+                ->withOptions(['force_ip_resolve' => 'v4'])
                 ->get($this->baseUrl.'/members', [
                     'email' => $email,
                 ]);
 
             if ($response->successful()) {
                 $data = $response->json();
+
+                // API returns {"member": {...}} for single lookup
+                if (isset($data['member'])) {
+                    return $data['member'];
+                }
+
+                // Or {"members": [...]} for list
                 $members = $data['members'] ?? [];
 
                 return $members[0] ?? null;
@@ -292,12 +301,21 @@ class SpringBigService
 
         try {
             $response = Http::withHeaders($this->buildHeaders())
+                ->timeout(30)
+                ->withOptions(['force_ip_resolve' => 'v4'])
                 ->get($this->baseUrl.'/members', [
                     'phone_number' => (int) $phone,
                 ]);
 
             if ($response->successful()) {
                 $data = $response->json();
+
+                // API returns {"member": {...}} for single lookup
+                if (isset($data['member'])) {
+                    return $data['member'];
+                }
+
+                // Or {"members": [...]} for list
                 $members = $data['members'] ?? [];
 
                 return $members[0] ?? null;
@@ -355,12 +373,27 @@ class SpringBigService
             }
 
             // PUT /members/{pos_user} - pos_user in URL path
+            $url = $this->baseUrl.'/members/'.$posUser;
+
+            Log::debug('SpringBig PUT request', [
+                'url' => $url,
+                'payload' => $memberData,
+            ]);
+
             $response = Http::withHeaders($this->buildHeaders())
-                ->put($this->baseUrl.'/members/'.$posUser, $memberData);
+                ->timeout(30)
+                ->withOptions(['force_ip_resolve' => 'v4'])
+                ->put($url, $memberData);
+
+            Log::debug('SpringBig PUT response', [
+                'status' => $response->status(),
+                'body' => $response->json(),
+            ]);
 
             if ($response->successful()) {
                 Log::info('Spring Big member updated successfully', [
                     'user_id' => $user->id,
+                    'pos_user' => $posUser,
                     'custom_group_list' => $customGroup,
                 ]);
 
