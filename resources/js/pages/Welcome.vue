@@ -477,10 +477,10 @@ const allGroupedBets = computed(() => {
                         <!-- Players Image -->
                         <div class="col-lg-6 position-relative d-none d-lg-block">
                             <img
-                                src="/images/header-bg-players.png"
+                                src="/images/header-bg-players-v2.png"
                                 alt="Sports Players"
                                 class="img-fluid position-absolute"
-                                style="right: -100px; bottom: -250px; max-height: 500px; width: auto"
+                                style="right: -50px; bottom: -250px; max-height: 500px; width: auto"
                             />
                         </div>
                     </div>

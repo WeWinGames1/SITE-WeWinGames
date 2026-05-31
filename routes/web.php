@@ -26,6 +26,7 @@ use App\Http\Controllers\Admin\SportController;
 use App\Http\Controllers\Admin\StripeProductController;
 use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\UnderConstructionController;
+use App\Http\Controllers\AffiliateTrialController;
 use App\Http\Controllers\BetController;
 use App\Http\Controllers\BettingEducationController;
 use App\Http\Controllers\CustomerDashboardController;
@@ -61,6 +62,13 @@ Route::middleware('guest')->group(function () {
     Route::get('/complete-registration', [QuickCheckoutController::class, 'showComplete'])->name('complete-registration');
     Route::post('/complete-registration', [QuickCheckoutController::class, 'complete'])->name('complete-registration.store');
     Route::post('/complete-registration/resend', [QuickCheckoutController::class, 'resendCompletion'])->name('complete-registration.resend');
+});
+
+// Affiliate Trial Routes (7-day trial checkout for sales emails)
+Route::middleware('guest')->group(function () {
+    Route::get('/affiliate-trial', [AffiliateTrialController::class, 'show'])->name('affiliate-trial');
+    Route::post('/affiliate-trial', [AffiliateTrialController::class, 'process'])->name('affiliate-trial.process');
+    Route::post('/affiliate-trial/validate-coupon', [QuickCheckoutController::class, 'validateCoupon'])->name('affiliate-trial.validate-coupon');
 });
 
 // Customer dashboard route

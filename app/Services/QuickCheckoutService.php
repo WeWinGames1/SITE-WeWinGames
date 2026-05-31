@@ -27,7 +27,7 @@ class QuickCheckoutService
      *
      * @return array{success: bool, user?: User, subscription?: mixed, error?: string}
      */
-    public function processCheckout(Request $request, string $priceId, string $paymentMethod): array
+    public function processCheckout(Request $request, string $priceId, string $paymentMethod, ?int $trialDays = null, ?string $registrationType = null): array
     {
         $email = strtolower($request->input('email'));
 
@@ -53,8 +53,11 @@ class QuickCheckoutService
             ];
         }
 
+        // Default registration type
+        $registrationType = $registrationType ?? 'quick_checkout';
+
         try {
-            return DB::transaction(function () use ($request, $email, $priceId, $paymentMethod) {
+            return DB::transaction(function () use ($request, $email, $priceId, $paymentMethod, $trialDays, $registrationType) {
                 // Get affiliate if present
                 $affiliateId = $this->getAffiliateId();
 
@@ -65,7 +68,7 @@ class QuickCheckoutService
                     'phone' => $request->input('phone'),
                     'password' => Hash::make(bin2hex(random_bytes(16))), // Random password
                     'status' => 'pending_setup',
-                    'registration_type' => 'quick_checkout',
+                    'registration_type' => $registrationType,
                     'affiliate_id' => $affiliateId,
                     'registration_ip' => $request->ip(),
                     'registration_user_agent' => $request->userAgent(),
@@ -80,12 +83,17 @@ class QuickCheckoutService
                         'registration_ip' => $request->ip(),
                         'registration_date' => now()->toDateTimeString(),
                         'affiliate_code' => Cookie::get('affiliate_code') ?? '',
-                        'registration_type' => 'quick_checkout',
+                        'registration_type' => $registrationType,
                     ],
                 ]);
 
                 // Create subscription
                 $subscription = $user->newSubscription('default', $priceId);
+
+                // Add trial period if specified
+                if ($trialDays && $trialDays > 0) {
+                    $subscription = $subscription->trialDays($trialDays);
+                }
 
                 // Handle affiliate metadata
                 $affiliateCode = Cookie::get('affiliate_code');
@@ -141,9 +149,10 @@ class QuickCheckoutService
                         'user_agent' => $request->userAgent(),
                         'affiliate_id' => $user->affiliate_id,
                         'subscription_id' => $createdSubscription->id,
-                        'registration_type' => 'quick_checkout',
+                        'registration_type' => $registrationType,
+                        'trial_days' => $trialDays,
                     ])
-                    ->log('quick_checkout_completed');
+                    ->log($registrationType === 'affiliate_trial' ? 'affiliate_trial_completed' : 'quick_checkout_completed');
 
                 // Log successful registration
                 $this->securityService->logRegistrationAttempt($request, true);
