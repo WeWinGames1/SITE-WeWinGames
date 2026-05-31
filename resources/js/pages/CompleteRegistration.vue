@@ -171,7 +171,11 @@ const submit = () => {
                                                 :type="showPasswordConfirmation ? 'text' : 'password'"
                                                 class="form-control form-control-lg"
                                                 :class="{ 'is-invalid': form.errors.password_confirmation || clientErrors.password_confirmation }"
-                                                :style="form.errors.password_confirmation || clientErrors.password_confirmation ? 'padding-right: 4rem !important;' : ''"
+                                                :style="
+                                                    form.errors.password_confirmation || clientErrors.password_confirmation
+                                                        ? 'padding-right: 4rem !important;'
+                                                        : ''
+                                                "
                                                 v-model="form.password_confirmation"
                                                 placeholder="Confirm your password"
                                                 required
@@ -180,14 +184,21 @@ const submit = () => {
                                             <button
                                                 type="button"
                                                 class="btn btn-link position-absolute top-50 translate-middle-y text-gray-light p-0"
-                                                :style="form.errors.password_confirmation || clientErrors.password_confirmation ? 'right: 2.5rem;' : 'right: 0.75rem;'"
+                                                :style="
+                                                    form.errors.password_confirmation || clientErrors.password_confirmation
+                                                        ? 'right: 2.5rem;'
+                                                        : 'right: 0.75rem;'
+                                                "
                                                 @click="showPasswordConfirmation = !showPasswordConfirmation"
                                                 style="text-decoration: none"
                                             >
                                                 <i :class="showPasswordConfirmation ? 'bi bi-eye-slash' : 'bi bi-eye'" class="fs-5"></i>
                                             </button>
                                         </div>
-                                        <div v-if="form.errors.password_confirmation || clientErrors.password_confirmation" class="invalid-feedback d-block">
+                                        <div
+                                            v-if="form.errors.password_confirmation || clientErrors.password_confirmation"
+                                            class="invalid-feedback d-block"
+                                        >
                                             {{ form.errors.password_confirmation || clientErrors.password_confirmation }}
                                         </div>
                                     </div>

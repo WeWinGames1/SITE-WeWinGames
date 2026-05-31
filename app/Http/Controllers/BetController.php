@@ -257,9 +257,9 @@ class BetController extends Controller
         }
 
         return Inertia::render('BettingResults', [
-            'roiData' => $this->betService->getTotalROIBySubscriptionLevel(),
-            'sportProfitRoiData' => $this->betService->getProfitAndROIBySport(),
-            'levelProfitRoiData' => $this->betService->getProfitAndROIByLevel(),
+            'roiData' => $this->betService->getTotalROIBySubscriptionLevel($thisYear),
+            'sportProfitRoiData' => $this->betService->getProfitAndROIBySport($thisYear),
+            'levelProfitRoiData' => $this->betService->getProfitAndROIByLevel($thisYear),
             'thisYear' => $thisYear,
             'lastYear' => $lastYear,
             'thisYearProfit' => $profitByYear[$thisYear] ?? 0,

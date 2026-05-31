@@ -444,7 +444,11 @@ const submit = async () => {
 
                                         <div v-if="discount" class="d-flex justify-content-between text-success mb-3">
                                             <span>Discount ({{ form.coupon }})</span>
-                                            <span>-{{ discount.percent_off ? discount.percent_off + '%' : '$' + (discount.amount_off / 100).toFixed(2) }}</span>
+                                            <span
+                                                >-{{
+                                                    discount.percent_off ? discount.percent_off + '%' : '$' + (discount.amount_off / 100).toFixed(2)
+                                                }}</span
+                                            >
                                         </div>
 
                                         <hr class="border-secondary" />
@@ -458,7 +462,11 @@ const submit = async () => {
                                         <div class="mt-4 pt-3 border-top border-secondary" v-if="currentPlan.features?.length">
                                             <h6 class="text-white small mb-3">What's included:</h6>
                                             <ul class="list-unstyled mb-0">
-                                                <li v-for="feature in currentPlan.features.slice(0, 4)" :key="feature" class="mb-2 small text-gray-light">
+                                                <li
+                                                    v-for="feature in currentPlan.features.slice(0, 4)"
+                                                    :key="feature"
+                                                    class="mb-2 small text-gray-light"
+                                                >
                                                     <i class="bi bi-check-circle-fill text-success me-2"></i>
                                                     {{ feature }}
                                                 </li>
@@ -511,7 +519,11 @@ const submit = async () => {
                                                     required
                                                     autocomplete="email"
                                                 />
-                                                <div v-if="form.errors.email || clientErrors.email" class="invalid-feedback d-block" v-html="form.errors.email || clientErrors.email"></div>
+                                                <div
+                                                    v-if="form.errors.email || clientErrors.email"
+                                                    class="invalid-feedback d-block"
+                                                    v-html="form.errors.email || clientErrors.email"
+                                                ></div>
                                             </div>
 
                                             <div class="mb-3">
@@ -570,7 +582,11 @@ const submit = async () => {
                                             <!-- Card Element -->
                                             <div class="mb-3">
                                                 <label class="form-label text-white fw-medium">Card Information</label>
-                                                <div id="card-element" class="form-control" style="padding: 12px; min-height: 40px; background: #1a1a2e"></div>
+                                                <div
+                                                    id="card-element"
+                                                    class="form-control"
+                                                    style="padding: 12px; min-height: 40px; background: #1a1a2e"
+                                                ></div>
                                             </div>
 
                                             <!-- Error Messages -->
@@ -588,7 +604,12 @@ const submit = async () => {
                                                     <div class="spinner-border spinner-border-sm text-primary"></div>
                                                     <div class="text-muted small mt-2">Loading security verification...</div>
                                                 </div>
-                                                <div id="cf-turnstile" :data-sitekey="turnstileSiteKey" data-theme="dark" style="min-height: 65px"></div>
+                                                <div
+                                                    id="cf-turnstile"
+                                                    :data-sitekey="turnstileSiteKey"
+                                                    data-theme="dark"
+                                                    style="min-height: 65px"
+                                                ></div>
                                                 <div v-if="turnstileError" class="alert alert-danger small mt-2">
                                                     <i class="bi bi-exclamation-triangle me-1"></i>
                                                     {{ turnstileError }}
@@ -600,11 +621,7 @@ const submit = async () => {
                                                 Your subscription will renew automatically. You can cancel anytime from your billing settings.
                                             </div>
 
-                                            <button
-                                                type="submit"
-                                                class="btn btn-primary btn-lg w-100 py-3"
-                                                :disabled="processing || form.processing"
-                                            >
+                                            <button type="submit" class="btn btn-primary btn-lg w-100 py-3" :disabled="processing || form.processing">
                                                 <span v-if="processing || form.processing" class="spinner-border spinner-border-sm me-2"></span>
                                                 {{ processing || form.processing ? 'Processing...' : `Pay $${total.toFixed(2)} & Get Access` }}
                                             </button>

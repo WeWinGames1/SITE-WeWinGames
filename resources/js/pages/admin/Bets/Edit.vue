@@ -1664,7 +1664,9 @@ declare global {
                                 <input type="radio" class="btn-check" id="widget_game_prop" v-model="form.metabet_widget_type" value="game_prop" />
                                 <label class="btn btn-outline-info" for="widget_game_prop"> <i class="bi bi-collection me-1"></i> Game + Prop </label>
                             </div>
-                            <small class="text-muted mt-2 d-block">Select which MetaBet widget(s) to display on the frontend. Choose "Disabled" to hide all widgets.</small>
+                            <small class="text-muted mt-2 d-block"
+                                >Select which MetaBet widget(s) to display on the frontend. Choose "Disabled" to hide all widgets.</small
+                            >
                         </div>
 
                         <div class="row g-4">

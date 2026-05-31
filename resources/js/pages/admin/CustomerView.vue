@@ -356,9 +356,7 @@ function formatCustomerDuration(days: number): string {
                                 </div>
                             </div>
                             <div class="mt-2 small text-muted"><i class="bi bi-envelope me-1"></i>{{ customer.email }}</div>
-                            <div v-if="customer.phone" class="small text-muted">
-                                <i class="bi bi-telephone me-1"></i>{{ customer.phone }}
-                            </div>
+                            <div v-if="customer.phone" class="small text-muted"><i class="bi bi-telephone me-1"></i>{{ customer.phone }}</div>
                             <div class="small text-muted">
                                 <i class="bi bi-calendar me-1"></i>Customer since {{ formatDate(customer.created_at) }}
                             </div>

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\QuickCheckoutRequest;
-use App\Models\DiscountCode;
 use App\Models\StripeProduct;
 use App\Services\QuickCheckoutService;
 use Illuminate\Http\RedirectResponse;
@@ -92,7 +91,6 @@ class AffiliateTrialController extends Controller
             'monthlyProducts' => $monthlyProducts,
             'trialDays' => self::TRIAL_DAYS,
             'stripeKey' => config('cashier.key'),
-            'discountCode' => $request->query('discountCode'),
         ]);
     }
 
@@ -130,23 +128,10 @@ class AffiliateTrialController extends Controller
 
         // Get purchase data for tracking
         $stripeProduct = StripeProduct::where('stripe_price_id', $request->input('price_id'))->first();
-        $purchaseValue = $stripeProduct ? $stripeProduct->price : 0;
-
-        // Apply discount to purchase value for tracking
-        if ($request->filled('coupon')) {
-            $discountCode = DiscountCode::where('code', $request->coupon)->active()->first();
-            if ($discountCode) {
-                if ($discountCode->discount_type === 'percentage') {
-                    $purchaseValue = $purchaseValue * (1 - $discountCode->discount_amount / 100);
-                } else {
-                    $purchaseValue = max(0, $purchaseValue - $discountCode->discount_amount);
-                }
-            }
-        }
 
         $purchaseData = [
             'plan_name' => $stripeProduct ? ucfirst($stripeProduct->tier).' Plan' : 'Subscription',
-            'plan_price' => $purchaseValue,
+            'plan_price' => $stripeProduct?->price ?? 0,
             'billing_period' => self::BILLING_PERIOD,
             'trial_days' => self::TRIAL_DAYS,
         ];

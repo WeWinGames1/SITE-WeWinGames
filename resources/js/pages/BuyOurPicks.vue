@@ -166,7 +166,11 @@ const plans = computed(() => [
                                     <div class="col-md-4 text-center text-md-end mt-3 mt-md-0">
                                         <div class="h3 fw-bold text-muted mb-2">$0</div>
                                         <p class="text-muted small mb-3">Forever free</p>
-                                        <a v-if="!user" :href="route('quick-checkout', { plan: 'gold', period: 'monthly' })" class="btn btn-outline-secondary btn-sm px-4">
+                                        <a
+                                            v-if="!user"
+                                            :href="route('quick-checkout', { plan: 'gold', period: 'monthly' })"
+                                            class="btn btn-outline-secondary btn-sm px-4"
+                                        >
                                             <i class="bi bi-person-plus me-2"></i>
                                             Get Started
                                         </a>

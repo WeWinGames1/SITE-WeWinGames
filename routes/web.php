@@ -68,7 +68,6 @@ Route::middleware('guest')->group(function () {
 Route::middleware('guest')->group(function () {
     Route::get('/affiliate-trial', [AffiliateTrialController::class, 'show'])->name('affiliate-trial');
     Route::post('/affiliate-trial', [AffiliateTrialController::class, 'process'])->name('affiliate-trial.process');
-    Route::post('/affiliate-trial/validate-coupon', [QuickCheckoutController::class, 'validateCoupon'])->name('affiliate-trial.validate-coupon');
 });
 
 // Customer dashboard route

@@ -531,7 +531,11 @@ const getMembershipBadgeStyle = (membership: string) => {
                                     {{ isGuest ? 'Subscribe' : 'Upgrade' }} to unlock all premium betting picks and increase your winning potential.
                                 </p>
                                 <div class="d-flex justify-content-center gap-3 flex-wrap">
-                                    <Link v-if="isGuest" :href="route('quick-checkout', { plan: 'gold', period: 'monthly' })" class="btn btn-warning btn-lg px-4">
+                                    <Link
+                                        v-if="isGuest"
+                                        :href="route('quick-checkout', { plan: 'gold', period: 'monthly' })"
+                                        class="btn btn-warning btn-lg px-4"
+                                    >
                                         <i class="bi bi-person-plus me-2"></i>
                                         Get Started
                                     </Link>

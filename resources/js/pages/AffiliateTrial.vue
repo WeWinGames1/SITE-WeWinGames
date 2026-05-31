@@ -2,7 +2,6 @@
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { loadStripe } from '@stripe/stripe-js';
-import axios from 'axios';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 declare global {
@@ -35,7 +34,6 @@ interface Props {
     monthlyProducts: Record<string, Product>;
     trialDays: number;
     stripeKey: string;
-    discountCode?: string;
 }
 
 const props = defineProps<Props>();
@@ -47,7 +45,6 @@ const form = useForm({
     phone: '',
     payment_method: '',
     price_id: props.selectedPlan.priceId,
-    coupon: props.discountCode || '',
     website: '',
     timestamp: 0,
     'cf-turnstile-response': '',
@@ -87,10 +84,6 @@ const cardElement = ref<any>(null);
 const cardError = ref('');
 const processing = ref(false);
 
-// Discount code
-const discount = ref<any>(null);
-const validatingCoupon = ref(false);
-
 // Turnstile
 const turnstileEnabled = ref(false);
 const turnstileSiteKey = ref('');
@@ -106,18 +99,8 @@ const clientErrors = ref({
     phone: '',
 });
 
-// Total with discount (first charge after trial)
-const total = computed(() => {
-    const basePrice = currentPlan.value.priceAmount;
-    if (!discount.value) return basePrice;
-
-    if (discount.value.percent_off) {
-        return basePrice * (1 - discount.value.percent_off / 100);
-    } else if (discount.value.amount_off) {
-        return Math.max(0, basePrice - discount.value.amount_off / 100);
-    }
-    return basePrice;
-});
+// Total (first charge after trial)
+const total = computed(() => currentPlan.value.priceAmount);
 
 // Validation functions
 const validateName = (value: string): string => {
@@ -160,41 +143,6 @@ watch(
         clientErrors.value.phone = value ? validatePhone(value) : '';
     },
 );
-
-// Coupon validation
-const validateCoupon = async () => {
-    if (!form.coupon) {
-        discount.value = null;
-        return;
-    }
-
-    validatingCoupon.value = true;
-    try {
-        const response = await axios.post(route('affiliate-trial.validate-coupon'), {
-            code: form.coupon,
-            product_id: currentPlan.value.productId,
-        });
-
-        if (response.data.valid) {
-            discount.value = response.data.discount;
-            form.clearErrors('coupon');
-        } else {
-            form.errors.coupon = response.data.message || 'Invalid discount code';
-            discount.value = null;
-        }
-    } catch (error) {
-        form.errors.coupon = 'Invalid discount code';
-        discount.value = null;
-    } finally {
-        validatingCoupon.value = false;
-    }
-};
-
-const clearDiscount = () => {
-    form.coupon = '';
-    discount.value = null;
-    form.clearErrors('coupon');
-};
 
 // Turnstile rendering
 const renderTurnstile = (container: HTMLElement) => {
@@ -271,11 +219,6 @@ onMounted(async () => {
         checkTurnstile();
     } else {
         turnstileLoading.value = false;
-    }
-
-    // Validate initial discount code if present
-    if (form.coupon) {
-        await validateCoupon();
     }
 });
 
@@ -432,11 +375,6 @@ const submit = async () => {
                                             <span class="fw-bold">FREE</span>
                                         </div>
 
-                                        <div v-if="discount" class="d-flex justify-content-between text-info mb-3">
-                                            <span>Discount ({{ form.coupon }})</span>
-                                            <span>-{{ discount.percent_off ? discount.percent_off + '%' : '$' + (discount.amount_off / 100).toFixed(2) }}</span>
-                                        </div>
-
                                         <hr class="border-secondary" />
 
                                         <div class="d-flex justify-content-between mb-2">
@@ -452,7 +390,11 @@ const submit = async () => {
                                         <div class="mt-4 pt-3 border-top border-secondary" v-if="currentPlan.features?.length">
                                             <h6 class="text-white small mb-3">What's included:</h6>
                                             <ul class="list-unstyled mb-0">
-                                                <li v-for="feature in currentPlan.features.slice(0, 4)" :key="feature" class="mb-2 small text-gray-light">
+                                                <li
+                                                    v-for="feature in currentPlan.features.slice(0, 4)"
+                                                    :key="feature"
+                                                    class="mb-2 small text-gray-light"
+                                                >
                                                     <i class="bi bi-check-circle-fill text-success me-2"></i>
                                                     {{ feature }}
                                                 </li>
@@ -505,7 +447,11 @@ const submit = async () => {
                                                     required
                                                     autocomplete="email"
                                                 />
-                                                <div v-if="form.errors.email || clientErrors.email" class="invalid-feedback d-block" v-html="form.errors.email || clientErrors.email"></div>
+                                                <div
+                                                    v-if="form.errors.email || clientErrors.email"
+                                                    class="invalid-feedback d-block"
+                                                    v-html="form.errors.email || clientErrors.email"
+                                                ></div>
                                             </div>
 
                                             <div class="mb-3">
@@ -533,35 +479,14 @@ const submit = async () => {
                                                 We need your card to start the trial. You won't be charged until after {{ trialDays }} days.
                                             </p>
 
-                                            <!-- Discount Code -->
-                                            <div class="mb-3">
-                                                <label class="form-label text-white fw-medium">Discount Code (Optional)</label>
-                                                <div class="input-group">
-                                                    <input
-                                                        v-model="form.coupon"
-                                                        type="text"
-                                                        class="form-control"
-                                                        :class="{ 'is-invalid': form.errors.coupon }"
-                                                        placeholder="Enter discount code"
-                                                        @keyup.enter="validateCoupon"
-                                                    />
-                                                    <button type="button" class="btn btn-outline-secondary" @click="validateCoupon" :disabled="validatingCoupon">
-                                                        <span v-if="validatingCoupon" class="spinner-border spinner-border-sm"></span>
-                                                        <span v-else>Apply</span>
-                                                    </button>
-                                                    <button v-if="discount" type="button" class="btn btn-outline-danger" @click="clearDiscount">Clear</button>
-                                                </div>
-                                                <div v-if="form.errors.coupon" class="invalid-feedback d-block">{{ form.errors.coupon }}</div>
-                                                <div v-if="discount" class="text-success small mt-2">
-                                                    <i class="bi bi-check-circle me-1"></i>
-                                                    Discount will apply after trial!
-                                                </div>
-                                            </div>
-
                                             <!-- Card Element -->
                                             <div class="mb-3">
                                                 <label class="form-label text-white fw-medium">Card Information</label>
-                                                <div id="card-element" class="form-control" style="padding: 12px; min-height: 40px; background: #1a1a2e"></div>
+                                                <div
+                                                    id="card-element"
+                                                    class="form-control"
+                                                    style="padding: 12px; min-height: 40px; background: #1a1a2e"
+                                                ></div>
                                             </div>
 
                                             <!-- Error Messages -->
@@ -579,7 +504,12 @@ const submit = async () => {
                                                     <div class="spinner-border spinner-border-sm text-primary"></div>
                                                     <div class="text-muted small mt-2">Loading security verification...</div>
                                                 </div>
-                                                <div id="cf-turnstile" :data-sitekey="turnstileSiteKey" data-theme="dark" style="min-height: 65px"></div>
+                                                <div
+                                                    id="cf-turnstile"
+                                                    :data-sitekey="turnstileSiteKey"
+                                                    data-theme="dark"
+                                                    style="min-height: 65px"
+                                                ></div>
                                                 <div v-if="turnstileError" class="alert alert-danger small mt-2">
                                                     <i class="bi bi-exclamation-triangle me-1"></i>
                                                     {{ turnstileError }}
@@ -588,8 +518,9 @@ const submit = async () => {
 
                                             <div class="alert alert-info">
                                                 <i class="bi bi-calendar-check me-2"></i>
-                                                <strong>Trial terms:</strong> Your {{ trialDays }}-day free trial starts today. After {{ trialDays }} days, your subscription will automatically
-                                                begin at ${{ total.toFixed(2) }}/month. Cancel anytime before trial ends to avoid charges.
+                                                <strong>Trial terms:</strong> Your {{ trialDays }}-day free trial starts today. After
+                                                {{ trialDays }} days, your subscription will automatically begin at ${{ total.toFixed(2) }}/month.
+                                                Cancel anytime before trial ends to avoid charges.
                                             </div>
 
                                             <button type="submit" class="btn btn-success btn-lg w-100 py-3" :disabled="processing || form.processing">

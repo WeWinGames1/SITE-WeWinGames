@@ -68,7 +68,29 @@ export const betValidationRules: ValidationRules = {
     status: [
         { type: 'string', message: 'Status must be text' },
         // Accept various status values that will be normalized to: pending, won, loss, placed, push
-        { in: ['pending', 'won', 'loss', 'lost', 'lose', 'push', 'win', 'w', 'l', 'v', 'p', 'placed', 'place', 'void', 'cashout', 'cash out', 'open', 'active'], message: 'Invalid status value' },
+        {
+            in: [
+                'pending',
+                'won',
+                'loss',
+                'lost',
+                'lose',
+                'push',
+                'win',
+                'w',
+                'l',
+                'v',
+                'p',
+                'placed',
+                'place',
+                'void',
+                'cashout',
+                'cash out',
+                'open',
+                'active',
+            ],
+            message: 'Invalid status value',
+        },
     ],
     description: [
         { type: 'string', message: 'Description must be text' },
@@ -193,9 +215,9 @@ export function transformBetData(data: Record<string, any>): Record<string, any>
             lose: 'loss',
             l: 'loss',
             p: 'push',
-            v: 'pending',        // void maps to pending
-            void: 'pending',     // void maps to pending
-            cashout: 'pending',  // cashout maps to pending
+            v: 'pending', // void maps to pending
+            void: 'pending', // void maps to pending
+            cashout: 'pending', // cashout maps to pending
             'cash out': 'pending',
             placed: 'placed',
             place: 'placed',
