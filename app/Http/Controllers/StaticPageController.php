@@ -24,10 +24,9 @@ class StaticPageController extends Controller
 
     public function partnerOffers()
     {
-        $offers = \App\Models\PartnerOffer::active()
-            ->forOffersPage()
+        // forOffersPage() already applies active() and orderBy('sort_order')
+        $offers = \App\Models\PartnerOffer::forOffersPage()
             ->with('discountCode:id,code')
-            ->ordered()
             ->get()
             ->map(function ($offer) {
                 $offer->click_url = $offer->getClickUrl();

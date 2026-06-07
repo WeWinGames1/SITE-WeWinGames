@@ -370,6 +370,20 @@ class PartnerOfferTest extends TestCase
         ]);
     }
 
+    public function test_click_tracking_rate_limited(): void
+    {
+        $offer = PartnerOffer::factory()->create();
+
+        // Make 30 requests (the limit)
+        for ($i = 0; $i < 30; $i++) {
+            $this->postJson(route('partner-offers.click', $offer), ['source' => 'offers_page']);
+        }
+
+        // 31st request should be rate limited
+        $response = $this->postJson(route('partner-offers.click', $offer), ['source' => 'offers_page']);
+        $response->assertStatus(429);
+    }
+
     // ============================================
     // Public Page Tests
     // ============================================

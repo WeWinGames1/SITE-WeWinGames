@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 interface Props {
     show: boolean;
@@ -27,11 +27,11 @@ watch(
     },
 );
 
-const savings = () => {
+const savings = computed(() => {
     const dailyPerWeek = props.currentPrice * 7;
     const weeklyPrice = props.upgradePrice - props.discountAmount;
     return Math.max(0, dailyPerWeek - weeklyPrice).toFixed(0);
-};
+});
 
 const handleAccept = () => {
     emit('accept');
@@ -93,7 +93,7 @@ const handleClose = () => {
                             <!-- Savings Highlight -->
                             <div class="savings-highlight">
                                 <i class="bi bi-piggy-bank-fill me-2"></i>
-                                Save up to <strong>${{ savings() }}</strong> compared to daily passes!
+                                Save up to <strong>${{ savings }}</strong> compared to daily passes!
                             </div>
 
                             <!-- Benefits -->
