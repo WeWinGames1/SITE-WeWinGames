@@ -291,6 +291,33 @@ class QuickCheckoutTest extends TestCase
         ]);
     }
 
+    public function test_validate_coupon_returns_fixed_amount_discount(): void
+    {
+        $admin = User::factory()->create();
+
+        DiscountCode::create([
+            'code' => 'DAILYUPGRADE10',
+            'description' => 'Order bump discount',
+            'discount_type' => 'fixed',
+            'discount_amount' => 10,
+            'apply_to' => 'first_payment',
+            'is_active' => true,
+            'created_by' => $admin->id,
+        ]);
+
+        $response = $this->postJson('/quick-checkout/validate-coupon', [
+            'code' => 'DAILYUPGRADE10',
+        ]);
+
+        $response->assertJson([
+            'valid' => true,
+            'discount' => [
+                'percent_off' => null,
+                'amount_off' => 1000, // $10 in cents
+            ],
+        ]);
+    }
+
     public function test_resend_completion_email_works(): void
     {
         Mail::fake();

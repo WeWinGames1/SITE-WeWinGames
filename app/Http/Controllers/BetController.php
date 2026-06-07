@@ -196,6 +196,17 @@ class BetController extends Controller
             $freeBets = $allBets;
         }
 
+        // Get partner offers for sidebar
+        $partnerOffers = \App\Models\PartnerOffer::forPicks()
+            ->with('discountCode:id,code')
+            ->take(3)
+            ->get(['id', 'name', 'slug', 'logo', 'offer_text', 'external_url', 'internal_url', 'discount_code_id', 'type', 'badge_text'])
+            ->map(function ($offer) {
+                $offer->click_url = $offer->getClickUrl();
+
+                return $offer;
+            });
+
         return Inertia::render('TodaysBets', [
             'roiData' => $this->betService->getTotalROIBySubscriptionLevel(),
             'freeBets' => $freeBets,
@@ -203,6 +214,7 @@ class BetController extends Controller
             'sportPreferences' => \App\Models\SportPreference::active()->get(),
             'availableGameDates' => $this->betService->getAvailableGameDates(),
             'premiumPicksCount' => $premiumPicksCount,
+            'partnerOffers' => $partnerOffers,
         ]);
     }
 

@@ -24,7 +24,28 @@ class StaticPageController extends Controller
 
     public function partnerOffers()
     {
-        return Inertia::render('PartnerOffers');
+        $offers = \App\Models\PartnerOffer::active()
+            ->forOffersPage()
+            ->with('discountCode:id,code')
+            ->ordered()
+            ->get()
+            ->map(function ($offer) {
+                $offer->click_url = $offer->getClickUrl();
+
+                return $offer;
+            });
+
+        // Group offers by type
+        $sportsbooks = $offers->where('type', 'sportsbook')->values();
+        $predictions = $offers->where('type', 'prediction')->values();
+        $casinos = $offers->where('type', 'casino')->values();
+
+        return Inertia::render('PartnerOffers', [
+            'offers' => $offers,
+            'sportsbooks' => $sportsbooks,
+            'predictions' => $predictions,
+            'casinos' => $casinos,
+        ]);
     }
 
     public function careersJobs()

@@ -146,6 +146,7 @@ const navigation: NavItem[] = [
             { name: 'Stripe Products', href: '/admin/stripe-products', icon: 'bi-credit-card-2-back' },
             { name: 'Discount Codes', href: '/admin/discounts', icon: 'bi-percent' },
             { name: 'Affiliates', href: '/admin/affiliates', icon: 'bi-people' },
+            { name: 'Partner Offers', href: '/admin/partner-offers', icon: 'bi-gift' },
         ],
     },
     {

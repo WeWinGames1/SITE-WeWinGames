@@ -70,6 +70,14 @@ const openKnowledgebase = () => {
                         <BetsTicker />
                     </div>
                     <div class="d-flex align-items-center gap-2">
+                        <!-- Payment Method Icons -->
+                        <div class="d-none d-md-flex align-items-center gap-1 me-3">
+                            <img src="/images/icons/visa.svg" alt="Visa" height="18" class="opacity-75" />
+                            <img src="/images/icons/mastercard.svg" alt="Mastercard" height="18" class="opacity-75" />
+                            <img src="/images/icons/apple-pay.svg" alt="Apple Pay" height="18" class="opacity-75" />
+                            <img src="/images/icons/google-pay.svg" alt="Google Pay" height="18" class="opacity-75" />
+                        </div>
+                        <div class="text-secondary d-none d-md-block">|</div>
                         <span class="text-white small me-2">English</span>
                         <div class="dropdown">
                             <button class="btn btn-sm text-white p-0" type="button" data-bs-toggle="dropdown">

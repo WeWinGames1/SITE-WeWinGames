@@ -1,14 +1,28 @@
 <script setup lang="ts">
 import GroupedBetCards from '@/components/GroupedBetCards.vue';
+import PartnerOffersCard from '@/components/PartnerOffersCard.vue';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
+
+interface PartnerOffer {
+    id: number;
+    name: string;
+    slug: string;
+    logo: string | null;
+    offer_text: string;
+    external_url: string;
+    click_url?: string;
+    type: 'sportsbook' | 'prediction' | 'casino';
+    badge_text: string | null;
+}
 
 const page = usePage();
 const auth = page.props.auth || null;
 const bets = page.props.freeBets || [];
 const totalBetsPerSport = page.props.totalBetsPerSport || {}; // Get total counts per sport
 const premiumPicksCount = page.props.premiumPicksCount || 0; // Premium picks count for guests
+const partnerOffers = (page.props.partnerOffers || []) as PartnerOffer[];
 const isGuest = !auth?.user; // Check if user is not logged in
 
 // Sports filter
@@ -516,44 +530,56 @@ const getMembershipBadgeStyle = (membership: string) => {
                         <p class="fs-5 text-gray-light mb-5">Expert analysis and betting recommendations</p>
                     </div>
 
-                    <!-- Registration Prompt for Free Users (showing missing picks) -->
-                    <div v-if="(userSubscriptionType === 'free' || isGuest) && hiddenPicksCount > 0" class="mb-5">
-                        <div class="card border-warning" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%)">
-                            <div class="card-body text-center py-4">
-                                <div class="mb-3">
-                                    <i class="bi bi-eye-slash text-warning display-6"></i>
+                    <div class="row">
+                        <!-- Main Content -->
+                        <div :class="partnerOffers.length > 0 ? 'col-lg-8' : 'col-12'">
+                            <!-- Registration Prompt for Free Users (showing missing picks) -->
+                            <div v-if="(userSubscriptionType === 'free' || isGuest) && hiddenPicksCount > 0" class="mb-5">
+                                <div class="card border-warning" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%)">
+                                    <div class="card-body text-center py-4">
+                                        <div class="mb-3">
+                                            <i class="bi bi-eye-slash text-warning display-6"></i>
+                                        </div>
+                                        <h5 class="text-white mb-3">
+                                            {{ hiddenPicksCount }} More {{ hiddenPicksCount === 1 ? 'Pick' : 'Picks' }} Available!
+                                        </h5>
+                                        <p class="text-light mb-4">
+                                            You're viewing {{ viewableBets.length }} of {{ bets.length }} total picks.
+                                            {{ isGuest ? 'Subscribe' : 'Upgrade' }} to unlock all premium betting picks and increase your winning potential.
+                                        </p>
+                                        <div class="d-flex justify-content-center gap-3 flex-wrap">
+                                            <Link
+                                                v-if="isGuest"
+                                                :href="route('quick-checkout', { plan: 'gold', period: 'monthly' })"
+                                                class="btn btn-warning btn-lg px-4"
+                                            >
+                                                <i class="bi bi-person-plus me-2"></i>
+                                                Get Started
+                                            </Link>
+                                            <Link v-else href="/buy-our-picks" class="btn btn-warning btn-lg px-4">
+                                                <i class="bi bi-arrow-up-circle me-2"></i>
+                                                Upgrade Now
+                                            </Link>
+                                            <Link v-if="isGuest" href="/login" class="btn btn-outline-light">
+                                                <i class="bi bi-box-arrow-in-right me-2"></i>
+                                                Login
+                                            </Link>
+                                        </div>
+                                    </div>
                                 </div>
-                                <h5 class="text-white mb-3">
-                                    {{ hiddenPicksCount }} More {{ hiddenPicksCount === 1 ? 'Pick' : 'Picks' }} Available!
-                                </h5>
-                                <p class="text-light mb-4">
-                                    You're viewing {{ viewableBets.length }} of {{ bets.length }} total picks.
-                                    {{ isGuest ? 'Subscribe' : 'Upgrade' }} to unlock all premium betting picks and increase your winning potential.
-                                </p>
-                                <div class="d-flex justify-content-center gap-3 flex-wrap">
-                                    <Link
-                                        v-if="isGuest"
-                                        :href="route('quick-checkout', { plan: 'gold', period: 'monthly' })"
-                                        class="btn btn-warning btn-lg px-4"
-                                    >
-                                        <i class="bi bi-person-plus me-2"></i>
-                                        Get Started
-                                    </Link>
-                                    <Link v-else href="/buy-our-picks" class="btn btn-warning btn-lg px-4">
-                                        <i class="bi bi-arrow-up-circle me-2"></i>
-                                        Upgrade Now
-                                    </Link>
-                                    <Link v-if="isGuest" href="/login" class="btn btn-outline-light">
-                                        <i class="bi bi-box-arrow-in-right me-2"></i>
-                                        Login
-                                    </Link>
-                                </div>
+                            </div>
+
+                            <!-- Use the same GroupedBetCards component as home page -->
+                            <GroupedBetCards :grouped-bets="allGroupedBets" :total-bets-per-sport="totalBetsPerSport" />
+                        </div>
+
+                        <!-- Sidebar with Partner Offers -->
+                        <div v-if="partnerOffers.length > 0" class="col-lg-4">
+                            <div class="sticky-top" style="top: 100px">
+                                <PartnerOffersCard :offers="partnerOffers" variant="compact" title="Partner Sportsbooks" />
                             </div>
                         </div>
                     </div>
-
-                    <!-- Use the same GroupedBetCards component as home page -->
-                    <GroupedBetCards :grouped-bets="allGroupedBets" :total-bets-per-sport="totalBetsPerSport" />
                 </div>
             </section>
         </div>

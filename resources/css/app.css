@@ -58,6 +58,13 @@
     --sidebar-text: #9ca3af;
     --sidebar-hover: #1f2937;
     --sidebar-active: #7c3aed;
+
+    /* New checkout color palette */
+    --navy-900: #0B1733;
+    --navy-800: #142348;
+    --gold-500: #FFC727;
+    --gold-600: #E5A800;
+    --ink-900: #0A0F1F;
 }
 
 /* Override Bootstrap defaults */
@@ -524,4 +531,92 @@ h6,
 
 .draggable-item[draggable='true']:active {
     cursor: grabbing;
+}
+
+/* New checkout color scheme utilities */
+.bg-navy-900 {
+    background-color: var(--navy-900) !important;
+}
+.bg-navy-800 {
+    background-color: var(--navy-800) !important;
+}
+.bg-gold-500 {
+    background-color: var(--gold-500) !important;
+}
+.bg-gold-600 {
+    background-color: var(--gold-600) !important;
+}
+.bg-ink-900 {
+    background-color: var(--ink-900) !important;
+}
+.text-gold-500 {
+    color: var(--gold-500) !important;
+}
+.text-gold-600 {
+    color: var(--gold-600) !important;
+}
+.text-navy-800 {
+    color: var(--navy-800) !important;
+}
+.border-gold-500 {
+    border-color: var(--gold-500) !important;
+}
+
+/* Gold gradient button */
+.btn-gold {
+    background: linear-gradient(135deg, var(--gold-500) 0%, var(--gold-600) 100%);
+    border: none;
+    color: #000;
+    font-weight: 600;
+}
+.btn-gold:hover {
+    background: linear-gradient(135deg, var(--gold-600) 0%, #cc8800 100%);
+    color: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 199, 39, 0.4);
+}
+
+/* Navy gradient backgrounds */
+.bg-gradient-navy {
+    background: linear-gradient(135deg, var(--navy-800) 0%, var(--navy-900) 100%);
+}
+.bg-gradient-checkout {
+    background: linear-gradient(135deg, var(--navy-800) 0%, var(--ink-900) 100%);
+}
+
+/* Checkout card with gold border */
+.checkout-card-featured {
+    border: 2px solid var(--gold-500);
+    position: relative;
+}
+.checkout-card-featured::before {
+    content: 'BEST VALUE';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--gold-500) 0%, var(--gold-600) 100%);
+    color: #000;
+    padding: 4px 16px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 20px;
+    z-index: 1;
+    letter-spacing: 0.5px;
+}
+
+/* Payment method icons row */
+.payment-icons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.payment-icons img {
+    height: 24px;
+    width: auto;
+    opacity: 0.85;
+    transition: opacity 0.2s;
+}
+.payment-icons img:hover {
+    opacity: 1;
 }

@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\Notifications\EmailLogController;
 use App\Http\Controllers\Admin\Notifications\EmailTemplateController;
 use App\Http\Controllers\Admin\Notifications\PushNotificationController;
 use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\PartnerOfferController;
 use App\Http\Controllers\Admin\SiteSettingsController;
 use App\Http\Controllers\Admin\SportController;
 use App\Http\Controllers\Admin\StripeProductController;
@@ -49,6 +50,9 @@ Route::get('/buy-our-picks', [StaticPageController::class, 'buyOurPicks'])->name
 Route::get('/betting-results', [BetController::class, 'bettingResults'])->name('betting-results');
 Route::get('/betting-education', BettingEducationController::class)->name('betting-tips');
 Route::get('/partners-offers', [StaticPageController::class, 'partnerOffers'])->name('partner-offers');
+Route::post('/partner-offers/{partnerOffer}/click', [PartnerOfferController::class, 'trackClick'])
+    ->middleware('throttle:30,1') // 30 requests per minute per IP
+    ->name('partner-offers.click');
 Route::get('/careers-jobs', [StaticPageController::class, 'careersJobs'])->name('careers-jobs');
 Route::post('/careers/submit-resume', [\App\Http\Controllers\ResumeSubmissionController::class, 'store'])->name('careers.submit-resume');
 Route::get('/about-us', [StaticPageController::class, 'aboutUs'])->name('about-us');
@@ -428,6 +432,18 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/media-library
     Route::post('/upload', [MediaLibraryController::class, 'store'])->name('store');
     Route::delete('/{media}', [MediaLibraryController::class, 'destroy'])->name('destroy');
     Route::get('/picker', [MediaLibraryController::class, 'picker'])->name('picker');
+});
+
+// Partner Offers Management Routes
+Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/partner-offers')->name('admin.partner-offers.')->group(function () {
+    Route::get('/', [PartnerOfferController::class, 'index'])->name('index');
+    Route::get('/create', [PartnerOfferController::class, 'create'])->name('create');
+    Route::post('/', [PartnerOfferController::class, 'store'])->name('store');
+    Route::get('/{partnerOffer}/edit', [PartnerOfferController::class, 'edit'])->name('edit');
+    Route::put('/{partnerOffer}', [PartnerOfferController::class, 'update'])->name('update');
+    Route::delete('/{partnerOffer}', [PartnerOfferController::class, 'destroy'])->name('destroy');
+    Route::post('/{partnerOffer}/toggle', [PartnerOfferController::class, 'toggleActive'])->name('toggle');
+    Route::post('/update-order', [PartnerOfferController::class, 'updateOrder'])->name('update-order');
 });
 
 // Affiliate Management Routes
