@@ -22,6 +22,7 @@ withDefaults(defineProps<Props>(), {
                 <img src="/images/icons/amex.svg" alt="American Express" height="24" />
                 <img src="/images/icons/apple-pay.svg" alt="Apple Pay" height="24" />
                 <img src="/images/icons/google-pay.svg" alt="Google Pay" height="24" />
+                <img src="/images/icons/cashapp.svg" alt="Cash App Pay" height="24" />
             </div>
         </div>
 
@@ -58,6 +59,33 @@ withDefaults(defineProps<Props>(), {
             <div v-if="!compact" class="trust-badge">
                 <img src="/images/legal-ncpg.png" alt="National Council on Problem Gambling" :height="compact ? 24 : 32" />
             </div>
+
+            <!-- NJ DGE Registered Vendor -->
+            <a
+                href="https://www.njoag.gov/about/divisions-and-offices/division-of-gaming-enforcement-home/vendor-licensing-reports/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="trust-badge nj-dge-badge text-decoration-none"
+                title="Registered Vendor – NJ Division of Gaming Enforcement"
+            >
+                <div
+                    class="d-flex align-items-center gap-2 px-2 py-1 rounded"
+                    :class="compact ? 'nj-dge-compact' : ''"
+                    style="background: rgba(0, 51, 102, 0.08); border: 1px solid rgba(0, 51, 102, 0.15)"
+                >
+                    <img
+                        src="/images/legal-nj-ag.png"
+                        alt="NJ Attorney General Seal"
+                        :height="compact ? 24 : 36"
+                        :width="compact ? 24 : 36"
+                        style="object-fit: contain"
+                    />
+                    <div v-if="!compact" class="d-flex flex-column" style="line-height: 1.1">
+                        <span class="small fw-semibold" style="color: #003366; font-size: 0.7rem">Registered Vendor</span>
+                        <span class="small text-muted" style="font-size: 0.6rem">NJ Division of Gaming Enforcement</span>
+                    </div>
+                </div>
+            </a>
         </div>
 
         <!-- Responsible Gaming Notice -->
@@ -85,5 +113,22 @@ withDefaults(defineProps<Props>(), {
 
 .trust-badge img:hover {
     opacity: 1;
+}
+
+.nj-dge-badge {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-radius: 0.25rem;
+}
+
+.nj-dge-badge:hover {
+    transform: scale(1.02);
+}
+
+.nj-dge-badge:hover > div {
+    box-shadow: 0 2px 8px rgba(0, 51, 102, 0.15);
+}
+
+.nj-dge-compact {
+    padding: 0.15rem 0.4rem !important;
 }
 </style>

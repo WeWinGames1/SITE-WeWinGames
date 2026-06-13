@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import CustomerLayout from '@/layouts/CustomerLayout.vue';
+import TrustBadges from '@/components/TrustBadges.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { loadStripe } from '@stripe/stripe-js';
 import axios from 'axios';
@@ -548,6 +549,8 @@ const submit = async () => {
                                                 <a href="/privacy" class="text-decoration-none">Privacy Policy</a>
                                             </small>
                                         </p>
+
+                                        <TrustBadges :compact="true" class="mt-3" />
                                     </div>
                                 </div>
                             </form>
