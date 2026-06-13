@@ -99,8 +99,21 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             // For unexpected server errors, render custom view with exception
-            return response()->view('errors.500', [
-                'exception' => $e,
-            ], 500);
+            // Check if view exists to prevent cascading errors
+            if (view()->exists('errors.500')) {
+                return response()->view('errors.500', [
+                    'exception' => $e,
+                ], 500);
+            }
+
+            // Fallback: log error and let Laravel handle it
+            \Illuminate\Support\Facades\Log::error('Unhandled exception', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return null;
         });
     })->create();

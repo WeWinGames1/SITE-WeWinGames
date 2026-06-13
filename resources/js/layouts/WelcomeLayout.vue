@@ -72,10 +72,12 @@ const openKnowledgebase = () => {
                     <div class="d-flex align-items-center gap-2">
                         <!-- Payment Method Icons -->
                         <div class="d-none d-md-flex align-items-center gap-1 me-3">
-                            <img src="/images/icons/visa.svg" alt="Visa" height="18" class="opacity-75" />
-                            <img src="/images/icons/mastercard.svg" alt="Mastercard" height="18" class="opacity-75" />
-                            <img src="/images/icons/apple-pay.svg" alt="Apple Pay" height="18" class="opacity-75" />
-                            <img src="/images/icons/google-pay.svg" alt="Google Pay" height="18" class="opacity-75" />
+                            <span class="payment-pill-header"><img src="/images/icons/visa.svg" alt="Visa" height="14" /></span>
+                            <span class="payment-pill-header"><img src="/images/icons/mastercard.svg" alt="Mastercard" height="14" /></span>
+                            <span class="payment-pill-header"><img src="/images/icons/amex.svg" alt="American Express" height="14" /></span>
+                            <span class="payment-pill-header"><img src="/images/icons/apple-pay.svg" alt="Apple Pay" height="12" /></span>
+                            <span class="payment-pill-header"><img src="/images/icons/google-pay.svg" alt="Google Pay" height="12" /></span>
+                            <span class="payment-pill-header"><img src="/images/icons/cashapp.svg" alt="Cash App Pay" height="14" /></span>
                         </div>
                         <div class="text-secondary d-none d-md-block">|</div>
                         <span class="text-white small me-2">English</span>
@@ -301,10 +303,23 @@ const openKnowledgebase = () => {
                                 addictive, please play responsibly. If you or someone you know has a gambling problem and wants help, call 1-800
                                 GAMBLER in the U.S. This service is intended for adult users 21+ only.
                             </p>
-                            <div class="d-flex align-items-center gap-3">
+                            <div class="d-flex align-items-center gap-3 flex-wrap">
                                 <img src="/images/legal-ncpg.png" alt="National Council on Problem Gambling" style="height: 32px; width: auto" />
                                 <img src="/images/legal-rg.jpg" alt="Responsible Gaming" style="height: 32px; width: auto" />
                                 <img src="/images/legal-21plus.png" alt="21+ Only" style="height: 32px; width: auto" />
+                                <a
+                                    href="https://www.njoag.gov/about/divisions-and-offices/division-of-gaming-enforcement-home/vendor-licensing-reports/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="d-flex align-items-center gap-2 text-decoration-none nj-badge-footer"
+                                    title="Registered Vendor – NJ Division of Gaming Enforcement"
+                                >
+                                    <img src="/images/legal-nj-ag.png" alt="NJ Attorney General" style="height: 36px; width: auto" />
+                                    <div class="d-none d-lg-block" style="line-height: 1.1">
+                                        <div class="text-white small fw-semibold" style="font-size: 0.7rem">Registered Vendor</div>
+                                        <div class="text-secondary" style="font-size: 0.6rem">NJ Division of Gaming Enforcement</div>
+                                    </div>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -498,5 +513,42 @@ a.text-secondary:hover {
 
 .btn-outline-warning:hover {
     transform: translateY(-2px);
+}
+
+/* Header payment pills */
+.payment-pill-header {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 24px;
+    padding: 0 8px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 4px;
+    transition: transform 0.15s;
+}
+
+.payment-pill-header:hover {
+    transform: translateY(-1px);
+}
+
+.payment-pill-header img {
+    max-height: 100%;
+    width: auto;
+    object-fit: contain;
+}
+
+/* NJ Badge in footer */
+.nj-badge-footer {
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.nj-badge-footer:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 193, 7, 0.3);
 }
 </style>

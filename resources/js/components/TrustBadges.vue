@@ -17,12 +17,24 @@ withDefaults(defineProps<Props>(), {
         <!-- Payment Methods -->
         <div v-if="showPaymentMethods" class="payment-methods mb-3">
             <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
-                <img src="/images/icons/visa.svg" alt="Visa" height="24" />
-                <img src="/images/icons/mastercard.svg" alt="Mastercard" height="24" />
-                <img src="/images/icons/amex.svg" alt="American Express" height="24" />
-                <img src="/images/icons/apple-pay.svg" alt="Apple Pay" height="24" />
-                <img src="/images/icons/google-pay.svg" alt="Google Pay" height="24" />
-                <img src="/images/icons/cashapp.svg" alt="Cash App Pay" height="24" />
+                <span class="payment-pill">
+                    <img src="/images/icons/visa.svg" alt="Visa" height="18" />
+                </span>
+                <span class="payment-pill">
+                    <img src="/images/icons/mastercard.svg" alt="Mastercard" height="18" />
+                </span>
+                <span class="payment-pill">
+                    <img src="/images/icons/amex.svg" alt="American Express" height="18" />
+                </span>
+                <span class="payment-pill">
+                    <img src="/images/icons/apple-pay.svg" alt="Apple Pay" height="16" />
+                </span>
+                <span class="payment-pill">
+                    <img src="/images/icons/google-pay.svg" alt="Google Pay" height="16" />
+                </span>
+                <span class="payment-pill">
+                    <img src="/images/icons/cashapp.svg" alt="Cash App Pay" height="18" />
+                </span>
             </div>
         </div>
 
@@ -76,8 +88,8 @@ withDefaults(defineProps<Props>(), {
                     <img
                         src="/images/legal-nj-ag.png"
                         alt="NJ Attorney General Seal"
-                        :height="compact ? 24 : 36"
-                        :width="compact ? 24 : 36"
+                        :height="compact ? 32 : 40"
+                        :width="compact ? 32 : 40"
                         style="object-fit: contain"
                     />
                     <div v-if="!compact" class="d-flex flex-column" style="line-height: 1.1">
@@ -100,6 +112,30 @@ withDefaults(defineProps<Props>(), {
 <style scoped>
 .trust-badges {
     padding: 1rem 0;
+}
+
+.payment-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+    height: 32px;
+    padding: 0 10px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.payment-pill:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.payment-pill img {
+    max-height: 100%;
+    width: auto;
+    object-fit: contain;
 }
 
 .trust-badges-vertical .trust-badge {

@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -104,19 +105,42 @@ class QuickCheckoutController extends Controller
      */
     public function process(QuickCheckoutRequest $request): RedirectResponse
     {
+        Log::info('QuickCheckout: Starting checkout process', [
+            'email' => $request->input('email'),
+            'price_id' => $request->input('price_id'),
+        ]);
+
         // Feature flag check - redirect to login (not register, since register redirects here)
         if (! config('features.quick_checkout_enabled')) {
             return redirect()->route('login')
                 ->with('error', 'Quick checkout is temporarily unavailable.');
         }
 
-        $result = $this->checkoutService->processCheckout(
-            $request,
-            $request->input('price_id'),
-            $request->input('payment_method')
-        );
+        try {
+            $result = $this->checkoutService->processCheckout(
+                $request,
+                $request->input('price_id'),
+                $request->input('payment_method')
+            );
+        } catch (\Throwable $e) {
+            Log::error('QuickCheckout: Exception during checkout', [
+                'email' => $request->input('email'),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return back()->withErrors([
+                'payment' => 'An error occurred: '.$e->getMessage(),
+            ])->withInput();
+        }
 
         if (! $result['success']) {
+            Log::warning('QuickCheckout: Checkout failed', [
+                'email' => $request->input('email'),
+                'error' => $result['error'] ?? 'unknown',
+                'message' => $result['message'] ?? 'No message',
+            ]);
+
             if ($result['error'] === 'email_exists') {
                 return back()->withErrors([
                     'email' => $result['message'].' <a href="'.route('login').'" class="text-decoration-underline">Log in here</a>',
@@ -127,6 +151,11 @@ class QuickCheckoutController extends Controller
                 'payment' => $result['message'],
             ])->withInput();
         }
+
+        Log::info('QuickCheckout: Checkout successful', [
+            'email' => $request->input('email'),
+            'user_id' => $result['user']->id ?? null,
+        ]);
 
         // Get purchase data for tracking
         $stripeProduct = StripeProduct::where('stripe_price_id', $request->input('price_id'))->first();

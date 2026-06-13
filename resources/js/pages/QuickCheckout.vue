@@ -56,7 +56,7 @@ const form = useForm({
 
 // Plan selection
 const selectedPeriod = ref<'daily' | 'weekly' | 'monthly'>(props.selectedPlan.period as any);
-const selectedTier = ref(props.selectedPlan.tier);
+const selectedTier = ref(props.selectedPlan.tier.toLowerCase());
 
 // Order bump modal
 const showOrderBump = ref(false);
@@ -291,6 +291,8 @@ onMounted(async () => {
         mode: 'subscription',
         amount: Math.round(currentPlan.value.priceAmount * 100),
         currency: 'usd',
+        paymentMethodTypes: ['card', 'cashapp'],
+        paymentMethodCreation: 'manual',
         appearance: {
             theme: 'night',
             variables: {
@@ -467,8 +469,14 @@ const submit = async () => {
             },
         });
     } catch (error: any) {
-        paymentError.value = 'An error occurred. Please try again.';
+        // Show more specific error if available
+        const message = error?.response?.data?.message
+            || error?.response?.data?.errors?.payment
+            || error?.message
+            || 'An error occurred. Please try again.';
+        paymentError.value = message;
         processing.value = false;
+        console.error('Checkout error:', error);
     }
 };
 </script>
