@@ -82,7 +82,8 @@
       "WebFetch(domain:springbig.readme.io)",
       "WebSearch",
       "Bash(xargs -I{} sh -c 'echo \"\"=== {} ===\"\" && head -20 {}')",
-      "WebFetch(domain:stripe.com)"
+      "WebFetch(domain:stripe.com)",
+      "WebFetch(domain:upload.wikimedia.org)"
     ],
     "deny": []
   },
