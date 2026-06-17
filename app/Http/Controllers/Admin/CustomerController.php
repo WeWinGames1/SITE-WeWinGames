@@ -367,7 +367,7 @@ class CustomerController extends Controller
         // Add payment method details and subscription info to each customer
         $customers->getCollection()->transform(function ($customer) use ($stripeProducts) {
             $paymentMethod = $customer->defaultPaymentMethod();
-            if ($paymentMethod) {
+            if ($paymentMethod && $paymentMethod->card) {
                 $customer->pm_type = $paymentMethod->card->brand;
                 $customer->pm_last_four = $paymentMethod->card->last4;
             }

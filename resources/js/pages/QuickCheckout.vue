@@ -375,13 +375,15 @@ onMounted(async () => {
     }
 });
 
-// Update Stripe Elements amount when plan changes
+// Update Stripe Elements amount when plan OR discount changes.
+// `total` already factors in the applied discount, so the wallet/Apple Pay
+// deposit sheet reflects the discounted amount instead of the base price.
 watch(
-    () => currentPlan.value.priceAmount,
+    total,
     async (newAmount) => {
         if (elements.value) {
             elements.value.update({
-                amount: Math.round(newAmount * 100),
+                amount: Math.max(50, Math.round(newAmount * 100)),
             });
         }
     },
