@@ -6,6 +6,7 @@ use App\Http\Requests\Traits\ValidatesEmail;
 use App\Models\User;
 use App\Rules\ValidateTurnstile;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class QuickCheckoutRequest extends FormRequest
 {
@@ -45,7 +46,11 @@ class QuickCheckoutRequest extends FormRequest
                 'unique:users,phone',
             ],
             'payment_method' => ['required', 'string'],
-            'price_id' => ['required', 'string'],
+            'price_id' => [
+                'required',
+                'string',
+                Rule::exists('stripe_products', 'stripe_price_id')->where('is_active', true),
+            ],
             'coupon' => ['nullable', 'string', 'max:50'],
             'website' => 'present|max:0', // Honeypot
             'timestamp' => [
@@ -81,6 +86,7 @@ class QuickCheckoutRequest extends FormRequest
             'phone.unique' => 'This phone number is already registered.',
             'payment_method.required' => 'Please add a payment method.',
             'price_id.required' => 'Please select a subscription plan.',
+            'price_id.exists' => 'The selected subscription plan is not available.',
             'cf-turnstile-response.required' => 'Please complete the security verification.',
         ];
     }

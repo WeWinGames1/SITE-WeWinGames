@@ -34,6 +34,7 @@ class CustomerController extends Controller
         $paymentMethods = [];
         try {
             if ($user->hasPaymentMethod()) {
+                $defaultPaymentMethodId = $user->defaultPaymentMethod()?->id;
                 foreach ($user->paymentMethods() as $method) {
                     // Check if card property exists
                     if (isset($method->card)) {
@@ -43,7 +44,7 @@ class CustomerController extends Controller
                             'last4' => $method->card->last4 ?? '****',
                             'exp_month' => $method->card->exp_month ?? '',
                             'exp_year' => $method->card->exp_year ?? '',
-                            'is_default' => $method->id === $user->defaultPaymentMethod()?->id,
+                            'is_default' => $method->id === $defaultPaymentMethodId,
                         ];
                     }
                 }
@@ -356,7 +357,7 @@ class CustomerController extends Controller
         }
 
         // Pagination
-        $perPage = $request->get('per_page', 25);
+        $perPage = max(1, min((int) $request->get('per_page', 25), 100));
         $customers = $query->paginate($perPage)->withQueryString();
 
         // Preload all active stripe products to avoid N+1 queries
@@ -616,7 +617,7 @@ class CustomerController extends Controller
                     $this->syncSpringBigAfterSubscriptionChange($user);
 
                     return back()->with('success', 'Subscription cancelled! Access will continue until '.
-                        $subscription->ends_at->format('F j, Y'));
+                        ($subscription->ends_at?->format('F j, Y') ?? 'the end of the billing period'));
 
                 case 'manual':
                     if (! $data['subscription_price']) {

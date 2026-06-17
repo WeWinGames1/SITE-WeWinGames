@@ -236,7 +236,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function needsRegistrationCompletion(): bool
     {
         return $this->status === 'pending_setup'
-            && $this->registration_type === 'quick_checkout';
+            && in_array($this->registration_type, ['quick_checkout', 'affiliate_trial'], true);
     }
 
     /**

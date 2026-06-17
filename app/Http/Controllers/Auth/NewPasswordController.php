@@ -46,10 +46,24 @@ class NewPasswordController extends Controller
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user) use ($request) {
-                $user->forceFill([
+                $attributes = [
                     'password' => Hash::make($request->password),
                     'remember_token' => Str::random(60),
-                ])->save();
+                ];
+
+                // Quick-checkout / affiliate-trial users who reset their password
+                // before completing setup should be activated so the documented
+                // forgot-password fallback actually grants access.
+                if ($user->status === 'pending_setup') {
+                    $attributes['status'] = 'active';
+                    $attributes['completion_token'] = null;
+                    $attributes['completion_token_expires_at'] = null;
+                    if (! $user->email_verified_at) {
+                        $attributes['email_verified_at'] = now();
+                    }
+                }
+
+                $user->forceFill($attributes)->save();
 
                 // Log password reset activity
                 activity()

@@ -49,7 +49,37 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        $this->enforceAccountStatus();
+
         RateLimiter::clear($this->throttleKey());
+    }
+
+    /**
+     * Reject logins for accounts that are disabled or have not finished setup.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    protected function enforceAccountStatus(): void
+    {
+        $status = Auth::user()->status;
+
+        if ($status === 'disabled') {
+            Auth::logout();
+            RateLimiter::clear($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'This account has been disabled. Please contact support.',
+            ]);
+        }
+
+        if ($status === 'pending_setup') {
+            Auth::logout();
+            RateLimiter::clear($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'Your account setup is not complete. Please use the link from your email, or reset your password to finish setting up your account.',
+            ]);
+        }
     }
 
     /**

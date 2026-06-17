@@ -48,13 +48,13 @@ class QuickCheckoutTest extends TestCase
         ]);
     }
 
-    public function test_quick_checkout_redirects_to_register_when_feature_disabled(): void
+    public function test_quick_checkout_redirects_to_login_when_feature_disabled(): void
     {
         Config::set('features.quick_checkout_enabled', false);
 
         $response = $this->get('/quick-checkout');
 
-        $response->assertRedirect(route('register'));
+        $response->assertRedirect(route('login'));
     }
 
     public function test_quick_checkout_page_renders_when_feature_enabled(): void
@@ -109,7 +109,7 @@ class QuickCheckoutTest extends TestCase
 
         $response = $this->get('/quick-checkout');
 
-        $response->assertRedirect(route('register'));
+        $response->assertRedirect(route('login'));
         $response->assertSessionHas('error');
     }
 
@@ -409,5 +409,119 @@ class QuickCheckoutTest extends TestCase
 
         $this->assertNull($user->completion_token);
         $this->assertNull($user->completion_token_expires_at);
+    }
+
+    public function test_affiliate_trial_user_can_complete_registration(): void
+    {
+        $user = User::factory()->create([
+            'status' => 'pending_setup',
+            'registration_type' => 'affiliate_trial',
+            'completion_token' => str_repeat('h', 64),
+            'completion_token_expires_at' => now()->addHours(24),
+        ]);
+
+        $this->assertTrue($user->needsRegistrationCompletion());
+
+        $response = $this->post('/complete-registration', [
+            'token' => str_repeat('h', 64),
+            'password' => 'NewPassword123!',
+            'password_confirmation' => 'NewPassword123!',
+        ]);
+
+        $response->assertRedirect(route('dashboard'));
+
+        $user->refresh();
+        $this->assertEquals('active', $user->status);
+        $this->assertNull($user->completion_token);
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_quick_checkout_rejects_unknown_price_id(): void
+    {
+        Config::set('features.quick_checkout_enabled', true);
+
+        $response = $this->post('/quick-checkout', [
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            'phone' => '+15551234567',
+            'payment_method' => 'pm_card_visa',
+            'price_id' => 'price_does_not_exist',
+            'website' => '',
+            'timestamp' => time() - 5,
+        ]);
+
+        $response->assertSessionHasErrors('price_id');
+        $this->assertDatabaseMissing('users', ['email' => 'john@example.com']);
+    }
+
+    public function test_quick_checkout_rejects_inactive_price_id(): void
+    {
+        Config::set('features.quick_checkout_enabled', true);
+
+        $this->goldMonthly->update(['is_active' => false]);
+
+        $response = $this->post('/quick-checkout', [
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            'phone' => '+15551234567',
+            'payment_method' => 'pm_card_visa',
+            'price_id' => 'price_gold_monthly',
+            'website' => '',
+            'timestamp' => time() - 5,
+        ]);
+
+        $response->assertSessionHasErrors('price_id');
+    }
+
+    public function test_quick_checkout_blocks_concurrent_double_submit(): void
+    {
+        Config::set('features.quick_checkout_enabled', true);
+        Config::set('services.turnstile.enabled', false);
+
+        $email = 'concurrent@gmail.com';
+
+        // Simulate an in-flight checkout already holding the lock.
+        \Illuminate\Support\Facades\Cache::add('quick-checkout-lock:'.$email, true, 30);
+
+        $response = $this->post('/quick-checkout', [
+            'name' => 'Jane Doe',
+            'email' => $email,
+            'phone' => '+15557654321',
+            'payment_method' => 'pm_card_visa',
+            'price_id' => 'price_gold_monthly',
+            'website' => '',
+            'timestamp' => time() - 5,
+        ]);
+
+        $response->assertSessionHasErrors('payment');
+        $this->assertDatabaseMissing('users', ['email' => $email]);
+    }
+
+    public function test_forgot_password_activates_pending_setup_user(): void
+    {
+        $token = app('auth.password.broker')->createToken(
+            $user = User::factory()->create([
+                'status' => 'pending_setup',
+                'registration_type' => 'quick_checkout',
+                'completion_token' => str_repeat('i', 64),
+                'completion_token_expires_at' => now()->addHours(24),
+                'email_verified_at' => null,
+            ])
+        );
+
+        $response = $this->post('/reset-password', [
+            'token' => $token,
+            'email' => $user->email,
+            'password' => 'NewPassword123!',
+            'password_confirmation' => 'NewPassword123!',
+        ]);
+
+        $response->assertSessionHasNoErrors();
+
+        $user->refresh();
+        $this->assertEquals('active', $user->status);
+        $this->assertNull($user->completion_token);
+        $this->assertNotNull($user->email_verified_at);
+        $this->assertTrue(Hash::check('NewPassword123!', $user->password));
     }
 }

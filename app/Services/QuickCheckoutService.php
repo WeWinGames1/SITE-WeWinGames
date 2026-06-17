@@ -8,8 +8,8 @@ use App\Models\DiscountCode;
 use App\Models\StripeProduct;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Cookie;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -56,91 +56,108 @@ class QuickCheckoutService
         // Default registration type
         $registrationType = $registrationType ?? 'quick_checkout';
 
+        // Prevent concurrent double-submits (double-click / network retry) from
+        // creating two Stripe customers and charging the card twice.
+        $lockKey = 'quick-checkout-lock:'.$email;
+        if (! Cache::add($lockKey, true, 60)) {
+            return [
+                'success' => false,
+                'error' => 'in_progress',
+                'message' => 'A checkout for this email is already being processed. Please wait a moment and try again.',
+            ];
+        }
+
+        $user = null;
+
         try {
-            return DB::transaction(function () use ($request, $email, $priceId, $paymentMethod, $trialDays, $registrationType) {
-                // Get affiliate if present
-                $affiliateId = $this->getAffiliateId();
+            $affiliateId = $this->getAffiliateId();
 
-                // Create provisional user
-                $user = User::create([
-                    'name' => $request->input('name'),
-                    'email' => $email,
-                    'phone' => $request->input('phone'),
-                    'password' => Hash::make(bin2hex(random_bytes(16))), // Random password
-                    'status' => 'pending_setup',
-                    'registration_type' => $registrationType,
-                    'affiliate_id' => $affiliateId,
+            // Create and commit the local user BEFORE any Stripe call. Stripe side
+            // effects are not transactional, so a customer/subscription created here
+            // could not be rolled back — committing the user first guarantees a paid
+            // customer always has a recoverable local account.
+            $user = User::create([
+                'name' => $request->input('name'),
+                'email' => $email,
+                'phone' => $request->input('phone'),
+                'password' => Hash::make(bin2hex(random_bytes(16))), // Random password
+                'status' => 'pending_setup',
+                'registration_type' => $registrationType,
+                'affiliate_id' => $affiliateId,
+                'registration_ip' => $request->ip(),
+                'registration_user_agent' => $request->userAgent(),
+            ]);
+
+            $user->assignRole('user');
+
+            // Create Stripe customer
+            $user->createAsStripeCustomer([
+                'metadata' => [
                     'registration_ip' => $request->ip(),
-                    'registration_user_agent' => $request->userAgent(),
-                ]);
+                    'registration_date' => now()->toDateTimeString(),
+                    'affiliate_code' => Cookie::get('affiliate_code') ?? '',
+                    'registration_type' => $registrationType,
+                ],
+            ]);
 
-                // Assign default role
-                $user->assignRole('user');
+            // Create subscription
+            $subscription = $user->newSubscription('default', $priceId);
 
-                // Create Stripe customer
-                $user->createAsStripeCustomer([
-                    'metadata' => [
-                        'registration_ip' => $request->ip(),
-                        'registration_date' => now()->toDateTimeString(),
-                        'affiliate_code' => Cookie::get('affiliate_code') ?? '',
-                        'registration_type' => $registrationType,
-                    ],
-                ]);
+            // Add trial period if specified
+            if ($trialDays && $trialDays > 0) {
+                $subscription = $subscription->trialDays($trialDays);
+            }
 
-                // Create subscription
-                $subscription = $user->newSubscription('default', $priceId);
+            // Handle affiliate metadata
+            $affiliateCode = Cookie::get('affiliate_code');
+            if ($affiliateCode && ! $user->affiliate_id) {
+                $affiliate = Affiliate::where('code', $affiliateCode)
+                    ->where('is_active', true)
+                    ->first();
 
-                // Add trial period if specified
-                if ($trialDays && $trialDays > 0) {
-                    $subscription = $subscription->trialDays($trialDays);
+                if ($affiliate) {
+                    $subscription = $subscription->withMetadata([
+                        'affiliate_code' => $affiliateCode,
+                    ]);
                 }
+            }
 
-                // Handle affiliate metadata
-                $affiliateCode = Cookie::get('affiliate_code');
-                if ($affiliateCode && ! $user->affiliate_id) {
-                    $affiliate = Affiliate::where('code', $affiliateCode)
-                        ->where('is_active', true)
-                        ->first();
+            // Apply discount code if provided
+            $couponCode = $request->input('coupon');
+            if ($couponCode) {
+                $discountCode = DiscountCode::where('code', $couponCode)
+                    ->active()
+                    ->first();
 
-                    if ($affiliate) {
-                        $subscription = $subscription->withMetadata([
-                            'affiliate_code' => $affiliateCode,
-                        ]);
-                    }
-                }
+                if ($discountCode && $discountCode->isValid()) {
+                    $stripeProduct = StripeProduct::where('stripe_price_id', $priceId)->first();
 
-                // Apply discount code if provided
-                $couponCode = $request->input('coupon');
-                if ($couponCode) {
-                    $discountCode = DiscountCode::where('code', $couponCode)
-                        ->active()
-                        ->first();
-
-                    if ($discountCode && $discountCode->isValid()) {
-                        $stripeProduct = StripeProduct::where('stripe_price_id', $priceId)->first();
-
-                        // Check product restrictions
-                        if (! $stripeProduct || $discountCode->appliesToProduct($stripeProduct->stripe_product_id)) {
-                            $stripeCouponId = $this->ensureStripeCouponExists($discountCode);
-                            if ($stripeCouponId) {
-                                $subscription = $subscription->withCoupon($stripeCouponId);
-                            }
+                    // Check product restrictions (fail closed: skip coupon if the
+                    // price has no matching local product to validate against).
+                    if ($stripeProduct && $discountCode->appliesToProduct($stripeProduct->stripe_product_id)) {
+                        $stripeCouponId = $this->ensureStripeCouponExists($discountCode);
+                        if ($stripeCouponId) {
+                            $subscription = $subscription->withCoupon($stripeCouponId);
                         }
                     }
                 }
+            }
 
-                // Create the subscription with the payment method
-                $createdSubscription = $subscription->create($paymentMethod);
+            // Create the subscription with the payment method (the actual charge)
+            $createdSubscription = $subscription->create($paymentMethod);
 
-                // Track coupon usage
+            // The card has now been charged. EVERY remaining step is best-effort: a
+            // failure here must never reach the outer catch (which would delete the
+            // paid account and cancel the subscription). The completion token is the
+            // only piece needed for the redirect; if it fails the user can still
+            // recover via the forgot-password fallback.
+            try {
+                $user->generateCompletionToken();
+
                 if ($couponCode) {
                     $this->trackCouponUsage($user, $couponCode, $priceId, $createdSubscription->id);
                 }
 
-                // Generate completion token
-                $user->generateCompletionToken();
-
-                // Log activity
                 activity()
                     ->performedOn($user)
                     ->causedBy($user)
@@ -154,22 +171,27 @@ class QuickCheckoutService
                     ])
                     ->log($registrationType === 'affiliate_trial' ? 'affiliate_trial_completed' : 'quick_checkout_completed');
 
-                // Log successful registration
                 $this->securityService->logRegistrationAttempt($request, true);
+            } catch (\Throwable $e) {
+                Log::error('Quick checkout post-charge bookkeeping failed', [
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
 
-                // Sync to external services (async - don't block checkout)
-                $this->syncToExternalServices($user);
+            // Best-effort external sync + completion email (each swallows its own errors).
+            $this->syncToExternalServices($user);
+            $this->sendCompletionEmail($user);
 
-                // Send completion email
-                $this->sendCompletionEmail($user);
-
-                return [
-                    'success' => true,
-                    'user' => $user,
-                    'subscription' => $createdSubscription,
-                ];
-            });
+            return [
+                'success' => true,
+                'user' => $user,
+                'subscription' => $createdSubscription,
+            ];
         } catch (\Stripe\Exception\CardException $e) {
+            // No successful charge — remove the provisional user and Stripe customer.
+            $this->cleanupFailedCheckout($user);
+
             Log::error('Quick checkout card error', [
                 'email' => $email,
                 'error' => $e->getMessage(),
@@ -181,7 +203,9 @@ class QuickCheckoutService
                 'error' => 'card_error',
                 'message' => $this->getCardErrorMessage($e),
             ];
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            $this->cleanupFailedCheckout($user);
+
             Log::error('Quick checkout failed', [
                 'email' => $email,
                 'error' => $e->getMessage(),
@@ -195,6 +219,41 @@ class QuickCheckoutService
                 'error' => 'general_error',
                 'message' => 'An unexpected error occurred. Please try again or contact support.',
             ];
+        } finally {
+            Cache::forget($lockKey);
+        }
+    }
+
+    /**
+     * Remove a provisional user and its Stripe customer after a failed checkout
+     * so a declined/errored attempt never leaves orphaned records or charges.
+     */
+    protected function cleanupFailedCheckout(?User $user): void
+    {
+        if (! $user) {
+            return;
+        }
+
+        try {
+            if ($user->hasStripeId()) {
+                // Deleting the Stripe customer also cancels any attached subscription.
+                $stripe = new \Stripe\StripeClient(config('cashier.secret'));
+                $stripe->customers->delete($user->stripe_id);
+            }
+        } catch (\Throwable $e) {
+            Log::error('Failed to remove Stripe customer after failed checkout', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        try {
+            $user->delete();
+        } catch (\Throwable $e) {
+            Log::error('Failed to remove user after failed checkout', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 
@@ -245,7 +304,7 @@ class QuickCheckoutService
     {
         return User::where('completion_token', $token)
             ->where('status', 'pending_setup')
-            ->where('registration_type', 'quick_checkout')
+            ->whereIn('registration_type', ['quick_checkout', 'affiliate_trial'])
             ->where('completion_token_expires_at', '>', now())
             ->first();
     }
@@ -329,15 +388,11 @@ class QuickCheckoutService
 
         $stripeProduct = StripeProduct::where('stripe_price_id', $priceId)->first();
 
-        $discountAmount = 0;
-        if ($stripeProduct) {
-            $basePrice = $stripeProduct->price;
-            if ($discountCode->discount_type === 'percentage') {
-                $discountAmount = $basePrice * ($discountCode->discount_amount / 100);
-            } else {
-                $discountAmount = $discountCode->discount_amount;
-            }
-        }
+        // calculateDiscount() caps a fixed discount at the product price so the
+        // tracked redemption value never exceeds what was actually charged.
+        $discountAmount = $stripeProduct
+            ? $discountCode->calculateDiscount((float) $stripeProduct->price)
+            : 0;
 
         $discountCode->redemptions()->create([
             'user_id' => $user->id,

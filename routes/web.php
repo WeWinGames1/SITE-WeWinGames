@@ -61,17 +61,17 @@ Route::get('/faq', [\App\Http\Controllers\FaqController::class, 'index'])->name(
 // Quick Checkout Routes (Payment-First Registration)
 Route::middleware('guest')->group(function () {
     Route::get('/quick-checkout', [QuickCheckoutController::class, 'show'])->name('quick-checkout');
-    Route::post('/quick-checkout', [QuickCheckoutController::class, 'process'])->name('quick-checkout.process');
-    Route::post('/quick-checkout/validate-coupon', [QuickCheckoutController::class, 'validateCoupon'])->name('quick-checkout.validate-coupon');
+    Route::post('/quick-checkout', [QuickCheckoutController::class, 'process'])->middleware('throttle:6,1')->name('quick-checkout.process');
+    Route::post('/quick-checkout/validate-coupon', [QuickCheckoutController::class, 'validateCoupon'])->middleware('throttle:10,1')->name('quick-checkout.validate-coupon');
     Route::get('/complete-registration', [QuickCheckoutController::class, 'showComplete'])->name('complete-registration');
     Route::post('/complete-registration', [QuickCheckoutController::class, 'complete'])->name('complete-registration.store');
-    Route::post('/complete-registration/resend', [QuickCheckoutController::class, 'resendCompletion'])->name('complete-registration.resend');
+    Route::post('/complete-registration/resend', [QuickCheckoutController::class, 'resendCompletion'])->middleware('throttle:5,1')->name('complete-registration.resend');
 });
 
 // Affiliate Trial Routes (7-day trial checkout for sales emails)
 Route::middleware('guest')->group(function () {
     Route::get('/affiliate-trial', [AffiliateTrialController::class, 'show'])->name('affiliate-trial');
-    Route::post('/affiliate-trial', [AffiliateTrialController::class, 'process'])->name('affiliate-trial.process');
+    Route::post('/affiliate-trial', [AffiliateTrialController::class, 'process'])->middleware('throttle:6,1')->name('affiliate-trial.process');
 });
 
 // Customer dashboard route
