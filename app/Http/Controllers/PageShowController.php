@@ -12,12 +12,20 @@ class PageShowController extends Controller
     {
         $page = Page::where('slug', $slug)->where('published', true)->firstOrFail();
 
+        if ($page->usesBladeRaw()) {
+            return app(RawPageController::class)->render($page);
+        }
+
         return Inertia::render('PageShow', ['page' => $page]);
     }
 
     public function showLandingPage($slug)
     {
         $page = LandingPage::where('slug', $slug)->where('published', true)->firstOrFail();
+
+        if ($page->usesBladeRaw()) {
+            return app(RawPageController::class)->render($page);
+        }
 
         return Inertia::render('LandingPageShow', ['page' => $page]);
     }

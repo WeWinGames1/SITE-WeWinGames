@@ -67,6 +67,22 @@ return [
         'conversion_token' => env('REDDIT_CONVERSION_TOKEN'),
     ],
 
+    // X (Twitter) Ads attribution + conversion tracking
+    'twitter' => [
+        'pixel_id' => env('TWITTER_PIXEL_ID'),
+        'events' => [
+            // Event IDs (tw-XXXX-YYYY) from the X Ads Events Manager, one per conversion.
+            'signup' => env('TWITTER_EVENT_SIGNUP'),
+            'purchase' => env('TWITTER_EVENT_PURCHASE'),
+        ],
+    ],
+
+    // Heatmap / session recording slot. Currently supports Microsoft Clarity.
+    'heatmap' => [
+        'provider' => env('HEATMAP_PROVIDER', 'clarity'),
+        'id' => env('HEATMAP_ID'),
+    ],
+
     'discord' => [
         'client_id' => env('DISCORD_CLIENT_ID'),
         'client_secret' => env('DISCORD_CLIENT_SECRET'),

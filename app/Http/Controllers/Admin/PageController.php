@@ -36,11 +36,16 @@ class PageController extends Controller
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:pages,slug',
-            'content' => 'required|string',
+            'content' => 'nullable|string',
+            'render_mode' => 'nullable|string|in:'.implode(',', Page::RENDER_MODES),
+            'raw_html' => 'nullable|string',
+            'html_file' => 'nullable|file|mimes:html,htm,txt|max:5120',
             'featured_image' => 'nullable|image|max:20480',
             'featured_image_media_id' => 'nullable|integer|exists:media,id',
             'published' => 'boolean',
         ]);
+
+        $data = $this->normalizeContent($request, $data);
 
         // Handle media library selection
         if ($request->filled('featured_image_media_id')) {
@@ -53,7 +58,7 @@ class PageController extends Controller
             $data['featured_image'] = $request->file('featured_image')->store('pages', 'public');
         }
 
-        unset($data['featured_image_media_id']);
+        unset($data['featured_image_media_id'], $data['html_file']);
         $this->pages->create($data);
 
         return redirect()->route('admin.pages.index');
@@ -69,11 +74,16 @@ class PageController extends Controller
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:pages,slug,'.$page->id,
-            'content' => 'required|string',
+            'content' => 'nullable|string',
+            'render_mode' => 'nullable|string|in:'.implode(',', Page::RENDER_MODES),
+            'raw_html' => 'nullable|string',
+            'html_file' => 'nullable|file|mimes:html,htm,txt|max:5120',
             'featured_image' => 'nullable|image|max:20480',
             'featured_image_media_id' => 'nullable|integer|exists:media,id',
             'published' => 'boolean',
         ]);
+
+        $data = $this->normalizeContent($request, $data);
 
         // Handle media library selection
         if ($request->filled('featured_image_media_id')) {
@@ -88,10 +98,35 @@ class PageController extends Controller
             unset($data['featured_image']);
         }
 
-        unset($data['featured_image_media_id']);
+        unset($data['featured_image_media_id'], $data['html_file']);
         $this->pages->update($page, $data);
 
         return redirect()->route('admin.pages.index');
+    }
+
+    /**
+     * Resolve render_mode, uploaded HTML file, and non-null content/raw_html.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function normalizeContent(Request $request, array $data): array
+    {
+        $data['render_mode'] = $data['render_mode'] ?? Page::RENDER_NORMAL;
+
+        // An uploaded .html file overrides the pasted raw HTML.
+        if ($request->hasFile('html_file')) {
+            $data['raw_html'] = (string) file_get_contents($request->file('html_file')->getRealPath());
+        }
+
+        // The pages.content / landing_pages.content columns are NOT NULL.
+        $data['content'] = $data['content'] ?? ($data['raw_html'] ?? '');
+
+        if ($data['render_mode'] === Page::RENDER_NORMAL) {
+            $data['raw_html'] = null;
+        }
+
+        return $data;
     }
 
     public function destroy(Page $page)

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LandingPage;
 use App\Models\SiteSetting;
 use App\Models\Testimonial;
 use App\Services\BetService;
+use App\Services\HomeContentRenderer;
 use App\Services\SimpleCacheService;
 use Inertia\Inertia;
 
@@ -95,7 +97,7 @@ class HomeController extends Controller
             $freeBets = $allBets;
         }
 
-        return Inertia::render('Welcome', [
+        $props = [
             'roiData' => $this->betService->getTotalROIBySubscriptionLevel(),
             'levelProfitRoiData' => $this->betService->getProfitAndROIByLevel(),
             'sportProfitRoiData' => $this->betService->getProfitAndROIBySport(),
@@ -128,6 +130,74 @@ class HomeController extends Controller
             'sportPreferences' => \App\Models\SportPreference::active()->get(),
             'availableGameDates' => $this->betService->getAvailableGameDates(),
             'enableDraftkingsCta' => SiteSetting::get('enable_draftkings_cta', true),
-        ]);
+        ];
+
+        // Optionally serve an editable, admin-managed homepage instead of the
+        // built-in Welcome design. Live stats/widgets stay wired via tokens.
+        if ($editable = $this->resolveEditableHome($props)) {
+            return Inertia::render('EditableHome', $editable);
+        }
+
+        return Inertia::render('Welcome', $props);
+    }
+
+    /**
+     * Build props for the editable homepage, or null to fall back to Welcome.
+     *
+     * @param  array<string, mixed>  $props
+     * @return array<string, mixed>|null
+     */
+    private function resolveEditableHome(array $props): ?array
+    {
+        if (! SiteSetting::get('enable_editable_home', false)) {
+            return null;
+        }
+
+        $pageId = SiteSetting::get('home_landing_page_id');
+        if (! $pageId) {
+            return null;
+        }
+
+        $page = LandingPage::where('id', $pageId)->where('published', true)->first();
+        if (! $page) {
+            return null;
+        }
+
+        // The editable homepage is rendered as fragments via v-html between live
+        // widgets; a standalone full-page (blade_raw) document cannot compose
+        // that way, so fall back to the built-in homepage.
+        if ($page->usesBladeRaw()) {
+            return null;
+        }
+
+        $stats = [
+            'thisYear' => $props['thisYear'],
+            'lastYear' => $props['lastYear'],
+            'thisYearProfit' => $props['thisYearProfit'],
+            'lastYearProfit' => $props['lastYearProfit'],
+            'thisYearROI' => $props['thisYearROI'],
+            'lastYearROI' => $props['lastYearROI'],
+            'monthlyProfit' => $props['monthlyProfit'],
+            'winRatio' => $props['winRatio'],
+            'thisMonthProfit' => $props['thisMonthProfit'],
+            'thisMonthROI' => $props['thisMonthROI'],
+            'lastMonthProfit' => $props['lastMonthProfit'],
+            'lastMonthROI' => $props['lastMonthROI'],
+            'golfWinners2026' => $props['golfWinners2026'],
+            'golfROI2026' => $props['golfROI2026'],
+        ];
+
+        // Prefer the content fragment over a full raw document — the editable
+        // homepage is rendered via v-html between live widgets, so a standalone
+        // <html> document would not compose correctly.
+        $renderer = app(HomeContentRenderer::class);
+        $html = $page->content ?: $page->raw_html;
+
+        return [
+            'title' => $page->title,
+            'segments' => $renderer->render((string) $html, $stats),
+            'testimonials' => $props['testimonials'],
+            'freeBets' => $props['freeBets'],
+        ];
     }
 }

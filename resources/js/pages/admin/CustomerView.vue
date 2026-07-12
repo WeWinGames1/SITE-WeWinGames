@@ -18,6 +18,10 @@ interface Props {
         admin_override?: boolean;
         override_tier?: string;
         override_expiry?: string;
+        discord_connected?: boolean;
+        discord_username?: string | null;
+        discord_avatar_url?: string | null;
+        discord_connected_at?: string | null;
     };
     paymentMethods: Array<{
         id: string;
@@ -359,6 +363,14 @@ function formatCustomerDuration(days: number): string {
                             <div v-if="customer.phone" class="small text-muted"><i class="bi bi-telephone me-1"></i>{{ customer.phone }}</div>
                             <div class="small text-muted">
                                 <i class="bi bi-calendar me-1"></i>Customer since {{ formatDate(customer.created_at) }}
+                            </div>
+                            <div class="small mt-1" :class="customer.discord_connected ? 'text-success' : 'text-muted'">
+                                <i class="bi bi-discord me-1"></i>
+                                <template v-if="customer.discord_connected">
+                                    Discord linked<span v-if="customer.discord_username"> (@{{ customer.discord_username }})</span>
+                                    <span v-if="customer.discord_connected_at"> on {{ formatDate(customer.discord_connected_at) }}</span>
+                                </template>
+                                <template v-else>Discord not connected</template>
                             </div>
                         </div>
                     </div>

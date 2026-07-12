@@ -2,15 +2,25 @@
 import { useElfsight } from '@/composables/useElfsight';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import { Head } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 const props = defineProps<{ page: any }>();
 
 // Process content for Elfsight widget shortcodes
 const { processedContent } = useElfsight(props.page.content);
+
+// "inertia_raw" renders the content without the site header/footer chrome
+// (but still inside the Inertia shell, so site-wide GA/GTM load).
+const isRaw = computed(() => props.page.render_mode === 'inertia_raw');
 </script>
 <template>
-    <WelcomeLayout>
-        <Head :title="props.page.title" />
+    <Head :title="props.page.title" />
+
+    <!-- Raw (no chrome) mode -->
+    <div v-if="isRaw" class="raw-inertia-page" v-html="processedContent"></div>
+
+    <!-- Normal mode with site header/footer -->
+    <WelcomeLayout v-else>
         <div class="min-vh-100" style="background-color: #0a0e1a">
             <!-- Header Section -->
             <section class="py-5" style="background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 100%)">

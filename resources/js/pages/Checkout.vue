@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import CustomerLayout from '@/layouts/CustomerLayout.vue';
 import TrustBadges from '@/components/TrustBadges.vue';
+import { useTwitterPixel } from '@/composables/useTwitterPixel';
+import CustomerLayout from '@/layouts/CustomerLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { loadStripe } from '@stripe/stripe-js';
 import axios from 'axios';
@@ -37,6 +38,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const page = usePage();
+const { trackPurchase } = useTwitterPixel();
 const form = useForm({
     payment_method: '',
     coupon: '',
@@ -261,6 +263,9 @@ const handle3DSecure = async () => {
                         value: purchaseData.plan_price,
                     });
                 }
+
+                // X (Twitter) purchase conversion
+                trackPurchase({ value: purchaseData.plan_price, currency: 'USD' });
             }
             // Redirect to dashboard
             window.location.href = route('dashboard');
@@ -342,6 +347,9 @@ const submit = async () => {
                             value: total.value,
                         });
                     }
+
+                    // X (Twitter) purchase conversion
+                    trackPurchase({ value: total.value, currency: 'USD' });
                 }
             },
             onError: () => {

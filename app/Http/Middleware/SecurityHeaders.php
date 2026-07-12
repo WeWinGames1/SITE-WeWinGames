@@ -57,6 +57,13 @@ class SecurityHeaders
      */
     private function setContentSecurityPolicy(Response $response): void
     {
+        // Respect a CSP explicitly set by a controller (e.g. admin-authored
+        // full-page raw HTML, which needs a relaxed policy to load its own
+        // third-party scripts/styles/fonts).
+        if ($response->headers->has('Content-Security-Policy')) {
+            return;
+        }
+
         $csp = [
             "default-src 'self'",
         ];
@@ -91,6 +98,10 @@ class SecurityHeaders
                 'https://static.elfsight.com',
                 'https://apps.elfsight.com',
                 'https://connect.facebook.net',
+                'https://static.ads-twitter.com',
+                'https://analytics.twitter.com',
+                'https://www.clarity.ms',
+                'https://*.clarity.ms',
             ];
 
             $styleSrc = [
@@ -134,6 +145,10 @@ class SecurityHeaders
                 'https://www.facebook.com',
                 'https://*.conversionsapigateway.com',
                 'https://*.run.app',
+                'https://analytics.twitter.com',
+                'https://static.ads-twitter.com',
+                'https://t.co',
+                'https://*.clarity.ms',
             ];
 
             $csp[] = 'script-src '.implode(' ', $scriptSrc);

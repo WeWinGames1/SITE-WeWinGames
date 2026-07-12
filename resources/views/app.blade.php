@@ -6,46 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    @if(config('services.reddit.pixel_id'))
-        {{-- Reddit Pixel --}}
-        <script>
-            !function (w, d) { if (!w.rdt) { var p = w.rdt = function () { p.sendEvent ? p.sendEvent.apply(p, arguments) : p.callQueue.push(arguments) }; p.callQueue = []; var t = d.createElement("script"); t.src = "https://www.redditstatic.com/ads/pixel.js", t.async = !0; var s = d.getElementsByTagName("script")[0]; s.parentNode.insertBefore(t, s) } }(window, document);
-
-            var redditInitOptions = {};
-            @auth
-                        const userEmail = @json(Auth::user()->email);
-                const userPhone = @json(Auth::user()->phone);
-
-                redditInitOptions = {
-                    email: userEmail,
-                };
-
-                if (userPhone) {
-                    redditInitOptions.phoneNumber = userPhone;
-                }
-            @endauth
-
-            rdt('init', '{{ config('services.reddit.pixel_id') }}', redditInitOptions);
-            rdt('track', 'PageVisit');
-        </script>
-        <!-- End Reddit Pixel -->
-    @endif
-
-    {{-- Google Tag Manager --}}
-    @production
-        @if(config('google.tag_manager.container_id'))
-            <!-- Google Tag Manager -->
-            <script>(function (w, d, s, l, i) {
-                    w[l] = w[l] || []; w[l].push({
-                        'gtm.start':
-                            new Date().getTime(), event: 'gtm.js'
-                    }); var f = d.getElementsByTagName(s)[0],
-                        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
-                            'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
-                })(window, document, 'script', 'dataLayer', '{{ config('google.tag_manager.container_id') }}');</script>
-            <!-- End Google Tag Manager -->
-        @endif
-    @endproduction
+    {{-- Site-wide analytics & advertising attribution (Reddit, GTM, GA, X pixel, heatmap) --}}
+    @include('partials.tracking-head')
 
     {{-- Inline script to detect system dark mode preference and apply it immediately --}}
     <script>
@@ -104,20 +66,6 @@
             };
         </script>
     @endif
-
-    {{-- Google Analytics --}}
-    @production
-        @if(config('google.analytics.tag_id'))
-            <!-- Google tag (gtag.js) -->
-            <script async src="https://www.googletagmanager.com/gtag/js?id={{ config('google.analytics.tag_id') }}"></script>
-            <script>
-                window.dataLayer = window.dataLayer || [];
-                function gtag() { dataLayer.push(arguments); }
-                gtag('js', new Date());
-                gtag('config', '{{ config('google.analytics.tag_id') }}');
-            </script>
-        @endif
-    @endproduction
 
     {{-- OneSignal Push Notifications (non-admin pages only, HTTPS only) --}}
     @if(!request()->is('admin*') && request()->secure())
@@ -212,15 +160,8 @@
 </head>
 
 <body class="font-sans antialiased">
-    {{-- Google Tag Manager (noscript) --}}
-    @production
-        @if(config('google.tag_manager.container_id'))
-            <!-- Google Tag Manager (noscript) -->
-            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ config('google.tag_manager.container_id') }}"
-                    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-            <!-- End Google Tag Manager (noscript) -->
-        @endif
-    @endproduction
+    {{-- Analytics tags for top of <body> (GTM noscript) --}}
+    @include('partials.tracking-body')
 
     @if(session()->has('impersonator_id'))
         <div class="bg-warning text-dark">

@@ -27,6 +27,9 @@ interface Customer {
     is_ambassador?: boolean;
     is_gifted?: boolean;
     admin_override?: boolean;
+    discord_id?: string | null;
+    discord_username?: string | null;
+    discord_connected_at?: string | null;
 }
 
 interface Props {
@@ -42,7 +45,9 @@ interface Props {
     filters: {
         search?: string;
         status?: string;
+        subscription_status?: string;
         tier?: string;
+        discord?: string;
         start_date?: string;
         end_date?: string;
         sort?: string;
@@ -85,6 +90,7 @@ const filters = ref({
     status: props.filters.status || '',
     subscription_status: props.filters.subscription_status || '',
     tier: props.filters.tier || '',
+    discord: props.filters.discord || '',
     start_date: props.filters.start_date || '',
     end_date: props.filters.end_date || '',
     sort: props.filters.sort || 'created_at',
@@ -149,6 +155,16 @@ watch(
 );
 watch(
     () => filters.value.tier,
+    () => {
+        router.get(route('admin.customers.index'), filters.value, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
+    },
+);
+watch(
+    () => filters.value.discord,
     () => {
         router.get(route('admin.customers.index'), filters.value, {
             preserveState: true,
@@ -329,6 +345,7 @@ function clearFilters() {
         status: '',
         subscription_status: '',
         tier: '',
+        discord: '',
         start_date: '',
         end_date: '',
         sort: 'created_at',
@@ -609,6 +626,14 @@ function getCustomerBadgeClass(status: string) {
                             </select>
                         </div>
                         <div class="col-md-2">
+                            <label class="form-label">Discord</label>
+                            <select v-model="filters.discord" class="form-select">
+                                <option value="">All</option>
+                                <option value="connected">Connected</option>
+                                <option value="not_connected">Not Connected</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
                             <label class="form-label">Per Page</label>
                             <select v-model.number="filters.per_page" class="form-select">
                                 <option :value="25">25</option>
@@ -619,7 +644,11 @@ function getCustomerBadgeClass(status: string) {
                         </div>
                         <div class="col-md-3">
                             <div class="d-flex gap-2 justify-content-end">
-                                <button class="btn btn-secondary" @click="clearFilters" v-if="filters.search || filters.status || filters.tier">
+                                <button
+                                    class="btn btn-secondary"
+                                    @click="clearFilters"
+                                    v-if="filters.search || filters.status || filters.tier || filters.discord"
+                                >
                                     <i class="bi bi-x-circle me-1"></i>Clear
                                 </button>
                                 <div class="text-muted small">
@@ -651,6 +680,7 @@ function getCustomerBadgeClass(status: string) {
                                     <th>Plan</th>
                                     <th>Interval</th>
                                     <th>Renewal</th>
+                                    <th>Discord</th>
                                     <th @click="toggleSort('created_at')" role="button" class="user-select-none">
                                         Joined
                                         <i :class="getSortIcon('created_at')" class="bi ms-1 small"></i>
@@ -754,6 +784,20 @@ function getCustomerBadgeClass(status: string) {
                                             <small>{{ new Date(customer.subscriptions[0].current_period_end).toLocaleDateString() }}</small>
                                         </div>
                                         <span v-else class="text-muted">-</span>
+                                    </td>
+                                    <td>
+                                        <span
+                                            v-if="customer.discord_id"
+                                            class="badge bg-success"
+                                            :title="
+                                                customer.discord_connected_at
+                                                    ? 'Linked ' + new Date(customer.discord_connected_at).toLocaleDateString()
+                                                    : 'Linked'
+                                            "
+                                        >
+                                            <i class="bi bi-discord me-1"></i>Yes
+                                        </span>
+                                        <span v-else class="badge bg-light text-muted"><i class="bi bi-discord me-1"></i>No</span>
                                     </td>
                                     <td>
                                         <small class="text-muted">

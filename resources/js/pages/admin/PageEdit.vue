@@ -7,7 +7,7 @@ import Image from '@tiptap/extension-image';
 import TiptapLink from '@tiptap/extension-link';
 import StarterKit from '@tiptap/starter-kit';
 import { Editor, EditorContent } from '@tiptap/vue-3';
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 const props = defineProps<{ page: any | null }>();
 
@@ -15,10 +15,54 @@ const form = useForm({
     title: props.page?.title || '',
     slug: props.page?.slug || '',
     content: props.page?.content || '',
+    render_mode: props.page?.render_mode || 'normal',
+    raw_html: props.page?.raw_html || props.page?.content || '',
     featured_image: null as File | null, // for file upload
     featured_image_media_id: null as number | null,
     published: props.page?.published ?? true,
 });
+
+// Raw modes bypass the Tiptap editor entirely so pasted HTML/scripts are
+// preserved verbatim (Tiptap would strip unknown tags on the visual round-trip).
+const isRawMode = computed(() => form.render_mode !== 'normal');
+const isBladeRaw = computed(() => form.render_mode === 'blade_raw');
+const htmlFileKey = ref(0);
+
+// Keep content in sync with the raw HTML while in a raw mode so the public
+// renderer (v-html for inertia_raw) and validation both have the markup.
+watch(
+    () => form.raw_html,
+    (val) => {
+        if (isRawMode.value) form.content = val;
+    },
+);
+
+// Seed the raw editor from existing content the first time a raw mode is chosen.
+watch(
+    () => form.render_mode,
+    (mode) => {
+        if (mode !== 'normal' && !form.raw_html) {
+            form.raw_html = editor.value?.getHTML() || form.content || '';
+        }
+        if (mode === 'normal') {
+            form.content = editor.value?.getHTML() || form.content || '';
+        }
+    },
+);
+
+function handleHtmlFileChange(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const text = (e.target?.result as string) || '';
+        form.raw_html = text;
+        form.content = text;
+    };
+    reader.readAsText(file);
+    htmlFileKey.value++;
+}
 
 const preview = ref(props.page?.featured_image_url || '');
 const showSourceCode = ref(false);
@@ -110,7 +154,12 @@ function validateForm(): boolean {
         isValid = false;
     }
 
-    if (!form.content || form.content.trim() === '' || form.content.trim() === '<p></p>') {
+    if (isRawMode.value) {
+        if (!form.raw_html || form.raw_html.trim() === '') {
+            errors.raw_html = 'Paste or upload the HTML for this page.';
+            isValid = false;
+        }
+    } else if (!form.content || form.content.trim() === '' || form.content.trim() === '<p></p>') {
         errors.content = 'The content field is required.';
         isValid = false;
     }
@@ -324,13 +373,53 @@ const addImage = () => {
                         <div class="card mb-4">
                             <div class="card-body">
                                 <label class="form-label text-dark fw-medium mb-2">Page Content</label>
-                                <div class="text-muted small mb-2">
+                                <div v-if="!isRawMode" class="text-muted small mb-2">
                                     <i class="bi bi-info-circle me-1"></i>
                                     Tip: Double-click on any image to resize it
                                 </div>
 
+                                <!-- Raw HTML editor (raw render modes) -->
+                                <div v-if="isRawMode">
+                                    <div class="alert alert-info small py-2">
+                                        <i class="bi bi-code-square me-1"></i>
+                                        <template v-if="isBladeRaw">
+                                            <strong>Full page (raw):</strong> this HTML controls the entire page. Paste a complete document — your
+                                            <code>&lt;script&gt;</code> tags (tracking, widgets) will run. Site analytics are injected automatically.
+                                        </template>
+                                        <template v-else>
+                                            <strong>Content only (no header/footer):</strong> your HTML is shown without the site chrome. Note:
+                                            <code>&lt;script&gt;</code> tags will not execute in this mode — use "Full page (raw)" if you need scripts
+                                            to run.
+                                        </template>
+                                    </div>
+
+                                    <div class="mb-2">
+                                        <label class="form-label text-dark small fw-medium mb-1">Import from .html file</label>
+                                        <input
+                                            type="file"
+                                            accept=".html,.htm,text/html"
+                                            class="form-control form-control-sm"
+                                            :key="htmlFileKey"
+                                            @change="handleHtmlFileChange"
+                                        />
+                                        <div class="text-secondary small mt-1">
+                                            Uploading fills the editor below — you can still tweak it before saving.
+                                        </div>
+                                    </div>
+
+                                    <textarea
+                                        v-model="form.raw_html"
+                                        class="form-control"
+                                        style="min-height: 400px; font-family: 'Courier New', monospace; font-size: 13px"
+                                        placeholder="Paste your full HTML page here..."
+                                    ></textarea>
+                                    <div v-if="form.errors.raw_html" class="invalid-feedback d-block">
+                                        {{ form.errors.raw_html }}
+                                    </div>
+                                </div>
+
                                 <!-- Editor Toolbar -->
-                                <div v-if="editor" class="border rounded-top bg-light p-2 d-flex flex-wrap align-items-center gap-1">
+                                <div v-if="!isRawMode && editor" class="border rounded-top bg-light p-2 d-flex flex-wrap align-items-center gap-1">
                                     <button
                                         type="button"
                                         @click="editor.chain().focus().toggleBold().run()"
@@ -436,12 +525,12 @@ const addImage = () => {
                                 </div>
 
                                 <!-- Editor Content -->
-                                <div v-if="!showSourceCode">
+                                <div v-if="!isRawMode && !showSourceCode">
                                     <EditorContent :editor="editor" class="border border-top-0 rounded-bottom p-3" style="min-height: 300px" />
                                 </div>
 
                                 <!-- Source Code Editor -->
-                                <div v-else>
+                                <div v-else-if="!isRawMode">
                                     <textarea
                                         v-model="sourceCode"
                                         @input="updateSourceCode"
@@ -466,6 +555,22 @@ const addImage = () => {
                                     <h5 class="card-title mb-0">Publish Settings</h5>
                                 </div>
                                 <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="render_mode" class="form-label text-dark fw-medium">Page Type</label>
+                                        <select id="render_mode" v-model="form.render_mode" class="form-select">
+                                            <option value="normal">Normal (site header &amp; footer)</option>
+                                            <option value="inertia_raw">Content only (no header/footer)</option>
+                                            <option value="blade_raw">Full page (raw HTML, scripts run)</option>
+                                        </select>
+                                        <div class="text-secondary small mt-1">
+                                            <span v-if="form.render_mode === 'normal'">Standard page wrapped in the site layout.</span>
+                                            <span v-else-if="form.render_mode === 'inertia_raw'"
+                                                >Your HTML only, no site chrome. Scripts do not run.</span
+                                            >
+                                            <span v-else>Your HTML controls the whole page. Scripts run; site tracking is injected.</span>
+                                        </div>
+                                    </div>
+
                                     <div class="form-check mb-3">
                                         <input id="published" v-model="form.published" type="checkbox" class="form-check-input" />
                                         <label for="published" class="form-check-label text-dark"> Published </label>

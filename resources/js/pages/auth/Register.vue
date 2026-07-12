@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { useForm } from '@/composables/useInertiaForm';
+import { useTwitterPixel } from '@/composables/useTwitterPixel';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 const page = usePage();
+const { trackSignup } = useTwitterPixel();
 const turnstileEnabled = ref(false);
 const turnstileSiteKey = ref('');
 const turnstileWidget = ref<string | null>(null);
@@ -498,6 +500,9 @@ const submit = () => {
                 });
                 (window as any).rdt('track', 'SignUp');
             }
+
+            // X (Twitter) sign-up conversion
+            trackSignup();
         },
         preserveScroll: true,
         preserveState: true, // Keep form data on validation errors

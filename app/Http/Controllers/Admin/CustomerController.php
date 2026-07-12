@@ -196,6 +196,10 @@ class CustomerController extends Controller
                 'admin_override' => $user->admin_override,
                 'override_tier' => $user->override_tier,
                 'override_expiry' => $user->override_expiry,
+                'discord_connected' => $user->hasDiscordConnected(),
+                'discord_username' => $user->discord_username,
+                'discord_avatar_url' => $user->discord_avatar_url,
+                'discord_connected_at' => $user->discord_connected_at?->toISOString(),
             ],
             'paymentMethods' => $paymentMethods,
             'activities' => $activities,
@@ -330,6 +334,15 @@ class CustomerController extends Controller
             // If tier === 'all', don't add any tier filtering
         }
 
+        // Discord connection filter (for segmenting users who have not linked Discord)
+        if ($discord = $request->get('discord')) {
+            if ($discord === 'connected') {
+                $query->whereNotNull('discord_id');
+            } elseif ($discord === 'not_connected') {
+                $query->whereNull('discord_id');
+            }
+        }
+
         // Date range filter
         if ($startDate = $request->get('start_date')) {
             $query->whereDate('created_at', '>=', $startDate);
@@ -450,7 +463,7 @@ class CustomerController extends Controller
 
         return Inertia::render('admin/CustomersIndex', [
             'customers' => $customers,
-            'filters' => $request->only(['search', 'status', 'subscription_status', 'tier', 'start_date', 'end_date', 'sort', 'direction', 'per_page']),
+            'filters' => $request->only(['search', 'status', 'subscription_status', 'tier', 'discord', 'start_date', 'end_date', 'sort', 'direction', 'per_page']),
             'stats' => $stats,
         ]);
     }

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import OrderBumpModal from '@/components/OrderBumpModal.vue';
 import TrustBadges from '@/components/TrustBadges.vue';
+import { useTwitterPixel } from '@/composables/useTwitterPixel';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { loadStripe } from '@stripe/stripe-js';
@@ -41,6 +42,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const page = usePage();
+const { trackPurchase } = useTwitterPixel();
 
 const form = useForm({
     name: '',
@@ -378,16 +380,13 @@ onMounted(async () => {
 // Update Stripe Elements amount when plan OR discount changes.
 // `total` already factors in the applied discount, so the wallet/Apple Pay
 // deposit sheet reflects the discounted amount instead of the base price.
-watch(
-    total,
-    async (newAmount) => {
-        if (elements.value) {
-            elements.value.update({
-                amount: Math.max(50, Math.round(newAmount * 100)),
-            });
-        }
-    },
-);
+watch(total, async (newAmount) => {
+    if (elements.value) {
+        elements.value.update({
+            amount: Math.max(50, Math.round(newAmount * 100)),
+        });
+    }
+});
 
 const submit = async () => {
     // Client-side validation
@@ -457,6 +456,9 @@ const submit = async () => {
                         value: total.value,
                     });
                 }
+
+                // X (Twitter) purchase conversion
+                trackPurchase({ value: total.value, currency: 'USD' });
             },
             onError: () => {
                 if (form.errors.payment) {
@@ -472,10 +474,8 @@ const submit = async () => {
         });
     } catch (error: any) {
         // Show more specific error if available
-        const message = error?.response?.data?.message
-            || error?.response?.data?.errors?.payment
-            || error?.message
-            || 'An error occurred. Please try again.';
+        const message =
+            error?.response?.data?.message || error?.response?.data?.errors?.payment || error?.message || 'An error occurred. Please try again.';
         paymentError.value = message;
         processing.value = false;
         console.error('Checkout error:', error);
@@ -500,7 +500,7 @@ const submit = async () => {
                             <!-- Order Summary -->
                             <div class="col-lg-5 order-lg-2">
                                 <div class="card bg-navy-800 border-0">
-                                    <div class="card-header bg-transparent border-bottom" style="border-color: rgba(255,255,255,0.1) !important">
+                                    <div class="card-header bg-transparent border-bottom" style="border-color: rgba(255, 255, 255, 0.1) !important">
                                         <h5 class="mb-0 text-white">Choose Your Plan</h5>
                                     </div>
                                     <div class="card-body">
@@ -521,9 +521,7 @@ const submit = async () => {
                                                             <small class="text-gray-light">All sports, all picks, expert analysis</small>
                                                         </div>
                                                         <div class="text-end">
-                                                            <div class="fs-4 fw-bold text-gold-500">
-                                                                ${{ getPrice(selectedPeriod, 'platinum') }}
-                                                            </div>
+                                                            <div class="fs-4 fw-bold text-gold-500">${{ getPrice(selectedPeriod, 'platinum') }}</div>
                                                             <small class="text-gray-light">/{{ selectedPeriod }}</small>
                                                         </div>
                                                     </div>
@@ -600,7 +598,7 @@ const submit = async () => {
                                             </div>
                                         </div>
 
-                                        <hr style="border-color: rgba(255,255,255,0.1)" />
+                                        <hr style="border-color: rgba(255, 255, 255, 0.1)" />
 
                                         <!-- Selected Plan Details -->
                                         <div class="d-flex justify-content-between mb-3">
@@ -620,7 +618,7 @@ const submit = async () => {
                                             >
                                         </div>
 
-                                        <hr style="border-color: rgba(255,255,255,0.1)" />
+                                        <hr style="border-color: rgba(255, 255, 255, 0.1)" />
 
                                         <div class="d-flex justify-content-between">
                                             <h6 class="mb-0 text-white">Total</h6>
@@ -628,10 +626,18 @@ const submit = async () => {
                                         </div>
 
                                         <!-- Features -->
-                                        <div class="mt-4 pt-3 border-top" style="border-color: rgba(255,255,255,0.1) !important" v-if="currentPlan.features?.length">
+                                        <div
+                                            class="mt-4 pt-3 border-top"
+                                            style="border-color: rgba(255, 255, 255, 0.1) !important"
+                                            v-if="currentPlan.features?.length"
+                                        >
                                             <h6 class="text-white small mb-3">What's included:</h6>
                                             <ul class="list-unstyled mb-0">
-                                                <li v-for="feature in currentPlan.features.slice(0, 4)" :key="feature" class="mb-2 small text-gray-light">
+                                                <li
+                                                    v-for="feature in currentPlan.features.slice(0, 4)"
+                                                    :key="feature"
+                                                    class="mb-2 small text-gray-light"
+                                                >
                                                     <i class="bi bi-check-circle-fill text-success me-2"></i>
                                                     {{ feature }}
                                                 </li>
@@ -701,7 +707,7 @@ const submit = async () => {
                                                 </div>
                                             </div>
 
-                                            <hr style="border-color: rgba(255,255,255,0.1)" class="my-4" />
+                                            <hr style="border-color: rgba(255, 255, 255, 0.1)" class="my-4" />
 
                                             <h5 class="text-white mb-4">Payment Details</h5>
 
@@ -717,11 +723,18 @@ const submit = async () => {
                                                         placeholder="Enter discount code"
                                                         @keyup.enter="validateCoupon"
                                                     />
-                                                    <button type="button" class="btn btn-outline-secondary" @click="validateCoupon" :disabled="validatingCoupon">
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-outline-secondary"
+                                                        @click="validateCoupon"
+                                                        :disabled="validatingCoupon"
+                                                    >
                                                         <span v-if="validatingCoupon" class="spinner-border spinner-border-sm"></span>
                                                         <span v-else>Apply</span>
                                                     </button>
-                                                    <button v-if="discount" type="button" class="btn btn-outline-danger" @click="clearDiscount">Clear</button>
+                                                    <button v-if="discount" type="button" class="btn btn-outline-danger" @click="clearDiscount">
+                                                        Clear
+                                                    </button>
                                                 </div>
                                                 <div v-if="form.errors.coupon" class="invalid-feedback d-block">{{ form.errors.coupon }}</div>
                                                 <div v-if="discount" class="text-success small mt-2">
@@ -751,7 +764,12 @@ const submit = async () => {
                                                     <div class="spinner-border spinner-border-sm text-primary"></div>
                                                     <div class="text-muted small mt-2">Loading security verification...</div>
                                                 </div>
-                                                <div id="cf-turnstile" :data-sitekey="turnstileSiteKey" data-theme="dark" style="min-height: 65px"></div>
+                                                <div
+                                                    id="cf-turnstile"
+                                                    :data-sitekey="turnstileSiteKey"
+                                                    data-theme="dark"
+                                                    style="min-height: 65px"
+                                                ></div>
                                                 <div v-if="turnstileError" class="alert alert-danger small mt-2">
                                                     <i class="bi bi-exclamation-triangle me-1"></i>
                                                     {{ turnstileError }}
@@ -779,7 +797,7 @@ const submit = async () => {
                                             </p>
                                         </form>
 
-                                        <div class="text-center mt-4 pt-3 border-top" style="border-color: rgba(255,255,255,0.1) !important">
+                                        <div class="text-center mt-4 pt-3 border-top" style="border-color: rgba(255, 255, 255, 0.1) !important">
                                             <p class="text-gray-light small mb-2">Already have an account?</p>
                                             <a :href="route('login')" class="btn btn-outline-light">
                                                 <i class="bi bi-box-arrow-in-right me-2"></i>
