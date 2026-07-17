@@ -5,6 +5,7 @@ namespace App\Listeners;
 use App\Services\TwitterConversionService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Laravel\Cashier\Cashier;
 use Laravel\Cashier\Events\WebhookReceived;
 
@@ -28,6 +29,18 @@ class SendTwitterPurchaseConversion
     public function __construct(private TwitterConversionService $twitter) {}
 
     public function handle(WebhookReceived $event): void
+    {
+        // Tracking-only: a cache/DB hiccup here must never bubble up and fail
+        // Cashier's webhook response (which would block its own state sync and
+        // trigger a Stripe redelivery).
+        try {
+            $this->dispatchConversion($event);
+        } catch (\Throwable $e) {
+            Log::error('X CAPI purchase listener failed: '.$e->getMessage());
+        }
+    }
+
+    private function dispatchConversion(WebhookReceived $event): void
     {
         if (($event->payload['type'] ?? null) !== 'invoice.payment_succeeded') {
             return;

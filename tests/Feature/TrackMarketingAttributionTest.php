@@ -26,4 +26,18 @@ class TrackMarketingAttributionTest extends TestCase
         $response->assertCookieMissing('twclid');
         $response->assertCookieMissing('landing_url');
     }
+
+    public function test_it_caps_oversized_tracking_values(): void
+    {
+        // An oversized query param must be truncated before it is stored, so it
+        // can neither bloat the cookie nor overflow the VARCHAR(255) user column.
+        $response = $this->get('/login?twclid='.str_repeat('a', 5000));
+
+        $cookie = collect($response->headers->getCookies())->first(fn ($c) => $c->getName() === 'twclid');
+
+        $this->assertNotNull($cookie);
+        // A 255-char value encrypts to well under 1500 bytes; a 5000-char value
+        // would produce a multi-KB cookie, so this proves truncation occurred.
+        $this->assertLessThan(1500, strlen($cookie->getValue()));
+    }
 }

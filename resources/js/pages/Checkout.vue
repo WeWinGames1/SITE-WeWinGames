@@ -273,13 +273,18 @@ const handle3DSecure = async () => {
                     });
                 }
 
-                // X (Twitter) purchase conversion (conversion_id shared with server CAPI for dedup)
-                trackPurchase({
-                    value: purchaseData.plan_price,
-                    currency: 'USD',
-                    conversion_id: purchaseData.conversion_id ?? null,
-                    email_address: page.props.auth.user?.email ?? null,
-                });
+                // X (Twitter) purchase conversion. Only fire when there was an
+                // actual charge (conversion_id = PaymentIntent id is null for
+                // $0 / 100%-off / trial subs), matching the server-side exclusion
+                // and keeping browser/server dedup aligned.
+                if (purchaseData.conversion_id) {
+                    trackPurchase({
+                        value: purchaseData.plan_price,
+                        currency: 'USD',
+                        conversion_id: purchaseData.conversion_id,
+                        email_address: page.props.auth.user?.email ?? null,
+                    });
+                }
             }
             // Redirect to dashboard
             window.location.href = route('dashboard');
@@ -362,13 +367,19 @@ const submit = async () => {
                         });
                     }
 
-                    // X (Twitter) purchase conversion (conversion_id shared with server CAPI for dedup)
-                    trackPurchase({
-                        value: total.value,
-                        currency: 'USD',
-                        conversion_id: (page.props.flash as any)?.purchase_data?.conversion_id ?? null,
-                        email_address: page.props.auth.user?.email ?? null,
-                    });
+                    // X (Twitter) purchase conversion. Only fire when there was an
+                    // actual charge (conversion_id = PaymentIntent id is null for
+                    // $0 / 100%-off / trial subs), matching the server-side
+                    // exclusion and keeping browser/server dedup aligned.
+                    const xConversionId = (page.props.flash as any)?.purchase_data?.conversion_id ?? null;
+                    if (xConversionId) {
+                        trackPurchase({
+                            value: total.value,
+                            currency: 'USD',
+                            conversion_id: xConversionId,
+                            email_address: page.props.auth.user?.email ?? null,
+                        });
+                    }
                 }
             },
             onError: () => {

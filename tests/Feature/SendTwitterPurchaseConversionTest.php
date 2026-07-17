@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Laravel\Cashier\Events\WebhookReceived;
 use Tests\TestCase;
@@ -116,6 +117,19 @@ class SendTwitterPurchaseConversionTest extends TestCase
         event(new WebhookReceived($payload)); // retries -> succeeds
 
         Http::assertSentCount(2);
+    }
+
+    public function test_it_swallows_cache_failures_without_failing_the_webhook(): void
+    {
+        Http::fake();
+        $this->makeUser();
+        // Simulate a Redis blip on the idempotency claim.
+        Cache::shouldReceive('add')->andThrow(new \RuntimeException('cache down'));
+
+        // Must not throw out of the webhook listener.
+        event(new WebhookReceived($this->invoicePayload()));
+
+        Http::assertNothingSent();
     }
 
     public function test_it_does_nothing_for_unknown_customer(): void
