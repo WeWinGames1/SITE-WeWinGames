@@ -531,6 +531,143 @@ const { pushToDataLayer } = useGoogleTagManager();
 pushToDataLayer({ event: 'subscription_started', tier: 'gold' });
 ```
 
+## X (Twitter) Ads Conversion Tracking
+
+End-to-end X (Twitter) Ads tracking: browser pixel events, a server-side
+Conversion API, and browser/server deduplication so each purchase is counted
+once. All IDs are environment-driven — nothing is hardcoded.
+
+### What fires
+
+| Event | Where | How |
+|-------|-------|-----|
+| **Base pixel** | All pages (production only) | `resources/views/partials/tracking-head.blade.php` |
+| **Content View** | Home / pricing page mount (`Welcome.vue`) | Browser pixel |
+| **Checkout Initiated** | Checkout + Quick Checkout mount | Browser pixel |
+| **Subscription Purchase** | Checkout success (browser) **and** first paid Stripe invoice (server) | Browser pixel **+** Conversion API |
+
+Browser events fire through the `useTwitterPixel` composable
+(`resources/js/composables/useTwitterPixel.ts`) and are gated to production
+(`@production` in the Blade partial + `APP_ENV === 'production'` in the
+composable). In non-production they log to the console instead.
+
+### Server-side Conversion API
+
+- **Service:** `app/Services/TwitterConversionService.php` — POSTs to
+  `https://ads-api.x.com/{version}/measurement/conversions/{pixel_id}` with the
+  `X-Pixel-Token` header. Identifiers are SHA-256 hashed (email lowercased/
+  trimmed; phone normalized to E.164 digits).
+- **Trigger:** `app/Listeners/SendTwitterPurchaseConversion.php`, on the Cashier
+  `WebhookReceived` event. Fires **only** on the first paid charge
+  (`invoice.payment_succeeded` with `billing_reason = subscription_create` and
+  `amount_paid > 0`). This excludes renewals, failed payments, and free /
+  100%-off / trial-only invoices, and catches 3D Secure purchases. It runs
+  synchronously inside the webhook (no queue-worker dependency), is time-bounded
+  (5s connect / 10s response) so it can't hang the webhook, and is idempotent
+  (a cache lock keyed on the transaction, released on a transient failure so a
+  redelivery can retry).
+
+### Deduplication
+
+The browser Purchase event and the server Conversion API event share the same
+`event_id` (`TWITTER_EVENT_PURCHASE`) and the same `conversion_id` — the Stripe
+**PaymentIntent id** (`pi_…`) — so X collapses them into a single conversion.
+
+### Attribution capture (twclid + UTM)
+
+- **Middleware:** `app/Http/Middleware/TrackMarketingAttribution.php` captures
+  `twclid`, `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, and the
+  original `landing_url` from the landing URL into 30-day first-party cookies.
+- These are persisted to new `users` columns (migration
+  `*_add_marketing_tracking_to_users_table.php`) at registration / quick
+  checkout, and refreshed at subscribe time for authenticated checkouts.
+- The server-side purchase event reads `twclid` from the user row, so
+  attribution survives the async, cookieless webhook.
+
+### Configuration
+
+The `X-Pixel-Token` is a **server-side secret** — it must never be committed,
+exposed to the browser, or added to the Inertia `env` payload. The pixel id and
+event ids are not secret (they appear in browser JS).
+
+```env
+# X (Twitter) Ads — pixel + conversion tracking (pixel id "qfwd8")
+TWITTER_PIXEL_ID=qfwd8
+# Event IDs (tw-<pixel>-<code>) from X Events Manager. Browser-visible, not secret.
+TWITTER_EVENT_CONTENT_VIEW=tw-qfwd8-13u0ab
+TWITTER_EVENT_CHECKOUT_INITIATED=tw-qfwd8-13u0a9
+TWITTER_EVENT_SIGNUP=
+TWITTER_EVENT_PURCHASE=tw-qfwd8-rdw3t
+# Conversion API — SERVER-SIDE ONLY. Never expose to browser / commit the real token.
+TWITTER_CONVERSION_TOKEN=your_x_pixel_token
+TWITTER_API_VERSION=12
+```
+
+Config lives in `config/services.php` under the `twitter` key.
+
+### Deployment checklist
+
+```bash
+# 1. Set the TWITTER_* env vars, then cache config (env must be set first)
+php artisan config:cache
+
+# 2. Add the marketing attribution columns (additive, nullable)
+php artisan migrate --force
+
+# 3. Build the frontend so the new browser events ship
+npm run build --maxsockets 1
+```
+
+4. **Stripe** — enable the `invoice.payment_succeeded` webhook event (see below).
+5. **X Events Manager** — enable "Allow 1st party cookie" for the pixel (see below).
+
+#### 4. Enable the Stripe webhook event
+
+The server-side purchase conversion is triggered by Stripe's
+`invoice.payment_succeeded` event reaching the Cashier webhook endpoint
+(`/stripe/webhook`). Enable it in the **Stripe Dashboard**:
+
+1. Go to **Developers → Webhooks**.
+2. Open the production endpoint that points at `https://wewingames.com/stripe/webhook`.
+3. Click **… → Update details** (or **Add events**) under "Listening for".
+4. Add **`invoice.payment_succeeded`** to the selected events (keep the existing
+   Cashier events — don't remove them).
+5. Save. Use **Send test webhook** to confirm delivery returns `200`.
+
+> Cashier dispatches the `WebhookReceived` event for every webhook it receives,
+> so no additional Stripe config is needed beyond enabling this event type.
+
+#### 5. Enable the 1st-party cookie in X Events Manager
+
+Yes — this is a setting on the **X Ads platform** (there is nothing to change in
+this codebase). First-party cookies improve match rates and website-conversion
+optimization:
+
+1. Sign in at **ads.x.com** with the account that owns the pixel.
+2. Open **Tools → Events Manager** (a.k.a. Conversion Tracking).
+3. Select the website tag / pixel (**`qfwd8`**).
+4. In its **Settings**, enable **"Allow 1st party cookie"** and save.
+
+### Watch after deploy
+
+- The Conversion API payload includes `value` / `price_currency` /
+  `number_items` (valid X fields, used for ROAS). If X rejects them you'll see
+  `X CAPI Error: 400 …` in `storage/logs/laravel.log` — they can be removed from
+  `TwitterConversionService` without affecting deduplication.
+- Events fire in **production only**. On staging the composable logs to the
+  console instead of sending.
+- Ensure Cloudflare does not cache ad-landing URLs carrying `?twclid=` / `?utm_*`
+  (they set `Set-Cookie`). Query-string URLs are normally uncached, so this is
+  low risk — verify your cache rules.
+
+### Known scope
+
+Affiliate-trial subscriptions charge as `subscription_cycle` (the renewal
+signal) when the trial converts, so their first real charge is intentionally
+**not** fired server-side (this avoids counting every renewal as a purchase).
+The immediate-charge flows — standard checkout and quick checkout, i.e. the
+bulk of purchases — fire precisely.
+
 ## Security Features
 
 ### Cloudflare Turnstile
