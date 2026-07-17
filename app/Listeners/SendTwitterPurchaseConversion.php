@@ -3,7 +3,6 @@
 namespace App\Listeners;
 
 use App\Services\TwitterConversionService;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Cashier\Cashier;
@@ -13,13 +12,18 @@ use Laravel\Cashier\Events\WebhookReceived;
  * Fires the server-side X (Twitter) "Subscription Purchase" conversion once a
  * subscription's first paid invoice is confirmed by Stripe.
  *
+ * Runs synchronously inside the Stripe webhook request (like the app's other
+ * WebhookReceived listeners) so it does not depend on a queue worker being
+ * online. The Conversion API call is time-bounded and swallows its own errors,
+ * so it can neither hang nor fail the webhook response.
+ *
  * Deliberately scoped to the first paid charge (billing_reason
  * "subscription_create" with amount_paid > 0) so it never counts automatic
  * renewals, failed payments, or free / 100%-off / trial-only invoices. The
  * conversion_id (PaymentIntent id) matches the browser pixel event so X
  * deduplicates the browser + server events into one conversion.
  */
-class SendTwitterPurchaseConversion implements ShouldQueue
+class SendTwitterPurchaseConversion
 {
     public function __construct(private TwitterConversionService $twitter) {}
 

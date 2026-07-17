@@ -90,9 +90,12 @@ class TwitterConversionService
             $response = Http::withHeaders([
                 'X-Pixel-Token' => $this->token,
                 'Content-Type' => 'application/json',
-            ])->post($this->endpoint(), [
-                'conversions' => [$conversion],
-            ]);
+            ])
+                ->connectTimeout(5)
+                ->timeout(10)
+                ->post($this->endpoint(), [
+                    'conversions' => [$conversion],
+                ]);
 
             if ($response->failed()) {
                 Log::error('X CAPI Error: '.$response->status().' '.$response->body(), [
