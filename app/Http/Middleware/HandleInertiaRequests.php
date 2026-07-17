@@ -144,6 +144,8 @@ class HandleInertiaRequests extends Middleware
                 'VAPID_PUBLIC_KEY' => config('webpush.vapid.public_key'),
                 'REDDIT_PIXEL_ID' => config('services.reddit.pixel_id'),
                 'TWITTER_PIXEL_ID' => config('services.twitter.pixel_id'),
+                'TWITTER_EVENT_CONTENT_VIEW' => config('services.twitter.events.content_view'),
+                'TWITTER_EVENT_CHECKOUT_INITIATED' => config('services.twitter.events.checkout_initiated'),
                 'TWITTER_EVENT_SIGNUP' => config('services.twitter.events.signup'),
                 'TWITTER_EVENT_PURCHASE' => config('services.twitter.events.purchase'),
                 'QUICK_CHECKOUT_ENABLED' => config('features.quick_checkout_enabled'),

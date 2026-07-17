@@ -119,6 +119,19 @@ class SubscriptionController extends Controller
         // Clean up orphaned redemptions from previous failed attempts
         $this->cleanupOrphanedRedemptions($user);
 
+        // Attribute this purchase to the most recent X ad click, if any, so the
+        // server-side Conversion API event can include the twclid.
+        if ($request->cookie('twclid')) {
+            $user->forceFill([
+                'twclid' => $request->cookie('twclid'),
+                'utm_source' => $request->cookie('utm_source') ?: $user->utm_source,
+                'utm_medium' => $request->cookie('utm_medium') ?: $user->utm_medium,
+                'utm_campaign' => $request->cookie('utm_campaign') ?: $user->utm_campaign,
+                'utm_content' => $request->cookie('utm_content') ?: $user->utm_content,
+                'landing_url' => $request->cookie('landing_url') ?: $user->landing_url,
+            ])->save();
+        }
+
         try {
             // Get price ID from request (it should be passed from the checkout form)
             $priceId = $request->price_id;
@@ -275,6 +288,9 @@ class SubscriptionController extends Controller
                 'plan_name' => $stripeProduct ? ucfirst($stripeProduct->tier).' Plan' : 'Subscription',
                 'plan_price' => $purchaseValue,
                 'billing_period' => $stripeProduct->billing_period ?? 'monthly',
+                // Shared browser/server conversion_id (Stripe PaymentIntent id) so
+                // X deduplicates the browser pixel + server Conversion API events.
+                'conversion_id' => $this->extractPaymentIntentId($createdSubscription),
             ];
 
             // Check if subscription requires additional action (3D Secure)
@@ -643,6 +659,23 @@ class SubscriptionController extends Controller
      * but never attached to a successful subscription (subscription_id is null).
      * It also decrements the usage count for those codes.
      */
+    /**
+     * Best-effort extraction of the Stripe PaymentIntent id from a freshly
+     * created subscription, used as the shared browser/server conversion_id.
+     *
+     * Uses Cashier's latestPayment() which expands latest_invoice.payment_intent
+     * so the id is available (latestInvoice() leaves payment_intent as a bare id
+     * string and would break dedup).
+     */
+    private function extractPaymentIntentId(mixed $subscription): ?string
+    {
+        try {
+            return $subscription->latestPayment()?->id;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
     private function cleanupOrphanedRedemptions($user)
     {
         try {

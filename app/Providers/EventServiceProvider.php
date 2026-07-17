@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Listeners\BindAffiliateOnSubscription;
+use App\Listeners\SendTwitterPurchaseConversion;
 use App\Listeners\SyncDiscordRolesOnSubscriptionChange;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -26,6 +27,7 @@ class EventServiceProvider extends ServiceProvider
         WebhookReceived::class => [
             BindAffiliateOnSubscription::class,
             SyncDiscordRolesOnSubscriptionChange::class,
+            SendTwitterPurchaseConversion::class,
         ],
         SocialiteWasCalled::class => [
             DiscordExtendSocialite::class.'@handle',

@@ -86,6 +86,7 @@ class QuickCheckoutService
                 'affiliate_id' => $affiliateId,
                 'registration_ip' => $request->ip(),
                 'registration_user_agent' => $request->userAgent(),
+                ...$this->marketingAttribution($request),
             ]);
 
             $user->assignRole('user');
@@ -97,6 +98,7 @@ class QuickCheckoutService
                     'registration_date' => now()->toDateTimeString(),
                     'affiliate_code' => Cookie::get('affiliate_code') ?? '',
                     'registration_type' => $registrationType,
+                    'twclid' => $request->cookie('twclid') ?? '',
                 ],
             ]);
 
@@ -187,6 +189,7 @@ class QuickCheckoutService
                 'success' => true,
                 'user' => $user,
                 'subscription' => $createdSubscription,
+                'payment_intent_id' => $this->extractPaymentIntentId($createdSubscription),
             ];
         } catch (\Stripe\Exception\CardException $e) {
             // No successful charge — remove the provisional user and Stripe customer.
@@ -323,6 +326,42 @@ class QuickCheckoutService
         $this->sendCompletionEmail($user);
 
         return true;
+    }
+
+    /**
+     * Marketing attribution captured from first-party cookies (set by the
+     * TrackMarketingAttribution middleware) to persist on the new user for the
+     * server-side X Conversion API purchase event.
+     *
+     * @return array{twclid: ?string, utm_source: ?string, utm_medium: ?string, utm_campaign: ?string, utm_content: ?string, landing_url: ?string}
+     */
+    protected function marketingAttribution(Request $request): array
+    {
+        return [
+            'twclid' => $request->cookie('twclid'),
+            'utm_source' => $request->cookie('utm_source'),
+            'utm_medium' => $request->cookie('utm_medium'),
+            'utm_campaign' => $request->cookie('utm_campaign'),
+            'utm_content' => $request->cookie('utm_content'),
+            'landing_url' => $request->cookie('landing_url'),
+        ];
+    }
+
+    /**
+     * Best-effort extraction of the Stripe PaymentIntent id from a freshly
+     * created subscription, used as the shared browser/server conversion_id.
+     *
+     * Uses Cashier's latestPayment() which expands latest_invoice.payment_intent
+     * so the id is available (latestInvoice() leaves payment_intent as a bare id
+     * string and would break dedup).
+     */
+    protected function extractPaymentIntentId(mixed $subscription): ?string
+    {
+        try {
+            return $subscription->latestPayment()?->id;
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     protected function getAffiliateId(): ?int

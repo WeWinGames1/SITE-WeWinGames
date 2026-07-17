@@ -84,6 +84,12 @@ class RegisteredUserController extends Controller
                     'affiliate_id' => $affiliateId,
                     'registration_ip' => $request->ip(),
                     'registration_user_agent' => $request->userAgent(),
+                    'twclid' => $request->cookie('twclid'),
+                    'utm_source' => $request->cookie('utm_source'),
+                    'utm_medium' => $request->cookie('utm_medium'),
+                    'utm_campaign' => $request->cookie('utm_campaign'),
+                    'utm_content' => $request->cookie('utm_content'),
+                    'landing_url' => $request->cookie('landing_url'),
                 ]);
 
                 // Assign default role
@@ -96,6 +102,7 @@ class RegisteredUserController extends Controller
                         'registration_date' => now()->toDateTimeString(),
                         'affiliate_code' => $affiliateCode ?? '',
                         'discord_username' => $request->discord_username ? strtolower($request->discord_username) : '',
+                        'twclid' => $request->cookie('twclid') ?? '',
                     ],
                 ]);
 

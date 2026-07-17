@@ -72,9 +72,15 @@ return [
         'pixel_id' => env('TWITTER_PIXEL_ID'),
         'events' => [
             // Event IDs (tw-XXXX-YYYY) from the X Ads Events Manager, one per conversion.
+            'content_view' => env('TWITTER_EVENT_CONTENT_VIEW'),
+            'checkout_initiated' => env('TWITTER_EVENT_CHECKOUT_INITIATED'),
             'signup' => env('TWITTER_EVENT_SIGNUP'),
             'purchase' => env('TWITTER_EVENT_PURCHASE'),
         ],
+        // Conversion API (server-side). Token must stay server-side only — never
+        // expose it to the browser / Inertia env or commit the real value.
+        'conversion_token' => env('TWITTER_CONVERSION_TOKEN'),
+        'api_version' => env('TWITTER_API_VERSION', '12'),
     ],
 
     // Heatmap / session recording slot. Currently supports Microsoft Clarity.

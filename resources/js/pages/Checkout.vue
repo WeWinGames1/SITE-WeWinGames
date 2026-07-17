@@ -38,7 +38,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const page = usePage();
-const { trackPurchase } = useTwitterPixel();
+const { trackPurchase, trackCheckoutInitiated } = useTwitterPixel();
 const form = useForm({
     payment_method: '',
     coupon: '',
@@ -117,6 +117,15 @@ const initializeCardElement = async () => {
 };
 
 onMounted(async () => {
+    // X (Twitter) Checkout Initiated conversion — the customer has begun checkout
+    const checkoutUser = page.props.auth.user;
+    trackCheckoutInitiated({
+        value: total.value,
+        currency: 'USD',
+        email_address: checkoutUser?.email ?? null,
+        phone_number: checkoutUser?.phone ?? null,
+    });
+
     // Initialize Stripe (but not card element yet)
     stripe.value = await loadStripe(props.stripeKey);
 
@@ -264,8 +273,13 @@ const handle3DSecure = async () => {
                     });
                 }
 
-                // X (Twitter) purchase conversion
-                trackPurchase({ value: purchaseData.plan_price, currency: 'USD' });
+                // X (Twitter) purchase conversion (conversion_id shared with server CAPI for dedup)
+                trackPurchase({
+                    value: purchaseData.plan_price,
+                    currency: 'USD',
+                    conversion_id: purchaseData.conversion_id ?? null,
+                    email_address: page.props.auth.user?.email ?? null,
+                });
             }
             // Redirect to dashboard
             window.location.href = route('dashboard');
@@ -348,8 +362,13 @@ const submit = async () => {
                         });
                     }
 
-                    // X (Twitter) purchase conversion
-                    trackPurchase({ value: total.value, currency: 'USD' });
+                    // X (Twitter) purchase conversion (conversion_id shared with server CAPI for dedup)
+                    trackPurchase({
+                        value: total.value,
+                        currency: 'USD',
+                        conversion_id: (page.props.flash as any)?.purchase_data?.conversion_id ?? null,
+                        email_address: page.props.auth.user?.email ?? null,
+                    });
                 }
             },
             onError: () => {

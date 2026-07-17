@@ -37,6 +37,10 @@ export function useTwitterPixel() {
         }
     };
 
+    const trackContentView = (parameters?: Record<string, any>) => track(env.TWITTER_EVENT_CONTENT_VIEW, parameters);
+
+    const trackCheckoutInitiated = (parameters?: Record<string, any>) => track(env.TWITTER_EVENT_CHECKOUT_INITIATED, parameters);
+
     const trackSignup = (parameters?: Record<string, any>) => track(env.TWITTER_EVENT_SIGNUP, parameters);
 
     const trackPurchase = (parameters?: Record<string, any>) => track(env.TWITTER_EVENT_PURCHASE, parameters);
@@ -44,6 +48,8 @@ export function useTwitterPixel() {
     return {
         isEnabled,
         track,
+        trackContentView,
+        trackCheckoutInitiated,
         trackSignup,
         trackPurchase,
     };

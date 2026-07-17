@@ -42,7 +42,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const page = usePage();
-const { trackPurchase } = useTwitterPixel();
+const { trackPurchase, trackCheckoutInitiated } = useTwitterPixel();
 
 const form = useForm({
     name: '',
@@ -287,6 +287,9 @@ const renderTurnstile = (container: HTMLElement) => {
 onMounted(async () => {
     form.timestamp = Math.floor(Date.now() / 1000);
 
+    // X (Twitter) Checkout Initiated conversion — the customer has begun checkout
+    trackCheckoutInitiated({ value: total.value, currency: 'USD' });
+
     // Initialize Stripe with Payment Element
     stripe.value = await loadStripe(props.stripeKey);
     elements.value = stripe.value.elements({
@@ -457,8 +460,13 @@ const submit = async () => {
                     });
                 }
 
-                // X (Twitter) purchase conversion
-                trackPurchase({ value: total.value, currency: 'USD' });
+                // X (Twitter) purchase conversion (conversion_id shared with server CAPI for dedup)
+                trackPurchase({
+                    value: total.value,
+                    currency: 'USD',
+                    conversion_id: (page.props.flash as any)?.purchase_data?.conversion_id ?? null,
+                    email_address: form.email ?? null,
+                });
             },
             onError: () => {
                 if (form.errors.payment) {

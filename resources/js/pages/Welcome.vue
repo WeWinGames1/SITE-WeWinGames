@@ -2,6 +2,7 @@
 import SimpleBetCard from '@/components/SimpleBetCard.vue';
 import TeaserBetCard from '@/components/TeaserBetCard.vue';
 import TestimonialsCarousel from '@/components/TestimonialsCarousel.vue';
+import { useTwitterPixel } from '@/composables/useTwitterPixel';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
@@ -10,6 +11,7 @@ function formatMoney(val: number | undefined) {
     return Math.round(val ?? 0).toLocaleString();
 }
 const page = usePage();
+const { trackContentView } = useTwitterPixel();
 const auth = page.props.auth || null; // Get the logged-in user
 const bets = page.props.freeBets || []; // Get the daily bet picks
 const totalBetsPerSport = page.props.totalBetsPerSport || {}; // Get total counts per sport
@@ -232,6 +234,9 @@ const coveredBets = computed(() => {
 
 // Function to hide specific links on mount
 onMounted(() => {
+    // X (Twitter) Content View conversion for the picks product / pricing page
+    trackContentView();
+
     const targetHref = 'https://www.jcompsolu.com';
 
     // Function to hide all matching links

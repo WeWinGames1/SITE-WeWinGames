@@ -56,6 +56,12 @@ class User extends Authenticatable implements MustVerifyEmail
         'completion_token',
         'completion_token_expires_at',
         'registration_type',
+        'twclid',
+        'utm_source',
+        'utm_medium',
+        'utm_campaign',
+        'utm_content',
+        'landing_url',
     ];
 
     /**

@@ -177,6 +177,7 @@ class QuickCheckoutController extends Controller
             'plan_name' => $stripeProduct ? ucfirst($stripeProduct->tier).' Plan' : 'Subscription',
             'plan_price' => $purchaseValue,
             'billing_period' => $stripeProduct?->billing_period ?? 'monthly',
+            'conversion_id' => $result['payment_intent_id'] ?? null,
         ];
 
         // Redirect to completion page
