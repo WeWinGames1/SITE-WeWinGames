@@ -3,6 +3,7 @@ import PricingCards from '@/components/PricingCards.vue';
 import SimpleBetCard from '@/components/SimpleBetCard.vue';
 import TestimonialsCarousel from '@/components/TestimonialsCarousel.vue';
 import { useHomePlans } from '@/composables/useHomePlans';
+import { useTwitterPixel } from '@/composables/useTwitterPixel';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import { computed, onMounted } from 'vue';
@@ -21,6 +22,7 @@ const props = defineProps<{
 }>();
 
 const { plans } = useHomePlans();
+const { trackContentView } = useTwitterPixel();
 
 const elfsightPattern = /\{elfsight\s+([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\}/gi;
 
@@ -36,6 +38,10 @@ const renderedSegments = computed(() =>
 );
 
 onMounted(() => {
+    // X (Twitter) Content View conversion — the editable homepage is the picks
+    // product / pricing page when the editable-home setting is enabled.
+    trackContentView();
+
     const hasElfsight = props.segments.some((s) => s.type === 'html' && /\{elfsight\s+[a-f0-9-]+\}/i.test(s.value || ''));
     if (!hasElfsight) return;
     if (document.querySelector('script[src*="elfsightcdn.com/platform.js"], script[src*="static.elfsight.com/platform/platform.js"]')) return;

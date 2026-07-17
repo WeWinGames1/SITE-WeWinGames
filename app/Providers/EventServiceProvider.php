@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Listeners\BindAffiliateOnSubscription;
+use App\Listeners\SendRedditPurchaseConversion;
 use App\Listeners\SendTwitterPurchaseConversion;
 use App\Listeners\SyncDiscordRolesOnSubscriptionChange;
 use Illuminate\Auth\Events\Registered;
@@ -28,6 +29,7 @@ class EventServiceProvider extends ServiceProvider
             BindAffiliateOnSubscription::class,
             SyncDiscordRolesOnSubscriptionChange::class,
             SendTwitterPurchaseConversion::class,
+            SendRedditPurchaseConversion::class,
         ],
         SocialiteWasCalled::class => [
             DiscordExtendSocialite::class.'@handle',
