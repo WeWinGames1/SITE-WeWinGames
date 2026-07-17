@@ -22,6 +22,14 @@ interface Props {
         discord_username?: string | null;
         discord_avatar_url?: string | null;
         discord_connected_at?: string | null;
+        attribution?: {
+            twclid?: string | null;
+            utm_source?: string | null;
+            utm_medium?: string | null;
+            utm_campaign?: string | null;
+            utm_content?: string | null;
+            landing_url?: string | null;
+        };
     };
     paymentMethods: Array<{
         id: string;
@@ -89,6 +97,11 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const hasAttribution = computed(() => {
+    const a = props.customer.attribution;
+    return !!(a && (a.twclid || a.utm_source || a.utm_medium || a.utm_campaign || a.utm_content || a.landing_url));
+});
 
 const activeTab = ref('overview');
 const isLoading = ref(false);
@@ -414,6 +427,43 @@ function formatCustomerDuration(days: number): string {
                                 {{ stats.subscription_count }} {{ stats.subscription_count === 1 ? 'subscription' : 'subscriptions' }}
                             </div>
                             <div class="small text-muted">{{ formatCustomerDuration(stats.days_as_customer) }} as customer</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Marketing Attribution -->
+            <div v-if="hasAttribution" class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="bi bi-graph-up-arrow me-2"></i>Marketing Attribution</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div v-if="customer.attribution?.utm_source" class="col-md-4">
+                            <div class="small text-muted">UTM Source</div>
+                            <div>{{ customer.attribution.utm_source }}</div>
+                        </div>
+                        <div v-if="customer.attribution?.utm_medium" class="col-md-4">
+                            <div class="small text-muted">UTM Medium</div>
+                            <div>{{ customer.attribution.utm_medium }}</div>
+                        </div>
+                        <div v-if="customer.attribution?.utm_campaign" class="col-md-4">
+                            <div class="small text-muted">UTM Campaign</div>
+                            <div>{{ customer.attribution.utm_campaign }}</div>
+                        </div>
+                        <div v-if="customer.attribution?.utm_content" class="col-md-4">
+                            <div class="small text-muted">UTM Content</div>
+                            <div>{{ customer.attribution.utm_content }}</div>
+                        </div>
+                        <div v-if="customer.attribution?.twclid" class="col-md-4">
+                            <div class="small text-muted">X Click ID (twclid)</div>
+                            <div class="text-truncate" :title="customer.attribution.twclid">{{ customer.attribution.twclid }}</div>
+                        </div>
+                        <div v-if="customer.attribution?.landing_url" class="col-12">
+                            <div class="small text-muted">Landing URL</div>
+                            <div class="text-break">
+                                <a :href="customer.attribution.landing_url" target="_blank" rel="noopener">{{ customer.attribution.landing_url }}</a>
+                            </div>
                         </div>
                     </div>
                 </div>

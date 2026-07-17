@@ -270,6 +270,7 @@ const handle3DSecure = async () => {
                     (window as any).rdt('track', 'Purchase', {
                         currency: 'USD',
                         value: purchaseData.plan_price,
+                        conversionId: purchaseData.conversion_id ?? undefined,
                     });
                 }
 
@@ -364,6 +365,7 @@ const submit = async () => {
                         (window as any).rdt('track', 'Purchase', {
                             currency: 'USD',
                             value: total.value,
+                            conversionId: (page.props.flash as any)?.purchase_data?.conversion_id ?? undefined,
                         });
                     }
 

@@ -52,38 +52,14 @@ class TwitterConversionService
      */
     public function sendConversion(?string $eventId, User $user, array $data = []): bool
     {
-        if (! $this->isConfigured() || empty($eventId)) {
+        if (! $this->isConfigured()) {
             return false;
         }
 
-        $identifiers = $this->buildIdentifiers($user, $data);
+        $conversion = $this->buildConversion($eventId, $user, $data);
 
-        // X requires at least one matching identifier (twclid, hashed email,
-        // hashed phone, or ip+user_agent together).
-        if (empty($identifiers)) {
-            Log::warning('X CAPI: no matching identifier, skipping conversion', [
-                'user_id' => $user->id,
-                'event_id' => $eventId,
-            ]);
-
+        if ($conversion === null) {
             return false;
-        }
-
-        $conversion = [
-            'conversion_time' => $data['conversion_time'] ?? now()->toIso8601String(),
-            'event_id' => $eventId,
-            'event_source_url' => $data['event_source_url'] ?? config('app.url'),
-            'identifiers' => [$identifiers],
-        ];
-
-        if (! empty($data['conversion_id'])) {
-            $conversion['conversion_id'] = (string) $data['conversion_id'];
-        }
-
-        if (isset($data['value']) && $data['value'] !== '') {
-            $conversion['number_items'] = 1;
-            $conversion['value'] = (float) $data['value'];
-            $conversion['price_currency'] = $data['currency'] ?? 'USD';
         }
 
         try {
@@ -119,9 +95,71 @@ class TwitterConversionService
         }
     }
 
-    private function endpoint(): string
+    /**
+     * Build the request body for a purchase conversion without sending it —
+     * used by the twitter:test-conversion command's dry run.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array{configured: bool, endpoint: ?string, payload: ?array<string, mixed>}
+     */
+    public function previewPurchase(User $user, array $data = []): array
+    {
+        $conversion = $this->buildConversion(config('services.twitter.events.purchase'), $user, $data);
+
+        return [
+            'configured' => $this->isConfigured(),
+            'endpoint' => $this->isConfigured() ? $this->endpoint() : null,
+            'payload' => $conversion ? ['conversions' => [$conversion]] : null,
+        ];
+    }
+
+    public function endpoint(): string
     {
         return "https://ads-api.x.com/{$this->apiVersion}/measurement/conversions/{$this->pixelId}";
+    }
+
+    /**
+     * Build a single conversion object, or null when the event id is missing or
+     * the user has no matching identifier (X requires at least one).
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>|null
+     */
+    private function buildConversion(?string $eventId, User $user, array $data): ?array
+    {
+        if (empty($eventId)) {
+            return null;
+        }
+
+        $identifiers = $this->buildIdentifiers($user, $data);
+
+        if (empty($identifiers)) {
+            Log::warning('X CAPI: no matching identifier, skipping conversion', [
+                'user_id' => $user->id,
+                'event_id' => $eventId,
+            ]);
+
+            return null;
+        }
+
+        $conversion = [
+            'conversion_time' => $data['conversion_time'] ?? now()->toIso8601String(),
+            'event_id' => $eventId,
+            'event_source_url' => $data['event_source_url'] ?? config('app.url'),
+            'identifiers' => [$identifiers],
+        ];
+
+        if (! empty($data['conversion_id'])) {
+            $conversion['conversion_id'] = (string) $data['conversion_id'];
+        }
+
+        if (isset($data['value']) && $data['value'] !== '') {
+            $conversion['number_items'] = 1;
+            $conversion['value'] = (float) $data['value'];
+            $conversion['price_currency'] = $data['currency'] ?? 'USD';
+        }
+
+        return $conversion;
     }
 
     /**
