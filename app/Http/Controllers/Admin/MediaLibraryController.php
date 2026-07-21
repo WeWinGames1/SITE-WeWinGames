@@ -54,7 +54,8 @@ class MediaLibraryController extends Controller
         try {
             $request->validate([
                 'files' => 'required|array',
-                'files.*' => 'required|image|max:20480', // 20MB max
+                'files.*' => 'required|file|max:20480|mimes:jpg,jpeg,png,gif,webp,avif,svg,ico,bmp,css,js,woff,woff2,ttf,otf,eot,mp4,webm,pdf',
+                'page_id' => 'nullable|integer|exists:pages,id',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             \Log::error('Media upload validation failed', [
@@ -66,6 +67,9 @@ class MediaLibraryController extends Controller
         }
 
         $uploadedMedia = [];
+        $customProperties = $request->filled('page_id')
+            ? ['page_id' => (int) $request->input('page_id')]
+            : [];
 
         foreach ($request->file('files') as $file) {
             try {
@@ -85,7 +89,7 @@ class MediaLibraryController extends Controller
                     'conversions_disk' => 'public',
                     'size' => $file->getSize(),
                     'manipulations' => [],
-                    'custom_properties' => [],
+                    'custom_properties' => $customProperties,
                     'generated_conversions' => [],
                     'responsive_images' => [],
                     'order_column' => 1,
@@ -217,6 +221,14 @@ class MediaLibraryController extends Controller
         $postsWithContent = \App\Models\Post::where('content', 'like', "%{$media->getUrl()}%")->count();
         if ($postsWithContent > 0) {
             $usage[] = "blog post content ({$postsWithContent})";
+        }
+
+        $relativeUrl = 'media/'.$media->id.'/'.$media->file_name;
+        $pagesWithContent = \App\Models\Page::where('content', 'like', "%{$relativeUrl}%")
+            ->orWhere('raw_html', 'like', "%{$relativeUrl}%")
+            ->count();
+        if ($pagesWithContent > 0) {
+            $usage[] = "pages ({$pagesWithContent})";
         }
 
         // You can add more usage checks here for other models

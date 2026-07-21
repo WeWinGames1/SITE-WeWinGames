@@ -66,7 +66,34 @@ class PageController extends Controller
 
     public function edit(Page $page)
     {
-        return Inertia::render('admin/PageEdit', ['page' => $page]);
+        return Inertia::render('admin/PageEdit', [
+            'page' => $page,
+            'assets' => $this->pageAssets($page),
+        ]);
+    }
+
+    /**
+     * Media library items uploaded for this page (tagged via custom_properties.page_id).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function pageAssets(Page $page): array
+    {
+        return \App\Models\Media::where('model_type', 'library')
+            ->where('custom_properties->page_id', $page->id)
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn ($media) => [
+                'id' => $media->id,
+                'name' => $media->name,
+                'file_name' => $media->file_name,
+                'mime_type' => $media->mime_type,
+                'size' => $media->size,
+                'full_url' => $media->full_url,
+                'thumb_url' => $media->thumb_url,
+            ])
+            ->values()
+            ->all();
     }
 
     public function update(Request $request, Page $page)
