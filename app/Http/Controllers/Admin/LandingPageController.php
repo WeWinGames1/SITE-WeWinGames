@@ -64,7 +64,10 @@ class LandingPageController extends Controller
 
     public function edit(LandingPage $page)
     {
-        return Inertia::render('admin/LandingPageEdit', ['page' => $page]);
+        return Inertia::render('admin/LandingPageEdit', [
+            'page' => $page,
+            'assets' => \App\Models\Media::assetsFor('landing_page_id', $page->id),
+        ]);
     }
 
     public function update(Request $request, LandingPage $page)

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import MediaPicker from '@/components/MediaPicker.vue';
+import PageAssetsPanel, { type PageAsset } from '@/components/PageAssetsPanel.vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import Image from '@tiptap/extension-image';
@@ -9,7 +10,7 @@ import { Editor, EditorContent } from '@tiptap/vue-3';
 import QrcodeVue from 'qrcode.vue';
 import { computed, ref, watch } from 'vue';
 
-const props = defineProps<{ page: any | null }>();
+const props = defineProps<{ page: any | null; assets?: PageAsset[] }>();
 
 const form = useForm({
     title: props.page?.title || '',
@@ -535,6 +536,14 @@ const addImage = () => {
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Page Assets -->
+                        <PageAssetsPanel
+                            :owner-id="page?.id ?? null"
+                            owner-key="landing_page_id"
+                            :initial-assets="assets"
+                            owner-label="landing page"
+                        />
                     </div>
 
                     <!-- Sidebar -->

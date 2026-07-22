@@ -56,6 +56,7 @@ class MediaLibraryController extends Controller
                 'files' => 'required|array',
                 'files.*' => 'required|file|max:20480|mimes:jpg,jpeg,png,gif,webp,avif,svg,ico,bmp,css,js,woff,woff2,ttf,otf,eot,mp4,webm,pdf',
                 'page_id' => 'nullable|integer|exists:pages,id',
+                'landing_page_id' => 'nullable|integer|exists:landing_pages,id',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             \Log::error('Media upload validation failed', [
@@ -67,9 +68,13 @@ class MediaLibraryController extends Controller
         }
 
         $uploadedMedia = [];
-        $customProperties = $request->filled('page_id')
-            ? ['page_id' => (int) $request->input('page_id')]
-            : [];
+        $customProperties = [];
+        if ($request->filled('page_id')) {
+            $customProperties['page_id'] = (int) $request->input('page_id');
+        }
+        if ($request->filled('landing_page_id')) {
+            $customProperties['landing_page_id'] = (int) $request->input('landing_page_id');
+        }
 
         foreach ($request->file('files') as $file) {
             try {
@@ -120,6 +125,52 @@ class MediaLibraryController extends Controller
         return response()->json([
             'message' => 'Files uploaded successfully',
             'media' => $uploadedMedia,
+        ]);
+    }
+
+    /**
+     * Assign (or detach) existing library media to a page or landing page
+     * via the page_id / landing_page_id custom property.
+     */
+    public function assign(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'media_ids' => 'required|array',
+            'media_ids.*' => 'integer|exists:media,id',
+            'page_id' => 'nullable|integer|exists:pages,id|required_without:landing_page_id',
+            'landing_page_id' => 'nullable|integer|exists:landing_pages,id|required_without:page_id',
+            'detach' => 'nullable|boolean',
+        ]);
+
+        $key = $request->filled('page_id') ? 'page_id' : 'landing_page_id';
+        $ownerId = (int) $request->input($key);
+        $detach = $request->boolean('detach');
+
+        $updated = [];
+        foreach (Media::whereIn('id', $validated['media_ids'])->get() as $media) {
+            $properties = $media->custom_properties ?? [];
+            if ($detach) {
+                unset($properties[$key]);
+            } else {
+                $properties[$key] = $ownerId;
+            }
+            $media->custom_properties = $properties;
+            $media->save();
+
+            $updated[] = [
+                'id' => $media->id,
+                'name' => $media->name,
+                'file_name' => $media->file_name,
+                'mime_type' => $media->mime_type,
+                'size' => $media->size,
+                'full_url' => $media->full_url,
+                'thumb_url' => $media->thumb_url,
+            ];
+        }
+
+        return response()->json([
+            'message' => $detach ? 'Media removed from page' : 'Media assigned to page',
+            'media' => $updated,
         ]);
     }
 
@@ -229,6 +280,13 @@ class MediaLibraryController extends Controller
             ->count();
         if ($pagesWithContent > 0) {
             $usage[] = "pages ({$pagesWithContent})";
+        }
+
+        $landingPagesWithContent = \App\Models\LandingPage::where('content', 'like', "%{$relativeUrl}%")
+            ->orWhere('raw_html', 'like', "%{$relativeUrl}%")
+            ->count();
+        if ($landingPagesWithContent > 0) {
+            $usage[] = "landing pages ({$landingPagesWithContent})";
         }
 
         // You can add more usage checks here for other models

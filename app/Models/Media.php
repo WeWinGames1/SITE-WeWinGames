@@ -70,4 +70,29 @@ class Media extends BaseMedia
      * Append custom attributes.
      */
     protected $appends = ['full_url', 'thumb_url', 'preview_url'];
+
+    /**
+     * Library media assigned to a page or landing page via custom_properties.
+     *
+     * @param  string  $ownerKey  'page_id' or 'landing_page_id'
+     * @return array<int, array<string, mixed>>
+     */
+    public static function assetsFor(string $ownerKey, int $ownerId): array
+    {
+        return static::where('model_type', 'library')
+            ->where('custom_properties->'.$ownerKey, $ownerId)
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn (self $media) => [
+                'id' => $media->id,
+                'name' => $media->name,
+                'file_name' => $media->file_name,
+                'mime_type' => $media->mime_type,
+                'size' => $media->size,
+                'full_url' => $media->full_url,
+                'thumb_url' => $media->thumb_url,
+            ])
+            ->values()
+            ->all();
+    }
 }

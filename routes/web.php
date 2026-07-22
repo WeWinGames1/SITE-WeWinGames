@@ -430,6 +430,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/blog-categori
 Route::middleware(['auth', AdminMiddleware::class])->prefix('admin/media-library')->name('admin.media-library.')->group(function () {
     Route::get('/', [MediaLibraryController::class, 'index'])->name('index');
     Route::post('/upload', [MediaLibraryController::class, 'store'])->name('store');
+    Route::post('/assign', [MediaLibraryController::class, 'assign'])->name('assign');
     Route::delete('/{media}', [MediaLibraryController::class, 'destroy'])->name('destroy');
     Route::get('/picker', [MediaLibraryController::class, 'picker'])->name('picker');
 });

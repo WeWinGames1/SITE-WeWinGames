@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\LandingPage;
 use App\Models\Media;
 use App\Models\Page;
 use App\Models\User;
@@ -129,6 +130,94 @@ class PageAssetsTest extends TestCase
                 ->has('assets', 1)
                 ->where('assets.0.file_name', fn ($name) => str_contains($name, 'mine'))
             );
+    }
+
+    public function test_assign_existing_media_to_page(): void
+    {
+        Storage::fake('public');
+
+        $this->actingAs($this->admin)->post(route('admin.media-library.store'), [
+            'files' => [UploadedFile::fake()->image('library.jpg')],
+        ])->assertOk();
+
+        $media = Media::firstOrFail();
+        $this->assertSame([], $media->custom_properties);
+
+        $this->actingAs($this->admin)->postJson(route('admin.media-library.assign'), [
+            'media_ids' => [$media->id],
+            'page_id' => $this->page->id,
+        ])->assertOk()->assertJsonCount(1, 'media');
+
+        $this->assertSame($this->page->id, $media->fresh()->custom_properties['page_id']);
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.pages.edit', $this->page))
+            ->assertInertia(fn ($page) => $page->has('assets', 1));
+    }
+
+    public function test_detach_removes_media_from_page_without_deleting(): void
+    {
+        Storage::fake('public');
+
+        $this->actingAs($this->admin)->post(route('admin.media-library.store'), [
+            'files' => [UploadedFile::fake()->image('temp.jpg')],
+            'page_id' => $this->page->id,
+        ])->assertOk();
+
+        $media = Media::firstOrFail();
+
+        $this->actingAs($this->admin)->postJson(route('admin.media-library.assign'), [
+            'media_ids' => [$media->id],
+            'page_id' => $this->page->id,
+            'detach' => true,
+        ])->assertOk();
+
+        $this->assertArrayNotHasKey('page_id', $media->fresh()->custom_properties);
+        $this->assertDatabaseHas('media', ['id' => $media->id]);
+    }
+
+    public function test_assign_requires_a_page_or_landing_page(): void
+    {
+        Storage::fake('public');
+
+        $this->actingAs($this->admin)->post(route('admin.media-library.store'), [
+            'files' => [UploadedFile::fake()->image('x.jpg')],
+        ])->assertOk();
+
+        $this->actingAs($this->admin)->postJson(route('admin.media-library.assign'), [
+            'media_ids' => [Media::firstOrFail()->id],
+        ])->assertStatus(422)->assertJsonValidationErrors(['page_id', 'landing_page_id']);
+    }
+
+    public function test_landing_page_assets_upload_and_edit_props(): void
+    {
+        Storage::fake('public');
+
+        $landingPage = LandingPage::create([
+            'title' => 'Promo',
+            'slug' => 'promo',
+            'content' => '<p>x</p>',
+            'published' => true,
+        ]);
+
+        $this->actingAs($this->admin)->post(route('admin.media-library.store'), [
+            'files' => [UploadedFile::fake()->image('promo-hero.jpg')],
+            'landing_page_id' => $landingPage->id,
+        ])->assertOk();
+
+        $media = Media::firstOrFail();
+        $this->assertSame($landingPage->id, $media->custom_properties['landing_page_id']);
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.landing-pages.edit', $landingPage))
+            ->assertInertia(fn ($page) => $page
+                ->component('admin/LandingPageEdit')
+                ->has('assets', 1)
+            );
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.pages.edit', $this->page))
+            ->assertInertia(fn ($page) => $page->has('assets', 0));
     }
 
     public function test_cannot_delete_media_referenced_by_a_page(): void
