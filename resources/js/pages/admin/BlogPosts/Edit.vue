@@ -564,7 +564,7 @@ function updateSourceCode(event: Event) {
                                     type="text"
                                     class="form-control"
                                     placeholder="custom-url-slug"
-                                    pattern="[a-z0-9-]+"
+                                    pattern="[a-z0-9\-]+"
                                 />
                                 <div v-else class="form-control bg-light">
                                     {{ form.slug || 'auto-generated-from-title' }}

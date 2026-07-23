@@ -112,6 +112,53 @@ class RawPageTest extends TestCase
         $response->assertSessionHasErrors('render_mode');
     }
 
+    public function test_pasted_raw_html_is_not_stripped_or_escaped_on_save(): void
+    {
+        $html = '<html><head><style>@media screen { .a { color: \'red\'; } } div[style*="margin: 14px 0;"] { margin: 0 !important; }</style>'
+            .'</head><body><table><tr><td>&nbsp;CELL</td></tr></table><script>console.log("keep-me")</script></body></html>';
+
+        $this->actingAs($this->admin)->post(route('admin.pages.store'), [
+            'title' => 'Email Template',
+            'slug' => 'email-template',
+            'render_mode' => 'blade_raw',
+            'raw_html' => $html,
+            'published' => true,
+        ])->assertRedirect(route('admin.pages.index'));
+
+        $saved = Page::where('slug', 'email-template')->firstOrFail()->raw_html;
+
+        $this->assertSame($html, $saved);
+        $this->assertStringContainsString('<style>', $saved);
+        $this->assertStringContainsString("color: 'red';", $saved);
+        $this->assertStringContainsString('<table>', $saved);
+        $this->assertStringContainsString('&nbsp;', $saved);
+        $this->assertStringContainsString('<script>', $saved);
+        $this->assertStringNotContainsString('&apos;', $saved);
+        $this->assertStringNotContainsString('&quot;', $saved);
+    }
+
+    public function test_pasted_raw_html_survives_update_too(): void
+    {
+        $page = Page::create([
+            'title' => 'Update Me',
+            'slug' => 'update-me',
+            'content' => '<p>x</p>',
+            'published' => true,
+        ]);
+
+        $html = '<html><body><style>.b { font-family: \'Fira Sans\'; }</style><h1>UPDATED</h1></body></html>';
+
+        $this->actingAs($this->admin)->put(route('admin.pages.update', $page), [
+            'title' => 'Update Me',
+            'slug' => 'update-me',
+            'render_mode' => 'blade_raw',
+            'raw_html' => $html,
+            'published' => true,
+        ])->assertRedirect(route('admin.pages.index'));
+
+        $this->assertSame($html, $page->fresh()->raw_html);
+    }
+
     public function test_admin_can_import_a_blade_raw_page_from_html_file_upload(): void
     {
         $html = '<html><head></head><body><h1>UPLOADED</h1></body></html>';

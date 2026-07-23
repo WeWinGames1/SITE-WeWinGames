@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import MediaPicker from '@/components/MediaPicker.vue';
 import PageAssetsPanel, { type PageAsset } from '@/components/PageAssetsPanel.vue';
+import { usePagePreview } from '@/composables/usePagePreview';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import Image from '@tiptap/extension-image';
@@ -68,6 +69,12 @@ const homepageWidgets = '[pricing] · [testimonials] · [todays-bets]';
 const homepageStatTokens = '{{stat:thisYearROI}} · {{stat:thisYearProfit}} · {{stat:winRatio}} · {{stat:monthlyProfit}} · {{stat:golfROI2026}}';
 
 const preview = ref(props.page?.featured_image || '');
+
+const { openPreview } = usePagePreview();
+
+function previewCurrentContent() {
+    openPreview(isRawMode.value ? form.raw_html : form.content, form.title);
+}
 const showSourceCode = ref(false);
 const sourceCode = ref('');
 const showMediaPicker = ref(false);
@@ -354,7 +361,7 @@ const addImage = () => {
                                     type="text"
                                     class="form-control"
                                     placeholder="campaign-landing-page"
-                                    pattern="[a-z0-9-]+"
+                                    pattern="[a-z0-9\-]+"
                                     required
                                     maxlength="255"
                                 />
@@ -368,7 +375,13 @@ const addImage = () => {
                         <!-- Content -->
                         <div class="card mb-4">
                             <div class="card-body">
-                                <label class="form-label text-dark fw-medium mb-2">Landing Page Content</label>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label text-dark fw-medium mb-0">Landing Page Content</label>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" @click="previewCurrentContent">
+                                        <i class="bi bi-eye me-1"></i>
+                                        Preview
+                                    </button>
+                                </div>
 
                                 <!-- Raw HTML editor (raw render modes) -->
                                 <div v-if="isRawMode">

@@ -6,8 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    {{-- Site-wide analytics & advertising attribution (Reddit, GTM, GA, X pixel, heatmap) --}}
-    @include('partials.tracking-head')
+    {{-- Site-wide analytics & advertising attribution (Reddit, GTM, GA, X pixel, heatmap).
+         Skipped on admin routes: admin traffic pollutes analytics and the strict
+         admin CSP blocks the trackers' connect calls anyway. --}}
+    @unless(request()->is('admin*'))
+        @include('partials.tracking-head')
+    @endunless
 
     {{-- Inline script to detect system dark mode preference and apply it immediately --}}
     <script>
@@ -161,7 +165,9 @@
 
 <body class="font-sans antialiased">
     {{-- Analytics tags for top of <body> (GTM noscript) --}}
-    @include('partials.tracking-body')
+    @unless(request()->is('admin*'))
+        @include('partials.tracking-body')
+    @endunless
 
     @if(session()->has('impersonator_id'))
         <div class="bg-warning text-dark">

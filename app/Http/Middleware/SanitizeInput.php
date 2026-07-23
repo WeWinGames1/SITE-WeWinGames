@@ -18,6 +18,7 @@ class SanitizeInput
         'new_password',
         'content', // Rich text editor content
         'html',
+        'raw_html', // Admin-authored raw HTML pages (pages / landing pages)
         'markdown',
         'body_html', // Email template HTML content
         'body_text', // Email template plain text content

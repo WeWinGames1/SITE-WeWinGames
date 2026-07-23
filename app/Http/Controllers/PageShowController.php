@@ -10,7 +10,9 @@ class PageShowController extends Controller
 {
     public function showPage($slug)
     {
-        $page = Page::where('slug', $slug)->where('published', true)->firstOrFail();
+        $page = Page::where('slug', $slug)
+            ->when(! $this->canPreviewUnpublished(), fn ($query) => $query->where('published', true))
+            ->firstOrFail();
 
         if ($page->usesBladeRaw()) {
             return app(RawPageController::class)->render($page);
@@ -21,12 +23,24 @@ class PageShowController extends Controller
 
     public function showLandingPage($slug)
     {
-        $page = LandingPage::where('slug', $slug)->where('published', true)->firstOrFail();
+        $page = LandingPage::where('slug', $slug)
+            ->when(! $this->canPreviewUnpublished(), fn ($query) => $query->where('published', true))
+            ->firstOrFail();
 
         if ($page->usesBladeRaw()) {
             return app(RawPageController::class)->render($page);
         }
 
         return Inertia::render('LandingPageShow', ['page' => $page]);
+    }
+
+    /**
+     * Admins may open unpublished pages at their public URL as a draft preview.
+     */
+    private function canPreviewUnpublished(): bool
+    {
+        $user = auth()->user();
+
+        return $user !== null && $user->hasRole('admin');
     }
 }

@@ -138,4 +138,30 @@ class PageController extends Controller
 
         return redirect()->route('admin.pages.index');
     }
+
+    /**
+     * Render the posted (unsaved) editor HTML exactly like a raw page, without
+     * tracking pixels, so admins can preview before saving. Used by both the
+     * pages and landing pages editors.
+     */
+    public function preview(Request $request): \Illuminate\Http\Response
+    {
+        $data = $request->validate([
+            'html_b64' => 'nullable|string',
+            'title' => 'nullable|string|max:255',
+        ]);
+
+        // Base64-encoded by the editor so WAFs don't block raw HTML in the body.
+        $html = (string) base64_decode($data['html_b64'] ?? '', true);
+
+        $page = new Page([
+            'title' => $data['title'] ?? 'Preview',
+            'slug' => 'preview',
+            'content' => $html,
+            'render_mode' => Page::RENDER_BLADE_RAW,
+            'raw_html' => $html,
+        ]);
+
+        return app(\App\Http\Controllers\RawPageController::class)->render($page, withTracking: false);
+    }
 }

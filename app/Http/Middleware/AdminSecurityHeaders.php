@@ -34,6 +34,13 @@ class AdminSecurityHeaders
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
         }
 
+        // Respect a CSP explicitly set by a controller (e.g. the raw HTML
+        // preview endpoint, which needs the relaxed raw-page policy so the
+        // previewed page can load its own third-party scripts/styles).
+        if ($response->headers->has('Content-Security-Policy')) {
+            return $response;
+        }
+
         // Content Security Policy for admin area
         $csp = [
             "default-src 'self'",

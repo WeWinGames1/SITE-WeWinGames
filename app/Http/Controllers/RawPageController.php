@@ -30,11 +30,11 @@ class RawPageController extends Controller
      * <script> tags the admin pasted actually execute. Site-wide tracking is
      * injected so these pages are still covered by analytics/attribution.
      */
-    public function render(Page|LandingPage $page): Response
+    public function render(Page|LandingPage $page, bool $withTracking = true): Response
     {
         $html = $page->rawHtmlOrContent();
-        $trackingHead = view('partials.tracking-head')->render();
-        $trackingBody = view('partials.tracking-body')->render();
+        $trackingHead = $withTracking ? view('partials.tracking-head')->render() : '';
+        $trackingBody = $withTracking ? view('partials.tracking-body')->render() : '';
 
         // When the admin pasted a full HTML document, inject tracking into the
         // existing <head>/<body> so we never render a nested document.

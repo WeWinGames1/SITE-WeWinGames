@@ -2,6 +2,7 @@
 import MediaPicker from '@/components/MediaPicker.vue';
 import PageAssetsPanel, { type PageAsset } from '@/components/PageAssetsPanel.vue';
 import { useImageResize } from '@/composables/useImageResize';
+import { usePagePreview } from '@/composables/usePagePreview';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import Image from '@tiptap/extension-image';
@@ -67,6 +68,12 @@ function handleHtmlFileChange(event: Event) {
 
 const preview = ref(props.page?.featured_image_url || '');
 const showSourceCode = ref(false);
+
+const { openPreview } = usePagePreview();
+
+function previewCurrentContent() {
+    openPreview(isRawMode.value ? form.raw_html : form.content, form.title);
+}
 const sourceCode = ref('');
 const showMediaPicker = ref(false);
 const showContentMediaPicker = ref(false);
@@ -359,7 +366,7 @@ const addImage = () => {
                                     type="text"
                                     class="form-control"
                                     placeholder="page-url-slug"
-                                    pattern="[a-z0-9-]+"
+                                    pattern="[a-z0-9\-]+"
                                     maxlength="255"
                                     required
                                 />
@@ -373,7 +380,13 @@ const addImage = () => {
                         <!-- Content -->
                         <div class="card mb-4">
                             <div class="card-body">
-                                <label class="form-label text-dark fw-medium mb-2">Page Content</label>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label text-dark fw-medium mb-0">Page Content</label>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" @click="previewCurrentContent">
+                                        <i class="bi bi-eye me-1"></i>
+                                        Preview
+                                    </button>
+                                </div>
                                 <div v-if="!isRawMode" class="text-muted small mb-2">
                                     <i class="bi bi-info-circle me-1"></i>
                                     Tip: Double-click on any image to resize it
