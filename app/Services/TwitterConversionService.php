@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -63,15 +64,18 @@ class TwitterConversionService
         }
 
         try {
+            // JSON_PRESERVE_ZERO_FRACTION keeps whole-number values as doubles
+            // ("value": 65.0, not 65) — X rejects integer literals for value.
             $response = Http::withHeaders([
                 'X-Pixel-Token' => $this->token,
-                'Content-Type' => 'application/json',
             ])
                 ->connectTimeout(5)
                 ->timeout(10)
-                ->post($this->endpoint(), [
-                    'conversions' => [$conversion],
-                ]);
+                ->withBody(
+                    (string) json_encode(['conversions' => [$conversion]], JSON_PRESERVE_ZERO_FRACTION | JSON_THROW_ON_ERROR),
+                    'application/json'
+                )
+                ->post($this->endpoint());
 
             if ($response->failed()) {
                 Log::error('X CAPI Error: '.$response->status().' '.$response->body(), [
@@ -143,7 +147,7 @@ class TwitterConversionService
         }
 
         $conversion = [
-            'conversion_time' => $data['conversion_time'] ?? now()->toIso8601String(),
+            'conversion_time' => $this->formatConversionTime($data['conversion_time'] ?? null),
             'event_id' => $eventId,
             'event_source_url' => $data['event_source_url'] ?? config('app.url'),
             'identifiers' => [$identifiers],
@@ -160,6 +164,17 @@ class TwitterConversionService
         }
 
         return $conversion;
+    }
+
+    /**
+     * X rejects offset-style ISO-8601 — conversion_time must be UTC with
+     * milliseconds and a literal Z suffix (yyyy-MM-ddTHH:mm:ss.SSSZ).
+     */
+    private function formatConversionTime(?string $time): string
+    {
+        $carbon = $time ? Carbon::parse($time) : now();
+
+        return $carbon->utc()->format('Y-m-d\TH:i:s.v\Z');
     }
 
     /**

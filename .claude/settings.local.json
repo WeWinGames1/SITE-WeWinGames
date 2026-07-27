@@ -83,7 +83,8 @@
       "WebSearch",
       "Bash(xargs -I{} sh -c 'echo \"\"=== {} ===\"\" && head -20 {}')",
       "WebFetch(domain:stripe.com)",
-      "WebFetch(domain:upload.wikimedia.org)"
+      "WebFetch(domain:upload.wikimedia.org)",
+      "Bash(git -C /Users/webmdt-mbp2/GIT/WebMDT/SITE-WeWinGames show --stat 5759e95)"
     ],
     "deny": []
   },

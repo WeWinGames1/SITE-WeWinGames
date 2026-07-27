@@ -63,8 +63,10 @@ class SendTwitterPurchaseConversionTest extends TestCase
 
             return $request->url() === 'https://ads-api.x.com/12/measurement/conversions/qfwd8'
                 && $conversion['event_id'] === 'tw-qfwd8-rdw3t'
+                && $conversion['conversion_time'] === '2023-11-14T22:13:20.000Z'
                 && $conversion['conversion_id'] === 'pi_first'
                 && $conversion['value'] === 65.0
+                && str_contains($request->body(), '"value":65.0')
                 && $conversion['price_currency'] === 'USD'
                 && $conversion['event_source_url'] === 'https://wewingames.com/?twclid=tw-click-xyz'
                 && $conversion['identifiers'][0]['twclid'] === 'tw-click-xyz';
