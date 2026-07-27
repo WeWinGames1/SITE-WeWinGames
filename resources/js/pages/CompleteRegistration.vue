@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useTwitterPixel } from '@/composables/useTwitterPixel';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
@@ -11,6 +12,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const page = usePage();
+const { trackSignup } = useTwitterPixel();
 
 const form = useForm({
     token: props.token,
@@ -102,6 +104,9 @@ const submit = () => {
                 (window as any).rdt('init', pixelId, { email: props.email });
                 (window as any).rdt('track', 'SignUp');
             }
+
+            // X (Twitter) signup-complete conversion
+            trackSignup();
         },
     });
 };
