@@ -29,6 +29,8 @@ interface Props {
             utm_campaign?: string | null;
             utm_content?: string | null;
             landing_url?: string | null;
+            checkout_ip_address?: string | null;
+            checkout_user_agent?: string | null;
         };
     };
     paymentMethods: Array<{
@@ -100,7 +102,7 @@ const props = defineProps<Props>();
 
 const hasAttribution = computed(() => {
     const a = props.customer.attribution;
-    return !!(a && (a.twclid || a.utm_source || a.utm_medium || a.utm_campaign || a.utm_content || a.landing_url));
+    return !!(a && (a.twclid || a.utm_source || a.utm_medium || a.utm_campaign || a.utm_content || a.landing_url || a.checkout_ip_address));
 });
 
 const activeTab = ref('overview');
@@ -459,11 +461,19 @@ function formatCustomerDuration(days: number): string {
                             <div class="small text-muted">X Click ID (twclid)</div>
                             <div class="text-truncate" :title="customer.attribution.twclid">{{ customer.attribution.twclid }}</div>
                         </div>
+                        <div v-if="customer.attribution?.checkout_ip_address" class="col-md-4">
+                            <div class="small text-muted">Checkout IP</div>
+                            <div>{{ customer.attribution.checkout_ip_address }}</div>
+                        </div>
                         <div v-if="customer.attribution?.landing_url" class="col-12">
                             <div class="small text-muted">Landing URL</div>
                             <div class="text-break">
                                 <a :href="customer.attribution.landing_url" target="_blank" rel="noopener">{{ customer.attribution.landing_url }}</a>
                             </div>
+                        </div>
+                        <div v-if="customer.attribution?.checkout_user_agent" class="col-12">
+                            <div class="small text-muted">Checkout User Agent</div>
+                            <div class="text-break small">{{ customer.attribution.checkout_user_agent }}</div>
                         </div>
                     </div>
                 </div>

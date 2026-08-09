@@ -58,13 +58,21 @@ class TestTwitterConversion extends Command
             'conversion_id' => 'test-'.$user->id.'-'.now()->timestamp,
             'twclid' => $user->twclid,
             'event_source_url' => $user->landing_url ?: config('app.url'),
+            'ip_address' => $user->checkout_ip_address,
+            'user_agent' => $user->checkout_user_agent,
         ];
 
         $preview = $twitter->previewPurchase($user, $data);
 
         $this->info('Endpoint: '.$preview['endpoint']);
         $this->line('Payload (token is sent as a header, not shown):');
-        $this->line((string) json_encode($preview['payload'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        // Same flags as the live send — without JSON_PRESERVE_ZERO_FRACTION the
+        // preview prints "value": 1 for a payload that really carries 1.0, which
+        // looks exactly like the error X rejects.
+        $this->line((string) json_encode(
+            $preview['payload'],
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION
+        ));
 
         if ($preview['payload'] === null) {
             $this->error('No matching identifier for this user (needs email, phone, or twclid). Aborting.');

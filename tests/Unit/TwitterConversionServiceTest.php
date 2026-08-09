@@ -56,7 +56,6 @@ class TwitterConversionServiceTest extends TestCase
 
         Http::assertSent(function ($request) {
             $conversion = $request->data()['conversions'][0];
-            $identifier = $conversion['identifiers'][0];
 
             return $request->url() === 'https://ads-api.x.com/12/measurement/conversions/qfwd8'
                 && $request->hasHeader('X-Pixel-Token', 'secret-token')
@@ -65,10 +64,57 @@ class TwitterConversionServiceTest extends TestCase
                 && $conversion['value'] === 65.0
                 && $conversion['price_currency'] === 'USD'
                 && $conversion['event_source_url'] === 'https://wewingames.com/checkout'
-                && $identifier['twclid'] === 'tw-click-abc'
-                && $identifier['hashed_email'] === hash('sha256', 'buyer@example.com')
-                && $identifier['hashed_phone_number'] === hash('sha256', '14155550132');
+                // X requires one identifier type per object, not one object with
+                // several keys — sending the combined form loses the match.
+                && $conversion['identifiers'] === [
+                    ['twclid' => 'tw-click-abc'],
+                    ['hashed_email' => hash('sha256', 'buyer@example.com')],
+                    ['hashed_phone_number' => hash('sha256', '14155550132')],
+                ];
         });
+    }
+
+    public function test_it_appends_ip_and_user_agent_as_a_paired_identifier(): void
+    {
+        $this->configure();
+        Http::fake(['ads-api.x.com/*' => Http::response(['success' => true], 200)]);
+
+        $user = User::factory()->create(['email' => 'buyer@example.com', 'phone' => null]);
+        $service = new TwitterConversionService;
+
+        $service->sendPurchase($user, [
+            'value' => 65,
+            'conversion_id' => 'pi_123',
+            'ip_address' => '203.0.113.9',
+            'user_agent' => 'Mozilla/5.0 (iPhone)',
+        ]);
+
+        Http::assertSent(function ($request) {
+            $identifiers = $request->data()['conversions'][0]['identifiers'];
+
+            return $identifiers === [
+                ['hashed_email' => hash('sha256', 'buyer@example.com')],
+                ['ip_address' => '203.0.113.9', 'user_agent' => 'Mozilla/5.0 (iPhone)'],
+            ];
+        });
+    }
+
+    public function test_it_skips_when_ip_and_user_agent_are_the_only_identifiers(): void
+    {
+        $this->configure();
+        Http::fake();
+
+        // X does not accept ip/user agent as a primary identifier.
+        $user = User::factory()->make(['email' => '', 'phone' => null]);
+        $service = new TwitterConversionService;
+
+        $this->assertFalse($service->sendPurchase($user, [
+            'value' => 65,
+            'ip_address' => '203.0.113.9',
+            'user_agent' => 'Mozilla/5.0 (iPhone)',
+        ]));
+
+        Http::assertNothingSent();
     }
 
     public function test_it_returns_false_on_api_failure(): void

@@ -24,16 +24,45 @@ export function useTwitterPixel() {
     const isProduction = env.APP_ENV === 'production';
     const isEnabled = !!pixelId && isProduction;
 
+    /**
+     * X hashes email_address / phone_number in the browser, so they have to be
+     * normalized the same way the server normalizes them before hashing for the
+     * Conversion API — otherwise the two events hash to different values and
+     * describe two different people. Phone must be E.164 with a leading "+";
+     * a bare 10-digit number is assumed US.
+     */
+    const normalizeParameters = (parameters?: Record<string, any>) => {
+        const normalized: Record<string, any> = { ...(parameters || {}) };
+
+        const email = typeof normalized.email_address === 'string' ? normalized.email_address.trim().toLowerCase() : '';
+        if (email) {
+            normalized.email_address = email;
+        } else {
+            delete normalized.email_address;
+        }
+
+        const digits = typeof normalized.phone_number === 'string' ? normalized.phone_number.replace(/\D/g, '') : '';
+        if (digits.length >= 10) {
+            normalized.phone_number = `+${digits.length === 10 ? `1${digits}` : digits}`;
+        } else {
+            delete normalized.phone_number;
+        }
+
+        return normalized;
+    };
+
     const track = (eventId: string | undefined, parameters?: Record<string, any>) => {
         if (!eventId) return;
 
+        const payload = normalizeParameters(parameters);
+
         if (!isEnabled) {
-            console.log('[X Pixel Debug] Event:', eventId, parameters);
+            console.log('[X Pixel Debug] Event:', eventId, payload);
             return;
         }
 
         if (typeof window !== 'undefined' && typeof window.twq === 'function') {
-            window.twq('event', eventId, parameters || {});
+            window.twq('event', eventId, payload);
         }
     };
 

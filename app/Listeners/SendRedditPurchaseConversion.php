@@ -2,22 +2,22 @@
 
 namespace App\Listeners;
 
-use App\Listeners\Concerns\ResolvesFirstPaidPurchase;
+use App\Listeners\Concerns\ResolvesPaidPurchase;
 use App\Services\RedditConversionService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Laravel\Cashier\Events\WebhookReceived;
 
 /**
- * Fires the server-side Reddit "Purchase" conversion once a subscription's first
- * paid invoice is confirmed by Stripe. Same semantics as the X listener: runs
+ * Fires the server-side Reddit "Purchase" conversion once a subscription's paid
+ * invoice is confirmed by Stripe. Same semantics as the X listener: runs
  * synchronously inside the webhook, never lets a failure break the webhook
  * response, and shares the conversion_id (PaymentIntent id) with the browser
  * Reddit pixel for deduplication.
  */
 class SendRedditPurchaseConversion
 {
-    use ResolvesFirstPaidPurchase;
+    use ResolvesPaidPurchase;
 
     public function __construct(private RedditConversionService $reddit) {}
 
@@ -28,7 +28,7 @@ class SendRedditPurchaseConversion
                 return;
             }
 
-            $purchase = $this->resolveFirstPaidPurchase($event);
+            $purchase = $this->resolvePaidPurchase($event);
 
             if ($purchase === null) {
                 return;
@@ -41,23 +41,28 @@ class SendRedditPurchaseConversion
     }
 
     /**
-     * @param  array{user: \App\Models\User, conversionId: ?string, value: float, currency: string, conversionTime: string}  $purchase
+     * @param  array{user: \App\Models\User, conversionId: ?string, invoiceId: ?string, value: float, currency: string, conversionTime: string}  $purchase
      */
     private function send(array $purchase): void
     {
         $conversionId = $purchase['conversionId'];
 
-        $lockKey = $conversionId ? 'reddit-conversion-sent:'.$conversionId : null;
+        $lockReference = $conversionId ?: $purchase['invoiceId'];
+        $lockKey = $lockReference ? 'reddit-conversion-sent:'.$lockReference : null;
 
         if ($lockKey && ! Cache::add($lockKey, true, now()->addDay())) {
             return;
         }
 
-        $sent = $this->reddit->sendPurchase($purchase['user'], [
+        $user = $purchase['user'];
+
+        $sent = $this->reddit->sendPurchase($user, [
             'value' => $purchase['value'],
             'currency' => $purchase['currency'],
             'conversion_id' => $conversionId,
             'conversion_time' => $purchase['conversionTime'],
+            'ip_address' => $user->checkout_ip_address,
+            'user_agent' => $user->checkout_user_agent,
         ]);
 
         if ($lockKey && ! $sent) {

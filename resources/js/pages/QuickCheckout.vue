@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import OrderBumpModal from '@/components/OrderBumpModal.vue';
 import TrustBadges from '@/components/TrustBadges.vue';
+import { claimPurchase } from '@/composables/usePurchaseTracking';
 import { useTwitterPixel } from '@/composables/useTwitterPixel';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
@@ -435,15 +436,26 @@ const submit = async () => {
 
         form.post(route('quick-checkout.process'), {
             onSuccess: () => {
+                // Claimed so a remount or a future landing page reacting to the
+                // same flashed purchase_data can't report this sale twice.
+                const xPurchaseData = (page.props.flash as any)?.purchase_data;
+                if (!claimPurchase(xPurchaseData)) {
+                    return;
+                }
+
+                // The value comes from purchase_data (what Stripe charged), not
+                // the local total, so every platform reports the same figure.
+                const purchaseValue = xPurchaseData?.plan_price ?? total.value;
+
                 // Track purchase
                 window.dataLayer = window.dataLayer || [];
                 window.dataLayer.push({ ecommerce: null });
                 window.dataLayer.push({
                     event: 'purchase',
                     ecommerce: {
-                        value: total.value,
+                        value: purchaseValue,
                         currency: 'USD',
-                        items: [{ item_name: currentPlan.value.name + ' Plan', price: total.value }],
+                        items: [{ item_name: currentPlan.value.name + ' Plan', price: purchaseValue }],
                     },
                 });
 
@@ -456,8 +468,8 @@ const submit = async () => {
                     });
                     (window as any).rdt('track', 'Purchase', {
                         currency: 'USD',
-                        value: total.value,
-                        conversionId: (page.props.flash as any)?.purchase_data?.conversion_id ?? undefined,
+                        value: purchaseValue,
+                        conversionId: xPurchaseData?.conversion_id ?? undefined,
                     });
                 }
 
@@ -465,13 +477,13 @@ const submit = async () => {
                 // actual charge (conversion_id = PaymentIntent id is null for
                 // $0 / 100%-off / trial subs), matching the server-side exclusion
                 // and keeping browser/server dedup aligned.
-                const xConversionId = (page.props.flash as any)?.purchase_data?.conversion_id ?? null;
-                if (xConversionId) {
+                if (xPurchaseData?.conversion_id) {
                     trackPurchase({
-                        value: total.value,
+                        value: purchaseValue,
                         currency: 'USD',
-                        conversion_id: xConversionId,
+                        conversion_id: xPurchaseData.conversion_id,
                         email_address: form.email ?? null,
+                        phone_number: form.phone ?? null,
                     });
                 }
             },

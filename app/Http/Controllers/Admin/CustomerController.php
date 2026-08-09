@@ -207,6 +207,9 @@ class CustomerController extends Controller
                     'utm_campaign' => $user->utm_campaign,
                     'utm_content' => $user->utm_content,
                     'landing_url' => $user->landing_url,
+                    // What the Conversion APIs had to match this buyer on.
+                    'checkout_ip_address' => $user->checkout_ip_address,
+                    'checkout_user_agent' => $user->checkout_user_agent,
                 ],
             ],
             'paymentMethods' => $paymentMethods,

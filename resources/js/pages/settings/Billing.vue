@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import PricingCards from '@/components/PricingCards.vue';
+import { claimPurchase } from '@/composables/usePurchaseTracking';
 import CustomerLayout from '@/layouts/CustomerLayout.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted } from 'vue';
@@ -171,10 +172,12 @@ const setDefaultPaymentMethod = (paymentMethodId: string) => {
 
 // Check if we're returning from Stripe and refresh the page
 onMounted(() => {
-    // Track purchase event for subscription switches/new subscriptions
+    // Track purchase event for subscription switches/new subscriptions.
+    // Claimed so a remount (or another component reacting to the same flashed
+    // purchase_data) can't report the sale a second time.
     const flash = page.props.flash as any;
     const purchaseData = flash?.purchase_data;
-    if (purchaseData) {
+    if (claimPurchase(purchaseData)) {
         // Google Tag Manager - Purchase Event
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({ ecommerce: null });
@@ -192,10 +195,14 @@ onMounted(() => {
             },
         });
 
-        // Reddit Pixel - Advanced Matching for Purchase
+        // Reddit Pixel - Advanced Matching for Purchase.
+        // Plan changes flash purchase_data without a conversion_id, so this
+        // pixel could never deduplicate against the server-side Conversions API
+        // event that now covers charged upgrades. Leave those to the server and
+        // only fire here when there is a dedup key to share.
         const pixelId = (page.props as any).env?.REDDIT_PIXEL_ID;
         const user = (page.props as any).auth?.user?.data;
-        if (window.rdt && pixelId) {
+        if (window.rdt && pixelId && purchaseData.conversion_id) {
             if (user) {
                 window.rdt('init', pixelId, {
                     email: user.email,
@@ -205,6 +212,7 @@ onMounted(() => {
             window.rdt('track', 'Purchase', {
                 currency: 'USD',
                 value: purchaseData.plan_price,
+                conversionId: purchaseData.conversion_id,
             });
         }
     }

@@ -175,7 +175,10 @@ class QuickCheckoutController extends Controller
 
         $purchaseData = [
             'plan_name' => $stripeProduct ? ucfirst($stripeProduct->tier).' Plan' : 'Subscription',
-            'plan_price' => $purchaseValue,
+            // Prefer what Stripe actually charged over the locally computed
+            // list-price-minus-coupon, so the browser pixel and the server
+            // Conversion API report the same value for the same conversion_id.
+            'plan_price' => $result['amount_paid'] ?? $purchaseValue,
             'billing_period' => $stripeProduct?->billing_period ?? 'monthly',
             'conversion_id' => $result['payment_intent_id'] ?? null,
         ];

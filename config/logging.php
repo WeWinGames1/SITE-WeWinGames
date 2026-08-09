@@ -175,6 +175,27 @@ return [
             'replace_placeholders' => true,
         ],
 
+        /*
+         * Ad-platform Conversion API traffic (X, Reddit). Successful sends are
+         * info-level and would be swallowed by the production LOG_LEVEL=error,
+         * leaving no way to tell "working" apart from "silently not firing".
+         * capi.log keeps the full record at info; errors additionally reach the
+         * default log via the stack below.
+         */
+        'capi' => [
+            'driver' => 'stack',
+            'channels' => ['capi_daily', 'errors'],
+            'ignore_exceptions' => false,
+        ],
+
+        'capi_daily' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/capi.log'),
+            'level' => 'info',
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
         'audit' => [
             'driver' => 'daily',
             'path' => storage_path('logs/audit.log'),

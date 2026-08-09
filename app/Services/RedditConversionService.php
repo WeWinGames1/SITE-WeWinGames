@@ -33,7 +33,7 @@ class RedditConversionService
     }
 
     /**
-     * @param  array{value?: float|int|string, currency?: string, conversion_id?: string, click_id?: string, conversion_time?: string}  $data
+     * @param  array{value?: float|int|string, currency?: string, conversion_id?: string, click_id?: string, conversion_time?: string, ip_address?: string, user_agent?: string}  $data
      */
     public function sendPurchase(User $user, array $data = []): bool
     {
@@ -41,7 +41,7 @@ class RedditConversionService
     }
 
     /**
-     * @param  array{value?: float|int|string, currency?: string, conversion_id?: string, click_id?: string, conversion_time?: string}  $data
+     * @param  array{value?: float|int|string, currency?: string, conversion_id?: string, click_id?: string, conversion_time?: string, ip_address?: string, user_agent?: string}  $data
      */
     public function sendEvent(string $eventName, User $user, array $data = []): bool
     {
@@ -52,7 +52,7 @@ class RedditConversionService
         $event = [
             'event_at' => $data['conversion_time'] ?? now()->toIso8601String(),
             'event_type' => ['tracking_type' => $eventName],
-            'user' => $this->buildUser($user),
+            'user' => $this->buildUser($user, $data),
         ];
 
         if (! empty($data['click_id'])) {
@@ -80,18 +80,21 @@ class RedditConversionService
                 ]);
 
             if ($response->failed()) {
-                Log::error('Reddit CAPI Error: '.$response->status().' '.$response->body(), [
+                Log::channel('capi')->error('Reddit CAPI Error: '.$response->status().' '.$response->body(), [
                     'user_id' => $user->id,
                 ]);
 
                 return false;
             }
 
-            Log::info("Reddit CAPI ($eventName) sent successfully for user: {$user->id}");
+            Log::channel('capi')->info("Reddit CAPI ($eventName) sent successfully for user: {$user->id}", [
+                'conversion_id' => $data['conversion_id'] ?? null,
+                'match_keys' => array_keys($event['user']),
+            ]);
 
             return true;
         } catch (\Throwable $e) {
-            Log::error('Reddit CAPI Exception: '.$e->getMessage(), [
+            Log::channel('capi')->error('Reddit CAPI Exception: '.$e->getMessage(), [
                 'user_id' => $user->id,
             ]);
 
@@ -100,9 +103,13 @@ class RedditConversionService
     }
 
     /**
+     * Reddit expects every match key hashed with SHA-256 except user_agent,
+     * which is sent in the clear.
+     *
+     * @param  array<string, mixed>  $data
      * @return array<string, string>
      */
-    private function buildUser(User $user): array
+    private function buildUser(User $user, array $data = []): array
     {
         $matched = [];
 
@@ -116,6 +123,14 @@ class RedditConversionService
             if ($digits !== '' && $digits !== null) {
                 $matched['phone_number'] = hash('sha256', $digits);
             }
+        }
+
+        if (! empty($data['ip_address'])) {
+            $matched['ip_address'] = hash('sha256', (string) $data['ip_address']);
+        }
+
+        if (! empty($data['user_agent'])) {
+            $matched['user_agent'] = (string) $data['user_agent'];
         }
 
         return $matched;

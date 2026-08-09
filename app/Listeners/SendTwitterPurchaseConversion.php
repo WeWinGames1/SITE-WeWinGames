@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Listeners\Concerns\ResolvesFirstPaidPurchase;
+use App\Listeners\Concerns\ResolvesPaidPurchase;
 use App\Services\TwitterConversionService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -10,7 +10,7 @@ use Laravel\Cashier\Events\WebhookReceived;
 
 /**
  * Fires the server-side X (Twitter) "Subscription Purchase" conversion once a
- * subscription's first paid invoice is confirmed by Stripe.
+ * subscription's paid invoice is confirmed by Stripe.
  *
  * Runs synchronously inside the Stripe webhook request (like the app's other
  * WebhookReceived listeners) so it does not depend on a queue worker being
@@ -21,7 +21,7 @@ use Laravel\Cashier\Events\WebhookReceived;
  */
 class SendTwitterPurchaseConversion
 {
-    use ResolvesFirstPaidPurchase;
+    use ResolvesPaidPurchase;
 
     public function __construct(private TwitterConversionService $twitter) {}
 
@@ -35,7 +35,7 @@ class SendTwitterPurchaseConversion
                 return;
             }
 
-            $purchase = $this->resolveFirstPaidPurchase($event);
+            $purchase = $this->resolvePaidPurchase($event);
 
             if ($purchase === null) {
                 return;
@@ -48,15 +48,18 @@ class SendTwitterPurchaseConversion
     }
 
     /**
-     * @param  array{user: \App\Models\User, conversionId: ?string, value: float, currency: string, conversionTime: string}  $purchase
+     * @param  array{user: \App\Models\User, conversionId: ?string, invoiceId: ?string, value: float, currency: string, conversionTime: string}  $purchase
      */
     private function send(array $purchase): void
     {
         $conversionId = $purchase['conversionId'];
 
         // Concurrency + Stripe-retry guard: claim this transaction before sending
-        // so duplicate/simultaneous webhooks don't double-send.
-        $lockKey = $conversionId ? 'twitter-conversion-sent:'.$conversionId : null;
+        // so duplicate/simultaneous webhooks don't double-send. Keyed on the
+        // invoice when the PaymentIntent could not be resolved, so the claim
+        // still holds for a purchase that ends up sent without a dedup id.
+        $lockReference = $conversionId ?: $purchase['invoiceId'];
+        $lockKey = $lockReference ? 'twitter-conversion-sent:'.$lockReference : null;
 
         if ($lockKey && ! Cache::add($lockKey, true, now()->addDay())) {
             return;
@@ -71,6 +74,8 @@ class SendTwitterPurchaseConversion
             'twclid' => $user->twclid,
             'event_source_url' => $user->landing_url ?: config('app.url'),
             'conversion_time' => $purchase['conversionTime'],
+            'ip_address' => $user->checkout_ip_address,
+            'user_agent' => $user->checkout_user_agent,
         ]);
 
         // Release the lock on a transient failure so a webhook redelivery or

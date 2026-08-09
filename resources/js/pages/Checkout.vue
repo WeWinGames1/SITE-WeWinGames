@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import TrustBadges from '@/components/TrustBadges.vue';
+import { claimPurchase } from '@/composables/usePurchaseTracking';
 import { useTwitterPixel } from '@/composables/useTwitterPixel';
 import CustomerLayout from '@/layouts/CustomerLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
@@ -240,7 +241,7 @@ const handle3DSecure = async () => {
         } else {
             // Authentication successful - fire purchase tracking event
             const purchaseData = flash?.purchase_data;
-            if (purchaseData) {
+            if (claimPurchase(purchaseData)) {
                 window.dataLayer = window.dataLayer || [];
                 window.dataLayer.push({ ecommerce: null });
                 window.dataLayer.push({
@@ -284,6 +285,7 @@ const handle3DSecure = async () => {
                         currency: 'USD',
                         conversion_id: purchaseData.conversion_id,
                         email_address: page.props.auth.user?.email ?? null,
+                        phone_number: page.props.auth.user?.phone ?? null,
                     });
                 }
             }
@@ -332,18 +334,28 @@ const submit = async () => {
                 if (flash?.requires_action) {
                     handle3DSecure();
                 } else {
+                    // The server redirects to the dashboard with purchase_data
+                    // flashed, so Dashboard.vue sees this same sale on mount.
+                    // Whichever runs first reports it; the other stands down.
+                    const xPurchaseData = flash?.purchase_data;
+                    if (!claimPurchase(xPurchaseData)) {
+                        return;
+                    }
+
+                    const purchaseValue = xPurchaseData?.plan_price ?? total.value;
+
                     // Google Tag Manager - Purchase Event
                     window.dataLayer = window.dataLayer || [];
                     window.dataLayer.push({ ecommerce: null });
                     window.dataLayer.push({
                         event: 'purchase',
                         ecommerce: {
-                            value: total.value,
+                            value: purchaseValue,
                             currency: 'USD',
                             items: [
                                 {
                                     item_name: props.plan.name,
-                                    price: total.value,
+                                    price: purchaseValue,
                                 },
                             ],
                         },
@@ -364,22 +376,24 @@ const submit = async () => {
                         // Track Purchase with value
                         (window as any).rdt('track', 'Purchase', {
                             currency: 'USD',
-                            value: total.value,
-                            conversionId: (page.props.flash as any)?.purchase_data?.conversion_id ?? undefined,
+                            value: purchaseValue,
+                            conversionId: xPurchaseData?.conversion_id ?? undefined,
                         });
                     }
 
                     // X (Twitter) purchase conversion. Only fire when there was an
                     // actual charge (conversion_id = PaymentIntent id is null for
                     // $0 / 100%-off / trial subs), matching the server-side
-                    // exclusion and keeping browser/server dedup aligned.
-                    const xConversionId = (page.props.flash as any)?.purchase_data?.conversion_id ?? null;
-                    if (xConversionId) {
+                    // exclusion and keeping browser/server dedup aligned. The
+                    // value comes from purchase_data (what Stripe charged), not
+                    // the local total, so it matches the server event exactly.
+                    if (xPurchaseData?.conversion_id) {
                         trackPurchase({
-                            value: total.value,
+                            value: purchaseValue,
                             currency: 'USD',
-                            conversion_id: xConversionId,
+                            conversion_id: xPurchaseData.conversion_id,
                             email_address: page.props.auth.user?.email ?? null,
+                            phone_number: page.props.auth.user?.phone ?? null,
                         });
                     }
                 }

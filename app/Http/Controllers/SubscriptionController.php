@@ -119,18 +119,29 @@ class SubscriptionController extends Controller
         // Clean up orphaned redemptions from previous failed attempts
         $this->cleanupOrphanedRedemptions($user);
 
+        // Record who is actually paying, from this browser. The Stripe webhook
+        // that later fires the Conversion API events sees Stripe's own IP, so
+        // the buyer's IP + user agent have to be captured here to be usable as
+        // match identifiers.
+        $attribution = [
+            'checkout_ip_address' => $request->ip(),
+            'checkout_user_agent' => $request->userAgent(),
+        ];
+
         // Attribute this purchase to the most recent X ad click, if any, so the
         // server-side Conversion API event can include the twclid.
         if ($request->cookie('twclid')) {
-            $user->forceFill([
+            $attribution += [
                 'twclid' => $request->cookie('twclid'),
                 'utm_source' => $request->cookie('utm_source') ?: $user->utm_source,
                 'utm_medium' => $request->cookie('utm_medium') ?: $user->utm_medium,
                 'utm_campaign' => $request->cookie('utm_campaign') ?: $user->utm_campaign,
                 'utm_content' => $request->cookie('utm_content') ?: $user->utm_content,
                 'landing_url' => $request->cookie('landing_url') ?: $user->landing_url,
-            ])->save();
+            ];
         }
+
+        $user->forceFill($attribution)->save();
 
         try {
             // Get price ID from request (it should be passed from the checkout form)
@@ -284,13 +295,18 @@ class SubscriptionController extends Controller
                 }
             }
 
+            $payment = $this->extractPaymentDetails($createdSubscription);
+
             $purchaseData = [
                 'plan_name' => $stripeProduct ? ucfirst($stripeProduct->tier).' Plan' : 'Subscription',
-                'plan_price' => $purchaseValue,
+                // Prefer what Stripe actually charged over the locally computed
+                // list-price-minus-coupon: the server Conversion API events report
+                // amount_paid, and the two must match to survive deduplication.
+                'plan_price' => $payment['amount'] ?? $purchaseValue,
                 'billing_period' => $stripeProduct->billing_period ?? 'monthly',
                 // Shared browser/server conversion_id (Stripe PaymentIntent id) so
                 // X deduplicates the browser pixel + server Conversion API events.
-                'conversion_id' => $this->extractPaymentIntentId($createdSubscription),
+                'conversion_id' => $payment['id'],
             ];
 
             // Check if subscription requires additional action (3D Secure)
@@ -660,19 +676,28 @@ class SubscriptionController extends Controller
      * It also decrements the usage count for those codes.
      */
     /**
-     * Best-effort extraction of the Stripe PaymentIntent id from a freshly
-     * created subscription, used as the shared browser/server conversion_id.
+     * Best-effort extraction of the Stripe PaymentIntent behind a freshly created
+     * subscription: its id becomes the shared browser/server conversion_id, and
+     * its amount is the value both sides report, so a browser event and its
+     * server twin can never disagree.
      *
      * Uses Cashier's latestPayment() which expands latest_invoice.payment_intent
      * so the id is available (latestInvoice() leaves payment_intent as a bare id
      * string and would break dedup).
+     *
+     * @return array{id: ?string, amount: ?float}
      */
-    private function extractPaymentIntentId(mixed $subscription): ?string
+    private function extractPaymentDetails(mixed $subscription): array
     {
         try {
-            return $subscription->latestPayment()?->id;
+            $payment = $subscription->latestPayment();
+
+            return [
+                'id' => $payment?->id,
+                'amount' => $payment ? $payment->rawAmount() / 100 : null,
+            ];
         } catch (\Throwable $e) {
-            return null;
+            return ['id' => null, 'amount' => null];
         }
     }
 

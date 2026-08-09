@@ -78,7 +78,7 @@ class TwitterConversionService
                 ->post($this->endpoint());
 
             if ($response->failed()) {
-                Log::error('X CAPI Error: '.$response->status().' '.$response->body(), [
+                Log::channel('capi')->error('X CAPI Error: '.$response->status().' '.$response->body(), [
                     'user_id' => $user->id,
                     'event_id' => $eventId,
                 ]);
@@ -86,11 +86,15 @@ class TwitterConversionService
                 return false;
             }
 
-            Log::info("X CAPI ($eventId) sent successfully for user: {$user->id}");
+            Log::channel('capi')->info("X CAPI ($eventId) sent successfully for user: {$user->id}", [
+                'conversion_id' => $conversion['conversion_id'] ?? null,
+                'identifiers' => array_map(array_key_first(...), $conversion['identifiers']),
+                'value' => $conversion['value'] ?? null,
+            ]);
 
             return true;
         } catch (\Throwable $e) {
-            Log::error('X CAPI Exception: '.$e->getMessage(), [
+            Log::channel('capi')->error('X CAPI Exception: '.$e->getMessage(), [
                 'user_id' => $user->id,
                 'event_id' => $eventId,
             ]);
@@ -138,7 +142,7 @@ class TwitterConversionService
         $identifiers = $this->buildIdentifiers($user, $data);
 
         if (empty($identifiers)) {
-            Log::warning('X CAPI: no matching identifier, skipping conversion', [
+            Log::channel('capi')->warning('X CAPI: no matching identifier, skipping conversion', [
                 'user_id' => $user->id,
                 'event_id' => $eventId,
             ]);
@@ -150,7 +154,7 @@ class TwitterConversionService
             'conversion_time' => $this->formatConversionTime($data['conversion_time'] ?? null),
             'event_id' => $eventId,
             'event_source_url' => $data['event_source_url'] ?? config('app.url'),
-            'identifiers' => [$identifiers],
+            'identifiers' => $identifiers,
         ];
 
         if (! empty($data['conversion_id'])) {
@@ -178,35 +182,42 @@ class TwitterConversionService
     }
 
     /**
-     * Build the identifier object. Only non-empty identifiers are included, and
-     * ip_address + user_agent are only sent together (X treats them as a pair).
+     * Build the identifiers list.
+     *
+     * X requires one identifier type per object — the array is how multiple
+     * identifiers are supplied, not multiple keys in a single object. More
+     * objects means a higher match rate. ip_address + user_agent are the one
+     * exception: X treats them as a pair that must share an object, and they
+     * only count alongside at least one primary identifier.
      *
      * @param  array<string, mixed>  $data
-     * @return array<string, string>
+     * @return list<array<string, string>>
      */
     private function buildIdentifiers(User $user, array $data): array
     {
         $identifiers = [];
 
         if (! empty($data['twclid'])) {
-            $identifiers['twclid'] = (string) $data['twclid'];
+            $identifiers[] = ['twclid' => (string) $data['twclid']];
         }
 
         if (! empty($user->email)) {
-            $identifiers['hashed_email'] = hash('sha256', strtolower(trim($user->email)));
+            $identifiers[] = ['hashed_email' => hash('sha256', strtolower(trim($user->email)))];
         }
 
         if (! empty($user->phone)) {
             $phone = $this->normalizePhone($user->phone);
 
             if ($phone !== '') {
-                $identifiers['hashed_phone_number'] = hash('sha256', $phone);
+                $identifiers[] = ['hashed_phone_number' => hash('sha256', $phone)];
             }
         }
 
-        if (! empty($data['ip_address']) && ! empty($data['user_agent'])) {
-            $identifiers['ip_address'] = (string) $data['ip_address'];
-            $identifiers['user_agent'] = (string) $data['user_agent'];
+        if ($identifiers !== [] && ! empty($data['ip_address']) && ! empty($data['user_agent'])) {
+            $identifiers[] = [
+                'ip_address' => (string) $data['ip_address'],
+                'user_agent' => (string) $data['user_agent'],
+            ];
         }
 
         return $identifiers;

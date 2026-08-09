@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import BetsExport from '@/components/BetsExport.vue';
 import BetsUpload from '@/components/BetsUpload.vue';
+import { claimPurchase } from '@/composables/usePurchaseTracking';
+import { useTwitterPixel } from '@/composables/useTwitterPixel';
 import CustomerLayout from '@/layouts/CustomerLayout.vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
@@ -18,6 +20,7 @@ declare global {
 }
 
 const page = usePage<SharedData>();
+const { trackPurchase } = useTwitterPixel();
 
 const user = page.props.auth.user.data as User;
 const bets = page.props.bets || [];
@@ -25,19 +28,15 @@ const flash = page.props.flash || {};
 const roiData = page.props.roiData || {};
 const sportProfitRoiData = page.props.sportProfitRoiData || {};
 
-// Track purchase event on dashboard load (for successful subscriptions)
+// Track purchase event on dashboard load (for successful subscriptions).
+// Checkout.vue's form onSuccess callback sees the same flashed purchase_data,
+// so the claim decides which of the two reports it — without that, every
+// checkout pushed two purchase events and both ad platforms counted it twice.
 onMounted(() => {
     // Get fresh flash data from page props (shared via middleware)
-    const flashData = page.props.flash as any;
-    const purchaseData = flashData?.purchase_data;
+    const purchaseData = (page.props.flash as any)?.purchase_data;
 
-    // Debug logging (can be removed after verification)
-    console.log('[GTM Debug] Dashboard mounted, flash data:', flashData);
-    console.log('[GTM Debug] Purchase data:', purchaseData);
-
-    if (purchaseData) {
-        console.log('[GTM Debug] Pushing purchase event to dataLayer');
-
+    if (claimPurchase(purchaseData)) {
         // Google Tag Manager - Purchase Event
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({ ecommerce: null });
@@ -55,8 +54,6 @@ onMounted(() => {
             },
         });
 
-        console.log('[GTM Debug] dataLayer after push:', window.dataLayer);
-
         // Reddit Pixel - Advanced Matching for Purchase
         const pixelId = (page.props as any).env?.REDDIT_PIXEL_ID;
         if (window.rdt && pixelId) {
@@ -67,6 +64,20 @@ onMounted(() => {
             window.rdt('track', 'Purchase', {
                 currency: 'USD',
                 value: purchaseData.plan_price,
+                conversionId: purchaseData.conversion_id ?? undefined,
+            });
+        }
+
+        // X (Twitter) purchase conversion — only when an actual charge happened.
+        // Present here too so the conversion still reports if this page wins the
+        // claim (Checkout.vue's callback can be skipped if the user navigates).
+        if (purchaseData.conversion_id) {
+            trackPurchase({
+                value: purchaseData.plan_price,
+                currency: 'USD',
+                conversion_id: purchaseData.conversion_id,
+                email_address: user.email ?? null,
+                phone_number: (user as any).phone ?? null,
             });
         }
     }

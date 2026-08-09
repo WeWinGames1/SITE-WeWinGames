@@ -62,6 +62,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'utm_campaign',
         'utm_content',
         'landing_url',
+        'checkout_ip_address',
+        'checkout_user_agent',
     ];
 
     /**
@@ -75,6 +77,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'registration_ip',
         'registration_user_agent',
         'last_login_ip',
+        'checkout_ip_address',
+        'checkout_user_agent',
         'discord_access_token',
         'discord_refresh_token',
     ];

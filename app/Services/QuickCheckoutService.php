@@ -25,7 +25,7 @@ class QuickCheckoutService
     /**
      * Process the quick checkout: create user, Stripe customer, and subscription
      *
-     * @return array{success: bool, user?: User, subscription?: mixed, error?: string}
+     * @return array{success: bool, user?: User, subscription?: mixed, error?: string, payment_intent_id?: ?string, amount_paid?: ?float}
      */
     public function processCheckout(Request $request, string $priceId, string $paymentMethod, ?int $trialDays = null, ?string $registrationType = null): array
     {
@@ -86,6 +86,11 @@ class QuickCheckoutService
                 'affiliate_id' => $affiliateId,
                 'registration_ip' => $request->ip(),
                 'registration_user_agent' => $request->userAgent(),
+                // Same values, but under the checkout keys the Conversion API
+                // listeners read — registration_* can drift from the paying
+                // browser on every later purchase.
+                'checkout_ip_address' => $request->ip(),
+                'checkout_user_agent' => $request->userAgent(),
                 ...$this->marketingAttribution($request),
             ]);
 
@@ -185,11 +190,14 @@ class QuickCheckoutService
             $this->syncToExternalServices($user);
             $this->sendCompletionEmail($user);
 
+            $payment = $this->extractPaymentDetails($createdSubscription);
+
             return [
                 'success' => true,
                 'user' => $user,
                 'subscription' => $createdSubscription,
-                'payment_intent_id' => $this->extractPaymentIntentId($createdSubscription),
+                'payment_intent_id' => $payment['id'],
+                'amount_paid' => $payment['amount'],
             ];
         } catch (\Stripe\Exception\CardException $e) {
             // No successful charge — remove the provisional user and Stripe customer.
@@ -348,19 +356,28 @@ class QuickCheckoutService
     }
 
     /**
-     * Best-effort extraction of the Stripe PaymentIntent id from a freshly
-     * created subscription, used as the shared browser/server conversion_id.
+     * Best-effort extraction of the Stripe PaymentIntent behind a freshly created
+     * subscription: its id becomes the shared browser/server conversion_id, and
+     * its amount is the value both sides report, so a browser event and its
+     * server twin can never disagree.
      *
      * Uses Cashier's latestPayment() which expands latest_invoice.payment_intent
      * so the id is available (latestInvoice() leaves payment_intent as a bare id
      * string and would break dedup).
+     *
+     * @return array{id: ?string, amount: ?float}
      */
-    protected function extractPaymentIntentId(mixed $subscription): ?string
+    protected function extractPaymentDetails(mixed $subscription): array
     {
         try {
-            return $subscription->latestPayment()?->id;
+            $payment = $subscription->latestPayment();
+
+            return [
+                'id' => $payment?->id,
+                'amount' => $payment ? $payment->rawAmount() / 100 : null,
+            ];
         } catch (\Throwable $e) {
-            return null;
+            return ['id' => null, 'amount' => null];
         }
     }
 
