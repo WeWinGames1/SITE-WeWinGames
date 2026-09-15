@@ -2,14 +2,18 @@
 
 namespace Tests\Feature;
 
+use App\Http\Requests\QuickCheckoutRequest;
 use App\Mail\CompleteYourAccountMail;
 use App\Models\DiscountCode;
 use App\Models\StripeProduct;
 use App\Models\User;
+use App\Services\QuickCheckoutService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Unique;
 use Tests\TestCase;
 
 class QuickCheckoutTest extends TestCase
@@ -144,6 +148,159 @@ class QuickCheckoutTest extends TestCase
             ->where('email', $user->email)
             ->where('name', $user->name)
         );
+    }
+
+    public function test_payment_return_redirects_to_password_reset_without_a_valid_token(): void
+    {
+        $response = $this->get(route('quick-checkout.return', ['token' => str_repeat('z', 64)]));
+
+        $response->assertRedirect(route('password.request'));
+    }
+
+    public function test_payment_return_sends_a_completed_payment_to_the_completion_page(): void
+    {
+        $user = User::factory()->create([
+            'status' => 'pending_setup',
+            'registration_type' => 'quick_checkout',
+            'completion_token' => str_repeat('b', 64),
+            'completion_token_expires_at' => now()->addHours(24),
+        ]);
+
+        $this->mock(QuickCheckoutService::class, function ($mock) use ($user) {
+            $mock->shouldReceive('findUserByToken')->once()->andReturn($user);
+            $mock->shouldReceive('completePendingPayment')->once()->andReturn([
+                'success' => true,
+                'processing' => false,
+                'payment_intent_id' => 'pi_test',
+                'amount_paid' => 65.0,
+            ]);
+        });
+
+        $response = $this->get(route('quick-checkout.return', ['token' => str_repeat('b', 64)]));
+
+        $response->assertRedirect(route('complete-registration', ['token' => str_repeat('b', 64)]));
+        $response->assertSessionHas('purchase_data.conversion_id', 'pi_test');
+    }
+
+    public function test_payment_return_sends_a_failed_payment_back_to_checkout(): void
+    {
+        $user = User::factory()->create([
+            'status' => 'pending_setup',
+            'registration_type' => 'quick_checkout',
+            'completion_token' => str_repeat('c', 64),
+            'completion_token_expires_at' => now()->addHours(24),
+        ]);
+
+        $this->mock(QuickCheckoutService::class, function ($mock) use ($user) {
+            $mock->shouldReceive('findUserByToken')->once()->andReturn($user);
+            $mock->shouldReceive('completePendingPayment')->once()->andReturn([
+                'success' => false,
+                'error' => 'payment_failed',
+                'message' => 'Your payment was not completed.',
+            ]);
+        });
+
+        $response = $this->get(route('quick-checkout.return', ['token' => str_repeat('c', 64)]));
+
+        $response->assertRedirect(route('quick-checkout'));
+        $response->assertSessionHas('error', 'Your payment was not completed.');
+    }
+
+    public function test_abandoned_pending_setup_checkout_is_reclaimed_on_retry(): void
+    {
+        $abandoned = User::factory()->create([
+            'email' => 'abandoned@example.com',
+            'status' => 'pending_setup',
+            'registration_type' => 'quick_checkout',
+        ]);
+
+        $service = app(QuickCheckoutService::class);
+        $isAbandoned = (fn () => $this->isAbandonedCheckout($abandoned))->call($service);
+
+        $this->assertTrue($isAbandoned);
+    }
+
+    public function test_an_active_account_is_never_treated_as_an_abandoned_checkout(): void
+    {
+        $active = User::factory()->create([
+            'email' => 'active@example.com',
+            'status' => 'active',
+            'registration_type' => 'quick_checkout',
+        ]);
+
+        $service = app(QuickCheckoutService::class);
+        $isAbandoned = (fn () => $this->isAbandonedCheckout($active))->call($service);
+
+        $this->assertFalse($isAbandoned);
+    }
+
+    public function test_a_pending_setup_user_is_not_reclaimed_while_stripe_cannot_confirm_the_subscription(): void
+    {
+        $pending = User::factory()->create([
+            'email' => 'inflight@example.com',
+            'status' => 'pending_setup',
+            'registration_type' => 'quick_checkout',
+            'stripe_id' => 'cus_inflight',
+        ]);
+
+        // The local status reads `incomplete` for the whole time a customer is
+        // away in Cash App, so it is never the deciding vote. With Stripe
+        // unreachable the check has to fail closed rather than delete a customer
+        // whose payment may already have gone through.
+        $pending->subscriptions()->create([
+            'type' => 'default',
+            'stripe_id' => 'sub_inflight',
+            'stripe_status' => 'incomplete',
+            'stripe_price' => 'price_gold_monthly',
+            'quantity' => 1,
+        ]);
+
+        $service = app(QuickCheckoutService::class);
+        $isAbandoned = (fn () => $this->isAbandonedCheckout($pending))->call($service);
+
+        $this->assertFalse($isAbandoned);
+    }
+
+    public function test_checkout_validation_lets_an_unfinished_checkout_reuse_its_email_and_phone(): void
+    {
+        User::factory()->create([
+            'email' => 'retry@example.com',
+            'phone' => '5551234567',
+            'status' => 'pending_setup',
+            'registration_type' => 'quick_checkout',
+        ]);
+
+        $this->assertTrue($this->uniqueRulesPass('email', 'retry@example.com'));
+        $this->assertTrue($this->uniqueRulesPass('phone', '5551234567'));
+    }
+
+    public function test_checkout_validation_still_blocks_a_real_account(): void
+    {
+        User::factory()->create([
+            'email' => 'member@example.com',
+            'phone' => '5559876543',
+            'status' => 'active',
+        ]);
+
+        $this->assertFalse($this->uniqueRulesPass('email', 'member@example.com'));
+        $this->assertFalse($this->uniqueRulesPass('phone', '5559876543'));
+    }
+
+    /**
+     * Run only the uniqueness rules QuickCheckoutRequest defines for a field, so
+     * the assertion is about duplicate handling and not about the DNS lookup or
+     * disposable-domain checks the other rules perform.
+     */
+    protected function uniqueRulesPass(string $field, string $value): bool
+    {
+        $rules = array_values(array_filter(
+            (new QuickCheckoutRequest)->rules()[$field],
+            fn ($rule) => $rule instanceof Unique
+        ));
+
+        $this->assertNotEmpty($rules, "No uniqueness rule is defined for {$field}.");
+
+        return Validator::make([$field => $value], [$field => $rules])->passes();
     }
 
     public function test_complete_registration_sets_password_and_activates_user(): void

@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Laravel\Cashier\Subscription;
 
 class QuickCheckoutService
 {
@@ -25,20 +26,45 @@ class QuickCheckoutService
     /**
      * Process the quick checkout: create user, Stripe customer, and subscription
      *
-     * @return array{success: bool, user?: User, subscription?: mixed, error?: string, payment_intent_id?: ?string, amount_paid?: ?float}
+     * Returns `requires_action` when Stripe still needs the customer to confirm
+     * the PaymentIntent in the browser (Cash App Pay hand-off, 3DS challenge);
+     * the checkout is then finished by completePendingPayment() on the return leg.
+     *
+     * @return array{success: bool, requires_action?: bool, user?: User, subscription?: mixed, error?: string, message?: string, client_secret?: string, completion_token?: string, payment_intent_id?: ?string, amount_paid?: ?float}
      */
     public function processCheckout(Request $request, string $priceId, string $paymentMethod, ?int $trialDays = null, ?string $registrationType = null): array
     {
         $email = strtolower($request->input('email'));
 
-        // Check if user already exists
-        $existingUser = User::where('email', $email)->first();
-        if ($existingUser) {
+        $phone = $request->input('phone');
+
+        // A pending_setup user whose payment never completed (abandoned Cash App
+        // or 3DS redirect) is not a real account. Reclaim it so the customer can
+        // retry instead of colliding with the unique email/phone constraints —
+        // the matching rules in QuickCheckoutRequest let those rows through for
+        // exactly this check to settle, against Stripe rather than a stale status.
+        $existingUsers = User::where('email', $email)
+            ->when($phone, fn ($query) => $query->orWhere('phone', $phone))
+            ->get();
+
+        foreach ($existingUsers as $existingUser) {
+            if ($this->isAbandonedCheckout($existingUser)) {
+                continue;
+            }
+
             return [
                 'success' => false,
                 'error' => 'email_exists',
-                'message' => 'An account with this email already exists. Please log in instead.',
+                'message' => $existingUser->email === $email
+                    ? 'An account with this email already exists. Please log in instead.'
+                    : 'An account with this phone number already exists. Please log in instead.',
             ];
+        }
+
+        // Only once every match is known to be abandoned, so a blocking account
+        // is never deleted on the way to rejecting the attempt.
+        foreach ($existingUsers as $existingUser) {
+            $this->cleanupFailedCheckout($existingUser);
         }
 
         // Perform security checks
@@ -150,54 +176,61 @@ class QuickCheckoutService
                 }
             }
 
-            // Create the subscription with the payment method (the actual charge)
-            $createdSubscription = $subscription->create($paymentMethod);
+            // Create the subscription WITHOUT letting Cashier confirm the
+            // PaymentIntent server-side. A server-side confirm cannot pass the
+            // return_url that redirect-based methods (Cash App Pay) require, and
+            // cannot answer a 3DS challenge either — both come back as a 400 that
+            // used to take the entire signup down with it. Confirmation is done in
+            // the browser instead; quick-checkout.return finishes the job.
+            $createdSubscription = $subscription->ignoreIncompletePayments()->create($paymentMethod);
 
-            // The card has now been charged. EVERY remaining step is best-effort: a
-            // failure here must never reach the outer catch (which would delete the
-            // paid account and cancel the subscription). The completion token is the
-            // only piece needed for the redirect; if it fails the user can still
-            // recover via the forgot-password fallback.
-            try {
-                $user->generateCompletionToken();
+            $context = [
+                'coupon' => $couponCode,
+                'price_id' => $priceId,
+                'registration_type' => $registrationType,
+                'trial_days' => $trialDays,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ];
 
-                if ($couponCode) {
-                    $this->trackCouponUsage($user, $couponCode, $priceId, $createdSubscription->id);
-                }
+            $payment = $createdSubscription->hasIncompletePayment()
+                ? $createdSubscription->latestPayment()
+                : null;
 
-                activity()
-                    ->performedOn($user)
-                    ->causedBy($user)
-                    ->withProperties([
-                        'ip_address' => $request->ip(),
-                        'user_agent' => $request->userAgent(),
-                        'affiliate_id' => $user->affiliate_id,
-                        'subscription_id' => $createdSubscription->id,
-                        'registration_type' => $registrationType,
-                        'trial_days' => $trialDays,
-                    ])
-                    ->log($registrationType === 'affiliate_trial' ? 'affiliate_trial_completed' : 'quick_checkout_completed');
+            if ($payment && ! $payment->isSucceeded() && ! $payment->isProcessing()) {
+                // Nothing charged yet. Hand the browser the client secret so
+                // Stripe.js can run the Cash App hand-off / 3DS challenge, and park
+                // everything the return leg needs to finish the signup.
+                $token = $user->generateCompletionToken();
 
-                $this->securityService->logRegistrationAttempt($request, true);
-            } catch (\Throwable $e) {
-                Log::error('Quick checkout post-charge bookkeeping failed', [
-                    'user_id' => $user->id,
-                    'error' => $e->getMessage(),
-                ]);
+                Cache::put($this->pendingContextKey($token), $context, now()->addHours(24));
+
+                $this->logRegistrationSuccess($request);
+
+                return [
+                    'success' => true,
+                    'requires_action' => true,
+                    'user' => $user,
+                    'subscription' => $createdSubscription,
+                    'client_secret' => $payment->clientSecret(),
+                    'completion_token' => $token,
+                ];
             }
 
-            // Best-effort external sync + completion email (each swallows its own errors).
-            $this->syncToExternalServices($user);
-            $this->sendCompletionEmail($user);
+            // Paid outright (or $0 / trial) — no customer action needed.
+            $this->finalizeCheckout($user, $createdSubscription, $context);
 
-            $payment = $this->extractPaymentDetails($createdSubscription);
+            $this->logRegistrationSuccess($request);
+
+            $paymentDetails = $this->extractPaymentDetails($createdSubscription);
 
             return [
                 'success' => true,
+                'requires_action' => false,
                 'user' => $user,
                 'subscription' => $createdSubscription,
-                'payment_intent_id' => $payment['id'],
-                'amount_paid' => $payment['amount'],
+                'payment_intent_id' => $paymentDetails['id'],
+                'amount_paid' => $paymentDetails['amount'],
             ];
         } catch (\Stripe\Exception\CardException $e) {
             // No successful charge — remove the provisional user and Stripe customer.
@@ -266,6 +299,218 @@ class QuickCheckoutService
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * A checkout that never got paid for: a pending_setup user with no
+     * subscription, or only subscriptions Stripe never moved past `incomplete`.
+     * Such a record holds the email and phone hostage without representing a
+     * customer, so the next attempt is allowed to reclaim it.
+     *
+     * The local `stripe_status` is deliberately NOT trusted here. It still reads
+     * `incomplete` for the entire time a customer is away in Cash App, so a
+     * second tab reaching this check could otherwise delete the Stripe customer
+     * of a payment that has already gone through. Ask Stripe, and fail closed
+     * when it cannot answer.
+     */
+    protected function isAbandonedCheckout(User $user): bool
+    {
+        if (! $user->needsRegistrationCompletion()) {
+            return false;
+        }
+
+        $subscriptions = $user->subscriptions()->get();
+
+        if ($subscriptions->isEmpty()) {
+            return true;
+        }
+
+        foreach ($subscriptions as $subscription) {
+            try {
+                // One call answers both questions: the live subscription status
+                // and the state of the PaymentIntent behind its latest invoice.
+                $stripeSubscription = $subscription->asStripeSubscription(['latest_invoice.payment_intent']);
+            } catch (\Throwable $e) {
+                Log::warning('Quick checkout: could not verify a subscription before reclaiming an account', [
+                    'user_id' => $user->id,
+                    'stripe_id' => $subscription->stripe_id,
+                    'error' => $e->getMessage(),
+                ]);
+
+                return false;
+            }
+
+            $subscription->stripe_status = $stripeSubscription->status;
+            $subscription->save();
+
+            if (! in_array($stripeSubscription->status, ['incomplete', 'incomplete_expired'], true)) {
+                return false;
+            }
+
+            // An incomplete subscription whose payment is already succeeded or
+            // still settling is a sale in flight, not an abandoned attempt.
+            $paymentIntent = $stripeSubscription->latest_invoice?->payment_intent;
+
+            if ($paymentIntent && in_array($paymentIntent->status, ['succeeded', 'processing'], true)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Record a successful registration attempt without ever letting a logging
+     * failure escape: in processCheckout this runs after the charge, where an
+     * exception would reach the outer catch and delete the paid account.
+     */
+    protected function logRegistrationSuccess(Request $request): void
+    {
+        try {
+            $this->securityService->logRegistrationAttempt($request, true);
+        } catch (\Throwable $e) {
+            Log::error('Quick checkout: failed to log the registration attempt', [
+                'email' => $request->input('email'),
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Cache key holding everything the return leg needs to finish a checkout
+     * whose payment was still waiting on the customer. Doubles as a once-only
+     * latch: the key is forgotten on finalize, so a replayed return URL cannot
+     * re-run the bookkeeping.
+     */
+    protected function pendingContextKey(string $token): string
+    {
+        return 'quick-checkout-pending:'.$token;
+    }
+
+    /**
+     * Finish a checkout whose PaymentIntent was confirmed in the browser
+     * (Cash App hand-off or 3DS challenge) and the customer has come back.
+     *
+     * @return array{success: bool, error?: string, message?: string, processing?: bool, coupon?: ?string, payment_intent_id?: ?string, amount_paid?: ?float}
+     */
+    public function completePendingPayment(User $user): array
+    {
+        $subscription = $user->subscriptions()->latest('id')->first();
+
+        if (! $subscription) {
+            // Nothing to verify against, so nothing is deleted here — the next
+            // attempt reclaims the account through isAbandonedCheckout(), which
+            // confirms with Stripe first.
+            return [
+                'success' => false,
+                'error' => 'no_subscription',
+                'message' => 'We could not find your payment. Please try again.',
+            ];
+        }
+
+        try {
+            $subscription->syncStripeStatus();
+            $payment = $subscription->latestPayment();
+        } catch (\Throwable $e) {
+            Log::error('Quick checkout return: failed to read payment state', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'success' => false,
+                'error' => 'lookup_failed',
+                'message' => 'We could not confirm your payment. Please contact support before trying again.',
+            ];
+        }
+
+        // No PaymentIntent at all means a $0 / trial subscription: nothing to wait on.
+        if ($payment && ! $payment->isSucceeded() && ! $payment->isProcessing()) {
+            // Only a terminal failure justifies deleting the provisional account.
+            // A payment still awaiting the customer is left alone so they can
+            // finish it from the Cash App prompt that is still open.
+            if ($payment->isCanceled() || $payment->requiresPaymentMethod()) {
+                $this->cleanupFailedCheckout($user);
+
+                return [
+                    'success' => false,
+                    'error' => 'payment_failed',
+                    'message' => 'Your payment was not completed. Please try again with a different payment method.',
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => 'payment_incomplete',
+                'message' => 'Your payment has not been completed yet. Please finish it in Cash App, or try again.',
+            ];
+        }
+
+        // Atomic pull doubles as the once-only latch: a refreshed or replayed
+        // return URL finds nothing left and skips the bookkeeping instead of
+        // double-counting a coupon redemption or resending the email.
+        $context = Cache::pull($this->pendingContextKey((string) $user->completion_token));
+
+        if ($context !== null) {
+            $this->finalizeCheckout($user, $subscription, $context);
+        }
+
+        return [
+            'success' => true,
+            'processing' => (bool) $payment?->isProcessing(),
+            'coupon' => $context['coupon'] ?? null,
+            // Already loaded above — re-fetching would be a second Stripe call
+            // for a PaymentIntent we are holding.
+            'payment_intent_id' => $payment?->id,
+            'amount_paid' => $payment ? $payment->rawAmount() / 100 : null,
+        ];
+    }
+
+    /**
+     * Post-charge bookkeeping. EVERY step here is best-effort: the money has
+     * already moved, so a failure must never bubble up to a caller that would
+     * delete the paid account. Worst case the customer recovers through the
+     * forgot-password fallback.
+     *
+     * Callers are responsible for running this exactly once per checkout.
+     *
+     * @param  array{coupon?: ?string, price_id?: ?string, registration_type?: ?string, trial_days?: ?int, ip_address?: ?string, user_agent?: ?string}  $context
+     */
+    protected function finalizeCheckout(User $user, Subscription $subscription, array $context): void
+    {
+        try {
+            if (! $user->hasValidCompletionToken()) {
+                $user->generateCompletionToken();
+            }
+
+            $registrationType = $context['registration_type'] ?? $user->registration_type ?? 'quick_checkout';
+
+            if (! empty($context['coupon']) && ! empty($context['price_id'])) {
+                $this->trackCouponUsage($user, $context['coupon'], $context['price_id'], $subscription->id);
+            }
+
+            activity()
+                ->performedOn($user)
+                ->causedBy($user)
+                ->withProperties([
+                    'ip_address' => $context['ip_address'] ?? null,
+                    'user_agent' => $context['user_agent'] ?? null,
+                    'affiliate_id' => $user->affiliate_id,
+                    'subscription_id' => $subscription->id,
+                    'registration_type' => $registrationType,
+                    'trial_days' => $context['trial_days'] ?? null,
+                ])
+                ->log($registrationType === 'affiliate_trial' ? 'affiliate_trial_completed' : 'quick_checkout_completed');
+        } catch (\Throwable $e) {
+            Log::error('Quick checkout post-charge bookkeeping failed', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Best-effort external sync + completion email (each swallows its own errors).
+        $this->syncToExternalServices($user);
+        $this->sendCompletionEmail($user);
     }
 
     /**

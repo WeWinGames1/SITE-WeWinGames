@@ -152,18 +152,134 @@ class QuickCheckoutController extends Controller
             ])->withInput();
         }
 
+        // Stripe still needs the customer: a Cash App Pay hand-off or a 3DS
+        // challenge. Send the client secret back to the same page so Stripe.js can
+        // run it with a return_url — something a server-side confirm cannot do.
+        if ($result['requires_action'] ?? false) {
+            Log::info('QuickCheckout: Payment requires customer action', [
+                'email' => $request->input('email'),
+                'user_id' => $result['user']->id ?? null,
+            ]);
+
+            return back()->with([
+                'requires_action' => true,
+                'payment_intent_client_secret' => $result['client_secret'],
+                'payment_return_url' => route('quick-checkout.return', [
+                    'token' => $result['completion_token'],
+                ]),
+            ]);
+        }
+
         Log::info('QuickCheckout: Checkout successful', [
             'email' => $request->input('email'),
             'user_id' => $result['user']->id ?? null,
         ]);
 
-        // Get purchase data for tracking
-        $stripeProduct = StripeProduct::where('stripe_price_id', $request->input('price_id'))->first();
+        return redirect()->route('complete-registration', [
+            'token' => $result['user']->completion_token,
+        ])->with([
+            'success' => 'Payment successful! Complete your account setup below.',
+            'purchase_data' => $this->purchaseData(
+                $request->input('price_id'),
+                $request->input('coupon'),
+                $result['amount_paid'] ?? null,
+                $result['payment_intent_id'] ?? null,
+            ),
+        ]);
+    }
+
+    /**
+     * Landing point after the customer confirms the payment in the browser —
+     * both the real Stripe redirect back from Cash App and the in-page
+     * navigation Stripe.js makes when it settles without leaving the site.
+     */
+    public function paymentReturn(Request $request): RedirectResponse
+    {
+        $token = $request->query('token');
+
+        $user = is_string($token)
+            ? $this->checkoutService->findUserByToken($token)
+            : null;
+
+        if (! $user) {
+            return redirect()->route('password.request')
+                ->with('info', 'This completion link has expired. Please use password reset to access your account.');
+        }
+
+        // Read the plan before finishing: a failed payment deletes the account
+        // along with the subscription that names it, and the customer should land
+        // back on the plan they were actually buying.
+        $priceId = $user->subscriptions()->latest('id')->value('stripe_price');
+
+        $result = $this->checkoutService->completePendingPayment($user);
+
+        if (! $result['success']) {
+            Log::warning('QuickCheckout: Payment return did not complete', [
+                'user_id' => $user->id,
+                'error' => $result['error'] ?? 'unknown',
+            ]);
+
+            return redirect()->route('quick-checkout', $this->planQuery($priceId))
+                ->with('error', $result['message'] ?? 'We could not complete your payment. Please try again.');
+        }
+
+        return redirect()->route('complete-registration', [
+            'token' => $user->completion_token,
+        ])->with([
+            'success' => ($result['processing'] ?? false)
+                ? 'Payment received and still settling with Cash App. Complete your account setup below.'
+                : 'Payment successful! Complete your account setup below.',
+            'purchase_data' => $this->purchaseData(
+                $priceId,
+                $result['coupon'] ?? null,
+                $result['amount_paid'] ?? null,
+                $result['payment_intent_id'] ?? null,
+            ),
+        ]);
+    }
+
+    /**
+     * Query parameters that put the checkout page back on a given price's plan.
+     * Only values show() accepts are returned, so a retired or Bronze-tier price
+     * sends the customer to the default plan instead of tripping validation.
+     *
+     * @return array{plan?: string, period?: string}
+     */
+    protected function planQuery(?string $priceId): array
+    {
+        $product = $priceId
+            ? StripeProduct::where('stripe_price_id', $priceId)->first()
+            : null;
+
+        if (! $product) {
+            return [];
+        }
+
+        $plan = strtolower((string) $product->tier);
+        $period = (string) $product->billing_period;
+
+        return array_filter([
+            'plan' => in_array($plan, ['silver', 'gold', 'platinum'], true) ? $plan : null,
+            'period' => in_array($period, ['daily', 'weekly', 'monthly'], true) ? $period : null,
+        ]);
+    }
+
+    /**
+     * Build the analytics payload flashed to the completion page.
+     *
+     * @return array{plan_name: string, plan_price: float|int, billing_period: string, conversion_id: ?string}
+     */
+    protected function purchaseData(?string $priceId, ?string $coupon, ?float $amountPaid, ?string $paymentIntentId): array
+    {
+        $stripeProduct = $priceId
+            ? StripeProduct::where('stripe_price_id', $priceId)->first()
+            : null;
+
         $purchaseValue = $stripeProduct ? $stripeProduct->price : 0;
 
         // Apply discount to purchase value for tracking
-        if ($request->filled('coupon')) {
-            $discountCode = DiscountCode::where('code', $request->coupon)->active()->first();
+        if ($coupon) {
+            $discountCode = DiscountCode::where('code', $coupon)->active()->first();
             if ($discountCode) {
                 if ($discountCode->discount_type === 'percentage') {
                     $purchaseValue = $purchaseValue * (1 - $discountCode->discount_amount / 100);
@@ -173,23 +289,15 @@ class QuickCheckoutController extends Controller
             }
         }
 
-        $purchaseData = [
+        return [
             'plan_name' => $stripeProduct ? ucfirst($stripeProduct->tier).' Plan' : 'Subscription',
             // Prefer what Stripe actually charged over the locally computed
             // list-price-minus-coupon, so the browser pixel and the server
             // Conversion API report the same value for the same conversion_id.
-            'plan_price' => $result['amount_paid'] ?? $purchaseValue,
+            'plan_price' => $amountPaid ?? $purchaseValue,
             'billing_period' => $stripeProduct?->billing_period ?? 'monthly',
-            'conversion_id' => $result['payment_intent_id'] ?? null,
+            'conversion_id' => $paymentIntentId,
         ];
-
-        // Redirect to completion page
-        return redirect()->route('complete-registration', [
-            'token' => $result['user']->completion_token,
-        ])->with([
-            'success' => 'Payment successful! Complete your account setup below.',
-            'purchase_data' => $purchaseData,
-        ]);
     }
 
     /**

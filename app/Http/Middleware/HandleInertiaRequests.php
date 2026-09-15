@@ -65,6 +65,7 @@ class HandleInertiaRequests extends Middleware
                 'info' => fn () => $request->session()->get('info'),
                 'requires_action' => fn () => $request->session()->get('requires_action'),
                 'payment_intent_client_secret' => fn () => $request->session()->get('payment_intent_client_secret'),
+                'payment_return_url' => fn () => $request->session()->get('payment_return_url'),
                 'subscription_id' => fn () => $request->session()->get('subscription_id'),
                 'purchase_data' => fn () => $request->session()->get('purchase_data'),
             ],

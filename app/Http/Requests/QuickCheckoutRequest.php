@@ -36,14 +36,22 @@ class QuickCheckoutRequest extends FormRequest
                 'string',
                 'email:rfc,dns',
                 'max:255',
-                'unique:'.User::class,
+                // pending_setup rows are checkouts that never finished, not
+                // accounts. They must not block a retry here — QuickCheckoutService
+                // re-checks them against Stripe and still rejects the ones that
+                // represent a real payment.
+                Rule::unique(User::class, 'email')->where(
+                    fn ($query) => $query->where('status', '!=', 'pending_setup')
+                ),
                 $this->getEmailValidationClosure(),
             ],
             'phone' => [
                 'required',
                 'string',
                 'regex:/^[+]?[(]?[0-9]{1,3}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,4}[-\s\.]?[0-9]{1,9}$/',
-                'unique:users,phone',
+                Rule::unique(User::class, 'phone')->where(
+                    fn ($query) => $query->where('status', '!=', 'pending_setup')
+                ),
             ],
             'payment_method' => ['required', 'string'],
             'price_id' => [

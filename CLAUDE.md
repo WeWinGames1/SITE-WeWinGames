@@ -137,10 +137,16 @@ A conversion-optimized registration flow that collects payment before account se
 
 **Flow:**
 1. Guest visits `/quick-checkout?plan=gold&period=monthly`
-2. Enters email, name, phone + card via Stripe Elements
-3. Payment processed → User created with `status=pending_setup`
-4. Email sent with completion link → `/complete-registration?token=xxx`
-5. User sets password + optional Discord → `status=active`, logged in
+2. Enters email, name, phone + card or Cash App Pay via Stripe Payment Element
+3. User created with `status=pending_setup`, subscription created incomplete
+4. Browser confirms the PaymentIntent (`stripe.confirmPayment` with a `return_url`) — this is what runs the Cash App Pay hand-off or a 3DS challenge
+5. `/quick-checkout/return?token=xxx` finalizes: syncs subscription status, tracks the coupon, sends the completion email
+6. `/complete-registration?token=xxx` — user sets password + optional Discord → `status=active`, logged in
+
+Cashier is never allowed to confirm the PaymentIntent server-side
+(`ignoreIncompletePayments()`): a server-side confirm cannot supply the
+`return_url` Stripe requires for redirect-based methods, and cannot answer a 3DS
+challenge either.
 
 **Key Files:**
 - `app/Services/QuickCheckoutService.php` - Business logic
@@ -264,6 +270,7 @@ POST   /forgot-password          - Password reset
 
 GET    /quick-checkout           - Quick checkout page (payment-first)
 POST   /quick-checkout           - Process quick checkout
+GET    /quick-checkout/return    - Payment return leg (Cash App Pay / 3DS)
 GET    /complete-registration    - Complete account setup
 POST   /complete-registration    - Set password after payment
 

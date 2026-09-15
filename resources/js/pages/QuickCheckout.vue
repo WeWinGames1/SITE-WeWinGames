@@ -4,7 +4,7 @@ import TrustBadges from '@/components/TrustBadges.vue';
 import { claimPurchase } from '@/composables/usePurchaseTracking';
 import { useTwitterPixel } from '@/composables/useTwitterPixel';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
-import { Head, useForm, usePage } from '@inertiajs/vue3';
+import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { loadStripe } from '@stripe/stripe-js';
 import axios from 'axios';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
@@ -145,6 +145,8 @@ watch(
 const stripe = ref<any>(null);
 const elements = ref<any>(null);
 const paymentElement = ref<any>(null);
+const awaitingPaymentAction = ref(false);
+const selectedPaymentType = ref('');
 const paymentError = ref('');
 const processing = ref(false);
 
@@ -392,6 +394,110 @@ watch(total, async (newAmount) => {
     }
 });
 
+/**
+ * Fires the purchase pixels from the flashed purchase_data of whatever page the
+ * server landed us on — the completion page, reached either straight from the
+ * checkout post or via the payment-return leg.
+ */
+const reportPurchase = () => {
+    // Claimed so a remount or a future landing page reacting to the
+    // same flashed purchase_data can't report this sale twice.
+    const xPurchaseData = (page.props.flash as any)?.purchase_data;
+    if (!claimPurchase(xPurchaseData)) {
+        return;
+    }
+
+    // The value comes from purchase_data (what Stripe charged), not
+    // the local total, so every platform reports the same figure.
+    const purchaseValue = xPurchaseData?.plan_price ?? total.value;
+
+    // Track purchase
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ ecommerce: null });
+    window.dataLayer.push({
+        event: 'purchase',
+        ecommerce: {
+            value: purchaseValue,
+            currency: 'USD',
+            items: [{ item_name: xPurchaseData?.plan_name ?? currentPlan.value.name + ' Plan', price: purchaseValue }],
+        },
+    });
+
+    // Reddit Pixel
+    const pixelId = (page.props as any).env?.REDDIT_PIXEL_ID;
+    if ((window as any).rdt && pixelId) {
+        (window as any).rdt('init', pixelId, {
+            email: form.email,
+            phoneNumber: form.phone,
+        });
+        (window as any).rdt('track', 'Purchase', {
+            currency: 'USD',
+            value: purchaseValue,
+            conversionId: xPurchaseData?.conversion_id ?? undefined,
+        });
+    }
+
+    // X (Twitter) purchase conversion. Only fire when there was an
+    // actual charge (conversion_id = PaymentIntent id is null for
+    // $0 / 100%-off / trial subs), matching the server-side exclusion
+    // and keeping browser/server dedup aligned.
+    if (xPurchaseData?.conversion_id) {
+        trackPurchase({
+            value: purchaseValue,
+            currency: 'USD',
+            conversion_id: xPurchaseData.conversion_id,
+            email_address: form.email ?? null,
+            phone_number: form.phone ?? null,
+        });
+    }
+};
+
+/** Copy for the wait while Stripe has the customer: Cash App, or a 3DS card. */
+const paymentActionLabel = computed(() => (selectedPaymentType.value === 'cashapp' ? 'Confirm in Cash App...' : 'Verifying payment...'));
+
+/**
+ * Runs the customer-facing half of the payment: the Cash App Pay hand-off (QR on
+ * desktop, app switch on mobile) or a 3DS challenge. Stripe requires an absolute
+ * return_url for these, which is exactly what a server-side confirm cannot give
+ * it — so the confirmation happens here and the server finishes on the return.
+ *
+ * `redirect: 'if_required'` keeps the customer on the page whenever Stripe can
+ * settle in a modal; when it does redirect, Stripe sends them to the same URL we
+ * navigate to below, so both routes end at the same handler.
+ */
+const confirmPaymentAction = async (clientSecret: string, returnUrl: string) => {
+    try {
+        const { error } = await stripe.value.confirmPayment({
+            clientSecret,
+            confirmParams: {
+                return_url: returnUrl,
+                payment_method: form.payment_method,
+            },
+            redirect: 'if_required',
+        });
+
+        if (error) {
+            paymentError.value = error.message ?? 'We could not complete your payment. Please try again.';
+            awaitingPaymentAction.value = false;
+            processing.value = false;
+            return;
+        }
+
+        // Settled without leaving the page — go finish server-side ourselves.
+        router.visit(returnUrl, {
+            onSuccess: () => reportPurchase(),
+            onFinish: () => {
+                awaitingPaymentAction.value = false;
+                processing.value = false;
+            },
+        });
+    } catch (e: any) {
+        paymentError.value = e?.message || 'We could not complete your payment. Please try again.';
+        awaitingPaymentAction.value = false;
+        processing.value = false;
+    }
+};
+
 const submit = async () => {
     // Client-side validation
     clientErrors.value.name = validateName(form.name);
@@ -433,59 +539,24 @@ const submit = async () => {
         }
 
         form.payment_method = paymentMethod.id;
+        selectedPaymentType.value = paymentMethod.type ?? '';
 
+        // preserveState keeps this component (and its mounted Stripe Elements)
+        // alive across the `back()` the server answers with when the payment
+        // still needs the customer — confirmPaymentAction runs against them.
         form.post(route('quick-checkout.process'), {
+            preserveState: true,
+            preserveScroll: true,
             onSuccess: () => {
-                // Claimed so a remount or a future landing page reacting to the
-                // same flashed purchase_data can't report this sale twice.
-                const xPurchaseData = (page.props.flash as any)?.purchase_data;
-                if (!claimPurchase(xPurchaseData)) {
+                const flash = page.props.flash as any;
+
+                if (flash?.requires_action && flash?.payment_intent_client_secret && flash?.payment_return_url) {
+                    awaitingPaymentAction.value = true;
+                    confirmPaymentAction(flash.payment_intent_client_secret, flash.payment_return_url);
                     return;
                 }
 
-                // The value comes from purchase_data (what Stripe charged), not
-                // the local total, so every platform reports the same figure.
-                const purchaseValue = xPurchaseData?.plan_price ?? total.value;
-
-                // Track purchase
-                window.dataLayer = window.dataLayer || [];
-                window.dataLayer.push({ ecommerce: null });
-                window.dataLayer.push({
-                    event: 'purchase',
-                    ecommerce: {
-                        value: purchaseValue,
-                        currency: 'USD',
-                        items: [{ item_name: currentPlan.value.name + ' Plan', price: purchaseValue }],
-                    },
-                });
-
-                // Reddit Pixel
-                const pixelId = (page.props as any).env?.REDDIT_PIXEL_ID;
-                if ((window as any).rdt && pixelId) {
-                    (window as any).rdt('init', pixelId, {
-                        email: form.email,
-                        phoneNumber: form.phone,
-                    });
-                    (window as any).rdt('track', 'Purchase', {
-                        currency: 'USD',
-                        value: purchaseValue,
-                        conversionId: xPurchaseData?.conversion_id ?? undefined,
-                    });
-                }
-
-                // X (Twitter) purchase conversion. Only fire when there was an
-                // actual charge (conversion_id = PaymentIntent id is null for
-                // $0 / 100%-off / trial subs), matching the server-side exclusion
-                // and keeping browser/server dedup aligned.
-                if (xPurchaseData?.conversion_id) {
-                    trackPurchase({
-                        value: purchaseValue,
-                        currency: 'USD',
-                        conversion_id: xPurchaseData.conversion_id,
-                        email_address: form.email ?? null,
-                        phone_number: form.phone ?? null,
-                    });
-                }
+                reportPurchase();
             },
             onError: () => {
                 if (form.errors.payment) {
@@ -493,7 +564,9 @@ const submit = async () => {
                 }
             },
             onFinish: () => {
-                processing.value = false;
+                if (!awaitingPaymentAction.value) {
+                    processing.value = false;
+                }
                 if (turnstileEnabled.value && window.turnstile && turnstileWidget.value) {
                     window.turnstile.reset(turnstileWidget.value);
                 }
@@ -813,7 +886,13 @@ const submit = async () => {
 
                                             <button type="submit" class="btn btn-gold btn-lg w-100 py-3" :disabled="processing || form.processing">
                                                 <span v-if="processing || form.processing" class="spinner-border spinner-border-sm me-2"></span>
-                                                {{ processing || form.processing ? 'Processing...' : `Pay $${total.toFixed(2)} & Get Access` }}
+                                                {{
+                                                    awaitingPaymentAction
+                                                        ? paymentActionLabel
+                                                        : processing || form.processing
+                                                          ? 'Processing...'
+                                                          : `Pay $${total.toFixed(2)} & Get Access`
+                                                }}
                                             </button>
 
                                             <p class="text-center text-gray-light small mt-3 mb-0">

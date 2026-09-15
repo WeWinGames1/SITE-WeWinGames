@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { claimPurchase } from '@/composables/usePurchaseTracking';
 import { useTwitterPixel } from '@/composables/useTwitterPixel';
 import WelcomeLayout from '@/layouts/WelcomeLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 interface Props {
     token: string;
@@ -12,7 +13,57 @@ interface Props {
 
 const props = defineProps<Props>();
 const page = usePage();
-const { trackSignup } = useTwitterPixel();
+const { trackSignup, trackPurchase } = useTwitterPixel();
+
+/**
+ * Report the sale here as well as from the checkout page. Cash App Pay on mobile
+ * hands off to the Cash App and returns through a full page load, so the
+ * checkout component is gone by the time the payment lands — this page is the
+ * only one left to fire the pixels. claimPurchase keeps the two from
+ * double-counting when the checkout page did get to report it.
+ */
+onMounted(() => {
+    const purchase = (page.props.flash as any)?.purchase_data;
+
+    if (!claimPurchase(purchase)) {
+        return;
+    }
+
+    const purchaseValue = purchase?.plan_price ?? 0;
+
+    (window as any).dataLayer = (window as any).dataLayer || [];
+    (window as any).dataLayer.push({ ecommerce: null });
+    (window as any).dataLayer.push({
+        event: 'purchase',
+        ecommerce: {
+            value: purchaseValue,
+            currency: 'USD',
+            items: [{ item_name: purchase?.plan_name ?? 'Subscription', price: purchaseValue }],
+        },
+    });
+
+    const pixelId = (page.props as any).env?.REDDIT_PIXEL_ID;
+    if ((window as any).rdt && pixelId) {
+        (window as any).rdt('init', pixelId, { email: props.email });
+        (window as any).rdt('track', 'Purchase', {
+            currency: 'USD',
+            value: purchaseValue,
+            conversionId: purchase?.conversion_id ?? undefined,
+        });
+    }
+
+    // Only when there was an actual charge — conversion_id is the PaymentIntent
+    // id, and it is null for $0 / 100%-off / trial subscriptions.
+    if (purchase?.conversion_id) {
+        trackPurchase({
+            value: purchaseValue,
+            currency: 'USD',
+            conversion_id: purchase.conversion_id,
+            email_address: props.email ?? null,
+            phone_number: null,
+        });
+    }
+});
 
 const form = useForm({
     token: props.token,

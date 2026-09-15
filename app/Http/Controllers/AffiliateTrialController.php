@@ -7,6 +7,7 @@ use App\Models\StripeProduct;
 use App\Services\QuickCheckoutService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -123,6 +124,22 @@ class AffiliateTrialController extends Controller
 
             return back()->withErrors([
                 'payment' => $result['message'],
+            ])->withInput();
+        }
+
+        // A trial subscription starts as `trialing` with no PaymentIntent, so this
+        // should not happen — but processCheckout can hand back a payment that
+        // still needs the customer, and this page has no browser-side confirmation
+        // step to run it. Fail loudly rather than reporting a trial that never
+        // started. The next attempt reclaims the pending account.
+        if ($result['requires_action'] ?? false) {
+            Log::warning('AffiliateTrial: Payment unexpectedly requires customer action', [
+                'email' => $request->input('email'),
+                'user_id' => $result['user']->id ?? null,
+            ]);
+
+            return back()->withErrors([
+                'payment' => 'Your bank needs to verify this card before the trial can start. Please try a different card.',
             ])->withInput();
         }
 

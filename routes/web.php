@@ -63,6 +63,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/quick-checkout', [QuickCheckoutController::class, 'show'])->name('quick-checkout');
     Route::post('/quick-checkout', [QuickCheckoutController::class, 'process'])->middleware('throttle:6,1')->name('quick-checkout.process');
     Route::post('/quick-checkout/validate-coupon', [QuickCheckoutController::class, 'validateCoupon'])->middleware('throttle:10,1')->name('quick-checkout.validate-coupon');
+    Route::get('/quick-checkout/return', [QuickCheckoutController::class, 'paymentReturn'])->middleware('throttle:20,1')->name('quick-checkout.return');
     Route::get('/complete-registration', [QuickCheckoutController::class, 'showComplete'])->name('complete-registration');
     Route::post('/complete-registration', [QuickCheckoutController::class, 'complete'])->name('complete-registration.store');
     Route::post('/complete-registration/resend', [QuickCheckoutController::class, 'resendCompletion'])->middleware('throttle:5,1')->name('complete-registration.resend');
