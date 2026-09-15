@@ -76,7 +76,7 @@ WeWinGames is a comprehensive sports betting information and picks service built
    
    # Cloudflare Turnstile
    TURNSTILE_SITE_KEY=0x4AAAAAABjA9oaFF9BSsznw
-   TURNSTILE_SECRET_KEY=0x4AAAAAABjA9iC5axcso_Tat1vZ1G-JsZc
+   TURNSTILE_SECRET_KEY=your_turnstile_secret_key
    TURNSTILE_ENABLED=true
    
    # Push Notifications (Web Push)

@@ -6,10 +6,12 @@
 /public/storage
 /storage/*.key
 /storage/pail
+/storage/media-library
 /vendor
 .env
-.env.backup
-.env.production
+.env.*
+!.env.example
+!.env.production.example
 .phpactor.json
 .phpunit.result.cache
 Homestead.json

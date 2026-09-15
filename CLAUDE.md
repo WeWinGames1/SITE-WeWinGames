@@ -349,7 +349,7 @@ GOOGLE_TAG_MANAGER_ID=GTM-PQDDCG6L
 # Security
 TURNSTILE_ENABLED=true
 TURNSTILE_SITE_KEY=0x4AAAAAABjA9oaFF9BSsznw
-TURNSTILE_SECRET_KEY=0x4AAAAAABjA9iC5axcso_Tat1vZ1G-JsZc
+TURNSTILE_SECRET_KEY=your_turnstile_secret_key
 
 # Cloudflare
 CLOUDFLARE_ENABLED=true
@@ -485,29 +485,33 @@ php artisan springbig:sync-members --limit=100
 ## Deployment
 
 ### Production Build & Deploy
+Production is a plain git checkout. `.env` exists only on the server and is never
+tracked; `storage/` (uploads, logs, sessions) persists across pulls, and
+`deploy.sh` relinks `public/storage` → `storage/app/public` on every run.
+
 ```bash
-# Fix npm PATH if needed
-export PATH="/opt/nvm/versions/node/v22.17.0/bin:$PATH"
+# First time on a new server
+git clone https://github.com/WeWinGames1/SITE-WeWinGames.git wewingames && cd wewingames
+cp .env.production.example .env   # fill in real values
+composer install --no-dev --optimize-autoloader
+php artisan key:generate
+./deploy.sh
+php artisan db:seed --class=ProductionSeeder   # first setup only, never automatic
 
-# Install with reduced concurrency (prevents EMFILE errors)
-npm install --maxsockets 1
-
-# Build assets
-npm run build
-
-# Optimize Laravel
-php artisan optimize:clear
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-php artisan icons:cache
-
-# Run migrations
-php artisan migrate --force
-
-# Seed production data
-php artisan db:seed --class=ProductionSeeder
+# Every deploy after that
+./deploy.sh                        # fast-forwards to origin/main
 ```
+
+`deploy.sh` refuses to start if `.env` is missing or tracked, `APP_ENV`/`APP_DEBUG`
+are wrong, `public/storage` is a real directory, or tracked files were edited on
+the server (a pull would fail on or clobber them). Then: maintenance mode →
+`git merge --ff-only` → `composer install --no-dev` → `npm ci --maxsockets 1` +
+`npm run build` → `storage:link` → `migrate --force` → `optimize` →
+`queue:restart` → up. On failure the site stays in maintenance mode and the
+script prints the recovery commands.
+
+Options: `DEPLOY_BRANCH`, `PHP_BIN`, `COMPOSER_BIN`, `WEB_USER` (chown when run
+as root), `SKIP_ASSETS=1`, `SKIP_PULL=1`.
 
 ### Server Requirements
 - PHP 8.2+ with extensions: BCMath, Ctype, JSON, Mbstring, OpenSSL, PDO, Tokenizer, XML
