@@ -20,10 +20,12 @@ class CsvImportServiceTest extends TestCase
     public function test_detects_game_column_and_maps_to_teams()
     {
         // Create a CSV file with a "Game" column
+        // Includes every column validateRow() requires, so the rows are valid and
+        // the assertions below exercise the team extraction from the Game column.
         $csvContent = <<<'CSV'
-Date,Sport,Game,Bet Type,Selection,Odds,Stake,Status,Operator
-2024-01-15,MLB,Miami Marlins @ Arizona Diamondbacks,Moneyline,Marlins ML,2.35,100,won,DraftKings
-2024-01-16,MLB,Washington Nationals @ Los Angeles Angels,Spread,Nationals +1.5,1.85,50,lost,FanDuel
+Date,Sport,League,Month,Game,Wager Type,Wager Name,Bet Type,Selection,Odds,Membership,Code,Stake,Wager,Status,Operator
+2024-01-15,MLB,MLB,January,Miami Marlins @ Arizona Diamondbacks,Single Wager,Marlins ML,Moneyline,Marlins ML,235,Gold,Test,100,100,won,DraftKings
+2024-01-16,MLB,MLB,January,Washington Nationals @ Los Angeles Angels,Single Wager,Nationals +1.5,Spread,Nationals +1.5,-115,Gold,Test,50,50,lost,FanDuel
 CSV;
 
         $path = 'temp/test.csv';
@@ -44,11 +46,18 @@ CSV;
         $columnMappings = [
             'game_date' => 'Date',
             'sport' => 'Sport',
+            'league' => 'League',
+            'month' => 'Month',
             'game' => 'Game', // This will be used to extract both teams
+            'wager_type' => 'Wager Type',
+            'wager_name' => 'Wager Name',
             'bet_type' => 'Bet Type',
             'selection' => 'Selection',
             'odds' => 'Odds',
+            'membership' => 'Membership',
+            'code' => 'Code',
             'stake' => 'Stake',
+            'wager' => 'Wager',
             'status' => 'Status',
             'operator' => 'Operator',
         ];

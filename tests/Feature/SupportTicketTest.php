@@ -26,7 +26,7 @@ class SupportTicketTest extends TestCase
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page
             ->component('support/PublicCreate')
-            ->has('categories', 6) // We seeded 6 categories
+            ->has('categories', TicketCategory::count())
             ->where('isAuthenticated', false)
         );
     }
@@ -40,7 +40,7 @@ class SupportTicketTest extends TestCase
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page
             ->component('support/PublicCreate')
-            ->has('categories', 6)
+            ->has('categories', TicketCategory::count())
             ->where('isAuthenticated', true)
         );
     }

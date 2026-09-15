@@ -6,7 +6,7 @@ use App\Models\Bet;
 use App\Services\BetCalculationService;
 use App\Services\BetService;
 use Mockery;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class BetCalculationTest extends TestCase
 {
