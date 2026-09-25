@@ -106,6 +106,10 @@ return [
             'gold' => env('DISCORD_ROLE_GOLD'),
             'platinum' => env('DISCORD_ROLE_PLATINUM'),
         ],
+
+        // Members holding any of these role IDs (staff, mods, comped partners) are never
+        // stripped by the audit, even when they are not linked to a site account
+        'exempt_roles' => array_filter(explode(',', (string) env('DISCORD_EXEMPT_ROLES', ''))),
     ],
 
     // SpringBig API

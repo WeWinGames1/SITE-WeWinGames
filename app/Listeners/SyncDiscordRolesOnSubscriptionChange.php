@@ -9,6 +9,8 @@ use Laravel\Cashier\Events\WebhookReceived;
 
 class SyncDiscordRolesOnSubscriptionChange
 {
+    public const SYNC_DELAY_SECONDS = 30;
+
     /**
      * Stripe events that should trigger a Discord role sync.
      * These events can affect subscription status and therefore Discord access.
@@ -77,15 +79,13 @@ class SyncDiscordRolesOnSubscriptionChange
         // Log the event that triggered the sync
         $this->logSubscriptionEvent($user, $type, $payload);
 
-        // Dispatch job to sync roles (queued to avoid webhook timeout)
-        // Add a small delay for subscription updates to propagate
-        $delay = $this->shouldDelaySync($type) ? now()->addSeconds(5) : null;
-        SyncDiscordRolesJob::dispatch($user)->delay($delay);
+        // WebhookReceived fires before Cashier writes the subscription change to the
+        // database, so the job is delayed until well after the webhook has been handled
+        SyncDiscordRolesJob::dispatch($user)->delay(now()->addSeconds(self::SYNC_DELAY_SECONDS));
 
         Log::info('Dispatched Discord role sync job', [
             'user_id' => $user->id,
             'event_type' => $type,
-            'delayed' => $delay !== null,
         ]);
     }
 
@@ -108,18 +108,6 @@ class SyncDiscordRolesOnSubscriptionChange
 
         // For subscription events
         return $object['customer'] ?? null;
-    }
-
-    /**
-     * Determine if the sync should be delayed to allow subscription status to propagate
-     */
-    private function shouldDelaySync(string $type): bool
-    {
-        // Delay for events where the subscription status might not be immediately updated
-        return in_array($type, [
-            'invoice.payment_succeeded',
-            'customer.subscription.updated',
-        ]);
     }
 
     /**

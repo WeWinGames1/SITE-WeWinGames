@@ -4,14 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Carbon;
 use Laravel\Cashier\Http\Controllers\WebhookController as CashierController;
-use Laravel\Cashier\Subscription as StripeSubscription;
 
 class StripeWebhookController extends CashierController
 {
     /**
      * Handle customer subscription updated.
      *
-     * @param  array  $payload
      * @return \Symfony\Component\HttpFoundation\Response
      */
     protected function handleCustomerSubscriptionUpdated(array $payload)
@@ -44,9 +42,9 @@ class StripeWebhookController extends CashierController
 
             // Trial ending date...
             if (isset($data['trial_end'])) {
-                $trialEnd = Carbon::createFromTimestamp($data['trial_end']);
+                $trialEnd = Carbon::createFromTimestamp($data['trial_end'], config('app.timezone'));
 
-                if (!$subscription->trial_ends_at || $subscription->trial_ends_at->ne($trialEnd)) {
+                if (! $subscription->trial_ends_at || $subscription->trial_ends_at->ne($trialEnd)) {
                     $subscription->trial_ends_at = $trialEnd;
                 }
             }
@@ -56,12 +54,12 @@ class StripeWebhookController extends CashierController
                 if (isset($data['current_period_end'])) {
                     $subscription->ends_at = $subscription->onTrial()
                         ? $subscription->trial_ends_at
-                        : Carbon::createFromTimestamp($data['current_period_end']);
+                        : Carbon::createFromTimestamp($data['current_period_end'], config('app.timezone'));
                 } else {
                     $subscription->ends_at = null;
                 }
             } elseif (isset($data['cancel_at']) || isset($data['canceled_at'])) {
-                $subscription->ends_at = Carbon::createFromTimestamp($data['cancel_at'] ?? $data['canceled_at']);
+                $subscription->ends_at = Carbon::createFromTimestamp($data['cancel_at'] ?? $data['canceled_at'], config('app.timezone'));
             } else {
                 $subscription->ends_at = null;
             }

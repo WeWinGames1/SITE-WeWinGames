@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { route } from 'ziggy-js';
 
@@ -282,6 +282,25 @@ function syncSpringBig() {
     }
 }
 
+function resyncAccess() {
+    if (confirm(`Re-pull ${props.customer.name}'s subscription from Stripe and force their Discord roles to match?`)) {
+        isLoading.value = true;
+        router.post(
+            route('admin.customers.resync-access', props.customer.id),
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => {
+                    isLoading.value = false;
+                },
+            },
+        );
+    }
+}
+
+const page = usePage();
+const flash = computed(() => (page.props.flash ?? {}) as { success?: string; error?: string });
+
 const stripeMode = computed(() => {
     const stripeKey = (window as any).stripeKey || '';
     return stripeKey.includes('pk_test_') ? 'test' : 'live';
@@ -334,6 +353,9 @@ function formatCustomerDuration(days: number): string {
         </div>
 
         <div class="container-fluid p-4">
+            <div v-if="flash.success" class="alert alert-success">{{ flash.success }}</div>
+            <div v-if="flash.error" class="alert alert-danger">{{ flash.error }}</div>
+
             <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
@@ -535,6 +557,9 @@ function formatCustomerDuration(days: number): string {
                                         </button>
                                         <button class="btn btn-outline-info text-start" @click="syncSpringBig">
                                             <i class="bi bi-arrow-repeat me-2"></i>Sync to SpringBig
+                                        </button>
+                                        <button class="btn btn-outline-info text-start" :disabled="isLoading" @click="resyncAccess">
+                                            <i class="bi bi-discord me-2"></i>Resync Stripe &amp; Discord
                                         </button>
                                         <a
                                             v-if="customer.stripe_id"

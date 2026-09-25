@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SyncDiscordRolesJob;
 use App\Models\User;
+use App\Services\DiscordService;
 use App\Services\SimpleCacheService;
 use App\Services\SpringBigService;
+use App\Services\SubscriptionSyncService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -492,6 +495,7 @@ class CustomerController extends Controller
         // Handle user status change
         if (isset($data['status'])) {
             $user->update(['status' => $data['status']]);
+            $this->syncDiscordAfterAccessChange($user);
 
             // Log the status change
             activity()
@@ -569,6 +573,7 @@ class CustomerController extends Controller
 
                     // Sync to SpringBig with updated custom group
                     $this->syncSpringBigAfterSubscriptionChange($user);
+                    $this->syncDiscordAfterAccessChange($user);
 
                     return back()->with('success', 'Subscription created successfully!'.
                         (! $user->hasPaymentMethod() ? ' Customer will need to add a payment method to activate billing.' : ''));
@@ -610,6 +615,7 @@ class CustomerController extends Controller
 
                         // Sync to SpringBig with updated custom group
                         $this->syncSpringBigAfterSubscriptionChange($user);
+                        $this->syncDiscordAfterAccessChange($user);
 
                         return back()->with('success', 'Subscription updated successfully!'.
                             (! $user->hasPaymentMethod() ? ' Customer will need to add a payment method to activate billing.' : ''));
@@ -619,6 +625,7 @@ class CustomerController extends Controller
 
                         // Sync to SpringBig with updated custom group
                         $this->syncSpringBigAfterSubscriptionChange($user);
+                        $this->syncDiscordAfterAccessChange($user);
 
                         return back()->with('success', 'Subscription plan updated! Changes will take effect at the next billing cycle.');
                     }
@@ -639,6 +646,7 @@ class CustomerController extends Controller
 
                     // Sync to SpringBig with canceled custom group
                     $this->syncSpringBigAfterSubscriptionChange($user);
+                    $this->syncDiscordAfterAccessChange($user);
 
                     return back()->with('success', 'Subscription cancelled! Access will continue until '.
                         ($subscription->ends_at?->format('F j, Y') ?? 'the end of the billing period'));
@@ -755,6 +763,7 @@ class CustomerController extends Controller
 
                     // Sync to SpringBig with updated custom group
                     $this->syncSpringBigAfterSubscriptionChange($user);
+                    $this->syncDiscordAfterAccessChange($user);
 
                     return back()->with('success', "Manual {$tier} subscription override applied! No automatic billing will occur.");
             }
@@ -1028,6 +1037,7 @@ class CustomerController extends Controller
 
             // Sync to SpringBig with canceled custom group
             $this->syncSpringBigAfterSubscriptionChange($user);
+            $this->syncDiscordAfterAccessChange($user);
 
             return back()->with('success', $message);
 
@@ -1092,6 +1102,55 @@ class CustomerController extends Controller
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * Queue a Discord role sync after an admin changes the customer's access
+     */
+    protected function syncDiscordAfterAccessChange(User $user): void
+    {
+        if ($user->discord_id) {
+            SyncDiscordRolesJob::dispatch($user);
+        }
+    }
+
+    /**
+     * Re-pull the customer's subscriptions from Stripe, then force their Discord roles to match
+     */
+    public function resyncAccess(User $user, SubscriptionSyncService $subscriptionSync, DiscordService $discord)
+    {
+        try {
+            $subscriptionSync->expireManualSubscriptions();
+            $changes = $subscriptionSync->syncFromStripe($user);
+        } catch (\Throwable $e) {
+            Log::error('Stripe resync failed', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+
+            return back()->with('error', 'Could not re-pull subscriptions from Stripe: '.$e->getMessage());
+        }
+
+        $user->refresh();
+
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($user)
+            ->withProperties(['stripe_changes' => $changes])
+            ->log('Admin resynced subscription and Discord access');
+
+        $summary = $changes === [] ? 'Subscription already matched Stripe.' : 'Subscription updated from Stripe: '.implode('; ', $changes).'.';
+
+        if (! $user->discord_id) {
+            return back()->with('success', $summary.' No Discord account linked.');
+        }
+
+        if (! $discord->isConfigured()) {
+            return back()->with('error', $summary.' Discord integration is not configured.');
+        }
+
+        if (! $discord->syncRoles($user)) {
+            return back()->with('error', $summary.' Discord roles could not be updated (member may have left the server — check the logs).');
+        }
+
+        return back()->with('success', $summary.' Discord roles now match '.($user->hasActiveSubscription() ? ($user->getCurrentTier() ?? 'active').' access' : 'no subscription (roles removed)').'.');
     }
 
     /**

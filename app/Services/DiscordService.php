@@ -3,6 +3,10 @@
 namespace App\Services;
 
 use App\Models\User;
+use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -14,6 +18,9 @@ class DiscordService
 
     private array $roles;
 
+    /** @var array<int, string> */
+    private array $exemptRoles;
+
     private string $apiBase = 'https://discord.com/api/v10';
 
     public function __construct()
@@ -21,6 +28,7 @@ class DiscordService
         $this->botToken = config('services.discord.bot_token');
         $this->guildId = config('services.discord.guild_id');
         $this->roles = config('services.discord.roles') ?? [];
+        $this->exemptRoles = config('services.discord.exempt_roles') ?? [];
     }
 
     /**
@@ -97,22 +105,9 @@ class DiscordService
             return false;
         }
 
-        // Check if user has an active subscription
-        $hasActiveSubscription = $user->hasActiveSubscription();
-        $tier = $hasActiveSubscription ? $user->getCurrentTier() : null;
-        $targetRoles = $this->getRolesForTier($tier, $hasActiveSubscription);
-
-        Log::info('Calculating Discord roles for user', [
-            'user_id' => $user->id,
-            'has_active_subscription' => $hasActiveSubscription,
-            'tier' => $tier,
-            'target_roles' => $targetRoles,
-        ]);
-        $allManagedRoles = array_filter([
-            $this->roles['free'] ?? null,
-            $this->roles['gold'] ?? null,
-            $this->roles['platinum'] ?? null,
-        ]);
+        $tier = $user->hasActiveSubscription() ? $user->getCurrentTier() : null;
+        $targetRoles = $this->targetRolesForUser($user);
+        $allManagedRoles = $this->managedRoleIds();
 
         // Get current member roles
         $currentRoles = $this->getMemberRoles($user->discord_id);
@@ -169,13 +164,252 @@ class DiscordService
     }
 
     /**
+     * Roles the user should hold right now, based on the site database
+     *
+     * @return array<int, string>
+     */
+    public function targetRolesForUser(User $user): array
+    {
+        $hasActiveSubscription = $user->hasActiveSubscription();
+
+        return array_values($this->getRolesForTier(
+            $hasActiveSubscription ? $user->getCurrentTier() : null,
+            $hasActiveSubscription
+        ));
+    }
+
+    /**
+     * Role IDs this integration owns (and may add or remove)
+     *
+     * @return array<int, string>
+     */
+    public function managedRoleIds(): array
+    {
+        return array_values(array_filter([
+            $this->roles['free'] ?? null,
+            $this->roles['gold'] ?? null,
+            $this->roles['platinum'] ?? null,
+        ]));
+    }
+
+    /**
+     * Human-readable tier name for a managed role ID
+     */
+    public function roleLabel(string $roleId): string
+    {
+        return array_search($roleId, $this->roles, true) ?: $roleId;
+    }
+
+    /**
+     * List every member of the guild (paginated, 1000 per call)
+     *
+     * Requires the "Server Members Intent" to be enabled for the bot
+     * in the Discord developer portal. Returns null when the list cannot be read.
+     *
+     * @return Collection<int, array{id: string, username: ?string, global_name: ?string, bot: bool, roles: array<int, string>}>|null
+     */
+    public function listGuildMembers(): ?Collection
+    {
+        $members = collect();
+        $after = '0';
+
+        do {
+            $response = $this->bot()->get("{$this->apiBase}/guilds/{$this->guildId}/members", [
+                'limit' => 1000,
+                'after' => $after,
+            ]);
+
+            if (! $response->successful()) {
+                Log::error('Failed to list Discord guild members', [
+                    'status' => $response->status(),
+                    'response' => $response->json(),
+                ]);
+
+                return null;
+            }
+
+            $page = $response->json() ?? [];
+
+            foreach ($page as $member) {
+                $members->push([
+                    'id' => (string) $member['user']['id'],
+                    'username' => $member['user']['username'] ?? null,
+                    'global_name' => $member['user']['global_name'] ?? null,
+                    'bot' => (bool) ($member['user']['bot'] ?? false),
+                    'roles' => $member['roles'] ?? [],
+                ]);
+                $after = (string) $member['user']['id'];
+            }
+        } while (count($page) === 1000);
+
+        return $members;
+    }
+
+    /**
+     * Compare every Discord member holding a managed role against the site database
+     *
+     * "linked" rows are members whose Discord account is connected to a site user and
+     * whose roles differ from what the database says. "unlinked" rows are members who
+     * hold a managed role but are not connected to any site account; for those the
+     * roles are only compared against a site user whose stored Discord username matches.
+     *
+     * @return array{
+     *     members_scanned: int,
+     *     linked: array<int, array{user_id: int, name: string, email: string, discord_id: string, discord_username: ?string, tier: ?string, add: array<int, string>, remove: array<int, string>}>,
+     *     unlinked: array<int, array{discord_id: string, discord_username: ?string, display_name: ?string, roles: array<int, string>, matched_user_id: ?int, matched_user_email: ?string, remove: array<int, string>}>,
+     *     linked_not_in_guild: int
+     * }|null
+     */
+    public function audit(): ?array
+    {
+        $members = $this->listGuildMembers();
+
+        if ($members === null) {
+            return null;
+        }
+
+        $managed = $this->managedRoleIds();
+        $membersById = $members->keyBy('id');
+
+        $linkedUsers = User::query()->with('subscriptions')->whereNotNull('discord_id')->get()->keyBy('discord_id');
+
+        $linked = [];
+        $linkedNotInGuild = 0;
+
+        foreach ($linkedUsers as $discordId => $user) {
+            $member = $membersById->get((string) $discordId);
+
+            if (! $member) {
+                $linkedNotInGuild++;
+
+                continue;
+            }
+
+            $current = array_values(array_intersect($member['roles'], $managed));
+            $target = $this->targetRolesForUser($user);
+            $add = array_values(array_diff($target, $current));
+            $remove = array_values(array_diff($current, $target));
+
+            if ($add === [] && $remove === []) {
+                continue;
+            }
+
+            $linked[] = [
+                'user_id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'discord_id' => (string) $discordId,
+                'discord_username' => $member['username'],
+                'tier' => $user->hasActiveSubscription() ? $user->getCurrentTier() : null,
+                'add' => $add,
+                'remove' => $remove,
+            ];
+        }
+
+        $unlinkedMembers = $members->filter(fn (array $member): bool => ! $member['bot']
+            && ! $linkedUsers->has($member['id'])
+            && array_intersect($member['roles'], $managed) !== []
+            && array_intersect($member['roles'], $this->exemptRoles) === []);
+
+        $usernames = $unlinkedMembers->pluck('username')->filter()->map(fn (string $name): string => strtolower($name));
+        $usersByUsername = User::query()
+            ->with('subscriptions')
+            ->whereNull('discord_id')
+            ->whereIn(DB::raw('LOWER(discord_username)'), $usernames->all())
+            ->get()
+            ->keyBy(fn (User $user): string => strtolower($user->discord_username));
+
+        $unlinked = [];
+
+        foreach ($unlinkedMembers as $member) {
+            $matchedUser = $member['username'] ? $usersByUsername->get(strtolower($member['username'])) : null;
+            $current = array_values(array_intersect($member['roles'], $managed));
+            $remove = array_values(array_diff($current, $matchedUser ? $this->targetRolesForUser($matchedUser) : []));
+
+            if ($remove === []) {
+                continue;
+            }
+
+            $unlinked[] = [
+                'discord_id' => $member['id'],
+                'discord_username' => $member['username'],
+                'display_name' => $member['global_name'],
+                'roles' => $current,
+                'matched_user_id' => $matchedUser?->id,
+                'matched_user_email' => $matchedUser?->email,
+                'remove' => $remove,
+            ];
+        }
+
+        return [
+            'members_scanned' => $members->count(),
+            'linked' => $linked,
+            'unlinked' => $unlinked,
+            'linked_not_in_guild' => $linkedNotInGuild,
+        ];
+    }
+
+    /**
+     * Apply role changes produced by audit()
+     *
+     * @param  array<int, array{discord_id: string, add?: array<int, string>, remove: array<int, string>}>  $rows
+     * @return array{fixed: int, failed: int}
+     */
+    public function applyAuditRows(array $rows): array
+    {
+        $fixed = 0;
+        $failed = 0;
+
+        foreach ($rows as $row) {
+            $ok = true;
+
+            foreach ($row['add'] ?? [] as $roleId) {
+                $ok = $this->addRole($row['discord_id'], $roleId) && $ok;
+            }
+
+            foreach ($row['remove'] as $roleId) {
+                $ok = $this->removeRole($row['discord_id'], $roleId) && $ok;
+            }
+
+            $ok ? $fixed++ : $failed++;
+
+            Log::info('Discord audit applied', [
+                'discord_id' => $row['discord_id'],
+                'user_id' => $row['user_id'] ?? null,
+                'roles_added' => $row['add'] ?? [],
+                'roles_removed' => $row['remove'],
+                'success' => $ok,
+            ]);
+        }
+
+        return ['fixed' => $fixed, 'failed' => $failed];
+    }
+
+    /**
+     * Bot-authenticated request that waits out Discord rate limits
+     */
+    private function bot(): PendingRequest
+    {
+        return Http::withHeaders([
+            'Authorization' => "Bot {$this->botToken}",
+            'X-Audit-Log-Reason' => 'WeWinGames subscription sync',
+        ])->retry(
+            3,
+            fn (int $attempt, \Throwable $exception): int => $exception instanceof RequestException
+                ? (int) ceil(((float) ($exception->response->json('retry_after') ?? 1)) * 1000)
+                : 1000,
+            fn (\Throwable $exception): bool => $exception instanceof RequestException
+                && $exception->response->status() === 429,
+            throw: false
+        );
+    }
+
+    /**
      * Get a guild member's current roles
      */
     public function getMemberRoles(string $discordId): ?array
     {
-        $response = Http::withHeaders([
-            'Authorization' => "Bot {$this->botToken}",
-        ])->get("{$this->apiBase}/guilds/{$this->guildId}/members/{$discordId}");
+        $response = $this->bot()->get("{$this->apiBase}/guilds/{$this->guildId}/members/{$discordId}");
 
         if ($response->successful()) {
             return $response->json('roles', []);
@@ -200,10 +434,7 @@ class DiscordService
      */
     public function addRole(string $discordId, string $roleId): bool
     {
-        $response = Http::withHeaders([
-            'Authorization' => "Bot {$this->botToken}",
-            'X-Audit-Log-Reason' => 'WeWinGames subscription sync',
-        ])->put("{$this->apiBase}/guilds/{$this->guildId}/members/{$discordId}/roles/{$roleId}");
+        $response = $this->bot()->put("{$this->apiBase}/guilds/{$this->guildId}/members/{$discordId}/roles/{$roleId}");
 
         if (! $response->successful()) {
             Log::error('Failed to add Discord role', [
@@ -224,10 +455,7 @@ class DiscordService
      */
     public function removeRole(string $discordId, string $roleId): bool
     {
-        $response = Http::withHeaders([
-            'Authorization' => "Bot {$this->botToken}",
-            'X-Audit-Log-Reason' => 'WeWinGames subscription sync',
-        ])->delete("{$this->apiBase}/guilds/{$this->guildId}/members/{$discordId}/roles/{$roleId}");
+        $response = $this->bot()->delete("{$this->apiBase}/guilds/{$this->guildId}/members/{$discordId}/roles/{$roleId}");
 
         if (! $response->successful()) {
             Log::error('Failed to remove Discord role', [
@@ -252,14 +480,8 @@ class DiscordService
             return true;
         }
 
-        $allManagedRoles = array_filter([
-            $this->roles['free'] ?? null,
-            $this->roles['gold'] ?? null,
-            $this->roles['platinum'] ?? null,
-        ]);
-
         $success = true;
-        foreach ($allManagedRoles as $roleId) {
+        foreach ($this->managedRoleIds() as $roleId) {
             if (! $this->removeRole($user->discord_id, $roleId)) {
                 $success = false;
             }

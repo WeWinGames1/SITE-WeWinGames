@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\BlogPostController;
 use App\Http\Controllers\Admin\CacheController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\CustomerValueReportController;
+use App\Http\Controllers\Admin\DiscordAuditController;
 use App\Http\Controllers\Admin\DiscountCodeController;
 use App\Http\Controllers\Admin\KnowledgebaseController;
 use App\Http\Controllers\Admin\LandingPageController;
@@ -302,6 +303,13 @@ Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate
     Route::post('/{user}/password-reset', [CustomerController::class, 'sendPasswordReset'])->name('password-reset');
     Route::post('/{user}/cancel-subscription', [CustomerController::class, 'cancelSubscription'])->name('cancel-subscription');
     Route::post('/{user}/sync-springbig', [CustomerController::class, 'syncSpringBig'])->name('sync-springbig');
+    Route::post('/{user}/resync-access', [CustomerController::class, 'resyncAccess'])->name('resync-access');
+});
+
+// Discord role audit
+Route::middleware(['auth', AdminMiddleware::class, 'admin.security', 'admin.rate_limit'])->prefix('admin/discord-audit')->name('admin.discord-audit.')->group(function () {
+    Route::get('/', [DiscordAuditController::class, 'index'])->name('index');
+    Route::post('/fix', [DiscordAuditController::class, 'fix'])->name('fix');
 });
 
 // Customer Value Reports

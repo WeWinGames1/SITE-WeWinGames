@@ -117,6 +117,7 @@ const navigation: NavItem[] = [
         children: [
             { name: 'Customers', href: '/admin/customers', icon: 'bi-person' },
             { name: 'Admin Users', href: '/admin/admins', icon: 'bi-shield-check' },
+            { name: 'Discord Audit', href: '/admin/discord-audit', icon: 'bi-discord' },
         ],
     },
     {
