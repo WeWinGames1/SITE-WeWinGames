@@ -52,25 +52,20 @@ class DiscordService
     /**
      * Get roles that should be assigned based on subscription tier
      * Higher tiers include all lower tier roles (hierarchical)
-     * Returns empty array if user has no active subscription (all roles will be removed)
+     * Every account gets the free role; paid roles require an active subscription
      */
     public function getRolesForTier(?string $tier, bool $hasActiveSubscription = true): array
     {
-        // No active subscription = no roles at all
-        if (! $hasActiveSubscription) {
-            return [];
-        }
-
         $roles = [];
 
-        // Active subscribers get the free role as a base
+        // Every account gets the free role as a base
         if (! empty($this->roles['free'])) {
             $roles[] = $this->roles['free'];
         }
 
         // Tier hierarchy: gold < platinum
         // Each tier includes all lower tier roles
-        $tier = strtolower($tier ?? '');
+        $tier = $hasActiveSubscription ? strtolower($tier ?? '') : '';
 
         if ($tier === 'gold' || $tier === 'platinum') {
             if (! empty($this->roles['gold'])) {
@@ -89,7 +84,7 @@ class DiscordService
 
     /**
      * Sync Discord roles for a user based on their subscription status and tier
-     * Users without active subscriptions will have ALL roles removed
+     * Users without an active subscription keep only the free role; disabled users lose every role
      */
     public function syncRoles(User $user): bool
     {
@@ -170,6 +165,10 @@ class DiscordService
      */
     public function targetRolesForUser(User $user): array
     {
+        if ($user->status === 'disabled') {
+            return [];
+        }
+
         $hasActiveSubscription = $user->hasActiveSubscription();
 
         return array_values($this->getRolesForTier(
@@ -187,6 +186,19 @@ class DiscordService
     {
         return array_values(array_filter([
             $this->roles['free'] ?? null,
+            $this->roles['gold'] ?? null,
+            $this->roles['platinum'] ?? null,
+        ]));
+    }
+
+    /**
+     * Paid role IDs (Gold / Platinum), the only roles checked on members not linked to a site account
+     *
+     * @return array<int, string>
+     */
+    public function paidRoleIds(): array
+    {
+        return array_values(array_filter([
             $this->roles['gold'] ?? null,
             $this->roles['platinum'] ?? null,
         ]));
@@ -250,8 +262,9 @@ class DiscordService
      *
      * "linked" rows are members whose Discord account is connected to a site user and
      * whose roles differ from what the database says. "unlinked" rows are members who
-     * hold a managed role but are not connected to any site account; for those the
+     * hold a paid role but are not connected to any site account; for those the paid
      * roles are only compared against a site user whose stored Discord username matches.
+     * The free role is left alone on unlinked members.
      *
      * @return array{
      *     members_scanned: int,
@@ -269,6 +282,7 @@ class DiscordService
         }
 
         $managed = $this->managedRoleIds();
+        $paid = $this->paidRoleIds();
         $membersById = $members->keyBy('id');
 
         $linkedUsers = User::query()->with('subscriptions')->whereNotNull('discord_id')->get()->keyBy('discord_id');
@@ -308,7 +322,7 @@ class DiscordService
 
         $unlinkedMembers = $members->filter(fn (array $member): bool => ! $member['bot']
             && ! $linkedUsers->has($member['id'])
-            && array_intersect($member['roles'], $managed) !== []
+            && array_intersect($member['roles'], $paid) !== []
             && array_intersect($member['roles'], $this->exemptRoles) === []);
 
         $usernames = $unlinkedMembers->pluck('username')->filter()->map(fn (string $name): string => strtolower($name));
@@ -323,7 +337,7 @@ class DiscordService
 
         foreach ($unlinkedMembers as $member) {
             $matchedUser = $member['username'] ? $usersByUsername->get(strtolower($member['username'])) : null;
-            $current = array_values(array_intersect($member['roles'], $managed));
+            $current = array_values(array_intersect($member['roles'], $paid));
             $remove = array_values(array_diff($current, $matchedUser ? $this->targetRolesForUser($matchedUser) : []));
 
             if ($remove === []) {

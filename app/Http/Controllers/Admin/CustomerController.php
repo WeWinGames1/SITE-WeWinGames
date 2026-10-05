@@ -1150,7 +1150,7 @@ class CustomerController extends Controller
             return back()->with('error', $summary.' Discord roles could not be updated (member may have left the server — check the logs).');
         }
 
-        return back()->with('success', $summary.' Discord roles now match '.($user->hasActiveSubscription() ? ($user->getCurrentTier() ?? 'active').' access' : 'no subscription (roles removed)').'.');
+        return back()->with('success', $summary.' Discord roles now match '.($user->hasActiveSubscription() ? ($user->getCurrentTier() ?? 'active').' access' : 'no subscription (Free Member only)').'.');
     }
 
     /**

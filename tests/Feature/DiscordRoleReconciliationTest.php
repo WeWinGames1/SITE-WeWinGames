@@ -99,15 +99,16 @@ class DiscordRoleReconciliationTest extends TestCase
             $this->member('400', 'moderator', [self::GOLD, self::STAFF]),
             $this->member('500', 'oldtimer', [self::FREE, self::GOLD]),
             $this->member('600', 'lurker', []),
+            $this->member('700', 'newcomer', [self::FREE]),
         ]);
 
         $audit = app(DiscordService::class)->audit();
 
-        $this->assertSame(6, $audit['members_scanned']);
+        $this->assertSame(7, $audit['members_scanned']);
 
         $this->assertCount(1, $audit['linked']);
         $this->assertSame($canceled->id, $audit['linked'][0]['user_id']);
-        $this->assertSame([self::FREE, self::GOLD], $audit['linked'][0]['remove']);
+        $this->assertSame([self::GOLD], $audit['linked'][0]['remove']);
         $this->assertSame([], $audit['linked'][0]['add']);
 
         $this->assertSame(['300'], array_column($audit['unlinked'], 'discord_id'));
@@ -238,6 +239,20 @@ class DiscordRoleReconciliationTest extends TestCase
             ->assertSessionHasErrors('scope');
     }
 
+    public function test_every_account_keeps_free_role_but_disabled_accounts_lose_everything(): void
+    {
+        $discord = app(DiscordService::class);
+
+        $free = User::factory()->create();
+        $this->assertSame([self::FREE], $discord->targetRolesForUser($free));
+
+        $platinum = User::factory()->create(['admin_override' => true, 'override_tier' => 'platinum']);
+        $this->assertSame([self::FREE, self::GOLD, self::PLATINUM], $discord->targetRolesForUser($platinum));
+
+        $disabled = User::factory()->create(['status' => 'disabled', 'admin_override' => true, 'override_tier' => 'platinum']);
+        $this->assertSame([], $discord->targetRolesForUser($disabled));
+    }
+
     public function test_admin_resync_pulls_stripe_then_strips_discord_roles(): void
     {
         Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
@@ -269,7 +284,7 @@ class DiscordRoleReconciliationTest extends TestCase
         $this->assertFalse($customer->fresh()->hasActiveSubscription());
         Http::assertSent(fn (Request $request) => $request->method() === 'DELETE'
             && str_ends_with($request->url(), '/members/100/roles/'.self::GOLD));
-        Http::assertSent(fn (Request $request) => $request->method() === 'DELETE'
+        Http::assertNotSent(fn (Request $request) => $request->method() === 'DELETE'
             && str_ends_with($request->url(), '/members/100/roles/'.self::FREE));
     }
 
