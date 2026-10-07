@@ -472,6 +472,15 @@ const confirmPaymentAction = async (clientSecret: string, returnUrl: string) => 
             confirmParams: {
                 return_url: returnUrl,
                 payment_method: form.payment_method,
+                // A subscription's first PaymentIntent carries
+                // setup_future_usage=off_session so later renewals can charge
+                // the same method. For Cash App Pay, Stripe refuses that confirm
+                // without a mandate ("mandate_data is required") — Stripe.js only
+                // adds one on its own when confirming from Elements, not from a
+                // PaymentMethod id. Cards need no mandate.
+                ...(selectedPaymentType.value === 'cashapp'
+                    ? { mandate_data: { customer_acceptance: { type: 'online', online: { infer_from_client: true } } } }
+                    : {}),
             },
             redirect: 'if_required',
         });
