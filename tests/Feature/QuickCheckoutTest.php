@@ -9,11 +9,15 @@ use App\Models\StripeProduct;
 use App\Models\User;
 use App\Services\QuickCheckoutService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Unique;
+use Spatie\Permission\Models\Role;
+use Stripe\ApiRequestor;
+use Stripe\HttpClient\ClientInterface;
 use Tests\TestCase;
 
 class QuickCheckoutTest extends TestCase
@@ -680,5 +684,81 @@ class QuickCheckoutTest extends TestCase
         $this->assertNull($user->completion_token);
         $this->assertNotNull($user->email_verified_at);
         $this->assertTrue(Hash::check('NewPassword123!', $user->password));
+    }
+
+    public function test_quick_checkout_saves_the_payment_method_for_renewals(): void
+    {
+        Role::findOrCreate('user', 'web');
+        $stripe = $this->fakeStripeHttp();
+
+        $request = Request::create('/quick-checkout', 'POST', [
+            'name' => 'Cash App Buyer',
+            'email' => 'cashapp.buyer@gmail.com',
+            'phone' => '+15551112222',
+        ]);
+
+        $result = app(QuickCheckoutService::class)->processCheckout($request, 'price_gold_monthly', 'pm_cashapp_test');
+
+        $this->assertTrue($result['success'], json_encode($result));
+        $this->assertTrue($result['requires_action']);
+
+        $subscriptionCreate = collect($stripe->requests)
+            ->first(fn (array $call) => $call['method'] === 'post' && str_ends_with($call['path'], '/v1/subscriptions'));
+
+        $this->assertNotNull($subscriptionCreate);
+        $this->assertSame('on_subscription', $subscriptionCreate['params']['payment_settings']['save_default_payment_method'] ?? null);
+    }
+
+    /**
+     * Answers the Stripe calls a quick checkout makes with a Cash App payment
+     * still awaiting the customer, and records every request it receives.
+     */
+    private function fakeStripeHttp(): object
+    {
+        $client = new class implements ClientInterface
+        {
+            /** @var array<int, array{method: string, path: string, params: array<string, mixed>}> */
+            public array $requests = [];
+
+            public function request($method, $absUrl, $headers, $params, $hasFile, $apiMode = 'v1'): array
+            {
+                $path = (string) parse_url($absUrl, PHP_URL_PATH);
+                $this->requests[] = ['method' => strtolower($method), 'path' => $path, 'params' => $params];
+
+                $customer = ['id' => 'cus_test', 'object' => 'customer', 'invoice_settings' => ['default_payment_method' => 'pm_cashapp_test']];
+                $invoice = [
+                    'id' => 'in_test',
+                    'object' => 'invoice',
+                    'payment_intent' => ['id' => 'pi_test', 'object' => 'payment_intent', 'status' => 'requires_action', 'client_secret' => 'pi_test_secret'],
+                ];
+
+                $body = match (true) {
+                    str_starts_with($path, '/v1/customers') => $customer,
+                    str_starts_with($path, '/v1/payment_methods') => ['id' => 'pm_cashapp_test', 'object' => 'payment_method', 'type' => 'cashapp', 'customer' => 'cus_test'],
+                    str_starts_with($path, '/v1/subscriptions') => [
+                        'id' => 'sub_test',
+                        'object' => 'subscription',
+                        'status' => 'incomplete',
+                        'latest_invoice' => $invoice,
+                        'trial_end' => null,
+                        'items' => ['object' => 'list', 'data' => [[
+                            'id' => 'si_test',
+                            'object' => 'subscription_item',
+                            'quantity' => 1,
+                            'price' => ['id' => 'price_gold_monthly', 'object' => 'price', 'product' => 'prod_gold'],
+                        ]]],
+                    ],
+                    str_starts_with($path, '/v1/invoices') => $invoice,
+                    default => ['id' => 'obj_test', 'object' => 'unknown'],
+                };
+
+                return [json_encode($body), 200, []];
+            }
+        };
+
+        ApiRequestor::setHttpClient($client);
+        $this->beforeApplicationDestroyed(fn () => ApiRequestor::setHttpClient(null));
+
+        return $client;
     }
 }

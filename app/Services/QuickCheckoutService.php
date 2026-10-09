@@ -182,7 +182,14 @@ class QuickCheckoutService
             // cannot answer a 3DS challenge either — both come back as a 400 that
             // used to take the entire signup down with it. Confirmation is done in
             // the browser instead; quick-checkout.return finishes the job.
-            $createdSubscription = $subscription->ignoreIncompletePayments()->create($paymentMethod);
+            //
+            // save_default_payment_method puts setup_future_usage=off_session on
+            // the first PaymentIntent. Without it a Cash App Pay method is only
+            // authorized for that one payment, and every renewal invoice sits in
+            // requires_confirmation with no charge ever attempted.
+            $createdSubscription = $subscription->ignoreIncompletePayments()->create($paymentMethod, [], [
+                'payment_settings' => ['save_default_payment_method' => 'on_subscription'],
+            ]);
 
             $context = [
                 'coupon' => $couponCode,
